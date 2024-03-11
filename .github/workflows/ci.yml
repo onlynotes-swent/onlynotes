@@ -35,7 +35,7 @@ jobs:
           sudo udevadm trigger --name-match=kvm
 
       - name: Setup JDK
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: "temurin"
           java-version: "17"
@@ -103,7 +103,7 @@ jobs:
           script: ./gradlew connectedCheck --parallel --build-cache
 
       # This step generates the coverage report which will be uploaded to sonar
-      - name: Generate coverage
+      - name: Generate Coverage Report
         run: |
           ./gradlew jacocoTestReport
 
