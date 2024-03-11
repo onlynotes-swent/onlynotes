@@ -2,6 +2,7 @@
 agp = "8.3.0"
 kotlin = "1.8.10"
 coreKtx = "1.12.0"
+ktfmt = "0.17.0"
 junit = "4.13.2"
 junitVersion = "1.1.5"
 espressoCore = "3.5.1"
@@ -39,4 +40,4 @@ kaspresso-compose = { group = "com.kaspersky.android-components", name = "kaspre
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
 jetbrainsKotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
-
+ktfmt = { id = "com.ncorti.ktfmt.gradle", version.ref = "ktfmt" }
