@@ -70,6 +70,30 @@ android {
             isReturnDefaultValues = true
         }
     }
+
+    // Robolectric needs to be run only in debug. But its tests are placed in the shared source set (test)
+    // The next lines transfers the src/test/* from shared to the testDebug one
+    //
+    // This prevent errors from occurring during unit tests
+    sourceSets.getByName("testDebug") {
+        val test = sourceSets.getByName("test")
+
+        java.setSrcDirs(test.java.srcDirs)
+        res.setSrcDirs(test.res.srcDirs)
+        resources.setSrcDirs(test.resources.srcDirs)
+    }
+
+    sourceSets.getByName("test") {
+        java.setSrcDirs(emptyList<File>())
+        res.setSrcDirs(emptyList<File>())
+        resources.setSrcDirs(emptyList<File>())
+    }
+}
+
+// When a library is used both by robolectric and connected tests, use this function
+fun DependencyHandlerScope.globalTestImplementation(dep: Any) {
+    androidTestImplementation(dep)
+    testImplementation(dep)
 }
 
 dependencies {
@@ -77,14 +101,17 @@ dependencies {
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
     implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(platform(libs.compose.bom))
     testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
+    androidTestImplementation(platform(libs.compose.bom))
+    androidTestImplementation(libs.compose.test.junit)
+    globalTestImplementation(libs.androidx.junit)
+    globalTestImplementation(libs.androidx.espresso.core)
 
     // ------------- Jetpack Compose ------------------
     val composeBom = platform(libs.compose.bom)
     implementation(composeBom)
-    androidTestImplementation(composeBom)
+    globalTestImplementation(composeBom)
 
     implementation(libs.compose.ui)
     implementation(libs.compose.ui.graphics)
@@ -98,12 +125,15 @@ dependencies {
     implementation(libs.compose.preview)
     debugImplementation(libs.compose.tooling)
     // UI Tests
-    androidTestImplementation(libs.compose.test.junit)
+    globalTestImplementation(libs.compose.test.junit)
     debugImplementation(libs.compose.test.manifest)
 
     // --------- Kaspresso test framework ----------
-    androidTestImplementation(libs.kaspresso)
-    androidTestImplementation(libs.kaspresso.compose)
+    globalTestImplementation(libs.kaspresso)
+    globalTestImplementation(libs.kaspresso.compose)
+
+    // ----------       Robolectric     ------------
+    testImplementation(libs.robolectric)
 }
 
 tasks.withType<Test> {
