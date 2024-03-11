@@ -46,6 +46,7 @@ android {
     kotlinOptions {
         jvmTarget = "1.8"
     }
+
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
@@ -81,4 +82,8 @@ dependencies {
     // UI Tests
     androidTestImplementation(libs.compose.test.junit)
     debugImplementation(libs.compose.test.manifest)
+
+    // --------- Kaspresso test framework ----------
+    androidTestImplementation(libs.kaspresso)
+    androidTestImplementation(libs.kaspresso.compose)
 }
