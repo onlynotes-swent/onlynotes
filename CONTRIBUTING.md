@@ -55,7 +55,7 @@ Here is a list of the **type** values that can be used:
 **Note**: Direct commits/pushes to the `main` branch are **not allowed**. All changes must go through a pull request review and be approved by at least one other team member.
 
 ## Code Style Guidelines
-* *Run Code > Optimize imports* * and * *Code > Reformat code* * on all your files, as well as * *Code > Inspect code* * to improve the quality of your code. 
+_Run Code > Optimize imports_ and _Code > Reformat code_ on all your files, as well as _Code > Inspect code_ to improve the quality of your code. 
 Remember to apply `ktfmt` format to your code before committing. You can do this by running it from the gradle. Please comment your code properly and use meaningful variable names. 
 View the following [naming_conventions.md](docs/naming_conventions.md) to see the naming conventions for packages, classes, functions, properties, and more in Kotlin for this project.
 If you want more information on the official Kotlin coding conventions you can visit [Kotlin Coding Conventions](https://kotlinlang.org/docs/coding-conventions.html).
