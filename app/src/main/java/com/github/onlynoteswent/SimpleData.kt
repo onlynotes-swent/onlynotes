@@ -1,4 +1,4 @@
-package com.android.sample
+package com.github.onlynoteswent
 
 import kotlin.math.sqrt
 
