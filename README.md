@@ -12,3 +12,7 @@ and share information, streamlining the note-taking process for people who rely 
    - [CONTRIBUTING.md](CONTRIBUTING.md)
 3. Read the naming conventions
    - [naming_conventions.md](docs/naming_conventions.md)
+
+## Useful links
+1. [Drive](https://drive.google.com/drive/folders/1Z_0MuY4JhpFN-IeMG6ytGRAj3sbTMDrl?usp=drive_link)
+2. [Figma](https://www.figma.com/team_invite/redeem/zzuXNbK4v93PP69SyUwr8n)
