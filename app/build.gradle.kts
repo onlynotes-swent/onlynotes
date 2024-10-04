@@ -4,7 +4,6 @@ plugins {
     alias(libs.plugins.ktfmt)
     alias(libs.plugins.sonar)
     id("jacoco")
-    id("org.sonarqube") version "4.4.1.3373"
 }
 
 android {
