@@ -1,4 +1,4 @@
-package com.github.onlynoteswent
+package com.github.onlynotesswent
 
 import org.junit.Assert.*
 import org.junit.Test

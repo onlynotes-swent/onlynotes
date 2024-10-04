@@ -1,4 +1,4 @@
-package com.github.onlynoteswent.resources
+package com.github.onlynotesswent.resources
 
 // Like R, but C
 object C {

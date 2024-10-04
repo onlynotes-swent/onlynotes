@@ -1,4 +1,4 @@
-package com.github.onlynoteswent.ui.theme
+package com.github.onlynotesswent.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

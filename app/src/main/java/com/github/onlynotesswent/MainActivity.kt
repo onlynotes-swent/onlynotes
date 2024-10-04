@@ -1,4 +1,4 @@
-package com.github.onlynoteswent
+package com.github.onlynotesswent
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -12,8 +12,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTag
 import androidx.compose.ui.tooling.preview.Preview
-import com.github.onlynoteswent.resources.C
-import com.github.onlynoteswent.ui.theme.SampleAppTheme
+import com.github.onlynotesswent.resources.C
+import com.github.onlynotesswent.ui.theme.SampleAppTheme
 
 class MainActivity : ComponentActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
