@@ -1,7 +1,7 @@
-package com.github.onlynoteswent.screen
+package com.github.onlynotesswent.screen
 
 import androidx.compose.ui.test.SemanticsNodeInteractionsProvider
-import com.github.onlynoteswent.resources.C
+import com.github.onlynotesswent.resources.C
 import io.github.kakaocup.compose.node.element.ComposeScreen
 import io.github.kakaocup.compose.node.element.KNode
 
