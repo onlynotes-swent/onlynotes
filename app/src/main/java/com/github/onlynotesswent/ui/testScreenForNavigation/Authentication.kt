@@ -7,17 +7,11 @@ import androidx.compose.runtime.Composable
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
 
-
-//simple empty screen for testing navigation
+// simple empty screen for testing navigation
 @Composable
 fun AuthenticationScreen(navigationActions: NavigationActions) {
-    Column {
-
-
+  Column {
     Text("Authentication Screen")
-    Button(onClick = { navigationActions.navigateTo(Screen.OVERVIEW) }) {
-        Text("Go to Overview")
-    }
-
-}
+    Button(onClick = { navigationActions.navigateTo(Screen.OVERVIEW) }) { Text("Go to Overview") }
+  }
 }
