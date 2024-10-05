@@ -52,12 +52,20 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
     }
 
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = "11"
+    }
+
+
+    android {
+        compileOptions {
+            sourceCompatibility = JavaVersion.VERSION_11
+            targetCompatibility = JavaVersion.VERSION_11
+        }
     }
 
     packaging {
@@ -153,6 +161,11 @@ dependencies {
     // UI Tests
     globalTestImplementation(libs.compose.test.junit)
     debugImplementation(libs.compose.test.manifest)
+
+    // Mockito
+    testImplementation("org.mockito:mockito-core:5.13.0")
+    testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
+
 
     // --------- Kaspresso test framework ----------
     globalTestImplementation(libs.kaspresso)
