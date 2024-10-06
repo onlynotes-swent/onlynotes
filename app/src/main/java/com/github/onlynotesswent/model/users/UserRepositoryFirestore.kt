@@ -5,10 +5,21 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 
+/**
+ * A repository for managing user data in Firestore.
+ *
+ * @property db The Firestore database instance.
+ */
 class UserRepositoryFirestore(private val db: FirebaseFirestore) : UserRepository {
 
     private val collectionPath = "users"
 
+    /**
+     * Converts a Firestore DocumentSnapshot to a User object.
+     *
+     * @param document The DocumentSnapshot to convert.
+     * @return The converted User object.
+     */
     fun documentSnapshotToUser(document: DocumentSnapshot): User {
         return User(
             name = document.getString("name") ?: "",
