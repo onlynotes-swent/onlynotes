@@ -78,6 +78,8 @@ jobs:
         run: ./gradlew check --parallel --build-cache
 
       - name: run tests on emulator
+        env:
+          ANDROID_EMULATOR_WAIT_TIME_BEFORE_KILL: 60
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 34
