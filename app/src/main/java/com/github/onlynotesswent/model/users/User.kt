@@ -18,5 +18,3 @@ data class User(
     val dateOfJoining: Timestamp,
     val rating: Double
 )
-
-
