@@ -1,5 +1,7 @@
 package com.github.onlynotesswent.model.users
 
+import com.google.firebase.auth.FirebaseAuth
+
 /**
  * Interface representing a repository for managing user data.
  */
@@ -8,9 +10,10 @@ interface UserRepository {
     /**
      * Initializes the repository.
      *
+     * @param auth The FirebaseAuth instance to use for initialization.
      * @param onSuccess Callback to be invoked when initialization is successful.
      */
-    fun init(onSuccess: () -> Unit)
+    fun init(auth: FirebaseAuth, onSuccess: () -> Unit)
 
     /**
      * Retrieves a user by their ID.

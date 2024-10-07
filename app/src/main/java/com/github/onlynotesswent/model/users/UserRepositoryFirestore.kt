@@ -31,8 +31,7 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore) : UserRepositor
     }
 
 
-    override fun init(onSuccess: () -> Unit) {
-        val auth = FirebaseAuth.getInstance()
+    override fun init(auth: FirebaseAuth, onSuccess: () -> Unit) {
         if (auth.currentUser != null) {
             onSuccess()
         }

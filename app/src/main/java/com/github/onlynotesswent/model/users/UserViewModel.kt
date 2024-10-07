@@ -1,6 +1,7 @@
 package com.github.onlynotesswent.model.users
 
 import androidx.lifecycle.ViewModel
+import com.google.firebase.auth.FirebaseAuth
 
 /**
  * ViewModel for managing user data.
@@ -13,7 +14,7 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
      * Initializes the UserViewModel and the repository.
      */
     init {
-        repository.init {  }
+        repository.init(FirebaseAuth.getInstance()) {  }
     }
 
     /**
