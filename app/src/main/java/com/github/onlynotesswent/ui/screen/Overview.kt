@@ -1,4 +1,4 @@
-package com.github.onlynotesswent.ui.testScreenForNavigation
+package com.github.onlynotesswent.ui.screen
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.Button
@@ -9,9 +9,9 @@ import com.github.onlynotesswent.ui.navigation.Screen
 
 // simple empty screen for testing navigation
 @Composable
-fun AuthenticationScreen(navigationActions: NavigationActions) {
+fun OverviewScreen(navigationActions: NavigationActions) {
   Column {
-    Text("Authentication Screen")
-    Button(onClick = { navigationActions.navigateTo(Screen.OVERVIEW) }) { Text("Go to Overview") }
+    Text("Overview Screen")
+    Button(onClick = { navigationActions.navigateTo(Screen.AUTH) }) { Text("Go to Auth") }
   }
 }
