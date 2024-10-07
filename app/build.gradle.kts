@@ -128,6 +128,9 @@ dependencies {
     implementation(libs.material)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(platform(libs.compose.bom))
+    implementation(libs.androidx.navigation.common.ktx)
+    implementation(libs.androidx.navigation.runtime.ktx)
+    implementation(libs.androidx.navigation.compose)
     testImplementation(libs.junit)
     globalTestImplementation(libs.androidx.junit)
     globalTestImplementation(libs.androidx.espresso.core)
@@ -160,9 +163,8 @@ dependencies {
     debugImplementation(libs.compose.test.manifest)
 
     // Mockito
-    testImplementation(libs.mockito.core)
-    testImplementation(libs.mockito.kotlin)
-
+    testImplementation("org.mockito:mockito-core:5.13.0")
+    testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
 
 
     // --------- Kaspresso test framework ----------
