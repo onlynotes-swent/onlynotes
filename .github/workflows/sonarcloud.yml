@@ -1,5 +1,6 @@
 name: CI - Test Runner
 
+# Run the workflow when commits are pushed on main or when a PR is modified
 on:
   push:
     branches:
@@ -14,25 +15,25 @@ jobs:
   ci:
     name: CI
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./${{ env.base_folder }}
 
     steps:
-      # First step: Checkout the repository
+      # First step : Checkout the repository on the runner
       - name: Checkout
         uses: actions/checkout@v4
         with:
           submodules: recursive
-          fetch-depth: 0
+          fetch-depth: 0 # Shallow clones should be disabled for a better relevancy of Sonar analysis (if we use Sonar Later)
 
       # This step removes the current gradle cache to avoid any caching issues
       - name: Remove current gradle cache
         run: rm -rf ~/.gradle
 
-      # Step to write google-services.json from secret to the appropriate location
-      - name: Add google-services.json
-        run: |
-          echo "${{ secrets.GOOGLE_SERVICES }}" | base64 --decode > ./app/google-services.json
-
-      # Enable KVM group permissions
+      # Kernel-based Virtual Machine (KVM) is an open source virtualization technology built into Linux. Enabling it allows the Android emulator to run faster.
+      #
+      # For the bootcamp, the runners already have KVM enabled, so this step is commented out. But for your projects, you will need to uncomment it.
       - name: Enable KVM group perms
         run: |
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
@@ -57,21 +58,33 @@ jobs:
             ~/.gradle/wrapper
           key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
 
+      # Load google-services.json
+      - name: Decode secrets
+        env:
+          GOOGLE_SERVICES: ${{ secrets.GOOGLE_SERVICES }}
+        run: |
+          echo "$GOOGLE_SERVICES" | base64 --decode > ./app/google-services.json
+
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
 
       - name: KTFmt Check
         run: ./gradlew ktfmtCheck
 
+      # This step runs gradle commands to build the application
       - name: Assemble
-        run: ./gradlew assemble lint --parallel --build-cache
+        run: |
+          # To run the CI with debug information, add --info
+          ./gradlew assembleDebug lint --parallel --build-cache
 
       - name: Run tests
-        run: ./gradlew check --parallel --build-cache
+        run: |
+          # To run the CI with debug information, add --info
+          ./gradlew check --parallel --build-cache
 
-      - name: run tests on emulator
-        env:
-          ANDROID_EMULATOR_WAIT_TIME_BEFORE_KILL: 60
+      - name: Run instrumentation tests
+        # This action assumes that Android sdk is already present inthe runner. Which is true for the bootcamp, but won't be for your own project.
+        # If you want to use this CI for your project, replace the following line with: uses: reactivecircus/android-emulator-runner@v2
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 34
@@ -79,7 +92,7 @@ jobs:
           arch: x86_64
           avd-name: github
           force-avd-creation: true
-          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -skin 1080x1920
           disable-animations: true
           script: ./gradlew connectedCheck --parallel --build-cache
 
