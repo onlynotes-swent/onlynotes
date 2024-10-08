@@ -1,20 +1,21 @@
 package com.github.onlynotesswent.model.note
 
 import android.graphics.Bitmap
-import java.util.Date
+import com.google.firebase.Timestamp
 
-enum class Type {
-    JPEG, PNG, NORMALTEXT
-}
-
-data class  Note(
-
+data class Note(
     val id: String,
     val type: Type,
     val name: String,
     val title: String,
     val content: String,
-    val date: Date,
+    val date: Timestamp,
     val userId: String,
     val image: Bitmap
 )
+
+enum class Type {
+  JPEG,
+  PNG,
+  NORMAL_TEXT
+}
