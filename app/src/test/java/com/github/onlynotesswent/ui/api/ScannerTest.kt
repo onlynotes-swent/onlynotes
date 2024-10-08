@@ -1,6 +1,5 @@
 package com.github.onlynotesswent.ui.api
 
-
 import android.content.IntentSender
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultCallback
@@ -25,62 +24,63 @@ import org.robolectric.RobolectricTestRunner
 @RunWith(RobolectricTestRunner::class)
 class ScannerTest {
 
-    @Mock private lateinit var mockMainActivity: MainActivity
-    @Mock private lateinit var mockDocScanner: GmsDocumentScanner
-    @Mock private lateinit var mockTaskIntentSender: Task<IntentSender>
-    @Mock private lateinit var mockIntentSender: IntentSender
-    @Mock private lateinit var mockActivityResultLauncher: ActivityResultLauncher<IntentSenderRequest>
+  @Mock private lateinit var mockMainActivity: MainActivity
+  @Mock private lateinit var mockDocScanner: GmsDocumentScanner
+  @Mock private lateinit var mockTaskIntentSender: Task<IntentSender>
+  @Mock private lateinit var mockIntentSender: IntentSender
+  @Mock private lateinit var mockActivityResultLauncher: ActivityResultLauncher<IntentSenderRequest>
 
-    private lateinit var scanner: Scanner
+  private lateinit var scanner: Scanner
 
-    @Before
-    fun setUp() {
-        MockitoAnnotations.openMocks(this)
+  @Before
+  fun setUp() {
+    MockitoAnnotations.openMocks(this)
 
-        `when`(
+    `when`(
             mockMainActivity.registerForActivityResult(
                 any<ActivityResultContract<IntentSenderRequest, ActivityResult>>(),
-                any<ActivityResultCallback<ActivityResult>>()
-            )
-        )
-            .thenReturn(mockActivityResultLauncher)
-        scanner = Scanner(mockMainActivity, mockDocScanner)
+                any<ActivityResultCallback<ActivityResult>>()))
+        .thenReturn(mockActivityResultLauncher)
+    scanner = Scanner(mockMainActivity, mockDocScanner)
+  }
+
+  @Test
+  fun initTest() {
+    // Test if scanner is correctly initialized, and if the activity result launcher is registered
+    scanner.init()
+    verify(mockMainActivity)
+        .registerForActivityResult(
+            any<ActivityResultContract<IntentSenderRequest, ActivityResult>>(),
+            any<ActivityResultCallback<ActivityResult>>())
+  }
+
+  @Test
+  fun scanSuccessTest() {
+    scanner.init()
+
+    // Mock the creation of the IntentSender Task and simulate a successful result
+    `when`(mockDocScanner.getStartScanIntent(mockMainActivity)).thenReturn(mockTaskIntentSender)
+    `when`(mockTaskIntentSender.addOnSuccessListener(any())).thenAnswer {
+      (it.arguments[0] as OnSuccessListener<IntentSender>).onSuccess(mockIntentSender)
+      mockTaskIntentSender
     }
 
-    @Test
-    fun initTest() {
-        //Test if scanner is correctly initialized, and if the activity result launcher is registered
-        scanner.init()
-        verify(mockMainActivity).registerForActivityResult(any<ActivityResultContract<IntentSenderRequest, ActivityResult>>(), any<ActivityResultCallback<ActivityResult>>())
-    }
+    scanner.scan()
 
-    @Test
-    fun scanSuccessTest() {
-        scanner.init()
+    verify(mockDocScanner).getStartScanIntent(mockMainActivity)
+    verify(mockTaskIntentSender).addOnSuccessListener(any())
+    verify(mockActivityResultLauncher).launch(any())
+  }
 
-        //Mock the creation of the IntentSender Task and simulate a successful result
-        `when`(mockDocScanner.getStartScanIntent(mockMainActivity)).thenReturn(mockTaskIntentSender)
-        `when`(mockTaskIntentSender.addOnSuccessListener(any())).thenAnswer {
-            (it.arguments[0] as OnSuccessListener<IntentSender>).onSuccess(mockIntentSender)
-            mockTaskIntentSender
-        }
+  @Test
+  fun scanFailTest() {
+    scanner.init()
 
-        scanner.scan()
+    `when`(mockDocScanner.getStartScanIntent(mockMainActivity)).thenReturn(mockTaskIntentSender)
+    `when`(mockTaskIntentSender.addOnSuccessListener(any())).thenReturn(mockTaskIntentSender)
 
-        verify(mockDocScanner).getStartScanIntent(mockMainActivity)
-        verify(mockTaskIntentSender).addOnSuccessListener(any())
-        verify(mockActivityResultLauncher).launch(any())
-    }
-
-    @Test
-    fun scanFailTest() {
-       scanner.init()
-
-        `when`(mockDocScanner.getStartScanIntent(mockMainActivity)).thenReturn(mockTaskIntentSender)
-        `when`(mockTaskIntentSender.addOnSuccessListener(any())).thenReturn(mockTaskIntentSender)
-
-        scanner.scan()
-        verify(mockDocScanner).getStartScanIntent(mockMainActivity)
-        verify(mockTaskIntentSender).addOnFailureListener(any())
-    }
+    scanner.scan()
+    verify(mockDocScanner).getStartScanIntent(mockMainActivity)
+    verify(mockTaskIntentSender).addOnFailureListener(any())
+  }
 }

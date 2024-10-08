@@ -23,8 +23,8 @@ import java.io.File
 
 /**
  * Options for the scanner, in parenthesis are other options that can be set Scanner mode: Base
- * (Base with filter, Full (ML capabilities)) Result format: pdf (jpg, both) Gallery import
- * allowed: true (false) Page limit: 5 (> 1, upper limit determined by hardware resources)
+ * (Base with filter, Full (ML capabilities)) Result format: pdf (jpg, both) Gallery import allowed:
+ * true (false) Page limit: 5 (> 1, upper limit determined by hardware resources)
  *
  * ToDo, potentially enable each user to choose the options they want
  */
@@ -36,14 +36,16 @@ private val options =
         .setPageLimit(5)
         .build()
 
-
 /**
  * Scanner class that initializes the scanner and handles the scanning activity
  *
  * @param activity the ComponentActivity that will use the scanner
  * @param scanner the scanner object, initialized with the options specified above
  */
-class Scanner(private val activity: ComponentActivity, private var scanner: GmsDocumentScanner = GmsDocumentScanning.getClient(options)) {
+class Scanner(
+    private val activity: ComponentActivity,
+    private var scanner: GmsDocumentScanner = GmsDocumentScanning.getClient(options)
+) {
 
   private lateinit var scannerLauncher: ActivityResultLauncher<IntentSenderRequest>
 
