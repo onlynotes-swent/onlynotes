@@ -15,6 +15,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
+import com.github.onlynotesswent.model.scanner.Scanner
 import com.github.onlynotesswent.resources.C
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Route
@@ -26,7 +27,10 @@ import com.github.onlynotesswent.ui.theme.SampleAppTheme
 class MainActivity : ComponentActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    setContent { SampleAppTheme { Surface(modifier = Modifier.fillMaxSize()) { OnlyNotesApp() } } }
+    val scanner = Scanner(this).apply { init() }
+    setContent {
+      SampleAppTheme { Surface(modifier = Modifier.fillMaxSize()) { OnlyNotesApp(scanner) } }
+    }
   }
 }
 
@@ -42,7 +46,7 @@ fun GreetingPreview() {
 }
 
 @Composable
-fun OnlyNotesApp() {
+fun OnlyNotesApp(scanner: Scanner) {
   val navController = rememberNavController()
   val navigationActions = NavigationActions(navController)
 
@@ -58,7 +62,7 @@ fun OnlyNotesApp() {
         startDestination = Screen.OVERVIEW,
         route = Route.OVERVIEW,
     ) {
-      composable(Screen.OVERVIEW) { OverviewScreen(navigationActions) }
+      composable(Screen.OVERVIEW) { OverviewScreen(navigationActions, scanner) }
     }
   }
 }
