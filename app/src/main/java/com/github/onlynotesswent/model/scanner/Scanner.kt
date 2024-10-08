@@ -9,40 +9,45 @@ import android.app.Activity
 import android.content.Intent
 import android.util.Log
 import android.widget.Toast
+import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts.StartIntentSenderForResult
 import androidx.core.content.FileProvider
-import com.github.onlynotesswent.MainActivity
 import com.google.mlkit.vision.documentscanner.GmsDocumentScanner
 import com.google.mlkit.vision.documentscanner.GmsDocumentScannerOptions
 import com.google.mlkit.vision.documentscanner.GmsDocumentScanning
 import com.google.mlkit.vision.documentscanner.GmsDocumentScanningResult
 import java.io.File
 
-/** Demonstrates the document scanner powered by Google Play services. */
-class Scanner(private val activity: MainActivity) {
+/**
+ * Options for the scanner, in parenthesis are other options that can be set Scanner mode: Base
+ * (Base with filter, Full (ML capabilities)) Result format: pdf (jpg, both) Gallery import
+ * allowed: true (false) Page limit: 5 (> 1, upper limit determined by hardware resources)
+ *
+ * ToDo, potentially enable each user to choose the options they want
+ */
+private val options =
+    GmsDocumentScannerOptions.Builder()
+        .setScannerMode(GmsDocumentScannerOptions.SCANNER_MODE_BASE)
+        .setResultFormats(GmsDocumentScannerOptions.RESULT_FORMAT_PDF)
+        .setGalleryImportAllowed(true)
+        .setPageLimit(5)
+        .build()
+
+
+/**
+ * Scanner class that initializes the scanner and handles the scanning activity
+ *
+ * @param activity the ComponentActivity that will use the scanner
+ * @param scanner the scanner object, initialized with the options specified above
+ */
+class Scanner(private val activity: ComponentActivity, private var scanner: GmsDocumentScanner = GmsDocumentScanning.getClient(options)) {
 
   private lateinit var scannerLauncher: ActivityResultLauncher<IntentSenderRequest>
-  private lateinit var scanner: GmsDocumentScanner
 
   private val fileProviderAuthority = "com.github.onlynotesswent.provider"
-
-  /**
-   * Options for the scanner, in parenthesis are other options that can be set Scanner mode: Base
-   * (Base with filter, Full (ML capabilities)) Result format: pdf (jpg, both) Gallery import
-   * allowed: true (false) Page limit: 5 (> 1, upper limit determined by hardware resources)
-   *
-   * ToDo, potentially enable each user to choose the options they want
-   */
-  private val options =
-      GmsDocumentScannerOptions.Builder()
-          .setScannerMode(GmsDocumentScannerOptions.SCANNER_MODE_BASE)
-          .setResultFormats(GmsDocumentScannerOptions.RESULT_FORMAT_PDF)
-          .setGalleryImportAllowed(true)
-          .setPageLimit(5)
-          .build()
 
   /**
    * Initializes the scanner and the activity result launcher (to obtain the result of the scan in
@@ -54,8 +59,6 @@ class Scanner(private val activity: MainActivity) {
         activity.registerForActivityResult(StartIntentSenderForResult()) { result ->
           handleActivityResult(result)
         }
-
-    scanner = GmsDocumentScanning.getClient(options)
   }
 
   /**
