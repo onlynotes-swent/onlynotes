@@ -46,7 +46,34 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore) : UserRepositor
         .addOnFailureListener { exception -> onFailure(exception) }
   }
 
-  override fun updateUser(user: User, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) {
+    /**
+     * Retrieves a user by their email address.
+     *
+     * @param email The email address of the user to retrieve.
+     * @param onSuccess Callback to be invoked with the retrieved user.
+     * @param onFailure Callback to be invoked if an error occurs.
+     */
+    override fun getUserByEmail(
+        email: String,
+        onSuccess: (User) -> Unit,
+        onFailure: (Exception) -> Unit
+    ) {
+        db.collection(collectionPath)
+            .whereEqualTo("email", email)
+            .get()
+            .addOnSuccessListener { result ->
+                if (result.isEmpty) {
+                    onFailure(Exception("User not found"))
+                } else {
+                    val user = documentSnapshotToUser(result.documents[0])
+                    onSuccess(user)
+                }
+            }
+            .addOnFailureListener { exception -> onFailure(exception) }
+
+    }
+
+    override fun updateUser(user: User, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) {
     db.collection(collectionPath)
         .document(user.uid)
         .set(user)

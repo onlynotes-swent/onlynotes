@@ -2,6 +2,8 @@ package com.github.onlynotesswent.model.users
 
 import com.google.firebase.FirebaseApp
 import com.google.firebase.Timestamp
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
 import junit.framework.TestCase.assertEquals
 import org.junit.Before
 import org.junit.Test
@@ -9,6 +11,7 @@ import org.junit.runner.RunWith
 import org.mockito.Mock
 import org.mockito.Mockito.anyString
 import org.mockito.Mockito.mock
+import org.mockito.Mockito.times
 import org.mockito.Mockito.`when`
 import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
@@ -32,16 +35,30 @@ class UserViewModelTest {
           dateOfJoining = Timestamp.now(),
           rating = 0.0)
 
-  @Before
-  fun setUp() {
-    mockRepositoryFirestore = mock(UserRepositoryFirestore::class.java)
+    @Before
+    fun setUp() {
+        mockRepositoryFirestore = mock(UserRepositoryFirestore::class.java)
+        val mockFirebaseAuth = mock(FirebaseAuth::class.java)
+        val mockFirebaseUser = mock(FirebaseUser::class.java)
 
-    // Initialize FirebaseApp with Robolectric context
-    val context = org.robolectric.RuntimeEnvironment.getApplication()
-    FirebaseApp.initializeApp(context)
+        // Mock the currentUser and its email
+        `when`(mockFirebaseAuth.currentUser).thenReturn(mockFirebaseUser)
+        `when`(mockFirebaseUser.email).thenReturn("example@gmail.com")
 
-    userViewModel = UserViewModel(mockRepositoryFirestore)
-  }
+        // Mock the getUserByEmail method to return a valid user
+        `when`(mockRepositoryFirestore.getUserByEmail(anyString(), any(), any())).thenAnswer {
+            val onSuccess = it.arguments[1] as (User) -> Unit
+            onSuccess(user)
+        }
+
+        // Initialize FirebaseApp with Robolectric context
+        val context = org.robolectric.RuntimeEnvironment.getApplication()
+        FirebaseApp.initializeApp(context)
+
+        // Initialize UserViewModel with the mocked repository and FirebaseAuth
+        userViewModel = UserViewModel(mockRepositoryFirestore)
+        userViewModel.setCurrentUser(mockFirebaseAuth)
+    }
 
   @Test
   fun `init should call repository init`() {
@@ -78,6 +95,11 @@ class UserViewModelTest {
     userViewModel.getUserById(user.uid, {}, {})
     verify(mockRepositoryFirestore, timeout(1000)).getUserById(anyString(), any(), any())
   }
+    @Test
+    fun `getUserByEmail should call repository getUserByEmail`() {
+        userViewModel.getUserByEmail(user.email, {}, {})
+        verify(mockRepositoryFirestore, timeout(1000).times(2)).getUserByEmail(anyString(), any(), any())
+    }
 
   @Test
   fun `deleteUserById should call repository deleteUserById`() {

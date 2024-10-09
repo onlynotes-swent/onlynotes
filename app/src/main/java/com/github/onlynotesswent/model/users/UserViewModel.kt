@@ -1,7 +1,11 @@
 package com.github.onlynotesswent.model.users
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
 /**
  * ViewModel for managing user data.
@@ -10,9 +14,25 @@ import com.google.firebase.auth.FirebaseAuth
  */
 class UserViewModel(private val repository: UserRepository) : ViewModel() {
 
+  private val currentUser_ = MutableStateFlow<User?>(null)
+   val currentUser: StateFlow<User?> = currentUser_.asStateFlow()
+
   /** Initializes the UserViewModel and the repository. */
   init {
     repository.init(FirebaseAuth.getInstance()) {}
+    setCurrentUser(FirebaseAuth.getInstance())
+
+
+  }
+
+  fun setCurrentUser(firebaseAuth: FirebaseAuth ){
+    val firebaseUser =firebaseAuth.currentUser
+    val email= firebaseUser?.email ?: return
+    repository.getUserByEmail(email, {
+      currentUser_ .value= it
+    }, {
+        e-> Log.e("UserViewModel", "Error getting user", e)
+    })
   }
 
   /**
@@ -55,6 +75,18 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
   fun getUsers(onSuccess: (List<User>) -> Unit, onFailure: (Exception) -> Unit) {
     repository.getUsers(onSuccess, onFailure)
   }
+
+  /**
+   * Retrieves a user by their ID.
+   *
+   * @param id The ID of the user to retrieve.
+   * @param onSuccess Callback to be invoked with the retrieved user.
+   * @param onFailure Callback to be invoked if an error occurs.
+   */
+  fun getUserByEmail(email: String, onSuccess: (User) -> Unit, onFailure: (Exception) -> Unit) {
+    repository.getUserByEmail(email, onSuccess, onFailure)
+  }
+
 
   /**
    * Retrieves a user by their ID.

@@ -22,6 +22,18 @@ interface UserRepository {
    */
   fun getUserById(id: String, onSuccess: (User) -> Unit, onFailure: (Exception) -> Unit)
 
+
+
+  /**
+   * Retrieves a user by their email address.
+   *
+   * @param email The email address of the user to retrieve.
+   * @param onSuccess Callback to be invoked with the retrieved user.
+   * @param onFailure Callback to be invoked if an error occurs.
+   *
+   */
+  fun getUserByEmail(email: String, onSuccess: (User) -> Unit, onFailure: (Exception) -> Unit)
+
   /**
    * Updates the information of an existing user.
    *
@@ -63,4 +75,6 @@ interface UserRepository {
    * @return A new unique user ID.
    */
   fun getNewUid(): String
+
+
 }
