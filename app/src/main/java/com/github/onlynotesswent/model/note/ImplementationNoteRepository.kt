@@ -10,7 +10,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 
 class ImplementationNoteRepository(private val db: FirebaseFirestore) : NoteRepository {
 
-  private val collectionPath = "notes/" // should it be notes/ or notes?
+  private val collectionPath = "notes"
 
   override fun getNewUid(): String {
     return db.collection(collectionPath).document().id
@@ -29,7 +29,6 @@ class ImplementationNoteRepository(private val db: FirebaseFirestore) : NoteRepo
       onSuccess: (List<Note>) -> Unit,
       onFailure: (Exception) -> Unit
   ) {
-    Log.d("ImplementationNoteRepository", "getNotes") // is this log necessary?
     db.collection(collectionPath).get().addOnCompleteListener { task ->
       if (task.isSuccessful) {
         val userNotes =
@@ -109,9 +108,7 @@ class ImplementationNoteRepository(private val db: FirebaseFirestore) : NoteRepo
    * @param document The DocumentSnapshot to convert.
    * @return The converted Note object.
    */
-  fun documentSnapshotToNote(
-      document: DocumentSnapshot
-  ): Note? { // Should we make it private? Then how to test it to increment code coverage?
+  fun documentSnapshotToNote(document: DocumentSnapshot): Note? {
     return try {
       val id = document.id
       val type = Type.valueOf(document.getString("type") ?: return null)
