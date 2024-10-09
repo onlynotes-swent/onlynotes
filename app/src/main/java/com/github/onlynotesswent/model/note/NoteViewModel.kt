@@ -16,7 +16,7 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
   init {
     repository
         .init {} // I think we should fetch the user notes when he signs in, so calling getNotes()
-                 // here. But I may be wrong (we can change this later on).
+    // here. But I may be wrong (we can change this later on).
   }
 
   // create factory
