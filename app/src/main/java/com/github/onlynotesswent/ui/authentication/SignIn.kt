@@ -50,69 +50,69 @@ import kotlinx.coroutines.tasks.await
 
 @Composable
 fun SignInScreen(navigationActions: NavigationActions) {
-    Column(
-        modifier = Modifier.padding(15.dp),
-        verticalArrangement = Arrangement.spacedBy(30.dp, Alignment.CenterVertically),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        // AUTHENTICATION:
-        var user by remember { mutableStateOf(Firebase.auth.currentUser) }
+  Column(
+      modifier = Modifier.padding(15.dp),
+      verticalArrangement = Arrangement.spacedBy(30.dp, Alignment.CenterVertically),
+      horizontalAlignment = Alignment.CenterHorizontally,
+  ) {
+    // AUTHENTICATION:
+    var user by remember { mutableStateOf(Firebase.auth.currentUser) }
 
-        val context = LocalContext.current
-        val launcher =
-            rememberFirebaseAuthLauncher(
-                onAuthComplete = { result ->
-                    Toast.makeText(context, "Welcome ${result.user?.displayName}", Toast.LENGTH_LONG)
-                        .show()
-                    user = result.user
+    val context = LocalContext.current
+    val launcher =
+        rememberFirebaseAuthLauncher(
+            onAuthComplete = { result ->
+              Toast.makeText(context, "Welcome ${result.user?.displayName}", Toast.LENGTH_LONG)
+                  .show()
+              user = result.user
 
-                    //TODO: add user profile fetching using
-                    // profile = userViewModel.fetchUserProfile(user.mail)
+              // TODO: add user profile fetching using
+              // profile = userViewModel.fetchUserProfile(user.mail)
 
-                    //TODO: change later to navigate to profile creation screen
-                    navigationActions.navigateTo("overview")
-                },
-                onAuthError = { user = null })
-        val token = stringResource(R.string.default_web_client_id)
+              // TODO: change later to navigate to profile creation screen
+              navigationActions.navigateTo("overview")
+            },
+            onAuthError = { user = null })
+    val token = stringResource(R.string.default_web_client_id)
 
-        // UI pre login:
-        WelcomeText()
-        Logo()
-        SignInButton(
-            onClick = {
-                val gso =
-                    GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                        .requestIdToken(token)
-                        .requestEmail()
-                        .build()
-                val googleSignInClient = GoogleSignIn.getClient(context, gso)
-                launcher.launch(googleSignInClient.signInIntent)
-            })
-    }
+    // UI pre login:
+    WelcomeText()
+    Logo()
+    SignInButton(
+        onClick = {
+          val gso =
+              GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                  .requestIdToken(token)
+                  .requestEmail()
+                  .build()
+          val googleSignInClient = GoogleSignIn.getClient(context, gso)
+          launcher.launch(googleSignInClient.signInIntent)
+        })
+  }
 }
 
 @Composable
 private fun Logo() {
-    Image(
-        modifier = Modifier.width(384.dp).height(144.dp),
-        painter = painterResource(id = R.drawable.only_notes_logo2),
-        contentDescription = "image description",
-        contentScale = ContentScale.FillBounds)
+  Image(
+      modifier = Modifier.width(384.dp).height(144.dp),
+      painter = painterResource(id = R.drawable.only_notes_logo2),
+      contentDescription = "image description",
+      contentScale = ContentScale.FillBounds)
 }
 
 @Composable
 private fun WelcomeText() {
-    Text(
-        modifier = Modifier.height(65.dp).testTag("loginTitle"),
-        text = "Welcome To",
-        style =
-        TextStyle(
-            fontSize = 57.sp,
-            lineHeight = 64.sp,
-            fontWeight = FontWeight(400),
-            color = Color(0xFF191C1E),
-            textAlign = TextAlign.Center,
-        ))
+  Text(
+      modifier = Modifier.height(65.dp).testTag("loginTitle"),
+      text = "Welcome To",
+      style =
+          TextStyle(
+              fontSize = 57.sp,
+              lineHeight = 64.sp,
+              fontWeight = FontWeight(400),
+              color = Color(0xFF191C1E),
+              textAlign = TextAlign.Center,
+          ))
 }
 
 @Composable
@@ -121,28 +121,28 @@ private fun SignInButton(
     buttonText: String = "Sign in with Google",
     testLabel: String = "loginButton"
 ) {
-    OutlinedButton(
-        onClick = onClick,
-        shape = RoundedCornerShape(50),
-        modifier = Modifier.padding(start = 16.dp, end = 16.dp).testTag(testLabel),
-        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surface),
-    ) {
-        Image(
-            modifier = Modifier.width(24.dp).height(24.dp),
-            painter = painterResource(id = R.drawable.google_logo),
-            contentDescription = "google logo",
-            contentScale = ContentScale.FillBounds)
-        Text(
-            modifier = Modifier.padding(6.dp),
-            text = buttonText,
-            style =
+  OutlinedButton(
+      onClick = onClick,
+      shape = RoundedCornerShape(50),
+      modifier = Modifier.padding(start = 16.dp, end = 16.dp).testTag(testLabel),
+      colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surface),
+  ) {
+    Image(
+        modifier = Modifier.width(24.dp).height(24.dp),
+        painter = painterResource(id = R.drawable.google_logo),
+        contentDescription = "google logo",
+        contentScale = ContentScale.FillBounds)
+    Text(
+        modifier = Modifier.padding(6.dp),
+        text = buttonText,
+        style =
             TextStyle(
                 fontSize = 16.sp,
                 lineHeight = 24.sp,
                 fontWeight = FontWeight(400),
                 color = Color(0xFF191C1E),
             ))
-    }
+  }
 }
 
 @Composable
@@ -150,25 +150,25 @@ fun rememberFirebaseAuthLauncher(
     onAuthComplete: (AuthResult) -> Unit,
     onAuthError: (Exception) -> Unit // Catch all types of exceptions
 ): ManagedActivityResultLauncher<Intent, ActivityResult> {
-    val scope = rememberCoroutineScope()
-    return rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-            result ->
-        val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
-        try {
-            val account = task.getResult(ApiException::class.java)
-            account?.let {
-                val credential = GoogleAuthProvider.getCredential(it.idToken!!, null)
-                scope.launch {
-                    try {
-                        val authResult = Firebase.auth.signInWithCredential(credential).await()
-                        onAuthComplete(authResult)
-                    } catch (e: Exception) {
-                        onAuthError(e)
-                    }
-                }
-            }
-        } catch (e: ApiException) {
+  val scope = rememberCoroutineScope()
+  return rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+      result ->
+    val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+    try {
+      val account = task.getResult(ApiException::class.java)
+      account?.let {
+        val credential = GoogleAuthProvider.getCredential(it.idToken!!, null)
+        scope.launch {
+          try {
+            val authResult = Firebase.auth.signInWithCredential(credential).await()
+            onAuthComplete(authResult)
+          } catch (e: Exception) {
             onAuthError(e)
+          }
         }
+      }
+    } catch (e: ApiException) {
+      onAuthError(e)
     }
+  }
 }

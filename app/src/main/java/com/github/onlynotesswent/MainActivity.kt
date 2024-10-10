@@ -15,7 +15,6 @@ import com.github.onlynotesswent.ui.authentication.SignInScreen
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Route
 import com.github.onlynotesswent.ui.navigation.Screen
-import com.github.onlynotesswent.ui.screen.AuthenticationScreen
 import com.github.onlynotesswent.ui.screen.OverviewScreen
 import com.github.onlynotesswent.ui.theme.SampleAppTheme
 

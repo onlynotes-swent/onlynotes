@@ -28,35 +28,35 @@ import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 class LoginTest : TestCase() {
-    @get:Rule val composeTestRule = createAndroidComposeRule<MainActivity>()
+  @get:Rule val composeTestRule = createAndroidComposeRule<MainActivity>()
 
-    // The IntentsTestRule is not reliable.
+  // The IntentsTestRule is not reliable.
 
-    @Before
-    fun setUp() {
-        Intents.init()
-    }
+  @Before
+  fun setUp() {
+    Intents.init()
+  }
 
-    // Release Intents after each test
-    @After
-    fun tearDown() {
-        Intents.release()
-    }
+  // Release Intents after each test
+  @After
+  fun tearDown() {
+    Intents.release()
+  }
 
-    @Test
-    fun titleAndButtonAreCorrectlyDisplayed() {
-        composeTestRule.onNodeWithTag("loginTitle").assertIsDisplayed()
-        composeTestRule.onNodeWithTag("loginTitle").assertTextEquals("Welcome To")
+  @Test
+  fun titleAndButtonAreCorrectlyDisplayed() {
+    composeTestRule.onNodeWithTag("loginTitle").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("loginTitle").assertTextEquals("Welcome To")
 
-        composeTestRule.onNodeWithTag("loginButton").assertIsDisplayed()
-        composeTestRule.onNodeWithTag("loginButton").assertHasClickAction()
-    }
+    composeTestRule.onNodeWithTag("loginButton").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("loginButton").assertHasClickAction()
+  }
 
-    @Test
-    fun googleSignInReturnsValidActivityResult() {
-        composeTestRule.onNodeWithTag("loginButton").performClick()
-        composeTestRule.waitForIdle()
-        // assert that an Intent resolving to Google Mobile Services has been sent (for sign-in)
-        intended(toPackage("com.google.android.gms"))
-    }
+  @Test
+  fun googleSignInReturnsValidActivityResult() {
+    composeTestRule.onNodeWithTag("loginButton").performClick()
+    composeTestRule.waitForIdle()
+    // assert that an Intent resolving to Google Mobile Services has been sent (for sign-in)
+    intended(toPackage("com.google.android.gms"))
+  }
 }
