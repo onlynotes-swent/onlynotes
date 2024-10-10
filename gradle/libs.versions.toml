@@ -27,6 +27,7 @@ firebaseUiAuth = "8.0.0"
 navigationCommonKtx = "2.8.2"
 navigationRuntimeKtx = "2.8.2"
 navigationCompose = "2.8.2"
+espressoIntents = "3.6.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -63,6 +64,7 @@ firebase-ui-auth = { module = "com.firebaseui:firebase-ui-auth", version.ref = "
 androidx-navigation-common-ktx = { group = "androidx.navigation", name = "navigation-common-ktx", version.ref = "navigationCommonKtx" }
 androidx-navigation-runtime-ktx = { group = "androidx.navigation", name = "navigation-runtime-ktx", version.ref = "navigationRuntimeKtx" }
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigationCompose" }
+androidx-espresso-intents = { group = "androidx.test.espresso", name = "espresso-intents", version.ref = "espressoIntents" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
