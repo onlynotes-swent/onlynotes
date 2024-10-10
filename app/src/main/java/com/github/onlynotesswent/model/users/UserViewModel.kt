@@ -20,6 +20,7 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
   /** Initializes the UserViewModel and the repository. */
   init {
     repository.init(FirebaseAuth.getInstance()) {}
+    setCurrentUser(FirebaseAuth.getInstance())
   }
 
   fun setCurrentUser(firebaseAuth: FirebaseAuth) {
