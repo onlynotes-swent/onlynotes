@@ -116,7 +116,7 @@ class ImplementationNoteRepository(private val db: FirebaseFirestore) : NoteRepo
       val title = document.getString("title") ?: return null
       val content = document.getString("content") ?: return null
       val date = document.getTimestamp("date") ?: return null
-      val user = document.getString("user") ?: return null
+      val userId = document.getString("userId") ?: return null
       val image = document.get("image") as? Bitmap ?: return null
 
       Note(
@@ -126,7 +126,7 @@ class ImplementationNoteRepository(private val db: FirebaseFirestore) : NoteRepo
           title = title,
           content = content,
           date = date,
-          userId = user,
+          userId = userId,
           image = image)
     } catch (e: Exception) {
       Log.e("ImplementationNoteRepository", "Error converting document to Note", e)
