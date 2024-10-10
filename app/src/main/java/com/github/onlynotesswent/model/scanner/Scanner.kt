@@ -22,11 +22,11 @@ import com.google.mlkit.vision.documentscanner.GmsDocumentScanningResult
 import java.io.File
 
 /**
- * Options for the scanner, in parenthesis are other options that can be set Scanner mode: Base
- * (Base with filter, Full (ML capabilities)) Result format: pdf (jpg, both) Gallery import allowed:
- * true (false) Page limit: 5 (> 1, upper limit determined by hardware resources)
- *
- * ToDo, potentially enable each user to choose the options they want
+ * Options for the scanner, in parenthesis are other options that can be set:
+ * 1. Scanner mode: Base (Base with filter, Full (ML capabilities))
+ * 2. Result format: pdf (jpg, both)
+ * 3. Gallery import allowed: true (false)
+ * 4. Page limit: 5 (> 1, upper limit determined by hardware resources)
  */
 private val options =
     GmsDocumentScannerOptions.Builder()
@@ -53,7 +53,7 @@ class Scanner(
 
   /**
    * Initializes the scanner and the activity result launcher (to obtain the result of the scan in
-   * the current activity) To be called in the onCreate method of the activity that will use the
+   * the current activity). To be called in the onCreate method of the activity that will use the
    * scanner
    */
   fun init() {
@@ -64,7 +64,7 @@ class Scanner(
   }
 
   /**
-   * Starts the scanning activity, can be called anywhere, for example for the onClick of a button
+   * Starts the scanning activity
    */
   fun scan() {
     scanner
