@@ -8,6 +8,8 @@ import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Query
+import com.google.firebase.firestore.QuerySnapshot
 import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertNotNull
 import org.junit.Before
@@ -130,6 +132,39 @@ class UserRepositoryFirestoreTest {
     var userTest: User? = null
     userRepositoryFirestore.getUserById(user.uid, { usr -> userTest = usr }, {})
     verify(mockCollectionReference, timeout(1000)).document(user.uid)
+    assertNotNull(userTest)
+    assertEquals(user.name, userTest!!.name)
+    assertEquals(user.email, userTest!!.email)
+    assertEquals(user.uid, userTest!!.uid)
+    assertEquals(user.dateOfJoining, userTest!!.dateOfJoining)
+    assertEquals(user.rating, userTest!!.rating)
+  }
+
+  @Test
+  fun `getUserByEmail should call Firestore collection`() {
+    val mockQueryTask = mock<Task<QuerySnapshot>>()
+    val mockQuery = mock<Query>()
+
+    `when`(mockCollectionReference.whereEqualTo("email", user.email)).thenReturn(mockQuery)
+    `when`(mockQuery.get()).thenReturn(mockQueryTask)
+    `when`(mockQueryTask.addOnSuccessListener(any())).thenAnswer { invocation ->
+      val listener =
+          invocation.arguments[0] as com.google.android.gms.tasks.OnSuccessListener<QuerySnapshot>
+      val mockQuerySnapshot = mock<QuerySnapshot>()
+      `when`(mockQuerySnapshot.documents).thenReturn(listOf(mockDocumentSnapshot))
+      listener.onSuccess(mockQuerySnapshot)
+      mockQueryTask
+    }
+
+    `when`(mockDocumentSnapshot.getString("name")).thenReturn(user.name)
+    `when`(mockDocumentSnapshot.getString("email")).thenReturn(user.email)
+    `when`(mockDocumentSnapshot.getString("uid")).thenReturn(user.uid)
+    `when`(mockDocumentSnapshot.getTimestamp("dateOfJoining")).thenReturn(user.dateOfJoining)
+    `when`(mockDocumentSnapshot.getDouble("rating")).thenReturn(user.rating)
+
+    var userTest: User? = null
+    userRepositoryFirestore.getUserByEmail(user.email, { usr -> userTest = usr }, {})
+    verify(mockCollectionReference, timeout(1000)).whereEqualTo("email", user.email)
     assertNotNull(userTest)
     assertEquals(user.name, userTest!!.name)
     assertEquals(user.email, userTest!!.email)
