@@ -50,7 +50,7 @@ class NoteViewModelTest {
 
   @Test
   fun getNoteByIdCallsRepository() {
-    noteViewModel.getNoteById("1", "1")
+    noteViewModel.getNoteById("1")
     verify(noteRepository).getNoteById(eq("1"), any(), any())
   }
 
