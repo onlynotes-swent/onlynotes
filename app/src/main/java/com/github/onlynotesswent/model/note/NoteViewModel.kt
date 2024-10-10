@@ -51,9 +51,8 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
    * Gets a Note document with ID noteId.
    *
    * @param noteId The ID of the Note document to be fetched.
-   * @param userID The user ID.
    */
-  fun getNoteById(noteId: String, userID: String) {
+  fun getNoteById(noteId: String) {
     repository.getNoteById(id = noteId, onSuccess = { note_.value = it }, onFailure = {})
   }
 
