@@ -103,7 +103,7 @@ class Scanner(
               type = "application/pdf"
               addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
             }
-        activity.startActivity(Intent.createChooser(shareIntent, "share pdf"))
+        activity.startActivity(Intent.createChooser(shareIntent, "Share pdf"))
       } else {
         Log.e(TAG, "Path to pdf file is null")
       }
