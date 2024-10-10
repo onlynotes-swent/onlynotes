@@ -22,7 +22,6 @@ class ImplementationNoteRepository(private val db: FirebaseFirestore) : NoteRepo
       val image: String
   )
 
-  // to convert a Note into a firebaseNote
   /**
    * Converts a note into a firebaseNote (a note that is compatible with firerbase).
    *
