@@ -1,7 +1,10 @@
 package com.github.onlynotesswent.model.users
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.firestore
 
 /**
  * ViewModel for managing user data.
@@ -13,6 +16,16 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
   /** Initializes the UserViewModel and the repository. */
   init {
     repository.init(FirebaseAuth.getInstance()) {}
+  }
+
+  companion object {
+    val Factory: ViewModelProvider.Factory =
+        object : ViewModelProvider.Factory {
+          @Suppress("UNCHECKED_CAST")
+          override fun <T : ViewModel> create(modelClass: Class<T>): T {
+            return UserViewModel(UserRepositoryFirestore(Firebase.firestore)) as T
+          }
+        }
   }
 
   /**
@@ -32,6 +45,7 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
    * @param onFailure Callback to be invoked if an error occurs.
    */
   fun addUser(user: User, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) {
+    // add uid here
     repository.addUser(user, onSuccess, onFailure)
   }
 
