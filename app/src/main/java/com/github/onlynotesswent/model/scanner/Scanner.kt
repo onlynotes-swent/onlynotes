@@ -63,9 +63,7 @@ class Scanner(
         }
   }
 
-  /**
-   * Starts the scanning activity
-   */
+  /** Starts the scanning activity */
   fun scan() {
     scanner
         .getStartScanIntent(activity)
