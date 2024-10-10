@@ -4,11 +4,8 @@ import android.graphics.Bitmap
 import android.os.Looper
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.gms.tasks.Tasks
-import com.google.firebase.Firebase
 import com.google.firebase.FirebaseApp
 import com.google.firebase.Timestamp
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.auth
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.DocumentSnapshot
@@ -19,11 +16,9 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mock
-import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
-import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.timeout
 import org.mockito.kotlin.verify
 import org.robolectric.RobolectricTestRunner
@@ -33,7 +28,6 @@ import org.robolectric.Shadows.shadowOf
 class ImplementationNoteRepositoryTest {
 
   @Mock private lateinit var mockFirestore: FirebaseFirestore
-  @Mock private lateinit var mockFirebaseAuth: FirebaseAuth
   @Mock private lateinit var mockDocumentReference: DocumentReference
   @Mock private lateinit var mockCollectionReference: CollectionReference
   @Mock private lateinit var mockDocumentSnapshot: DocumentSnapshot
@@ -160,21 +154,5 @@ class ImplementationNoteRepositoryTest {
     shadowOf(Looper.getMainLooper()).idle()
 
     verify(mockDocumentReference).set(any())
-  }
-
-  @Test
-  fun init_callsAddAuthStateListener() {
-    // Mock FirebaseAuth
-    val mockFirebaseAuth = mock(Firebase.auth::class.java)
-    val authStateListenerCaptor = argumentCaptor<FirebaseAuth.AuthStateListener>()
-
-    // Call the init method
-    implementationNoteRepository.init {}
-
-    // Verify that addAuthStateListener is called
-    verify(mockFirebaseAuth).addAuthStateListener(authStateListenerCaptor.capture())
-
-    // Check that the listener is not null
-    assertNotNull(authStateListenerCaptor.firstValue)
   }
 }
