@@ -4,15 +4,17 @@ import android.graphics.Bitmap
 import android.os.Looper
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.gms.tasks.Tasks
+import com.google.firebase.Firebase
 import com.google.firebase.FirebaseApp
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.auth.auth
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.QuerySnapshot
+import junit.framework.TestCase.assertNotNull
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -21,6 +23,7 @@ import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
+import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.timeout
 import org.mockito.kotlin.verify
 import org.robolectric.RobolectricTestRunner
@@ -30,6 +33,7 @@ import org.robolectric.Shadows.shadowOf
 class ImplementationNoteRepositoryTest {
 
   @Mock private lateinit var mockFirestore: FirebaseFirestore
+  @Mock private lateinit var mockFirebaseAuth: FirebaseAuth
   @Mock private lateinit var mockDocumentReference: DocumentReference
   @Mock private lateinit var mockCollectionReference: CollectionReference
   @Mock private lateinit var mockDocumentSnapshot: DocumentSnapshot
@@ -52,9 +56,9 @@ class ImplementationNoteRepositoryTest {
   fun setUp() {
     MockitoAnnotations.openMocks(this)
 
-    if (FirebaseApp.getApps(ApplicationProvider.getApplicationContext()).isEmpty()) {
-      FirebaseApp.initializeApp(ApplicationProvider.getApplicationContext())
-    }
+    //    if (FirebaseApp.getApps(ApplicationProvider.getApplicationContext()).isEmpty()) {
+    FirebaseApp.initializeApp(ApplicationProvider.getApplicationContext())
+    //    }
 
     implementationNoteRepository = ImplementationNoteRepository(mockFirestore)
 
@@ -72,26 +76,29 @@ class ImplementationNoteRepositoryTest {
 
   @Test
   fun documentSnapshotToNoteConvertsSnapshotToNote() {
-    `when`(mockDocumentSnapshot.getString("id")).thenReturn("1")
-    `when`(mockDocumentSnapshot.getString("type")).thenReturn("NORMAL_TEXT")
+    val currentTime = Timestamp.now()
+
+    `when`(mockDocumentSnapshot.id).thenReturn("1")
+    `when`(mockDocumentSnapshot.getString("type")).thenReturn(Type.NORMAL_TEXT.name)
     `when`(mockDocumentSnapshot.getString("name")).thenReturn("name")
     `when`(mockDocumentSnapshot.getString("title")).thenReturn("title")
     `when`(mockDocumentSnapshot.getString("content")).thenReturn("content")
-    `when`(mockDocumentSnapshot.get("date")).thenReturn(Timestamp.now())
+    `when`(mockDocumentSnapshot.getTimestamp("date")).thenReturn(currentTime)
     `when`(mockDocumentSnapshot.getString("userId")).thenReturn("1")
-    `when`(mockDocumentSnapshot.get("image"))
-        .thenReturn(Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888))
+    val bitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)
+    `when`(mockDocumentSnapshot.get("image")).thenReturn(bitmap)
 
     val note = implementationNoteRepository.documentSnapshotToNote(mockDocumentSnapshot)
 
+    assertNotNull(note)
     assert(note?.id == "1")
     assert(note?.type == Type.NORMAL_TEXT)
     assert(note?.name == "name")
     assert(note?.title == "title")
     assert(note?.content == "content")
-    assert(note?.date == Timestamp.now())
+    assert(note?.date == currentTime)
     assert(note?.userId == "1")
-    note?.image?.let { assert(it.sameAs(Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888))) }
+    note?.image?.let { assert(it.sameAs(bitmap)) }
   }
 
   @Test
@@ -116,7 +123,7 @@ class ImplementationNoteRepositoryTest {
 
     shadowOf(Looper.getMainLooper()).idle()
 
-    verify(timeout(100)) { (mockDocumentSnapshot).getString("id") }
+    verify(timeout(100)) { mockDocumentSnapshot.id }
   }
 
   @Test
@@ -156,12 +163,18 @@ class ImplementationNoteRepositoryTest {
   }
 
   @Test
-  fun init_callsFirebaseAuthCurrentUser() {
-    val mockAuth = mock(FirebaseAuth::class.java)
-    val mockUser = mock(FirebaseUser::class.java)
-    `when`(mockAuth.currentUser).thenReturn(mockUser)
+  fun init_callsAddAuthStateListener() {
+    // Mock FirebaseAuth
+    val mockFirebaseAuth = mock(Firebase.auth::class.java)
+    val authStateListenerCaptor = argumentCaptor<FirebaseAuth.AuthStateListener>()
 
+    // Call the init method
     implementationNoteRepository.init {}
-    verify(mockAuth, timeout(1000)).currentUser
+
+    // Verify that addAuthStateListener is called
+    verify(mockFirebaseAuth).addAuthStateListener(authStateListenerCaptor.capture())
+
+    // Check that the listener is not null
+    assertNotNull(authStateListenerCaptor.firstValue)
   }
 }

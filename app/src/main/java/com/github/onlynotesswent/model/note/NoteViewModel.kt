@@ -11,7 +11,10 @@ import kotlinx.coroutines.flow.asStateFlow
 class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
 
   private val notes_ = MutableStateFlow<List<Note>>(emptyList())
-  val note: StateFlow<List<Note>> = notes_.asStateFlow()
+  val notes: StateFlow<List<Note>> = notes_.asStateFlow()
+
+  private val note_ = MutableStateFlow<Note?>(null)
+  val note: StateFlow<Note?> = note_.asStateFlow()
 
   init {
     repository
@@ -51,7 +54,7 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
    * @param userID The user ID.
    */
   fun getNoteById(noteId: String, userID: String) {
-    repository.deleteNoteById(id = noteId, onSuccess = { getNotes(userID) }, onFailure = {})
+    repository.getNoteById(id = noteId, onSuccess = { note_.value = it }, onFailure = {})
   }
 
   /**
