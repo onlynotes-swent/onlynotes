@@ -24,6 +24,19 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- File Provider used to securely transfer files from external apps (mlkit Document Scanner)
+             to the onlynotes app, using content:// uri instead of unsafe file:// uri, following:
+             https://developer.android.com/reference/androidx/core/content/FileProvider -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="com.github.onlynotesswent.provider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
     </application>
 
 </manifest>

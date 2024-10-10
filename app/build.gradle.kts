@@ -173,6 +173,9 @@ dependencies {
 
     // ----------       Robolectric     ------------
     testImplementation(libs.robolectric)
+
+    // ----------        ML Kit        ------------
+    implementation(libs.mlkit.document.scanner)
 }
 
 tasks.withType<Test> {
