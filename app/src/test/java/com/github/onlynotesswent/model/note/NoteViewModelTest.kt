@@ -6,12 +6,15 @@ import org.hamcrest.CoreMatchers.`is`
 import org.hamcrest.MatcherAssert.assertThat
 import org.junit.Before
 import org.junit.Test
+import org.junit.runner.RunWith
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
+import org.robolectric.RobolectricTestRunner
 
+@RunWith(RobolectricTestRunner::class)
 class NoteViewModelTest {
   private lateinit var noteRepository: NoteRepository
   private lateinit var noteViewModel: NoteViewModel
@@ -47,7 +50,7 @@ class NoteViewModelTest {
 
   @Test
   fun getNoteByIdCallsRepository() {
-    noteViewModel.getNoteById("1", "1")
+    noteViewModel.getNoteById("1")
     verify(noteRepository).getNoteById(eq("1"), any(), any())
   }
 
