@@ -149,8 +149,7 @@ class UserRepositoryFirestoreTest {
     `when`(mockQuery.get()).thenReturn(mockQueryTask)
     `when`(mockQueryTask.addOnSuccessListener(any())).thenAnswer { invocation ->
       val listener =
-        invocation.arguments[0]
-                as com.google.android.gms.tasks.OnSuccessListener<QuerySnapshot>
+          invocation.arguments[0] as com.google.android.gms.tasks.OnSuccessListener<QuerySnapshot>
       val mockQuerySnapshot = mock<QuerySnapshot>()
       `when`(mockQuerySnapshot.documents).thenReturn(listOf(mockDocumentSnapshot))
       listener.onSuccess(mockQuerySnapshot)
