@@ -50,9 +50,9 @@ class ImplementationNoteRepositoryTest {
   fun setUp() {
     MockitoAnnotations.openMocks(this)
 
-    //    if (FirebaseApp.getApps(ApplicationProvider.getApplicationContext()).isEmpty()) {
-    FirebaseApp.initializeApp(ApplicationProvider.getApplicationContext())
-    //    }
+    if (FirebaseApp.getApps(ApplicationProvider.getApplicationContext()).isEmpty()) {
+      FirebaseApp.initializeApp(ApplicationProvider.getApplicationContext())
+    }
 
     implementationNoteRepository = ImplementationNoteRepository(mockFirestore)
 
