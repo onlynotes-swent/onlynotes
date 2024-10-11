@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import com.github.onlynotesswent.model.users.User
 import com.github.onlynotesswent.model.users.UserViewModel
 import com.github.onlynotesswent.ui.navigation.NavigationActions
+import com.github.onlynotesswent.ui.navigation.Screen
 import com.google.firebase.Timestamp
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -40,7 +41,7 @@ fun UserCreate(navigationActions: NavigationActions, userViewModel: UserViewMode
   val context = LocalContext.current
 
   Scaffold(
-      modifier = Modifier.testTag("addScreen"),
+      modifier = Modifier.testTag("addUserScreen"),
       topBar = {
         TopAppBar(
             title = {},
@@ -56,30 +57,31 @@ fun UserCreate(navigationActions: NavigationActions, userViewModel: UserViewMode
       content = { paddingValues ->
         Column(
             modifier = Modifier.fillMaxSize().padding(paddingValues),
-            verticalArrangement = Arrangement.Center, // Centers the content vertically
-            horizontalAlignment =
-                androidx.compose.ui.Alignment.CenterHorizontally // Centers the content horizontally
-            ) {
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally) {
               OutlinedTextField(
                   value = firstName,
                   onValueChange = { firstName = it },
                   label = { Text("First Name") },
                   modifier =
-                      Modifier.fillMaxWidth(0.8f) // Set width to 80% of the screen
-                          .padding(vertical = 8.dp))
+                      Modifier.fillMaxWidth(0.8f)
+                          .padding(vertical = 8.dp)
+                          .testTag("inputFirstName"))
 
               OutlinedTextField(
                   value = lastName,
                   onValueChange = { lastName = it },
                   label = { Text("Last Name") },
-                  modifier = Modifier.fillMaxWidth(0.8f).padding(vertical = 8.dp))
+                  modifier =
+                      Modifier.fillMaxWidth(0.8f).padding(vertical = 8.dp).testTag("inputLastName"))
 
               OutlinedTextField(
                   value = userName,
                   onValueChange = { userName = it },
                   label = { Text("* User Name") },
                   isError = userNameError,
-                  modifier = Modifier.fillMaxWidth(0.8f).padding(vertical = 8.dp))
+                  modifier =
+                      Modifier.fillMaxWidth(0.8f).padding(vertical = 8.dp).testTag("inputUserName"))
 
               // Save Button
               Button(
@@ -94,16 +96,22 @@ fun UserCreate(navigationActions: NavigationActions, userViewModel: UserViewMode
                                 uid = userViewModel.getNewUid(),
                                 dateOfJoining = Timestamp.now(),
                                 rating = 0.0),
-                        onSuccess = { navigationActions.goBack() },
+                        onSuccess = { navigationActions.navigateTo(Screen.OVERVIEW) },
                         onFailure = { exception ->
-                          Toast.makeText(context, "Error while adding user: $exception", Toast.LENGTH_SHORT)
+                          // Show a toast message if the user name is already taken
+                          Toast.makeText(
+                                  context,
+                                  "Error while adding user: $exception",
+                                  Toast.LENGTH_SHORT)
                               .show()
                           userNameError = true
                         })
                   },
                   modifier =
                       Modifier.fillMaxWidth(0.8f)
-                          .padding(vertical = 16.dp), // Adjust padding for spacing
+                          .padding(vertical = 16.dp)
+                          .testTag("createUserButton"),
+                  // Disable the button if the user name is empty
                   enabled = userName.isNotBlank()) {
                     Text("Save")
                   }
