@@ -1,8 +1,8 @@
 package com.github.onlynotesswent.ui.screen
 
-
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -14,7 +14,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -53,30 +52,39 @@ fun OverviewScreen(navigationActions: NavigationActions, noteViewModel: NoteView
       modifier = Modifier.testTag("overviewScreen"),
       floatingActionButton = {
         FloatingActionButton(
-            onClick = { navigationActions.navigateTo(Screen.EDIT_NOTE) },
+            onClick = { navigationActions.navigateTo(Screen.ADD_NOTE) },
             modifier = Modifier.testTag("createNote")) {
               Icon(imageVector = Icons.Default.Add, contentDescription = "Add")
             }
       },
       content = { pd ->
-        if (notes.value.isNotEmpty()) {
-          LazyColumn(
-              contentPadding = PaddingValues(vertical = 40.dp),
-              modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp).padding(pd)) {
-                items(notes.value.size) { index ->
-                  ToDoItem(note = notes.value[index]) {
-                    // listToDosViewModel.selectToDo(todos.value[index])
-                    navigationActions.navigateTo(Screen.ADD_NOTE)
+        Box() {
+          if (notes.value.isNotEmpty()) {
+            LazyColumn(
+                contentPadding = PaddingValues(vertical = 40.dp),
+                modifier =
+                    Modifier.fillMaxWidth()
+                        .padding(horizontal = 16.dp)
+                        .padding(pd)
+                        .testTag("noteList")) {
+                  items(notes.value.size) { index ->
+                    ToDoItem(note = notes.value[index]) {
+                      // listToDosViewModel.selectToDo(todos.value[index])
+                      navigationActions.navigateTo(Screen.EDIT_NOTE)
+                    }
                   }
                 }
+          } else {
+            Text(
+                modifier = Modifier.padding(pd).testTag("emptyNotePrompt"),
+                text = "You have no ToDo yet.")
+          }
+          FloatingActionButton(
+              modifier =
+                  Modifier.align(Alignment.BottomCenter).padding(20.dp).testTag("RefreshButton"),
+              onClick = { noteViewModel.getNotes("1") }) {
+                Text("Refresh")
               }
-        } else {
-          Text(
-              modifier = Modifier.padding(pd).testTag("emptyTodoPrompt"),
-              text = "You have no ToDo yet.")
-        }
-        Button(modifier = Modifier.fillMaxWidth(), onClick = { noteViewModel.getNotes("1") }) {
-          Text("Refresh")
         }
       })
 }
@@ -85,7 +93,7 @@ fun OverviewScreen(navigationActions: NavigationActions, noteViewModel: NoteView
 fun ToDoItem(note: Note, onClick: () -> Unit) {
   Card(
       modifier =
-          Modifier.testTag("notesList")
+          Modifier.testTag("noteCard")
               .fillMaxWidth()
               .padding(vertical = 4.dp)
               .clickable(onClick = onClick),
