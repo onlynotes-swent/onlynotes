@@ -163,8 +163,11 @@ dependencies {
     debugImplementation(libs.compose.test.manifest)
 
     // Mockito
-    testImplementation("org.mockito:mockito-core:5.13.0")
-    testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
+    testImplementation(libs.mockito.core)
+    testImplementation(libs.mockito.kotlin)
+    androidTestImplementation(libs.mockito.kotlin)
+    testImplementation("org.mockito:mockito-android:5.14.1")
+
 
 
     // --------- Kaspresso test framework ----------

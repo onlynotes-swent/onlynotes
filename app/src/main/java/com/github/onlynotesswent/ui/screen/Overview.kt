@@ -1,5 +1,6 @@
 package com.github.onlynotesswent.ui.screen
 
+
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -53,7 +54,7 @@ fun OverviewScreen(navigationActions: NavigationActions, noteViewModel: NoteView
       floatingActionButton = {
         FloatingActionButton(
             onClick = { navigationActions.navigateTo(Screen.EDIT_NOTE) },
-            modifier = Modifier.testTag("createTodoFab")) {
+            modifier = Modifier.testTag("createNote")) {
               Icon(imageVector = Icons.Default.Add, contentDescription = "Add")
             }
       },
@@ -84,7 +85,7 @@ fun OverviewScreen(navigationActions: NavigationActions, noteViewModel: NoteView
 fun ToDoItem(note: Note, onClick: () -> Unit) {
   Card(
       modifier =
-          Modifier.testTag("todoListItem")
+          Modifier.testTag("notesList")
               .fillMaxWidth()
               .padding(vertical = 4.dp)
               .clickable(onClick = onClick),
@@ -103,7 +104,6 @@ fun ToDoItem(note: Note, onClick: () -> Unit) {
       }
 
       Spacer(modifier = Modifier.height(4.dp))
-
       // Note name
       Text(
           text = note.name,
