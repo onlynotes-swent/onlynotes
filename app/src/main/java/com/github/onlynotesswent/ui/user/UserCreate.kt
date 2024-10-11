@@ -87,14 +87,16 @@ fun UserCreate(navigationActions: NavigationActions, userViewModel: UserViewMode
                     userViewModel.addUser(
                         user =
                             User(
-                                name = "$firstName $lastName",
+                                firstName = firstName,
+                                lastName = lastName,
+                                userName = userName,
                                 email = "",
                                 uid = userViewModel.getNewUid(),
                                 dateOfJoining = Timestamp.now(),
                                 rating = 0.0),
                         onSuccess = { navigationActions.goBack() },
-                        onFailure = {
-                          Toast.makeText(context, "Error while adding user", Toast.LENGTH_SHORT)
+                        onFailure = { exception ->
+                          Toast.makeText(context, "Error while adding user: $exception", Toast.LENGTH_SHORT)
                               .show()
                           userNameError = true
                         })
