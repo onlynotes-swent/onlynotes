@@ -22,7 +22,9 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore) : UserRepositor
    */
   fun documentSnapshotToUser(document: DocumentSnapshot): User {
     return User(
-        name = document.getString("name") ?: "",
+        firstName = document.getString("firstName") ?: "",
+        lastName = document.getString("lastName") ?: "",
+        userName = document.getString("userName") ?: "",
         email = document.getString("email") ?: "",
         uid = document.getString("uid") ?: "",
         dateOfJoining = document.getTimestamp("dateOfJoining") ?: Timestamp.now(),
