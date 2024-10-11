@@ -37,11 +37,11 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 
 /**
- * Displays the overview screen which contains a list of notes retrieved from the ViewModel.
- * If there are no notes, it shows a text to the user indicating no notes are available.
- * It also provides a floating action button to add a new note.
+ * Displays the overview screen which contains a list of notes retrieved from the ViewModel. If
+ * there are no notes, it shows a text to the user indicating no notes are available. It also
+ * provides a floating action button to add a new note.
  *
- * @param navigationActions The  navigation view model used to transition between different screens.
+ * @param navigationActions The navigation view model used to transition between different screens.
  * @param noteViewModel The ViewModel that provides the list of notes to display.
  */
 @Composable
@@ -56,49 +56,45 @@ fun OverviewScreen(navigationActions: NavigationActions, noteViewModel: NoteView
             modifier = Modifier.testTag("createNote")) {
               Icon(imageVector = Icons.Default.Add, contentDescription = "AddNote")
             }
-      }
-  ) { pd ->
-      Box() {
+      }) { pd ->
+        Box() {
           if (notes.value.isNotEmpty()) {
-              LazyColumn(
-                  contentPadding = PaddingValues(vertical = 40.dp),
-                  modifier =
-                  Modifier.fillMaxWidth()
-                      .padding(horizontal = 16.dp)
-                      .padding(pd)
-                      .testTag("noteList")
-              ) {
+            LazyColumn(
+                contentPadding = PaddingValues(vertical = 40.dp),
+                modifier =
+                    Modifier.fillMaxWidth()
+                        .padding(horizontal = 16.dp)
+                        .padding(pd)
+                        .testTag("noteList")) {
                   items(notes.value.size) { index ->
-                      NoteItem(
-                          note = notes.value[index]
-                      ) { navigationActions.navigateTo(Screen.EDIT_NOTE) }
+                    NoteItem(note = notes.value[index]) {
+                      navigationActions.navigateTo(Screen.EDIT_NOTE)
+                    }
                   }
-              }
+                }
           } else {
-              Text(
-                  modifier = Modifier.padding(pd).testTag("emptyNotePrompt"),
-                  text = "You have no Notes yet."
-              )
+            Text(
+                modifier = Modifier.padding(pd).testTag("emptyNotePrompt"),
+                text = "You have no Notes yet.")
           }
           FloatingActionButton(
               modifier =
-              Modifier.align(Alignment.BottomCenter).padding(20.dp).testTag("RefreshButton"),
+                  Modifier.align(Alignment.BottomCenter).padding(20.dp).testTag("RefreshButton"),
               onClick = { noteViewModel.getNotes("1") }) {
-              Text("Refresh")
-          }
+                Text("Refresh")
+              }
+        }
       }
-  }
 }
 
 /**
- * Displays a single note item in a card format. The card contains the note's date, name,
- * and user ID. When clicked, it triggers the provided [onClick] action, which can be used
- * for navigation or other interactions.
+ * Displays a single note item in a card format. The card contains the note's date, name, and user
+ * ID. When clicked, it triggers the provided [onClick] action, which can be used for navigation or
+ * other interactions.
  *
  * @param note The note data that will be displayed in this card.
  * @param onClick The lambda function to be invoked when the note card is clicked.
  */
-
 @Composable
 fun NoteItem(note: Note, onClick: () -> Unit) {
   Card(
@@ -107,26 +103,30 @@ fun NoteItem(note: Note, onClick: () -> Unit) {
               .fillMaxWidth()
               .padding(vertical = 4.dp)
               .clickable(onClick = onClick),
-      colors = CardDefaults.cardColors(containerColor = Color(0xFFB3E5FC))
-  ) {
-    Column(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
-      Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-        Text(
-            text = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(note.date.toDate()),
-            style = MaterialTheme.typography.bodySmall)
+      colors = CardDefaults.cardColors(containerColor = Color(0xFFB3E5FC))) {
+        Column(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
+          Row(
+              modifier = Modifier.fillMaxWidth(),
+              horizontalArrangement = Arrangement.SpaceBetween) {
+                Text(
+                    text =
+                        SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+                            .format(note.date.toDate()),
+                    style = MaterialTheme.typography.bodySmall)
 
-        Row(verticalAlignment = Alignment.CenterVertically) {
-          Icon(
-              imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                  Icon(
+                      imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                      contentDescription = null)
+                }
+              }
+
+          Spacer(modifier = Modifier.height(4.dp))
+          Text(
+              text = note.name,
+              style = MaterialTheme.typography.bodyMedium,
+              fontWeight = FontWeight.Bold)
+          Text(text = note.userId, style = MaterialTheme.typography.bodySmall, color = Color.Gray)
         }
       }
-
-      Spacer(modifier = Modifier.height(4.dp))
-      Text(
-          text = note.name,
-          style = MaterialTheme.typography.bodyMedium,
-          fontWeight = FontWeight.Bold)
-      Text(text = note.userId, style = MaterialTheme.typography.bodySmall, color = Color.Gray)
-    }
-  }
 }
