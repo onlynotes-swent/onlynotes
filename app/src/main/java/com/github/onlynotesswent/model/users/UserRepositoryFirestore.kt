@@ -85,9 +85,19 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore) : UserRepositor
 
   override fun addUser(user: User, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) {
     db.collection(collectionPath)
-        .document(user.uid)
-        .set(user)
-        .addOnSuccessListener { onSuccess() }
+        .whereEqualTo("userName", user.userName)
+        .get()
+        .addOnSuccessListener { result ->
+          if (result.isEmpty) {
+            db.collection(collectionPath)
+                .document(user.uid)
+                .set(user)
+                .addOnSuccessListener { onSuccess() }
+                .addOnFailureListener { exception -> onFailure(exception) }
+          } else {
+            onFailure(Exception("Username already taken"))
+          }
+        }
         .addOnFailureListener { exception -> onFailure(exception) }
   }
 
