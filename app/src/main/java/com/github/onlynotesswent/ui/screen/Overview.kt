@@ -15,6 +15,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -35,71 +36,80 @@ import com.github.onlynotesswent.ui.navigation.Screen
 import java.text.SimpleDateFormat
 import java.util.Locale
 
-// simple empty screen for testing navigation
+/**
+ * Displays the overview screen which contains a list of notes retrieved from the ViewModel.
+ * If there are no notes, it shows a text to the user indicating no notes are available.
+ * It also provides a floating action button to add a new note.
+ *
+ * @param navigationActions The  navigation view model used to transition between different screens.
+ * @param noteViewModel The ViewModel that provides the list of notes to display.
+ */
 @Composable
 fun OverviewScreen(navigationActions: NavigationActions, noteViewModel: NoteViewModel) {
   val notes = noteViewModel.notes.collectAsState()
-  /*
-  Column {
 
-
-    Text("Overview Screen")
-    Button(onClick = { navigationActions.navigateTo(Screen.AUTH) }) { Text("Go to Auth") }
-
-    Text(text = "Total Notes: ${notes.value.size}")
-  }*/
   Scaffold(
       modifier = Modifier.testTag("overviewScreen"),
       floatingActionButton = {
         FloatingActionButton(
             onClick = { navigationActions.navigateTo(Screen.ADD_NOTE) },
             modifier = Modifier.testTag("createNote")) {
-              Icon(imageVector = Icons.Default.Add, contentDescription = "Add")
+              Icon(imageVector = Icons.Default.Add, contentDescription = "AddNote")
             }
-      },
-      content = { pd ->
-        Box() {
+      }
+  ) { pd ->
+      Box() {
           if (notes.value.isNotEmpty()) {
-            LazyColumn(
-                contentPadding = PaddingValues(vertical = 40.dp),
-                modifier =
-                    Modifier.fillMaxWidth()
-                        .padding(horizontal = 16.dp)
-                        .padding(pd)
-                        .testTag("noteList")) {
+              LazyColumn(
+                  contentPadding = PaddingValues(vertical = 40.dp),
+                  modifier =
+                  Modifier.fillMaxWidth()
+                      .padding(horizontal = 16.dp)
+                      .padding(pd)
+                      .testTag("noteList")
+              ) {
                   items(notes.value.size) { index ->
-                    ToDoItem(note = notes.value[index]) {
-                      // listToDosViewModel.selectToDo(todos.value[index])
-                      navigationActions.navigateTo(Screen.EDIT_NOTE)
-                    }
+                      NoteItem(
+                          note = notes.value[index]
+                      ) { navigationActions.navigateTo(Screen.EDIT_NOTE) }
                   }
-                }
+              }
           } else {
-            Text(
-                modifier = Modifier.padding(pd).testTag("emptyNotePrompt"),
-                text = "You have no ToDo yet.")
+              Text(
+                  modifier = Modifier.padding(pd).testTag("emptyNotePrompt"),
+                  text = "You have no Notes yet."
+              )
           }
           FloatingActionButton(
               modifier =
-                  Modifier.align(Alignment.BottomCenter).padding(20.dp).testTag("RefreshButton"),
+              Modifier.align(Alignment.BottomCenter).padding(20.dp).testTag("RefreshButton"),
               onClick = { noteViewModel.getNotes("1") }) {
-                Text("Refresh")
-              }
-        }
-      })
+              Text("Refresh")
+          }
+      }
+  }
 }
 
+/**
+ * Displays a single note item in a card format. The card contains the note's date, name,
+ * and user ID. When clicked, it triggers the provided [onClick] action, which can be used
+ * for navigation or other interactions.
+ *
+ * @param note The note data that will be displayed in this card.
+ * @param onClick The lambda function to be invoked when the note card is clicked.
+ */
+
 @Composable
-fun ToDoItem(note: Note, onClick: () -> Unit) {
+fun NoteItem(note: Note, onClick: () -> Unit) {
   Card(
       modifier =
           Modifier.testTag("noteCard")
               .fillMaxWidth()
               .padding(vertical = 4.dp)
               .clickable(onClick = onClick),
+      colors = CardDefaults.cardColors(containerColor = Color(0xFFB3E5FC))
   ) {
     Column(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
-      // Date and Status Row
       Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
         Text(
             text = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(note.date.toDate()),
@@ -112,13 +122,10 @@ fun ToDoItem(note: Note, onClick: () -> Unit) {
       }
 
       Spacer(modifier = Modifier.height(4.dp))
-      // Note name
       Text(
           text = note.name,
           style = MaterialTheme.typography.bodyMedium,
           fontWeight = FontWeight.Bold)
-
-      // Note user
       Text(text = note.userId, style = MaterialTheme.typography.bodySmall, color = Color.Gray)
     }
   }
