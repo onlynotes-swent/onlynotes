@@ -108,5 +108,4 @@ class OverviewTest {
     composeTestRule.onNodeWithTag("createNote").performClick()
     verify(navigationActions).navigateTo(screen = Screen.ADD_NOTE)
   }
-
 }
