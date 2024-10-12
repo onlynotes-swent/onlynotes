@@ -6,7 +6,6 @@ package com.github.onlynotesswent.model.scanner
 */
 
 import android.app.Activity
-import android.content.Intent
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -22,29 +21,25 @@ import com.google.mlkit.vision.documentscanner.GmsDocumentScanningResult
 import java.io.File
 
 /**
+ * Scanner class that initializes the scanner and handles the scanning activity
+ *
+ * @param activity the ComponentActivity that will use the scanner
+ * @param scanner the scanner object, initialized by default with the options specified
+ *
  * Options for the scanner, in parenthesis are other options that can be set Scanner mode: Base
  * (Base with filter, Full (ML capabilities)) Result format: pdf (jpg, both) Gallery import allowed:
  * true (false) Page limit: 5 (> 1, upper limit determined by hardware resources)
  *
  * ToDo, potentially enable each user to choose the options they want
  */
-private val options =
-    GmsDocumentScannerOptions.Builder()
-        .setScannerMode(GmsDocumentScannerOptions.SCANNER_MODE_BASE)
-        .setResultFormats(GmsDocumentScannerOptions.RESULT_FORMAT_PDF)
-        .setGalleryImportAllowed(true)
-        .setPageLimit(5)
-        .build()
-
-/**
- * Scanner class that initializes the scanner and handles the scanning activity
- *
- * @param activity the ComponentActivity that will use the scanner
- * @param scanner the scanner object, initialized with the options specified above
- */
 class Scanner(
     private val activity: ComponentActivity,
-    private var scanner: GmsDocumentScanner = GmsDocumentScanning.getClient(options)
+    private var scanner: GmsDocumentScanner =
+        GmsDocumentScanning.getClient(
+            GmsDocumentScannerOptions.Builder()
+                .setScannerMode(GmsDocumentScannerOptions.SCANNER_MODE_BASE)
+                .setResultFormats(GmsDocumentScannerOptions.RESULT_FORMAT_PDF)
+                .build())
 ) {
 
   private lateinit var scannerLauncher: ActivityResultLauncher<IntentSenderRequest>
@@ -97,18 +92,19 @@ class Scanner(
 
         // TODO Currently only sharing the pdf file returned (using android send intent),
         // to be determined what to do with the pdf file later, accessible through externalUri
-        val shareIntent =
+        /*val shareIntent =
             Intent(Intent.ACTION_SEND).apply {
               putExtra(Intent.EXTRA_STREAM, externalUri)
               type = "application/pdf"
               addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
             }
-        activity.startActivity(Intent.createChooser(shareIntent, "share pdf"))
+        activity.startActivity(Intent.createChooser(shareIntent, "share pdf"))*/
       } else {
         Log.e(TAG, "Path to pdf file is null")
       }
     } else if (resultCode == Activity.RESULT_CANCELED) {
       Log.d(TAG, "Scanner cancelled")
+      Toast.makeText(activity, "Scanner cancelled", Toast.LENGTH_SHORT).show()
     } else {
       Log.e(TAG, "Scanner failed with resultCode: $resultCode")
       Toast.makeText(activity, "Scanner failed", Toast.LENGTH_SHORT).show()
@@ -116,6 +112,6 @@ class Scanner(
   }
 
   companion object {
-    private const val TAG = "MainActivity"
+    const val TAG = "MainActivity"
   }
 }
