@@ -6,12 +6,15 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
 
 @Composable
-fun AddNote(navigationActions: NavigationActions, noteViewModel: NoteViewModel) {
+fun AddNoteScreen(navigationActions: NavigationActions, noteViewModel: NoteViewModel = viewModel(factory = NoteViewModel.Factory)) {
+
+
   Column {
     Text("Add Note Screen", modifier = Modifier.testTag("AddNote text"))
     Button(
