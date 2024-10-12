@@ -26,9 +26,11 @@ import java.io.File
  * @param activity the ComponentActivity that will use the scanner
  * @param scanner the scanner object, initialized by default with the options specified
  *
- * Options for the scanner, in parenthesis are other options that can be set Scanner mode: Base
- * (Base with filter, Full (ML capabilities)) Result format: pdf (jpg, both) Gallery import allowed:
- * true (false) Page limit: 5 (> 1, upper limit determined by hardware resources)
+ * Options for the scanner, in parenthesis are other options that can be set:
+ * 1. Scanner mode: Base (Base with filter, Full (ML capabilities))
+ * 2. Result format: pdf (jpg, both)
+ * 3. Gallery import allowed: true (false)
+ * 4. Page limit: none set (> 1, upper limit determined by hardware resources)
  *
  * ToDo, potentially enable each user to choose the options they want
  */
@@ -48,7 +50,7 @@ class Scanner(
 
   /**
    * Initializes the scanner and the activity result launcher (to obtain the result of the scan in
-   * the current activity) To be called in the onCreate method of the activity that will use the
+   * the current activity). To be called in the onCreate method of the activity that will use the
    * scanner
    */
   fun init() {
@@ -58,9 +60,7 @@ class Scanner(
         }
   }
 
-  /**
-   * Starts the scanning activity, can be called anywhere, for example for the onClick of a button
-   */
+  /** Starts the scanning activity */
   fun scan() {
     scanner
         .getStartScanIntent(activity)
@@ -98,7 +98,7 @@ class Scanner(
               type = "application/pdf"
               addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
             }
-        activity.startActivity(Intent.createChooser(shareIntent, "share pdf"))*/
+        activity.startActivity(Intent.createChooser(shareIntent, "Share pdf"))*/
       } else {
         Log.e(TAG, "Path to pdf file is null")
       }

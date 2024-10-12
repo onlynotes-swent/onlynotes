@@ -1,4 +1,4 @@
-package com.github.onlynotesswent.ui.api
+package com.github.onlynotesswent.model.scanner
 
 import android.app.Activity
 import android.content.Context
@@ -86,7 +86,6 @@ class ScannerTest {
    */
   @Test
   fun initTest() {
-    // Initialize the scanner
     scanner.init()
 
     // Verify that the activity result launcher is registered
@@ -97,28 +96,30 @@ class ScannerTest {
   }
 
   /**
-   * Test that simulates a successful document scan initiation and ensures that the scan process is
+   * Test that simulates a successful document scan and ensures that the scan process is
    * launched correctly.
    */
   @Test
   fun scanSuccessTest() {
-    // Initialize the scanner
-    scanner.init()
+    val captor = ArgumentCaptor.forClass(IntentSenderRequest::class.java)
 
-    // Mock the scan intent task and simulate success
+    // Simulate a successful scan
     `when`(mockDocScanner.getStartScanIntent(mockMainActivity)).thenReturn(mockTaskIntentSender)
     `when`(mockTaskIntentSender.addOnSuccessListener(any())).thenAnswer {
-      (it.arguments[0] as OnSuccessListener<IntentSender>).onSuccess(mockIntentSender)
+      val listener = it.arguments[0] as OnSuccessListener<IntentSender>
+      listener.onSuccess(mockIntentSender)
       mockTaskIntentSender
     }
 
     // Trigger the scan
+    scanner.init()
     scanner.scan()
 
     // Verify that the scanning intent was retrieved and launched
     verify(mockDocScanner).getStartScanIntent(mockMainActivity)
     verify(mockTaskIntentSender).addOnSuccessListener(any())
-    verify(mockActivityResultLauncher).launch(any())
+    verify(mockActivityResultLauncher).launch(captor.capture())
+    assertEquals(mockIntentSender, captor.value.intentSender)
   }
 
   /**
@@ -127,9 +128,6 @@ class ScannerTest {
    */
   @Test
   fun scanFailTest() {
-    // Initialize the scanner
-    scanner.init()
-
     // Simulate a failure
     `when`(mockDocScanner.getStartScanIntent(mockMainActivity)).thenReturn(mockTaskIntentSender)
     `when`(mockTaskIntentSender.addOnSuccessListener(any())).thenReturn(mockTaskIntentSender)
@@ -149,6 +147,7 @@ class ScannerTest {
           .thenReturn(mockToast)
 
       // Trigger the scan method that will lead to failure and show the Toast
+      scanner.init()
       scanner.scan()
 
       // Verify that Toast.makeText() was called with the appropriate arguments
@@ -166,7 +165,6 @@ class ScannerTest {
   @Test
   fun scanResultFailTest() {
     scanner.init()
-
     // Capture the ActivityResultCallback, to be able to test the private function
     // handleActivityResult
     val captor =
