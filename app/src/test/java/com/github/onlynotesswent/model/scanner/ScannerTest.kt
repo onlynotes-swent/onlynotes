@@ -16,7 +16,6 @@ import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContract
 import androidx.core.content.FileProvider
 import androidx.core.content.FileProvider.getUriForFile
-import com.github.onlynotesswent.model.scanner.Scanner
 import com.google.android.gms.tasks.OnFailureListener
 import com.google.android.gms.tasks.OnSuccessListener
 import com.google.android.gms.tasks.Task
@@ -24,6 +23,7 @@ import com.google.mlkit.vision.documentscanner.GmsDocumentScanner
 import com.google.mlkit.vision.documentscanner.GmsDocumentScanningResult
 import com.google.mlkit.vision.documentscanner.GmsDocumentScanningResult.Pdf
 import com.google.mlkit.vision.documentscanner.GmsDocumentScanningResult.fromActivityResultIntent
+import junit.framework.TestCase.assertEquals
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -96,8 +96,8 @@ class ScannerTest {
   }
 
   /**
-   * Test that simulates a successful document scan and ensures that the scan process is
-   * launched correctly.
+   * Test that simulates a successful document scan and ensures that the scan process is launched
+   * correctly.
    */
   @Test
   fun scanSuccessTest() {
