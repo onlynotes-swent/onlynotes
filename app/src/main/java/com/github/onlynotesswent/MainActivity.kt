@@ -33,7 +33,7 @@ class MainActivity : ComponentActivity() {
 fun OnlyNotesApp() {
   val navController = rememberNavController()
   val navigationActions = NavigationActions(navController)
-  val listNotesViewModel: NoteViewModel = viewModel(factory = NoteViewModel.Factory)
+  val noteViewModel: NoteViewModel = viewModel(factory = NoteViewModel.Factory)
 
   NavHost(navController = navController, startDestination = Route.AUTH) {
     navigation(
@@ -47,9 +47,9 @@ fun OnlyNotesApp() {
         startDestination = Screen.OVERVIEW,
         route = Route.OVERVIEW,
     ) {
-      composable(Screen.OVERVIEW) { OverviewScreen(navigationActions, listNotesViewModel) }
-      composable(Screen.ADD_NOTE) { AddNote(navigationActions, listNotesViewModel) }
-      composable(Screen.EDIT_NOTE) { EditNote(navigationActions, listNotesViewModel) }
+      composable(Screen.OVERVIEW) { OverviewScreen(navigationActions, noteViewModel) }
+      composable(Screen.ADD_NOTE) { AddNote(navigationActions, noteViewModel) }
+      composable(Screen.EDIT_NOTE) { EditNote(navigationActions, noteViewModel) }
     }
   }
 }

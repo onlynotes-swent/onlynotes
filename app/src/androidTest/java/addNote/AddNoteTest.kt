@@ -1,5 +1,6 @@
 package addNote
 
+import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import com.github.onlynotesswent.model.note.NoteRepository
@@ -39,7 +40,7 @@ class AddNoteTest {
 
   @Test
   fun displayBaseComponents() {
-    composeTestRule.onNodeWithTag("AddNote text").assertExists()
-    composeTestRule.onNodeWithTag("GoBack button").assertExists()
+    composeTestRule.onNodeWithTag("AddNote text").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("GoBack button").assertIsDisplayed()
   }
 }

@@ -59,8 +59,6 @@ class OverviewTest {
     composeTestRule.setContent { OverviewScreen(navigationActions, noteViewModel) }
   }
 
-  @Test fun mockTest() {}
-
   @Test
   fun noteListIsDisplayed() {
 
@@ -111,5 +109,4 @@ class OverviewTest {
     verify(navigationActions).navigateTo(screen = Screen.ADD_NOTE)
   }
 
-  @Test fun doesNotSubmitAlreadyExistingUser() {}
 }
