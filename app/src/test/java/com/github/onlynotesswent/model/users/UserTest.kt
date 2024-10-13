@@ -11,13 +11,17 @@ class UserTest {
   fun `test user creation`() {
     val user =
         User(
-            name = "User",
+            firstName = "User",
+            lastName = "Name",
+            userName = "username",
             email = "example@gmail.com",
             uid = "1",
             dateOfJoining = Timestamp.now(),
             rating = 0.0)
 
-    assertEquals("User", user.name)
+    assertEquals("User", user.firstName)
+    assertEquals("Name", user.lastName)
+    assertEquals("username", user.userName)
     assertEquals("example@gmail.com", user.email)
     assertEquals("1", user.uid)
     assertEquals(0.0, user.rating)
@@ -28,14 +32,18 @@ class UserTest {
     val timestamp = Timestamp.now()
     val user1 =
         User(
-            name = "User",
+            firstName = "User",
+            lastName = "Name",
+            userName = "username",
             email = "example@gmail.com",
             uid = "1",
             dateOfJoining = timestamp,
             rating = 0.0)
     val user2 =
         User(
-            name = "User",
+            firstName = "User",
+            lastName = "Name",
+            userName = "username",
             email = "example@gmail.com",
             uid = "1",
             dateOfJoining = timestamp,
@@ -48,14 +56,18 @@ class UserTest {
   fun `test user inequality`() {
     val user1 =
         User(
-            name = "User1",
+            firstName = "User1",
+            lastName = "Name",
+            userName = "username",
             email = "example1@gmail.com",
             uid = "1",
             dateOfJoining = Timestamp.now(),
             rating = 0.0)
     val user2 =
         User(
-            name = "User2",
+            firstName = "User2",
+            lastName = "Name",
+            userName = "username",
             email = "example2@gmail.com",
             uid = "2",
             dateOfJoining = Timestamp.now(),
