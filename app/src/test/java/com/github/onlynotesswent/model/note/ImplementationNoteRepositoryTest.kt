@@ -121,12 +121,12 @@ class ImplementationNoteRepositoryTest {
   }
 
   @Test
-  fun insertNote_callsCollection() {
+  fun addNote_callsCollection() {
     `when`(mockDocumentReference.set(any())).thenReturn(Tasks.forResult(null))
 
     // This test verifies that when we add a new ToDo, the Firestore `collection()` method is
     // called.
-    implementationNoteRepository.insertNote(note, onSuccess = {}, onFailure = {})
+    implementationNoteRepository.addNote(note, onSuccess = {}, onFailure = {})
 
     shadowOf(Looper.getMainLooper()).idle() // Ensure all asynchronous operations complete
 
