@@ -168,6 +168,7 @@ dependencies {
     androidTestImplementation(libs.mockito.kotlin)
     androidTestImplementation("org.mockito:mockito-android:5.14.1")
 
+
     // --------- Kaspresso test framework ----------
     globalTestImplementation(libs.kaspresso)
     globalTestImplementation(libs.kaspresso.compose)
@@ -194,11 +195,11 @@ tasks.register("jacocoTestReport", JacocoReport::class) {
 
     val fileFilter = listOf(
         "**/R.class",
-        "**/R$*.class",
-        "**/BuildConfig.*",
-        "**/Manifest*.*",
-        "**/*Test*.*",
-        "android/**/*.*",
+        "*/R$.class",
+        "*/BuildConfig.",
+        "*/Manifest.*",
+        "*/*Test.*",
+        "android/*/.*",
     )
 
     val debugTree = fileTree("${project.layout.buildDirectory.get()}/tmp/kotlin-classes/debug") {

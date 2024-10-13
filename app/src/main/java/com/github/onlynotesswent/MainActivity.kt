@@ -12,11 +12,14 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
+import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.model.users.UserViewModel
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Route
 import com.github.onlynotesswent.ui.navigation.Screen
+import com.github.onlynotesswent.ui.screen.AddNote
 import com.github.onlynotesswent.ui.screen.AuthenticationScreen
+import com.github.onlynotesswent.ui.screen.EditNote
 import com.github.onlynotesswent.ui.screen.OverviewScreen
 import com.github.onlynotesswent.ui.theme.SampleAppTheme
 import com.github.onlynotesswent.ui.user.UserCreate
@@ -32,7 +35,6 @@ class MainActivity : ComponentActivity() {
 fun OnlyNotesApp() {
   val navController = rememberNavController()
   val navigationActions = NavigationActions(navController)
-  val userViewModel: UserViewModel = viewModel(factory = UserViewModel.Factory)
 
   NavHost(navController = navController, startDestination = Route.AUTH) {
     navigation(
@@ -47,7 +49,9 @@ fun OnlyNotesApp() {
         startDestination = Screen.OVERVIEW,
         route = Route.OVERVIEW,
     ) {
-      composable(Screen.OVERVIEW) { OverviewScreen(navigationActions) }
+      composable(Screen.OVERVIEW) { OverviewScreen(navigationActions, noteViewModel) }
+      composable(Screen.ADD_NOTE) { AddNote(navigationActions, noteViewModel) }
+      composable(Screen.EDIT_NOTE) { EditNote(navigationActions, noteViewModel) }
     }
   }
 }
