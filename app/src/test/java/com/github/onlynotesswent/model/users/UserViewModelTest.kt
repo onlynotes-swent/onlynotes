@@ -29,7 +29,9 @@ class UserViewModelTest {
 
   private val user =
       User(
-          name = "User",
+          firstName = "User",
+          lastName = "Name",
+          userName = "username",
           email = "example@gmail.com",
           uid = "1",
           dateOfJoining = Timestamp.now(),
@@ -108,7 +110,9 @@ class UserViewModelTest {
     // Ensure user is properly initialized
     val user =
         User(
-            name = "User",
+            firstName = "User",
+            lastName = "Name",
+            userName = "username",
             email = "example@gmail.com",
             uid = "1",
             dateOfJoining = Timestamp.now(),
