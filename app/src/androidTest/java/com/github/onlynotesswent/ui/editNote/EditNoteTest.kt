@@ -1,4 +1,4 @@
-package addNote
+package com.github.onlynotesswent.ui.editNote
 
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
@@ -9,14 +9,14 @@ import com.github.onlynotesswent.model.users.UserRepository
 import com.github.onlynotesswent.model.users.UserViewModel
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
-import com.github.onlynotesswent.ui.screen.AddNote
+import com.github.onlynotesswent.ui.screen.EditNoteScreen
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
 
-class AddNoteTest {
+class EditNoteTest {
   private lateinit var userRepository: UserRepository
   private lateinit var userViewModel: UserViewModel
   private lateinit var navigationActions: NavigationActions
@@ -34,13 +34,13 @@ class AddNoteTest {
     noteViewModel = NoteViewModel(noteRepository)
 
     // Mock the current route to be the user create screen
-    `when`(navigationActions.currentRoute()).thenReturn(Screen.ADD_NOTE)
-    composeTestRule.setContent { AddNote(navigationActions, noteViewModel) }
+    `when`(navigationActions.currentRoute()).thenReturn(Screen.EDIT_NOTE)
+    composeTestRule.setContent { EditNoteScreen(navigationActions, noteViewModel) }
   }
 
   @Test
   fun displayBaseComponents() {
-    composeTestRule.onNodeWithTag("AddNote text").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("EditNote text").assertIsDisplayed()
     composeTestRule.onNodeWithTag("GoBack button").assertIsDisplayed()
   }
 }
