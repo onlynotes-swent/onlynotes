@@ -50,7 +50,7 @@ interface UserRepository {
   fun deleteUserById(id: String, onSuccess: () -> Unit, onFailure: (Exception) -> Unit)
 
   /**
-   * Adds a new user to the repository.
+   * Adds a new user to the repository. The user must have a unique username and uid.
    *
    * @param user The user to add.
    * @param onSuccess Callback to be invoked when the addition is successful.

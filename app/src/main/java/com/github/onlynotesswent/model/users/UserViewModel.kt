@@ -2,7 +2,10 @@ package com.github.onlynotesswent.model.users
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.firestore
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -14,8 +17,8 @@ import kotlinx.coroutines.flow.asStateFlow
  */
 class UserViewModel(private val repository: UserRepository) : ViewModel() {
 
-  private val currentUser_ = MutableStateFlow<User?>(null)
-  val currentUser: StateFlow<User?> = currentUser_.asStateFlow()
+  private val _currentUser = MutableStateFlow<User?>(null)
+  val currentUser: StateFlow<User?> = _currentUser.asStateFlow()
 
   /** Initializes the UserViewModel and the repository. */
   init {
@@ -28,8 +31,18 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
     val email = firebaseUser?.email ?: return
     repository.getUserByEmail(
         email,
-        { currentUser_.value = it },
+        { _currentUser.value = it },
         { e -> Log.e("UserViewModel", "Error getting user", e) })
+  }
+
+  companion object {
+    val Factory: ViewModelProvider.Factory =
+        object : ViewModelProvider.Factory {
+          @Suppress("UNCHECKED_CAST")
+          override fun <T : ViewModel> create(modelClass: Class<T>): T {
+            return UserViewModel(UserRepositoryFirestore(Firebase.firestore)) as T
+          }
+        }
   }
 
   /**
@@ -49,6 +62,7 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
    * @param onFailure Callback to be invoked if an error occurs.
    */
   fun addUser(user: User, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) {
+    // add uid here
     repository.addUser(user, onSuccess, onFailure)
   }
 
@@ -74,9 +88,9 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
   }
 
   /**
-   * Retrieves a user by their ID.
+   * Retrieves a user by their email.
    *
-   * @param id The ID of the user to retrieve.
+   * @param email The email of the user to retrieve.
    * @param onSuccess Callback to be invoked with the retrieved user.
    * @param onFailure Callback to be invoked if an error occurs.
    */
