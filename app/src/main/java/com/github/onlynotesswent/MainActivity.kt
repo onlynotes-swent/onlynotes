@@ -35,6 +35,8 @@ class MainActivity : ComponentActivity() {
 fun OnlyNotesApp() {
   val navController = rememberNavController()
   val navigationActions = NavigationActions(navController)
+  val userViewModel: UserViewModel = viewModel(factory = UserViewModel.Factory)
+  val noteViewModel: NoteViewModel = viewModel(factory = NoteViewModel.Factory)
 
   NavHost(navController = navController, startDestination = Route.AUTH) {
     navigation(
