@@ -17,8 +17,8 @@ import kotlinx.coroutines.flow.asStateFlow
  */
 class UserViewModel(private val repository: UserRepository) : ViewModel() {
 
-  private val currentUser_ = MutableStateFlow<User?>(null)
-  val currentUser: StateFlow<User?> = currentUser_.asStateFlow()
+  private val _currentUser = MutableStateFlow<User?>(null)
+  val currentUser: StateFlow<User?> = _currentUser.asStateFlow()
 
   /** Initializes the UserViewModel and the repository. */
   init {
@@ -31,7 +31,7 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
     val email = firebaseUser?.email ?: return
     repository.getUserByEmail(
         email,
-        { currentUser_.value = it },
+        { _currentUser.value = it },
         { e -> Log.e("UserViewModel", "Error getting user", e) })
   }
 
@@ -88,9 +88,9 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
   }
 
   /**
-   * Retrieves a user by their ID.
+   * Retrieves a user by their email.
    *
-   * @param id The ID of the user to retrieve.
+   * @param email The email of the user to retrieve.
    * @param onSuccess Callback to be invoked with the retrieved user.
    * @param onFailure Callback to be invoked if an error occurs.
    */
