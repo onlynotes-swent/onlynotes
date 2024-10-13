@@ -1,4 +1,4 @@
-package addNote
+package com.github.onlynotesswent.ui.addNote
 
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
