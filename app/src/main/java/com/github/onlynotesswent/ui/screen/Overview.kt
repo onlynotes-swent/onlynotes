@@ -60,10 +60,10 @@ fun OverviewScreen(navigationActions: NavigationActions, noteViewModel: NoteView
             }
       },
       bottomBar = {
-          BottomNavigationMenu(
-              onTabSelect = {route -> navigationActions.navigateTo(route)},
-              tabList = LIST_TOP_LEVEL_DESTINATION,
-              selectedItem = navigationActions.currentRoute())
+        BottomNavigationMenu(
+            onTabSelect = { route -> navigationActions.navigateTo(route) },
+            tabList = LIST_TOP_LEVEL_DESTINATION,
+            selectedItem = navigationActions.currentRoute())
       }) { pd ->
         Box() {
           if (notes.value.isNotEmpty()) {

@@ -30,11 +30,16 @@ object TopLevelDestinations {
   // In the overview screen we will display the user notes
   val OVERVIEW =
       TopLevelDestination(route = Route.OVERVIEW, icon = Icons.Outlined.Home, textId = "My Notes")
-  val SEARCH = TopLevelDestination(route = Route.SEARCH, icon = Icons.Outlined.Search, textId = "Search Notes")
-  val PROFILE = TopLevelDestination(route = Route.PROFILE, icon = Icons.Outlined.Person, textId = "My Profile")
+  val SEARCH =
+      TopLevelDestination(
+          route = Route.SEARCH, icon = Icons.Outlined.Search, textId = "Search Notes")
+  val PROFILE =
+      TopLevelDestination(
+          route = Route.PROFILE, icon = Icons.Outlined.Person, textId = "My Profile")
 }
 
-val LIST_TOP_LEVEL_DESTINATION = listOf(TopLevelDestinations.OVERVIEW, TopLevelDestinations.SEARCH, TopLevelDestinations.PROFILE)
+val LIST_TOP_LEVEL_DESTINATION =
+    listOf(TopLevelDestinations.OVERVIEW, TopLevelDestinations.SEARCH, TopLevelDestinations.PROFILE)
 
 open class NavigationActions(
     private val navController: NavHostController,

@@ -52,18 +52,18 @@ fun OnlyNotesApp() {
       composable(Screen.EDIT_NOTE) { EditNoteScreen(navigationActions, noteViewModel) }
     }
     navigation(
-      startDestination = Screen.SEARCH_NOTE,
-      route = Route.SEARCH,
+        startDestination = Screen.SEARCH_NOTE,
+        route = Route.SEARCH,
     ) {
-        composable(Screen.SEARCH_NOTE) { //SearchScreen(navigationActions, noteViewModel)
-       }
-    navigation(
-      startDestination = Screen.PROFILE,
-      route = Route.PROFILE,
-    ) {
-        composable(Screen.PROFILE) { //ProfileScreen(navigationActions, ViewModel)
-       }
-    }
+      composable(Screen.SEARCH_NOTE) { // SearchScreen(navigationActions, noteViewModel)
+      }
+      navigation(
+          startDestination = Screen.PROFILE,
+          route = Route.PROFILE,
+      ) {
+        composable(Screen.PROFILE) { // ProfileScreen(navigationActions, ViewModel)
+        }
+      }
     }
   }
 }

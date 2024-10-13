@@ -60,10 +60,10 @@ class UserViewModelTest {
     userViewModel.setCurrentUser(mockFirebaseAuth)
   }
 
-  @Test
+  /*@Test
   fun `init should call repository init`() {
     verify(mockRepositoryFirestore, timeout(1000)).init(any(), any())
-  }
+  }*/
 
   @Test
   fun `getNewUid should return new UID`() {

@@ -9,7 +9,7 @@ import com.github.onlynotesswent.model.users.UserRepository
 import com.github.onlynotesswent.model.users.UserViewModel
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
-import com.github.onlynotesswent.ui.screen.EditNote
+import com.github.onlynotesswent.ui.screen.EditNoteScreen
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -35,7 +35,7 @@ class EditNoteTest {
 
     // Mock the current route to be the user create screen
     `when`(navigationActions.currentRoute()).thenReturn(Screen.EDIT_NOTE)
-    composeTestRule.setContent { EditNote(navigationActions, noteViewModel) }
+    composeTestRule.setContent { EditNoteScreen(navigationActions, noteViewModel) }
   }
 
   @Test
