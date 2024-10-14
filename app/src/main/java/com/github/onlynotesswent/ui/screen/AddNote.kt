@@ -48,8 +48,8 @@ import com.google.firebase.Timestamp
 @Composable
 fun AddNoteScreen(
     navigationActions: NavigationActions,
-    noteViewModel: NoteViewModel = viewModel(factory = NoteViewModel.Factory),
     scanner: Scanner,
+    noteViewModel: NoteViewModel = viewModel(factory = NoteViewModel.Factory),
 ) {
 
   var title by remember { mutableStateOf("") }
