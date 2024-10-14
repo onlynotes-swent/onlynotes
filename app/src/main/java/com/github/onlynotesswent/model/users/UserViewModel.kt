@@ -1,6 +1,5 @@
 package com.github.onlynotesswent.model.users
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.google.firebase.Firebase
@@ -23,16 +22,10 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
   /** Initializes the UserViewModel and the repository. */
   init {
     repository.init(FirebaseAuth.getInstance()) {}
-    setCurrentUser(FirebaseAuth.getInstance())
   }
 
-  fun setCurrentUser(firebaseAuth: FirebaseAuth) {
-    val firebaseUser = firebaseAuth.currentUser
-    val email = firebaseUser?.email ?: return
-    repository.getUserByEmail(
-        email,
-        { _currentUser.value = it },
-        { e -> Log.e("UserViewModel", "Error getting user", e) })
+  fun setCurrentUser(user: User) {
+    _currentUser.value = user
   }
 
   companion object {
@@ -92,10 +85,16 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
    *
    * @param email The email of the user to retrieve.
    * @param onSuccess Callback to be invoked with the retrieved user.
+   * @param onUserNotFound Callback to be invoked if the user is not found.
    * @param onFailure Callback to be invoked if an error occurs.
    */
-  fun getUserByEmail(email: String, onSuccess: (User) -> Unit, onFailure: (Exception) -> Unit) {
-    repository.getUserByEmail(email, onSuccess, onFailure)
+  fun getUserByEmail(
+      email: String,
+      onSuccess: (User) -> Unit,
+      onUserNotFound: () -> Unit,
+      onFailure: (Exception) -> Unit
+  ) {
+    repository.getUserByEmail(email, onSuccess, onUserNotFound, onFailure)
   }
 
   /**
@@ -103,10 +102,16 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
    *
    * @param id The ID of the user to retrieve.
    * @param onSuccess Callback to be invoked with the retrieved user.
+   * @param onUserNotFound Callback to be invoked if the user is not found.
    * @param onFailure Callback to be invoked if an error occurs.
    */
-  fun getUserById(id: String, onSuccess: (User) -> Unit, onFailure: (Exception) -> Unit) {
-    repository.getUserById(id, onSuccess, onFailure)
+  fun getUserById(
+      id: String,
+      onSuccess: (User) -> Unit,
+      onUserNotFound: () -> Unit,
+      onFailure: (Exception) -> Unit
+  ) {
+    repository.getUserById(id, onSuccess, onUserNotFound, onFailure)
   }
 
   /**

@@ -43,7 +43,7 @@ fun OnlyNotesApp() {
         startDestination = Screen.AUTH,
         route = Route.AUTH,
     ) {
-      composable(Screen.AUTH) { SignInScreen(navigationActions) }
+      composable(Screen.AUTH) { SignInScreen(navigationActions, userViewModel) }
       composable(Screen.CREATE_USER) { UserCreate(navigationActions, userViewModel) }
     }
 

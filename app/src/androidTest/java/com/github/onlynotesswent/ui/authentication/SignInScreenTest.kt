@@ -10,6 +10,8 @@ import androidx.test.espresso.intent.Intents
 import androidx.test.espresso.intent.Intents.intended
 import androidx.test.espresso.intent.matcher.IntentMatchers.toPackage
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.github.onlynotesswent.model.users.UserRepository
+import com.github.onlynotesswent.model.users.UserViewModel
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Route
 import com.kaspersky.kaspresso.testcases.api.testcase.TestCase
@@ -22,15 +24,17 @@ import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
 
 @RunWith(AndroidJUnit4::class)
-class LoginTest : TestCase() {
+class SignInScreenTest : TestCase() {
   @get:Rule val composeTestRule = createComposeRule()
 
   private lateinit var navigationActions: NavigationActions
+  private lateinit var userViewModel: UserViewModel
 
   @Before
   fun setUp() {
     Intents.init()
     navigationActions = mock(NavigationActions::class.java)
+    userViewModel = UserViewModel(mock(UserRepository::class.java))
 
     `when`(navigationActions.currentRoute()).thenReturn(Route.AUTH)
   }
@@ -43,7 +47,7 @@ class LoginTest : TestCase() {
 
   @Test
   fun componentsCorrectlyDisplayed() {
-    composeTestRule.setContent { SignInScreen(navigationActions) }
+    composeTestRule.setContent { SignInScreen(navigationActions, userViewModel) }
     composeTestRule.onNodeWithTag("loginScreenScaffold").assertIsDisplayed()
     composeTestRule.onNodeWithTag("loginScreenColumn").assertIsDisplayed()
     composeTestRule.onNodeWithTag("loginLogo").assertIsDisplayed()
@@ -62,7 +66,7 @@ class LoginTest : TestCase() {
 
   @Test
   fun googleSignInReturnsValidActivityResult() {
-    composeTestRule.setContent { SignInScreen(navigationActions) }
+    composeTestRule.setContent { SignInScreen(navigationActions, userViewModel) }
     composeTestRule.onNodeWithTag("loginButton").performClick()
     // assert that an Intent resolving to Google Mobile Services has been sent (for sign-in)
     intended(toPackage("com.google.android.gms"))

@@ -37,7 +37,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.github.onlynotesswent.R
+import com.github.onlynotesswent.model.users.UserViewModel
 import com.github.onlynotesswent.ui.navigation.NavigationActions
+import com.github.onlynotesswent.ui.navigation.Screen
 import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
@@ -51,7 +53,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 
 @Composable
-fun SignInScreen(navigationActions: NavigationActions) {
+fun SignInScreen(navigationActions: NavigationActions, userViewModel: UserViewModel) {
   Scaffold(modifier = Modifier.fillMaxSize().testTag("loginScreenScaffold")) { padding ->
     Column(
         modifier = Modifier.fillMaxSize().padding(padding).testTag("loginScreenColumn"),
@@ -63,7 +65,7 @@ fun SignInScreen(navigationActions: NavigationActions) {
       val launcher =
           rememberFirebaseAuthLauncher(
               onAuthComplete = { result ->
-                authSuccessHandler(result, navigationActions) { s ->
+                authSuccessHandler(result, navigationActions, userViewModel) { s ->
                   Toast.makeText(context, s, Toast.LENGTH_LONG).show()
                 }
               },
@@ -94,10 +96,25 @@ fun SignInScreen(navigationActions: NavigationActions) {
 internal fun authSuccessHandler(
     result: AuthResult,
     navigationActions: NavigationActions,
+    userViewModel: UserViewModel,
     showMessage: (String) -> Unit
 ) {
-  showMessage("Welcome ${result.user?.displayName}")
-  navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
+  if (result.user == null || result.user?.email == null) {
+    showMessage("Login Failed!")
+    return
+  }
+  userViewModel.getUserByEmail(
+      result.user!!.email!!,
+      onSuccess = { user ->
+        showMessage("Welcome ${user.userName}!")
+        userViewModel.setCurrentUser(user)
+        navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
+      },
+      onUserNotFound = {
+        showMessage("Welcome to OnlyNotes!")
+        navigationActions.navigateTo(Screen.CREATE_USER)
+      },
+      { showMessage("Error while fetching user: $it") })
 }
 
 @Composable
