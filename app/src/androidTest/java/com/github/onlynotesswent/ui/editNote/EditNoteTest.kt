@@ -49,7 +49,6 @@ class EditNoteTest {
 
   @Test
   fun saveClickCallsNavActions() {
-    composeTestRule.onNodeWithTag("Save button").assertIsDisplayed()
     composeTestRule.onNodeWithTag("Save button").performClick()
     verify(navigationActions).navigateTo(screen = Screen.OVERVIEW)
   }

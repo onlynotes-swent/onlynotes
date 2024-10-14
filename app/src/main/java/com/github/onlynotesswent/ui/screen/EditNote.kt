@@ -80,7 +80,7 @@ fun EditNoteScreen(navigationActions: NavigationActions, noteViewModel: NoteView
                                   1, 1, Bitmap.Config.ARGB_8888) // Placeholder Bitmap
                       ),
                   "1")
-              navigationActions.navigateTo(Screen.OVERVIEW)
+              navigationActions.goBack()
             },
             modifier = Modifier.testTag("Save button")) {
               Text("Save")
