@@ -18,8 +18,8 @@ import com.github.onlynotesswent.ui.authentication.SignInScreen
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Route
 import com.github.onlynotesswent.ui.navigation.Screen
-import com.github.onlynotesswent.ui.screen.AddNote
-import com.github.onlynotesswent.ui.screen.EditNote
+import com.github.onlynotesswent.ui.screen.AddNoteScreen
+import com.github.onlynotesswent.ui.screen.EditNoteScreen
 import com.github.onlynotesswent.ui.screen.OverviewScreen
 import com.github.onlynotesswent.ui.theme.SampleAppTheme
 import com.github.onlynotesswent.ui.user.UserCreate
@@ -52,8 +52,22 @@ fun OnlyNotesApp() {
         route = Route.OVERVIEW,
     ) {
       composable(Screen.OVERVIEW) { OverviewScreen(navigationActions, noteViewModel) }
-      composable(Screen.ADD_NOTE) { AddNote(navigationActions, noteViewModel) }
-      composable(Screen.EDIT_NOTE) { EditNote(navigationActions, noteViewModel) }
+      composable(Screen.ADD_NOTE) { AddNoteScreen(navigationActions, noteViewModel) }
+      composable(Screen.EDIT_NOTE) { EditNoteScreen(navigationActions, noteViewModel) }
+    }
+    navigation(
+        startDestination = Screen.SEARCH_NOTE,
+        route = Route.SEARCH,
+    ) {
+      composable(Screen.SEARCH_NOTE) { // SearchScreen(navigationActions, noteViewModel)
+      }
+      navigation(
+          startDestination = Screen.PROFILE,
+          route = Route.PROFILE,
+      ) {
+        composable(Screen.PROFILE) { // ProfileScreen(navigationActions, ViewModel)
+        }
+      }
     }
   }
 }

@@ -31,6 +31,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.github.onlynotesswent.model.note.Note
 import com.github.onlynotesswent.model.note.NoteViewModel
+import com.github.onlynotesswent.ui.navigation.BottomNavigationMenu
+import com.github.onlynotesswent.ui.navigation.LIST_TOP_LEVEL_DESTINATION
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
 import java.text.SimpleDateFormat
@@ -56,6 +58,12 @@ fun OverviewScreen(navigationActions: NavigationActions, noteViewModel: NoteView
             modifier = Modifier.testTag("createNote")) {
               Icon(imageVector = Icons.Default.Add, contentDescription = "AddNote")
             }
+      },
+      bottomBar = {
+        BottomNavigationMenu(
+            onTabSelect = { route -> navigationActions.navigateTo(route) },
+            tabList = LIST_TOP_LEVEL_DESTINATION,
+            selectedItem = navigationActions.currentRoute())
       }) { pd ->
         Box() {
           if (notes.value.isNotEmpty()) {

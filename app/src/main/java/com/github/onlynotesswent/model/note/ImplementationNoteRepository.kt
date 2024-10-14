@@ -86,7 +86,7 @@ class ImplementationNoteRepository(private val db: FirebaseFirestore) : NoteRepo
     }
   }
 
-  override fun insertNote(note: Note, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) {
+  override fun addNote(note: Note, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) {
     performFirestoreOperation(
         db.collection(collectionPath).document(note.id).set(convertNotes(note)),
         onSuccess,

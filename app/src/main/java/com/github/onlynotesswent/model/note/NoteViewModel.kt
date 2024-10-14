@@ -62,8 +62,8 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
    * @param note The Note document to be added.
    * @param userID The user ID.
    */
-  fun insertNote(note: Note, userID: String) {
-    repository.insertNote(note = note, onSuccess = { getNotes(userID) }, onFailure = {})
+  fun addNote(note: Note, userID: String) {
+    repository.addNote(note = note, onSuccess = { getNotes(userID) }, onFailure = {})
   }
 
   /**
