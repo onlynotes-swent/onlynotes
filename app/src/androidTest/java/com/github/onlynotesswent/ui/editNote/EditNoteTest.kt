@@ -50,6 +50,6 @@ class EditNoteTest {
   @Test
   fun saveClickCallsNavActions() {
     composeTestRule.onNodeWithTag("Save button").performClick()
-    verify(navigationActions).navigateTo(screen = Screen.OVERVIEW)
+    verify(navigationActions).goBack()
   }
 }
