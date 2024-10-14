@@ -7,6 +7,17 @@
 - [Code Style Guidelines](#code-style-guidelines)
 - [Testing](#testing)
 
+## Issue Naming Conventions
+Issues should be opened only for changes in code. Figma, Github settings, and other non-commitable changes should be left as drafts. 
+They should follow this structure : `Type: Short description`
+The **Type** should be one of the following:
+| Type       | Purpose                                                         |
+|------------|-----------------------------------------------------------------|
+| `<Epic>`   | If a feature, the epic this feature belongs to, from [this list](https://github.com/orgs/onlynotes-swent/projects/1/settings/fields/137941145)  |
+| `Bugfix`   | Bug fix                                                         |
+| `Docs`     | Documentation-only changes                                      |
+| `Style`    | Code style changes (formatting, missing semi-colons, etc.)      |
+
 ## Branch Naming Conventions
 Branches should follow [this](https://medium.com/@abhay.pixolo/naming-conventions-for-git-branches-a-cheatsheet-8549feca2534) structure: `type/short-description`. 
 The **type** should be one of the following:
@@ -42,6 +53,9 @@ Here is a list of the **type** values that can be used:
 
 2. **Submit a pull request (PR)**:
     - After making your changes, push your branch and open a pull request (you can do this on GitHub website) to merge your branch into `main`.
+    - Ensure your pull request (PR) title follows: `type: short description`
+        - **type** and **short description** should be the same as the branch from which this PR was created.
+        - E.g. : From `type/short-description` branch, create `type: short description` pull request.
     - Ensure your pull request (PR) description explains:
         - What issue/feature your PR addresses.
         - How to test your changes.
