@@ -318,32 +318,41 @@ class ScannerTest {
             any<ActivityResultContract<IntentSenderRequest, ActivityResult>>(), captor.capture())
     val handleActivityResult = captor.value
 
-    Mockito.mockStatic(GmsDocumentScanningResult::class.java).use { ScanningResultMock ->
-      val mockResult = mock(GmsDocumentScanningResult::class.java)
-      val mockPdf = mock(Pdf::class.java)
-      val mockUri = mock(Uri::class.java)
+    // Mock the static GmsDocumentScanningResult.fromActivityResultIntent method and return
+    val ScanningResultMock = Mockito.mockStatic(GmsDocumentScanningResult::class.java)
+    val mockResult = mock(GmsDocumentScanningResult::class.java)
+    ScanningResultMock.`when`<GmsDocumentScanningResult> { fromActivityResultIntent(any()) }
+        .thenReturn(mockResult)
 
-      // Stub the static fromActivityResultIntent method to return the mock Toast object
-      ScanningResultMock.`when`<GmsDocumentScanningResult> { fromActivityResultIntent(any()) }
-          .thenReturn(mockResult)
+    val mockPdf = mock(Pdf::class.java)
+    val mockUri = mock(Uri::class.java)
 
-      val testPath = "./test_path.pdf"
+    // Simulate the returning of a valid path
 
-      // Simulate the returning of a valid path
-      `when`(mockResult.pdf).thenReturn(mockPdf)
-      `when`(mockPdf.uri).thenReturn(mockUri)
-      `when`(mockUri.path).thenReturn(testPath)
+    `when`(mockResult.pdf).thenReturn(mockPdf)
+    `when`(mockPdf.uri).thenReturn(mockUri)
+    `when`(mockUri.path).thenReturn("test_path.pdf")
 
-      Mockito.mockStatic(FileProvider::class.java).use { FileProviderMock ->
-        // Create a mock Uri object
-        val mockExternalUri = mock(Uri::class.java)
+    val FileProviderMock = Mockito.mockStatic(FileProvider::class.java)
+    // Stub the static getUriForFile method to return the mock Uri object
+    // (no separate mock created for an external URI as it would be unnecessary)
+    FileProviderMock.`when`<Uri> { getUriForFile(eq(mockMainActivity), any(), any()) }
+        .thenReturn(mockUri)
 
-        // Stub the static getUriForFile method to return the mock Uri object
-        FileProviderMock.`when`<Uri> { getUriForFile(eq(mockMainActivity), any(), any()) }
-            .thenReturn(mockExternalUri)
+    val ToastMock = Mockito.mockStatic(Toast::class.java)
+    // Create a mock Toast object
+    val mockToast = mock(Toast::class.java)
 
-        handleActivityResult.onActivityResult(ActivityResult(Activity.RESULT_OK, Intent()))
-      }
-    }
+    // Stub the static makeText method to return the mock Toast object
+    ToastMock.`when`<Toast> { makeText(any<Context>(), any<String>(), any()) }.thenReturn(mockToast)
+
+    handleActivityResult.onActivityResult(ActivityResult(Activity.RESULT_OK, Intent()))
+
+    ToastMock.verify { makeText(eq(mockMainActivity), any<String>(), any()) }
+    verify(mockToast).show()
+
+    ScanningResultMock.close()
+    FileProviderMock.close()
+    ToastMock.close()
   }
 }
