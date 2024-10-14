@@ -56,7 +56,7 @@ fun OnlyNotesApp(scanner: Scanner) {
         route = Route.OVERVIEW,
     ) {
       composable(Screen.OVERVIEW) { OverviewScreen(navigationActions, noteViewModel) }
-      composable(Screen.ADD_NOTE) { AddNoteScreen(navigationActions, noteViewModel, scanner) }
+      composable(Screen.ADD_NOTE) { AddNoteScreen(navigationActions, scanner, noteViewModel) }
       composable(Screen.EDIT_NOTE) { EditNoteScreen(navigationActions, noteViewModel) }
     }
     navigation(
