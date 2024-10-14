@@ -40,6 +40,7 @@ import com.github.onlynotesswent.R
 import com.github.onlynotesswent.model.note.Note
 import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.model.note.Type
+import com.github.onlynotesswent.model.scanner.Scanner
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.google.firebase.Timestamp
 
@@ -47,7 +48,8 @@ import com.google.firebase.Timestamp
 @Composable
 fun AddNoteScreen(
     navigationActions: NavigationActions,
-    noteViewModel: NoteViewModel = viewModel(factory = NoteViewModel.Factory)
+    noteViewModel: NoteViewModel = viewModel(factory = NoteViewModel.Factory),
+    scanner: Scanner,
 ) {
 
   var title by remember { mutableStateOf("") }
@@ -129,8 +131,9 @@ fun AddNoteScreen(
 
               Button(
                   onClick = {
-                    if (saveButton == "Scan Image") {
+                    if (saveButton == "Take Picture") {
                       // call scan image API or functions. Once scanned, add the note to database
+                        scanner.scan()
 
                     } else if (saveButton == "Create Note") {
                       // create the note and add it to database

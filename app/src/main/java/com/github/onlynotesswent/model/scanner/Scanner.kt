@@ -36,8 +36,7 @@ import java.io.File
  */
 class Scanner(
     private val activity: ComponentActivity,
-    private var scanner: GmsDocumentScanner =
-        GmsDocumentScanning.getClient(
+    private var scanner: GmsDocumentScanner = GmsDocumentScanning.getClient(
             GmsDocumentScannerOptions.Builder()
                 .setScannerMode(GmsDocumentScannerOptions.SCANNER_MODE_BASE)
                 .setResultFormats(GmsDocumentScannerOptions.RESULT_FORMAT_PDF)
@@ -89,16 +88,8 @@ class Scanner(
       val path = result.pdf?.uri?.path
       if (path != null) {
         val externalUri = FileProvider.getUriForFile(activity, fileProviderAuthority, File(path))
-
-        // TODO Currently only sharing the pdf file returned (using android send intent),
-        // to be determined what to do with the pdf file later, accessible through externalUri
-        /*val shareIntent =
-            Intent(Intent.ACTION_SEND).apply {
-              putExtra(Intent.EXTRA_STREAM, externalUri)
-              type = "application/pdf"
-              addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-            }
-        activity.startActivity(Intent.createChooser(shareIntent, "Share pdf"))*/
+        // TODO Currently only showing the pdf file returned Uri in toast, to change later
+          Toast.makeText(activity, "Scanner success, pdf handling not implemented: ${externalUri}", Toast.LENGTH_LONG).show()
       } else {
         Log.e(TAG, "Path to pdf file is null")
       }
