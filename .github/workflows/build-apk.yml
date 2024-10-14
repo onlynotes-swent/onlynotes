@@ -45,9 +45,16 @@ jobs:
           accept-android-sdk-licenses: true
           cmdline-tools-version: "latest"  # Ensure you use the correct version if needed
 
+
+       # Grant execute permission for the gradlew script
+      - name: Grant execute permission for gradlew
+        run: chmod +x ./gradlew
+
       # Build the APK
       - name: Build APK
         run: ./gradlew assembleDebug
+
+
 
       # Upload the APK as an artifact
       - name: Upload APK
