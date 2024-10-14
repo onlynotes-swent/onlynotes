@@ -1,6 +1,7 @@
 # Contributing to OnlyNotes
 
 ## Table of Contents
+- [Issue Naming Conventions](#issue-naming-conventions)
 - [Branch Naming Conventions](#branch-naming-conventions)
 - [Commit Message Guidelines](#commit-message-guidelines)
 - [Pull Request Process](#pull-request-process)
@@ -8,7 +9,7 @@
 - [Testing](#testing)
 
 ## Issue Naming Conventions
-Issues should be opened only for changes in code. Figma, Github settings, and other non-commitable changes should be left as drafts. 
+Issues should be opened only for changes in code/documentation. Figma, Github settings, and other non-commitable changes should be left as drafts. 
 They should follow this structure : `Type: Short description`
 The **Type** should be one of the following:
 | Type       | Purpose                                                         |
