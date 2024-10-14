@@ -3,6 +3,7 @@ package com.github.onlynotesswent.ui.editNote
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.performClick
 import com.github.onlynotesswent.model.note.NoteRepository
 import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.model.users.UserRepository
@@ -14,6 +15,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.mockito.Mockito.mock
+import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 
 class EditNoteTest {
@@ -40,7 +42,15 @@ class EditNoteTest {
 
   @Test
   fun displayBaseComponents() {
-    composeTestRule.onNodeWithTag("EditNote text").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("GoBack button").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("EditNote textField").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("EditTitle textField").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("Save button").assertIsDisplayed()
+  }
+
+  @Test
+  fun saveClickCallsNavActions() {
+    composeTestRule.onNodeWithTag("Save button").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("Save button").performClick()
+    verify(navigationActions).navigateTo(screen = Screen.OVERVIEW)
   }
 }

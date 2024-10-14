@@ -14,7 +14,7 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
   val notes: StateFlow<List<Note>> = notes_.asStateFlow()
 
   private val note_ = MutableStateFlow<Note?>(null)
-  val note: StateFlow<Note?> = note_.asStateFlow()
+  open val note: StateFlow<Note?> = note_.asStateFlow()
 
   init {
     repository
@@ -33,6 +33,9 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
         }
   }
 
+  fun selectedNote(note: Note) {
+    note_.value = note
+  }
   /**
    * Generates a new unique ID.
    *
