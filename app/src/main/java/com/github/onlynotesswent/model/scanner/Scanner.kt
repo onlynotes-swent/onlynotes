@@ -36,7 +36,8 @@ import java.io.File
  */
 class Scanner(
     private val activity: ComponentActivity,
-    private var scanner: GmsDocumentScanner = GmsDocumentScanning.getClient(
+    private var scanner: GmsDocumentScanner =
+        GmsDocumentScanning.getClient(
             GmsDocumentScannerOptions.Builder()
                 .setScannerMode(GmsDocumentScannerOptions.SCANNER_MODE_BASE)
                 .setResultFormats(GmsDocumentScannerOptions.RESULT_FORMAT_PDF)
@@ -89,7 +90,11 @@ class Scanner(
       if (path != null) {
         val externalUri = FileProvider.getUriForFile(activity, fileProviderAuthority, File(path))
         // TODO Currently only showing the pdf file returned Uri in toast, to change later
-          Toast.makeText(activity, "Scanner success, pdf handling not implemented: ${externalUri}", Toast.LENGTH_LONG).show()
+        Toast.makeText(
+                activity,
+                "Scanner success, pdf handling not implemented: ${externalUri}",
+                Toast.LENGTH_LONG)
+            .show()
       } else {
         Log.e(TAG, "Path to pdf file is null")
       }

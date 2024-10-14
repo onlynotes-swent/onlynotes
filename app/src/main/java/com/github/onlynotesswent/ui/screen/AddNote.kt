@@ -133,8 +133,7 @@ fun AddNoteScreen(
                   onClick = {
                     if (saveButton == "Take Picture") {
                       // call scan image API or functions. Once scanned, add the note to database
-                        scanner.scan()
-
+                      scanner.scan()
                     } else if (saveButton == "Create Note") {
                       // create the note and add it to database
                       noteViewModel.addNote(
