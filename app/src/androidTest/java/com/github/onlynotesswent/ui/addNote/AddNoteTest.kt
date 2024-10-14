@@ -1,5 +1,6 @@
 package com.github.onlynotesswent.ui.addNote
 
+import androidx.activity.ComponentActivity
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotDisplayed
@@ -47,7 +48,7 @@ class AddNoteTest {
     userViewModel = UserViewModel(userRepository)
     noteRepository = mock(NoteRepository::class.java)
     noteViewModel = NoteViewModel(noteRepository)
-    scanner = mock(Scanner::class.java)
+    scanner = Scanner(mock(ComponentActivity::class.java))
 
     // Mock the current route to be the add note screen
     `when`(navigationActions.currentRoute()).thenReturn(Screen.ADD_NOTE)
