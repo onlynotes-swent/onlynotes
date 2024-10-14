@@ -41,7 +41,6 @@ jobs:
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
         with:
-          api-level: 34
           accept-android-sdk-licenses: true
           cmdline-tools-version: "latest"  # Ensure you use the correct version if needed
 
