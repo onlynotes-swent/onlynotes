@@ -13,14 +13,16 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import com.github.onlynotesswent.model.note.NoteViewModel
+import com.github.onlynotesswent.model.users.UserViewModel
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Route
 import com.github.onlynotesswent.ui.navigation.Screen
-import com.github.onlynotesswent.ui.screen.AddNote
+import com.github.onlynotesswent.ui.screen.AddNoteScreen
 import com.github.onlynotesswent.ui.screen.AuthenticationScreen
-import com.github.onlynotesswent.ui.screen.EditNote
+import com.github.onlynotesswent.ui.screen.EditNoteScreen
 import com.github.onlynotesswent.ui.screen.OverviewScreen
 import com.github.onlynotesswent.ui.theme.SampleAppTheme
+import com.github.onlynotesswent.ui.user.UserCreate
 
 class MainActivity : ComponentActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -33,6 +35,7 @@ class MainActivity : ComponentActivity() {
 fun OnlyNotesApp() {
   val navController = rememberNavController()
   val navigationActions = NavigationActions(navController)
+  val userViewModel: UserViewModel = viewModel(factory = UserViewModel.Factory)
   val noteViewModel: NoteViewModel = viewModel(factory = NoteViewModel.Factory)
 
   NavHost(navController = navController, startDestination = Route.AUTH) {
@@ -41,6 +44,7 @@ fun OnlyNotesApp() {
         route = Route.AUTH,
     ) {
       composable(Screen.AUTH) { AuthenticationScreen(navigationActions) }
+      composable(Screen.CREATE_USER) { UserCreate(navigationActions, userViewModel) }
     }
 
     navigation(
@@ -48,8 +52,22 @@ fun OnlyNotesApp() {
         route = Route.OVERVIEW,
     ) {
       composable(Screen.OVERVIEW) { OverviewScreen(navigationActions, noteViewModel) }
-      composable(Screen.ADD_NOTE) { AddNote(navigationActions, noteViewModel) }
-      composable(Screen.EDIT_NOTE) { EditNote(navigationActions, noteViewModel) }
+      composable(Screen.ADD_NOTE) { AddNoteScreen(navigationActions, noteViewModel) }
+      composable(Screen.EDIT_NOTE) { EditNoteScreen(navigationActions, noteViewModel) }
+    }
+    navigation(
+        startDestination = Screen.SEARCH_NOTE,
+        route = Route.SEARCH,
+    ) {
+      composable(Screen.SEARCH_NOTE) { // SearchScreen(navigationActions, noteViewModel)
+      }
+      navigation(
+          startDestination = Screen.PROFILE,
+          route = Route.PROFILE,
+      ) {
+        composable(Screen.PROFILE) { // ProfileScreen(navigationActions, ViewModel)
+        }
+      }
     }
   }
 }

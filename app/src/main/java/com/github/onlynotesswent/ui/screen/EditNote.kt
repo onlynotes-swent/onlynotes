@@ -11,7 +11,7 @@ import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
 
 @Composable
-fun EditNote(navigationActions: NavigationActions, noteViewModel: NoteViewModel) {
+fun EditNoteScreen(navigationActions: NavigationActions, noteViewModel: NoteViewModel) {
   Column {
     Text("Edit Note Screen", modifier = Modifier.testTag("EditNote text"))
     Button(
