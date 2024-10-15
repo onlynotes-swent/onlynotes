@@ -1,4 +1,4 @@
-package com.github.onlynotesswent.ui.screen
+package com.github.onlynotesswent.ui.overview
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
