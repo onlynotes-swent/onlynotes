@@ -92,19 +92,21 @@ fun UserCreate(navigationActions: NavigationActions, userViewModel: UserViewMode
               // Save Button
               Button(
                   onClick = {
-                     val user =  User(
-                         firstName = firstName,
-                         lastName = lastName,
-                         userName = userName,
-                         email = Firebase.auth.currentUser?.email ?: "",
-                         uid = userViewModel.getNewUid(),
-                         dateOfJoining = Timestamp.now(),
-                         rating = 0.0)
+                    val user =
+                        User(
+                            firstName = firstName,
+                            lastName = lastName,
+                            userName = userName,
+                            email = Firebase.auth.currentUser?.email ?: "",
+                            uid = userViewModel.getNewUid(),
+                            dateOfJoining = Timestamp.now(),
+                            rating = 0.0)
                     userViewModel.addUser(
                         user = user,
                         onSuccess = {
-                            userViewModel.setCurrentUser(user)
-                            navigationActions.navigateTo(Screen.OVERVIEW) },
+                          userViewModel.setCurrentUser(user)
+                          navigationActions.navigateTo(Screen.OVERVIEW)
+                        },
                         onFailure = { exception ->
                           Toast.makeText(
                                   context,
