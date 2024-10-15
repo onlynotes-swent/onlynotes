@@ -5,9 +5,6 @@ on:
     branches:
       - main
       - feature/set-up-github-APK-button
-  pull_request:
-    branches:
-      - main
   workflow_dispatch:
 
 jobs:
@@ -17,7 +14,7 @@ jobs:
     steps:
       # Checkout the latest code
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       # Set up JDK 11 for Android build
       - name: Setup JDK
@@ -28,7 +25,7 @@ jobs:
 
       # Cache Gradle dependencies
       - name: Cache Gradle packages
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             ~/.gradle/caches
@@ -39,7 +36,7 @@ jobs:
 
       # Download Android SDK components
       - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@v4
         with:
           accept-android-sdk-licenses: true
           cmdline-tools-version: "latest"  # Ensure you use the correct version if needed
