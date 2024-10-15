@@ -53,7 +53,7 @@ Here is a list of the **type** values that can be used:
       or use the GitHub UI to create a new branch.
 
 2. **Submit a pull request (PR)**:
-    - After making your changes, push your branch and open a pull request (you can do this on GitHub website) to merge your branch into `main`. Template for pull requests inspired from [here](https://axolo.co/blog/p/part-3-github-pull-request-template)
+    - After making your changes, push your branch and open a pull request (you can do this on GitHub website) to merge your branch into `main`. [The template](.github/pull_request_template.md) we use for pull requests is inspired from [here](https://axolo.co/blog/p/part-3-github-pull-request-template)
     - Ensure your pull request (PR) title follows: `type: short description`
         - **type** and **short description** should be the same as the branch from which this PR was created.
         - E.g. : From `type/short-description` branch, create `type: short description` pull request.
