@@ -131,6 +131,7 @@ dependencies {
     implementation(libs.androidx.navigation.common.ktx)
     implementation(libs.androidx.navigation.runtime.ktx)
     implementation(libs.androidx.navigation.compose)
+    implementation(libs.androidx.espresso.intents)
     testImplementation(libs.junit)
     globalTestImplementation(libs.androidx.junit)
     globalTestImplementation(libs.androidx.espresso.core)
@@ -165,6 +166,7 @@ dependencies {
     // Mockito
     testImplementation("org.mockito:mockito-core:5.13.0")
     testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
+    testImplementation("org.mockito:mockito-inline:4.0.0")
     androidTestImplementation(libs.mockito.kotlin)
     androidTestImplementation("org.mockito:mockito-android:5.14.1")
 

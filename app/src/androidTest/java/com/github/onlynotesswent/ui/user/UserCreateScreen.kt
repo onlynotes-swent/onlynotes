@@ -11,6 +11,7 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
 import com.github.onlynotesswent.model.users.User
 import com.github.onlynotesswent.model.users.UserRepository
+import com.github.onlynotesswent.model.users.UserRepositoryFirestore
 import com.github.onlynotesswent.model.users.UserViewModel
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
@@ -57,6 +58,7 @@ class UserCreateScreenTest {
   fun displayAllComponents() {
     composeTestRule.setContent { UserCreate(navigationActions, userViewModel) }
 
+    composeTestRule.onNodeWithTag("loginLogo").assertIsDisplayed()
     composeTestRule.onNodeWithTag("addUserScreen").assertExists()
     composeTestRule.onNodeWithTag("goBackButton").assertExists()
     composeTestRule.onNodeWithTag("inputFirstName").assertExists()
@@ -84,7 +86,7 @@ class UserCreateScreenTest {
     // Mock the repository to return a result indicating the username already exists
     `when`(userRepository.addUser(any(), any(), any())).thenAnswer { invocation ->
       val onFailure = invocation.getArgument<(Exception) -> Unit>(2)
-      onFailure(Exception("Username already taken"))
+      onFailure(UserRepositoryFirestore.UsernameTakenException())
     }
 
     composeTestRule.setContent { UserCreate(navigationActions, userViewModel) }
