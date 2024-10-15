@@ -56,7 +56,7 @@ class UserCreateScreenTest {
 
   @Test
   fun displayAllComponents() {
-    composeTestRule.setContent { UserCreate(navigationActions, userViewModel) }
+    composeTestRule.setContent { CreateUserScreen(navigationActions, userViewModel) }
 
     composeTestRule.onNodeWithTag("loginLogo").assertIsDisplayed()
     composeTestRule.onNodeWithTag("addUserScreen").assertExists()
@@ -69,7 +69,7 @@ class UserCreateScreenTest {
 
   @Test
   fun doesNotSubmitWithoutUser() {
-    composeTestRule.setContent { UserCreate(navigationActions, userViewModel) }
+    composeTestRule.setContent { CreateUserScreen(navigationActions, userViewModel) }
 
     composeTestRule.onNodeWithTag("createUserButton").performClick()
     verify(userRepository, never()).addUser(any(), any(), any())
@@ -89,7 +89,7 @@ class UserCreateScreenTest {
       onFailure(UserRepositoryFirestore.UsernameTakenException())
     }
 
-    composeTestRule.setContent { UserCreate(navigationActions, userViewModel) }
+    composeTestRule.setContent { CreateUserScreen(navigationActions, userViewModel) }
 
     // Act: Enter the existing username and attempt to create a user
     composeTestRule.onNodeWithTag("inputUserName").performTextInput(existingUserName)
@@ -113,7 +113,7 @@ class UserCreateScreenTest {
       onSuccess()
     }
 
-    composeTestRule.setContent { UserCreate(navigationActions, userViewModel) }
+    composeTestRule.setContent { CreateUserScreen(navigationActions, userViewModel) }
 
     // Act: Enter the user data and create the user
     composeTestRule.onNodeWithTag("inputFirstName").performTextInput(testUser.firstName)

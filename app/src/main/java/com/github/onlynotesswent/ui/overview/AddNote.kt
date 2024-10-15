@@ -1,4 +1,4 @@
-package com.github.onlynotesswent.ui.screen
+package com.github.onlynotesswent.ui.overview
 
 import android.graphics.Bitmap
 import androidx.compose.foundation.Image

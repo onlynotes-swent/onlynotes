@@ -1,4 +1,4 @@
-package com.github.onlynotesswent.ui.addNote
+package com.github.onlynotesswent.ui.overview
 
 import androidx.activity.ComponentActivity
 import androidx.compose.ui.test.assertIsDisplayed
@@ -21,7 +21,6 @@ import com.github.onlynotesswent.model.users.UserRepository
 import com.github.onlynotesswent.model.users.UserViewModel
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
-import com.github.onlynotesswent.ui.screen.AddNoteScreen
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test

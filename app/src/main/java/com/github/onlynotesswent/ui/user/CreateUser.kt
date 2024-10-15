@@ -37,7 +37,7 @@ import com.google.firebase.auth.auth
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun UserCreate(navigationActions: NavigationActions, userViewModel: UserViewModel) {
+fun CreateUserScreen(navigationActions: NavigationActions, userViewModel: UserViewModel) {
   var firstName by remember { mutableStateOf("") }
   var lastName by remember { mutableStateOf("") }
   var userName by remember { mutableStateOf("") }
