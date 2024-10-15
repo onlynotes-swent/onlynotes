@@ -14,15 +14,15 @@ import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.model.users.UserViewModel
+import com.github.onlynotesswent.ui.authentication.SignInScreen
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Route
 import com.github.onlynotesswent.ui.navigation.Screen
-import com.github.onlynotesswent.ui.screen.AddNoteScreen
-import com.github.onlynotesswent.ui.screen.AuthenticationScreen
-import com.github.onlynotesswent.ui.screen.EditNoteScreen
-import com.github.onlynotesswent.ui.screen.OverviewScreen
+import com.github.onlynotesswent.ui.overview.AddNoteScreen
+import com.github.onlynotesswent.ui.overview.EditNoteScreen
+import com.github.onlynotesswent.ui.overview.OverviewScreen
 import com.github.onlynotesswent.ui.theme.SampleAppTheme
-import com.github.onlynotesswent.ui.user.UserCreate
+import com.github.onlynotesswent.ui.user.CreateUserScreen
 
 class MainActivity : ComponentActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -43,8 +43,8 @@ fun OnlyNotesApp() {
         startDestination = Screen.AUTH,
         route = Route.AUTH,
     ) {
-      composable(Screen.AUTH) { AuthenticationScreen(navigationActions) }
-      composable(Screen.CREATE_USER) { UserCreate(navigationActions, userViewModel) }
+      composable(Screen.AUTH) { SignInScreen(navigationActions, userViewModel) }
+      composable(Screen.CREATE_USER) { CreateUserScreen(navigationActions, userViewModel) }
     }
 
     navigation(

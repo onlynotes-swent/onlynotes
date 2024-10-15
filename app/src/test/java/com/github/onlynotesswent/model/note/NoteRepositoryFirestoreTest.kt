@@ -25,7 +25,7 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows.shadowOf
 
 @RunWith(RobolectricTestRunner::class)
-class ImplementationNoteRepositoryTest {
+class NoteRepositoryFirestoreTest {
 
   @Mock private lateinit var mockFirestore: FirebaseFirestore
   @Mock private lateinit var mockDocumentReference: DocumentReference
@@ -33,7 +33,7 @@ class ImplementationNoteRepositoryTest {
   @Mock private lateinit var mockDocumentSnapshot: DocumentSnapshot
   @Mock private lateinit var mockToDoQuerySnapshot: QuerySnapshot
 
-  private lateinit var implementationNoteRepository: ImplementationNoteRepository
+  private lateinit var noteRepositoryFirestore: NoteRepositoryFirestore
 
   private val note =
       Note(
@@ -54,7 +54,7 @@ class ImplementationNoteRepositoryTest {
       FirebaseApp.initializeApp(ApplicationProvider.getApplicationContext())
     }
 
-    implementationNoteRepository = ImplementationNoteRepository(mockFirestore)
+    noteRepositoryFirestore = NoteRepositoryFirestore(mockFirestore)
 
     `when`(mockFirestore.collection(any())).thenReturn(mockCollectionReference)
     `when`(mockCollectionReference.document(any())).thenReturn(mockDocumentReference)
@@ -64,7 +64,7 @@ class ImplementationNoteRepositoryTest {
   @Test
   fun getNewUid() {
     `when`(mockDocumentReference.id).thenReturn("1")
-    val uid = implementationNoteRepository.getNewUid()
+    val uid = noteRepositoryFirestore.getNewUid()
     assert(uid == "1")
   }
 
@@ -82,7 +82,7 @@ class ImplementationNoteRepositoryTest {
     val bitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)
     `when`(mockDocumentSnapshot.get("image")).thenReturn(bitmap)
 
-    val note = implementationNoteRepository.documentSnapshotToNote(mockDocumentSnapshot)
+    val note = noteRepositoryFirestore.documentSnapshotToNote(mockDocumentSnapshot)
 
     assertNotNull(note)
     assert(note?.id == "1")
@@ -103,7 +103,7 @@ class ImplementationNoteRepositoryTest {
     // Ensure the QuerySnapshot returns a list of mock DocumentSnapshots
     `when`(mockToDoQuerySnapshot.documents).thenReturn(listOf())
 
-    implementationNoteRepository.getNotes("1", {}, {})
+    noteRepositoryFirestore.getNotes("1", {}, {})
 
     // Verify that the 'documents' field was accessed
     verify(timeout(100)) { (mockToDoQuerySnapshot).documents }
@@ -113,7 +113,7 @@ class ImplementationNoteRepositoryTest {
   fun getNoteById_callsDocument() {
     `when`(mockDocumentReference.get()).thenReturn(Tasks.forResult(mockDocumentSnapshot))
 
-    implementationNoteRepository.getNoteById("1", {}, {})
+    noteRepositoryFirestore.getNoteById("1", {}, {})
 
     shadowOf(Looper.getMainLooper()).idle()
 
@@ -126,7 +126,7 @@ class ImplementationNoteRepositoryTest {
 
     // This test verifies that when we add a new ToDo, the Firestore `collection()` method is
     // called.
-    implementationNoteRepository.addNote(note, onSuccess = {}, onFailure = {})
+    noteRepositoryFirestore.addNote(note, onSuccess = {}, onFailure = {})
 
     shadowOf(Looper.getMainLooper()).idle() // Ensure all asynchronous operations complete
 
@@ -138,7 +138,7 @@ class ImplementationNoteRepositoryTest {
   fun deleteNoteById_callsDocument() {
     `when`(mockDocumentReference.delete()).thenReturn(Tasks.forResult(null))
 
-    implementationNoteRepository.deleteNoteById("1", onSuccess = {}, onFailure = {})
+    noteRepositoryFirestore.deleteNoteById("1", onSuccess = {}, onFailure = {})
 
     shadowOf(Looper.getMainLooper()).idle()
 
@@ -149,7 +149,7 @@ class ImplementationNoteRepositoryTest {
   fun updateNote_callsCollection() {
     `when`(mockDocumentReference.set(any())).thenReturn(Tasks.forResult(null))
 
-    implementationNoteRepository.updateNote(note, onSuccess = {}, onFailure = {})
+    noteRepositoryFirestore.updateNote(note, onSuccess = {}, onFailure = {})
 
     shadowOf(Looper.getMainLooper()).idle()
 

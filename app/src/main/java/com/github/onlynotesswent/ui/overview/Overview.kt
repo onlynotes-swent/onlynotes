@@ -1,4 +1,4 @@
-package com.github.onlynotesswent.ui.screen
+package com.github.onlynotesswent.ui.overview
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -76,6 +76,7 @@ fun OverviewScreen(navigationActions: NavigationActions, noteViewModel: NoteView
                         .testTag("noteList")) {
                   items(notes.value.size) { index ->
                     NoteItem(note = notes.value[index]) {
+                      noteViewModel.selectedNote(notes.value[index])
                       navigationActions.navigateTo(Screen.EDIT_NOTE)
                     }
                   }
@@ -131,10 +132,14 @@ fun NoteItem(note: Note, onClick: () -> Unit) {
 
           Spacer(modifier = Modifier.height(4.dp))
           Text(
+              text = note.title,
+              style = MaterialTheme.typography.bodyMedium,
+              fontWeight = FontWeight.Bold)
+          Text(
               text = note.name,
               style = MaterialTheme.typography.bodyMedium,
               fontWeight = FontWeight.Bold)
-          Text(text = note.userId, style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+          Text(text = note.id, style = MaterialTheme.typography.bodySmall, color = Color.Gray)
         }
       }
 }

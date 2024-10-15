@@ -11,6 +11,7 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
 import com.github.onlynotesswent.model.users.User
 import com.github.onlynotesswent.model.users.UserRepository
+import com.github.onlynotesswent.model.users.UserRepositoryFirestore
 import com.github.onlynotesswent.model.users.UserViewModel
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
@@ -55,8 +56,9 @@ class UserCreateScreenTest {
 
   @Test
   fun displayAllComponents() {
-    composeTestRule.setContent { UserCreate(navigationActions, userViewModel) }
+    composeTestRule.setContent { CreateUserScreen(navigationActions, userViewModel) }
 
+    composeTestRule.onNodeWithTag("loginLogo").assertIsDisplayed()
     composeTestRule.onNodeWithTag("addUserScreen").assertExists()
     composeTestRule.onNodeWithTag("goBackButton").assertExists()
     composeTestRule.onNodeWithTag("inputFirstName").assertExists()
@@ -67,7 +69,7 @@ class UserCreateScreenTest {
 
   @Test
   fun doesNotSubmitWithoutUser() {
-    composeTestRule.setContent { UserCreate(navigationActions, userViewModel) }
+    composeTestRule.setContent { CreateUserScreen(navigationActions, userViewModel) }
 
     composeTestRule.onNodeWithTag("createUserButton").performClick()
     verify(userRepository, never()).addUser(any(), any(), any())
@@ -84,10 +86,10 @@ class UserCreateScreenTest {
     // Mock the repository to return a result indicating the username already exists
     `when`(userRepository.addUser(any(), any(), any())).thenAnswer { invocation ->
       val onFailure = invocation.getArgument<(Exception) -> Unit>(2)
-      onFailure(Exception("Username already taken"))
+      onFailure(UserRepositoryFirestore.UsernameTakenException())
     }
 
-    composeTestRule.setContent { UserCreate(navigationActions, userViewModel) }
+    composeTestRule.setContent { CreateUserScreen(navigationActions, userViewModel) }
 
     // Act: Enter the existing username and attempt to create a user
     composeTestRule.onNodeWithTag("inputUserName").performTextInput(existingUserName)
@@ -111,7 +113,7 @@ class UserCreateScreenTest {
       onSuccess()
     }
 
-    composeTestRule.setContent { UserCreate(navigationActions, userViewModel) }
+    composeTestRule.setContent { CreateUserScreen(navigationActions, userViewModel) }
 
     // Act: Enter the user data and create the user
     composeTestRule.onNodeWithTag("inputFirstName").performTextInput(testUser.firstName)

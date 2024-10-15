@@ -26,14 +26,18 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.github.onlynotesswent.model.users.User
+import com.github.onlynotesswent.model.users.UserRepositoryFirestore
 import com.github.onlynotesswent.model.users.UserViewModel
+import com.github.onlynotesswent.ui.authentication.Logo
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
+import com.google.firebase.Firebase
 import com.google.firebase.Timestamp
+import com.google.firebase.auth.auth
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun UserCreate(navigationActions: NavigationActions, userViewModel: UserViewModel) {
+fun CreateUserScreen(navigationActions: NavigationActions, userViewModel: UserViewModel) {
   var firstName by remember { mutableStateOf("") }
   var lastName by remember { mutableStateOf("") }
   var userName by remember { mutableStateOf("") }
@@ -59,6 +63,8 @@ fun UserCreate(navigationActions: NavigationActions, userViewModel: UserViewMode
             modifier = Modifier.fillMaxSize().padding(paddingValues),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally) {
+              Logo()
+
               OutlinedTextField(
                   value = firstName,
                   onValueChange = { firstName = it },
@@ -86,25 +92,29 @@ fun UserCreate(navigationActions: NavigationActions, userViewModel: UserViewMode
               // Save Button
               Button(
                   onClick = {
+                    val user =
+                        User(
+                            firstName = firstName,
+                            lastName = lastName,
+                            userName = userName,
+                            email = Firebase.auth.currentUser?.email ?: "",
+                            uid = userViewModel.getNewUid(),
+                            dateOfJoining = Timestamp.now(),
+                            rating = 0.0)
                     userViewModel.addUser(
-                        user =
-                            User(
-                                firstName = firstName,
-                                lastName = lastName,
-                                userName = userName,
-                                email = "",
-                                uid = userViewModel.getNewUid(),
-                                dateOfJoining = Timestamp.now(),
-                                rating = 0.0),
-                        onSuccess = { navigationActions.navigateTo(Screen.OVERVIEW) },
+                        user = user,
+                        onSuccess = {
+                          userViewModel.setCurrentUser(user)
+                          navigationActions.navigateTo(Screen.OVERVIEW)
+                        },
                         onFailure = { exception ->
-                          // Show a toast message if the user name is already taken
                           Toast.makeText(
                                   context,
                                   "Error while adding user: $exception",
                                   Toast.LENGTH_SHORT)
                               .show()
-                          userNameError = true
+                          userNameError =
+                              exception is UserRepositoryFirestore.UsernameTakenException
                         })
                   },
                   modifier =
