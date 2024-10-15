@@ -18,18 +18,30 @@ interface UserRepository {
    *
    * @param id The ID of the user to retrieve.
    * @param onSuccess Callback to be invoked with the retrieved user.
+   * @param onUserNotFound Callback to be invoked if the user is not found.
    * @param onFailure Callback to be invoked if an error occurs.
    */
-  fun getUserById(id: String, onSuccess: (User) -> Unit, onFailure: (Exception) -> Unit)
+  fun getUserById(
+      id: String,
+      onSuccess: (User) -> Unit,
+      onUserNotFound: () -> Unit,
+      onFailure: (Exception) -> Unit
+  )
 
   /**
    * Retrieves a user by their email address.
    *
    * @param email The email address of the user to retrieve.
    * @param onSuccess Callback to be invoked with the retrieved user.
+   * @param onUserNotFound Callback to be invoked if the user is not found.
    * @param onFailure Callback to be invoked if an error occurs.
    */
-  fun getUserByEmail(email: String, onSuccess: (User) -> Unit, onFailure: (Exception) -> Unit)
+  fun getUserByEmail(
+      email: String,
+      onSuccess: (User) -> Unit,
+      onUserNotFound: () -> Unit,
+      onFailure: (Exception) -> Unit
+  )
 
   /**
    * Updates the information of an existing user.
