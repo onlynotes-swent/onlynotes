@@ -55,7 +55,6 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
    * @param onFailure Callback to be invoked if an error occurs.
    */
   fun addUser(user: User, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) {
-    // add uid here
     repository.addUser(user, onSuccess, onFailure)
   }
 
