@@ -9,7 +9,7 @@ import com.google.firebase.auth.auth
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 
-class ImplementationNoteRepository(private val db: FirebaseFirestore) : NoteRepository {
+class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepository {
 
   private data class firebaseNote(
       val id: String,

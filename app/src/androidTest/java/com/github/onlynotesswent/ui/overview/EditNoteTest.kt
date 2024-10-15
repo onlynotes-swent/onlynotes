@@ -1,4 +1,4 @@
-package com.github.onlynotesswent.ui.editNote
+package com.github.onlynotesswent.ui.overview
 
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
@@ -10,7 +10,6 @@ import com.github.onlynotesswent.model.users.UserRepository
 import com.github.onlynotesswent.model.users.UserViewModel
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
-import com.github.onlynotesswent.ui.screen.EditNoteScreen
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test

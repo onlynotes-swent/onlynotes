@@ -28,7 +28,7 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
         object : ViewModelProvider.Factory {
           @Suppress("UNCHECKED_CAST")
           override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            return NoteViewModel(ImplementationNoteRepository(Firebase.firestore)) as T
+            return NoteViewModel(NoteRepositoryFirestore(Firebase.firestore)) as T
           }
         }
   }
