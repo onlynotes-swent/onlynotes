@@ -1,10 +1,6 @@
 name: Build APK
 
 on:
-  push:
-    branches:
-      - main
-      - feature/set-up-github-APK-button
   workflow_dispatch:
 
 jobs:
