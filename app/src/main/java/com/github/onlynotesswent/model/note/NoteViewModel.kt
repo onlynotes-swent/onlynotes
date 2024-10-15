@@ -10,11 +10,11 @@ import kotlinx.coroutines.flow.asStateFlow
 
 class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
 
-  private val notes_ = MutableStateFlow<List<Note>>(emptyList())
-  val notes: StateFlow<List<Note>> = notes_.asStateFlow()
+  private val _notes = MutableStateFlow<List<Note>>(emptyList())
+  val notes: StateFlow<List<Note>> = _notes.asStateFlow()
 
-  private val note_ = MutableStateFlow<Note?>(null)
-  open val note: StateFlow<Note?> = note_.asStateFlow()
+  private val _note = MutableStateFlow<Note?>(null)
+  val note: StateFlow<Note?> = _note.asStateFlow()
 
   init {
     repository
@@ -34,7 +34,7 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
   }
 
   fun selectedNote(note: Note) {
-    note_.value = note
+    _note.value = note
   }
   /**
    * Generates a new unique ID.
@@ -47,7 +47,7 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
 
   /** Gets all Note documents. */
   fun getNotes(userID: String) {
-    repository.getNotes(userID, onSuccess = { notes_.value = it }, onFailure = {})
+    repository.getNotes(userID, onSuccess = { _notes.value = it }, onFailure = {})
   }
 
   /**
@@ -56,7 +56,7 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
    * @param noteId The ID of the Note document to be fetched.
    */
   fun getNoteById(noteId: String) {
-    repository.getNoteById(id = noteId, onSuccess = { note_.value = it }, onFailure = {})
+    repository.getNoteById(id = noteId, onSuccess = { _note.value = it }, onFailure = {})
   }
 
   /**
