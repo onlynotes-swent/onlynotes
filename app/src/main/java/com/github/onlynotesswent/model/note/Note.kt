@@ -17,5 +17,6 @@ data class Note(
 enum class Type {
   JPEG,
   PNG,
+  PDF,
   NORMAL_TEXT
 }

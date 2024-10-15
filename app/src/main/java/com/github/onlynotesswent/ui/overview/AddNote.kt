@@ -139,8 +139,8 @@ fun AddNoteScreen(
                           note =
                               Note(
                                   id = noteViewModel.getNewUid(),
-                                  name = "name",
-                                  type = Type.NORMAL_TEXT,
+                                  name = "scanned",
+                                  type = Type.PDF,
                                   title = title,
                                   content = "",
                                   date = Timestamp.now(),
