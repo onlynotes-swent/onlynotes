@@ -10,7 +10,7 @@ interface NoteRepository {
 
   fun getNoteById(id: String, onSuccess: (Note) -> Unit, onFailure: (Exception) -> Unit)
 
-  fun insertNote(note: Note, onSuccess: () -> Unit, onFailure: (Exception) -> Unit)
+  fun addNote(note: Note, onSuccess: () -> Unit, onFailure: (Exception) -> Unit)
 
   fun updateNote(note: Note, onSuccess: () -> Unit, onFailure: (Exception) -> Unit)
 

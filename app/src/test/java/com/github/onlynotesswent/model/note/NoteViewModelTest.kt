@@ -55,9 +55,9 @@ class NoteViewModelTest {
   }
 
   @Test
-  fun insertNoteCallsRepository() {
-    noteViewModel.insertNote(note, "1")
-    verify(noteRepository).insertNote(eq(note), any(), any())
+  fun addNoteCallsRepository() {
+    noteViewModel.addNote(note, "1")
+    verify(noteRepository).addNote(eq(note), any(), any())
   }
 
   @Test

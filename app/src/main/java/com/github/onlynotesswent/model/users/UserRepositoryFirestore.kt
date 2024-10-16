@@ -12,6 +12,8 @@ import com.google.firebase.firestore.FirebaseFirestore
  */
 class UserRepositoryFirestore(private val db: FirebaseFirestore) : UserRepository {
 
+  class UsernameTakenException : Exception("Username already taken")
+
   private val collectionPath = "users"
 
   /**
@@ -22,7 +24,9 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore) : UserRepositor
    */
   fun documentSnapshotToUser(document: DocumentSnapshot): User {
     return User(
-        name = document.getString("name") ?: "",
+        firstName = document.getString("firstName") ?: "",
+        lastName = document.getString("lastName") ?: "",
+        userName = document.getString("userName") ?: "",
         email = document.getString("email") ?: "",
         uid = document.getString("uid") ?: "",
         dateOfJoining = document.getTimestamp("dateOfJoining") ?: Timestamp.now(),
@@ -35,13 +39,17 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore) : UserRepositor
     }
   }
 
-  override fun getUserById(id: String, onSuccess: (User) -> Unit, onFailure: (Exception) -> Unit) {
+  override fun getUserById(
+      id: String,
+      onSuccess: (User) -> Unit,
+      onUserNotFound: () -> Unit,
+      onFailure: (Exception) -> Unit
+  ) {
     db.collection(collectionPath)
         .document(id)
         .get()
         .addOnSuccessListener { document ->
-          val user = documentSnapshotToUser(document)
-          onSuccess(user)
+          if (!document.exists()) onUserNotFound() else onSuccess(documentSnapshotToUser(document))
         }
         .addOnFailureListener { exception -> onFailure(exception) }
   }
@@ -49,18 +57,15 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore) : UserRepositor
   override fun getUserByEmail(
       email: String,
       onSuccess: (User) -> Unit,
+      onUserNotFound: () -> Unit,
       onFailure: (Exception) -> Unit
   ) {
     db.collection(collectionPath)
         .whereEqualTo("email", email)
         .get()
         .addOnSuccessListener { result ->
-          if (result.isEmpty) {
-            onFailure(Exception("User not found"))
-          } else {
-            val user = documentSnapshotToUser(result.documents[0])
-            onSuccess(user)
-          }
+          if (result.isEmpty) onUserNotFound()
+          else onSuccess(documentSnapshotToUser(result.documents[0]))
         }
         .addOnFailureListener { exception -> onFailure(exception) }
   }
@@ -83,9 +88,17 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore) : UserRepositor
 
   override fun addUser(user: User, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) {
     db.collection(collectionPath)
-        .document(user.uid)
-        .set(user)
-        .addOnSuccessListener { onSuccess() }
+        .whereEqualTo("userName", user.userName)
+        .get()
+        .addOnSuccessListener { result ->
+          if (result.isEmpty) {
+            db.collection(collectionPath)
+                .document(user.uid)
+                .set(user)
+                .addOnSuccessListener { onSuccess() }
+                .addOnFailureListener { exception -> onFailure(exception) }
+          } else onFailure(UsernameTakenException())
+        }
         .addOnFailureListener { exception -> onFailure(exception) }
   }
 
@@ -93,7 +106,7 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore) : UserRepositor
     db.collection(collectionPath)
         .get()
         .addOnSuccessListener { result ->
-          val users = result.map { document -> documentSnapshotToUser(document) }
+          val users = result.documents.map { document -> documentSnapshotToUser(document) }
           onSuccess(users)
         }
         .addOnFailureListener { exception -> onFailure(exception) }
