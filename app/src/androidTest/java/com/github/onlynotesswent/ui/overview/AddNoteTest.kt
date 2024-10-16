@@ -25,9 +25,10 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.mockito.Mockito.mock
-import org.mockito.Mockito.never
-import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
+import org.mockito.kotlin.any
+import org.mockito.kotlin.never
+import org.mockito.kotlin.verify
 
 class AddNoteTest {
   private lateinit var userRepository: UserRepository
@@ -152,5 +153,39 @@ class AddNoteTest {
 
     // Now the button text should be "Create Note"
     composeTestRule.onNodeWithTag("createNoteButton").assertTextEquals("Create Note")
+  }
+
+  @Test
+  fun createNoteFromScratchButtonCorrect() {
+    composeTestRule.setContent { AddNoteScreen(navigationActions, scanner, noteViewModel) }
+
+    composeTestRule.onNodeWithTag("inputNoteTitle").performTextInput("test")
+
+    // Set the template dropdown to "Private"
+    composeTestRule.onNodeWithTag("visibilityButton").performClick()
+    composeTestRule
+        .onNodeWithTag("visibilityMenu")
+        .onChildren()
+        .filter(hasText("Private"))
+        .onFirst()
+        .performClick()
+
+    // Set the template dropdown to "Create Note From Scratch"
+    composeTestRule.onNodeWithTag("templateButton").performClick()
+    composeTestRule
+        .onNodeWithTag("templateMenu")
+        .onChildren()
+        .filter(hasText("Create Note From Scratch"))
+        .onFirst()
+        .performClick()
+
+    // Now the button text should be "Create Note"
+    composeTestRule.onNodeWithTag("createNoteButton").assertTextEquals("Create Note")
+
+    `when`(noteRepository.getNewUid()).thenReturn("1")
+    composeTestRule.onNodeWithTag("createNoteButton").performClick()
+    verify(noteRepository).addNote(any(), any<() -> Unit>(), any<(Exception) -> Unit>())
+    verify(navigationActions).goBack()
+    verify(noteRepository).getNewUid()
   }
 }
