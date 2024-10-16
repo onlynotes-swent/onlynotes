@@ -30,7 +30,8 @@ class TextRecognizer(private val activity: ComponentActivity) {
   fun init() {
     textRecognitionLauncher =
         activity.registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
-          uri?.let { extractTextFromImage(it) } ?: showToast("Failed to load image")
+          uri?.let { extractTextFromImage(it) }
+              ?: Toast.makeText(activity, "Failed to load image", Toast.LENGTH_LONG).show()
         }
   }
 
@@ -49,7 +50,7 @@ class TextRecognizer(private val activity: ComponentActivity) {
     try {
       inputImage = InputImage.fromFilePath(activity, imageUri)
     } catch (e: IOException) {
-      showToast("Error reading image: ${e.message}")
+      Toast.makeText(activity, "Error reading image: ${e.message}", Toast.LENGTH_LONG).show()
       return
     }
 
@@ -59,10 +60,13 @@ class TextRecognizer(private val activity: ComponentActivity) {
           if (visionText.text.isNotEmpty()) {
             displayRecognizedText(visionText.text)
           } else {
-            showToast("No text found in the image")
+            Toast.makeText(activity, "No text found in the image", Toast.LENGTH_LONG).show()
           }
         }
-        .addOnFailureListener { e -> showToast("Text recognition failed: ${e.message}") }
+        .addOnFailureListener { e ->
+          Toast.makeText(activity, "Text recognition failed: ${e.message}", Toast.LENGTH_LONG)
+              .show()
+        }
   }
 
   /**
@@ -90,15 +94,6 @@ class TextRecognizer(private val activity: ComponentActivity) {
           putExtra(Intent.EXTRA_TITLE, "Recognized Text")
         }
     activity.startActivity(Intent.createChooser(shareIntent, "Share text"))
-  }
-
-  /**
-   * Utility function to show Toast messages.
-   *
-   * @param message the message to display in the Toast
-   */
-  private fun showToast(message: String) {
-    Toast.makeText(activity, message, Toast.LENGTH_LONG).show()
   }
 
   companion object {
