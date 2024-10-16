@@ -17,6 +17,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -28,24 +29,30 @@ import androidx.compose.ui.unit.dp
 import com.github.onlynotesswent.model.users.User
 import com.github.onlynotesswent.model.users.UserRepositoryFirestore
 import com.github.onlynotesswent.model.users.UserViewModel
-import com.github.onlynotesswent.ui.authentication.Logo
+import com.github.onlynotesswent.ui.navigation.BottomNavigationMenu
+import com.github.onlynotesswent.ui.navigation.LIST_TOP_LEVEL_DESTINATION
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
-import com.google.firebase.Firebase
-import com.google.firebase.Timestamp
-import com.google.firebase.auth.auth
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CreateUserScreen(navigationActions: NavigationActions, userViewModel: UserViewModel) {
-  var firstName by remember { mutableStateOf("") }
-  var lastName by remember { mutableStateOf("") }
-  var userName by remember { mutableStateOf("") }
+fun ProfileScreen(navigationActions: NavigationActions, userViewModel: UserViewModel) {
+  val user = userViewModel.currentUser.collectAsState()
+
+  var firstName by remember { mutableStateOf(user.value?.firstName ?: "") }
+  var lastName by remember { mutableStateOf(user.value?.lastName ?: "") }
+  var userName by remember { mutableStateOf(user.value?.userName ?: "") }
   var userNameError by remember { mutableStateOf(false) }
   val context = LocalContext.current
 
   Scaffold(
-      modifier = Modifier.testTag("addUserScreen"),
+      modifier = Modifier.testTag("ProfileScreen"),
+      bottomBar = {
+        BottomNavigationMenu(
+            onTabSelect = { route -> navigationActions.navigateTo(route) },
+            tabList = LIST_TOP_LEVEL_DESTINATION,
+            selectedItem = navigationActions.currentRoute())
+      },
       topBar = {
         TopAppBar(
             title = {},
@@ -63,8 +70,6 @@ fun CreateUserScreen(navigationActions: NavigationActions, userViewModel: UserVi
             modifier = Modifier.fillMaxSize().padding(paddingValues),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally) {
-              Logo()
-
               OutlinedTextField(
                   value = firstName,
                   onValueChange = { firstName = it },
@@ -92,35 +97,45 @@ fun CreateUserScreen(navigationActions: NavigationActions, userViewModel: UserVi
               // Save Button
               Button(
                   onClick = {
-                    val user =
-                        User(
-                            firstName = firstName,
-                            lastName = lastName,
-                            userName = userName,
-                            email = Firebase.auth.currentUser?.email ?: "",
-                            uid = userViewModel.getNewUid(),
-                            dateOfJoining = Timestamp.now(),
-                            rating = 0.0)
-                    userViewModel.addUser(
-                        user = user,
-                        onSuccess = {
-                          userViewModel.setCurrentUser(user)
-                          navigationActions.navigateTo(Screen.OVERVIEW)
-                        },
-                        onFailure = { exception ->
-                          Toast.makeText(
-                                  context,
-                                  "Error while adding user: ${exception.message}",
-                                  Toast.LENGTH_SHORT)
-                              .show()
-                          userNameError =
-                              exception is UserRepositoryFirestore.UsernameTakenException
-                        })
+                    val updatedUser =
+                        user.value?.let {
+                          User(
+                              firstName = firstName,
+                              lastName = lastName,
+                              userName = userName,
+                              email = it.email,
+                              uid = it.uid,
+                              dateOfJoining = it.dateOfJoining,
+                              rating = it.rating)
+                        }
+                    if (updatedUser == null) {
+                      Toast.makeText(
+                              context,
+                              "Error while updating user: current user is null",
+                              Toast.LENGTH_SHORT)
+                          .show()
+                    } else {
+                      userViewModel.updateUser(
+                          user = updatedUser,
+                          onSuccess = {
+                            userViewModel.setCurrentUser(updatedUser)
+                            navigationActions.navigateTo(Screen.OVERVIEW)
+                          },
+                          onFailure = { exception ->
+                            Toast.makeText(
+                                    context,
+                                    "Error while updating user: ${exception.message}",
+                                    Toast.LENGTH_SHORT)
+                                .show()
+                            userNameError =
+                                exception is UserRepositoryFirestore.UsernameTakenException
+                          })
+                    }
                   },
                   modifier =
                       Modifier.fillMaxWidth(0.8f)
                           .padding(vertical = 16.dp)
-                          .testTag("createUserButton"),
+                          .testTag("modifyUserButton"),
                   // Disable the button if the user name is empty
                   enabled = userName.isNotBlank()) {
                     Text("Save")

@@ -71,11 +71,10 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore) : UserRepositor
   }
 
   override fun updateUser(user: User, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) {
-    db.collection(collectionPath)
-        .document(user.uid)
-        .set(user)
-        .addOnSuccessListener { onSuccess() }
-        .addOnFailureListener { exception -> onFailure(exception) }
+      deleteUserById(user.uid, onSuccess = {
+        addUser(user, onSuccess, onFailure)
+          onSuccess()
+      }, onFailure = onFailure)
   }
 
   override fun deleteUserById(id: String, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) {
