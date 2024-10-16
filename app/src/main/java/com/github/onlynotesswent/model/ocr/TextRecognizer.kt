@@ -97,6 +97,6 @@ class TextRecognizer(private val activity: ComponentActivity) {
   }
 
   companion object {
-    private const val TAG = "TextRecognizer"
+    const val TAG = "TextRecognizer"
   }
 }
