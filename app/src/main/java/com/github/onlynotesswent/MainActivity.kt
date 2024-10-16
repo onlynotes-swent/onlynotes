@@ -13,6 +13,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import com.github.onlynotesswent.model.note.NoteViewModel
+import com.github.onlynotesswent.model.scanner.Scanner
 import com.github.onlynotesswent.model.users.UserViewModel
 import com.github.onlynotesswent.ui.authentication.SignInScreen
 import com.github.onlynotesswent.ui.navigation.NavigationActions
@@ -27,12 +28,15 @@ import com.github.onlynotesswent.ui.user.CreateUserScreen
 class MainActivity : ComponentActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    setContent { SampleAppTheme { Surface(modifier = Modifier.fillMaxSize()) { OnlyNotesApp() } } }
+    val scanner = Scanner(this).apply { init() }
+    setContent {
+      SampleAppTheme { Surface(modifier = Modifier.fillMaxSize()) { OnlyNotesApp(scanner) } }
+    }
   }
 }
 
 @Composable
-fun OnlyNotesApp() {
+fun OnlyNotesApp(scanner: Scanner) {
   val navController = rememberNavController()
   val navigationActions = NavigationActions(navController)
   val userViewModel: UserViewModel = viewModel(factory = UserViewModel.Factory)
@@ -52,7 +56,7 @@ fun OnlyNotesApp() {
         route = Route.OVERVIEW,
     ) {
       composable(Screen.OVERVIEW) { OverviewScreen(navigationActions, noteViewModel) }
-      composable(Screen.ADD_NOTE) { AddNoteScreen(navigationActions, noteViewModel) }
+      composable(Screen.ADD_NOTE) { AddNoteScreen(navigationActions, scanner, noteViewModel) }
       composable(Screen.EDIT_NOTE) { EditNoteScreen(navigationActions, noteViewModel) }
     }
     navigation(
