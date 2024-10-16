@@ -51,6 +51,7 @@ class TextRecognizer(private val activity: ComponentActivity) {
       inputImage = InputImage.fromFilePath(activity, imageUri)
     } catch (e: IOException) {
       Toast.makeText(activity, "Error reading image: ${e.message}", Toast.LENGTH_LONG).show()
+        Log.e(TAG, "Error reading image", e)
       return
     }
 
@@ -61,11 +62,13 @@ class TextRecognizer(private val activity: ComponentActivity) {
               shareText(visionText.text)
           } else {
             Toast.makeText(activity, "No text found in the image", Toast.LENGTH_LONG).show()
+              Log.d(TAG, "No text found in the image")
           }
         }
         .addOnFailureListener { e ->
           Toast.makeText(activity, "Text recognition failed: ${e.message}", Toast.LENGTH_LONG)
               .show()
+            Log.e(TAG, "Text recognition failed", e)
         }
   }
 
