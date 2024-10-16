@@ -58,7 +58,7 @@ class TextRecognizer(private val activity: ComponentActivity) {
         .process(inputImage)
         .addOnSuccessListener { visionText ->
           if (visionText.text.isNotEmpty()) {
-            displayRecognizedText(visionText.text)
+              shareText(visionText.text)
           } else {
             Toast.makeText(activity, "No text found in the image", Toast.LENGTH_LONG).show()
           }
@@ -67,18 +67,6 @@ class TextRecognizer(private val activity: ComponentActivity) {
           Toast.makeText(activity, "Text recognition failed: ${e.message}", Toast.LENGTH_LONG)
               .show()
         }
-  }
-
-  /**
-   * Displays the recognized text and provides the option to share it.
-   *
-   * @param recognizedText the text recognized from the image
-   */
-  private fun displayRecognizedText(recognizedText: String) {
-    Log.d(TAG, "Recognized Text: $recognizedText")
-
-    // Share the recognized text via an Intent
-    shareText(recognizedText)
   }
 
   /**
