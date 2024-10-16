@@ -75,14 +75,18 @@ fun ProfileScreen(navigationActions: NavigationActions, userViewModel: UserViewM
                   onValueChange = { newFirstName = it },
                   label = { Text("First Name") },
                   modifier =
-                      Modifier.fillMaxWidth(0.8f).padding(vertical = 12.dp).testTag("inputFirstName"))
+                      Modifier.fillMaxWidth(0.8f)
+                          .padding(vertical = 12.dp)
+                          .testTag("inputFirstName"))
 
               OutlinedTextField(
                   value = newLastName,
                   onValueChange = { newLastName = it },
                   label = { Text("Last Name") },
                   modifier =
-                      Modifier.fillMaxWidth(0.8f).padding(vertical = 12.dp).testTag("inputLastName"))
+                      Modifier.fillMaxWidth(0.8f)
+                          .padding(vertical = 12.dp)
+                          .testTag("inputLastName"))
 
               OutlinedTextField(
                   value = newUserName,
@@ -90,7 +94,9 @@ fun ProfileScreen(navigationActions: NavigationActions, userViewModel: UserViewM
                   label = { Text("* User Name") },
                   isError = userNameError,
                   modifier =
-                      Modifier.fillMaxWidth(0.8f).padding(vertical = 12.dp).testTag("inputUserName"))
+                      Modifier.fillMaxWidth(0.8f)
+                          .padding(vertical = 12.dp)
+                          .testTag("inputUserName"))
 
               // Save Button
               Button(
