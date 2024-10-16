@@ -5,6 +5,8 @@ import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTextClearance
+import androidx.compose.ui.test.performTextInput
 import com.github.onlynotesswent.model.users.User
 import com.github.onlynotesswent.model.users.UserRepository
 import com.github.onlynotesswent.model.users.UserRepositoryFirestore
@@ -38,6 +40,7 @@ class ProfileScreenTest {
 
   @get:Rule val composeTestRule = createComposeRule()
 
+  @Suppress("UNCHECKED_CAST")
   @Before
   fun setUp() {
     // Mock is a way to create a fake object that can be used in place of a real object
@@ -87,5 +90,28 @@ class ProfileScreenTest {
 
     composeTestRule.onNodeWithTag("modifyUserButton").performClick()
     verify(navigationActions).navigateTo(Screen.OVERVIEW)
+  }
+
+  @Test
+  fun modifyProfil() {
+    composeTestRule.setContent { ProfileScreen(navigationActions, userViewModel) }
+
+    composeTestRule.onNodeWithTag("inputUserName").performTextClearance()
+    composeTestRule.onNodeWithTag("inputUserName").performTextInput("newUserName")
+    assert(userViewModel.currentUser.value?.userName == "testUserName")
+    composeTestRule.onNodeWithTag("modifyUserButton").performClick()
+    assert(userViewModel.currentUser.value?.userName == "newUserName")
+
+    composeTestRule.onNodeWithTag("inputFirstName").performTextClearance()
+    composeTestRule.onNodeWithTag("inputFirstName").performTextInput("newFirstName")
+    assert(userViewModel.currentUser.value?.firstName == "testFirstName")
+    composeTestRule.onNodeWithTag("modifyUserButton").performClick()
+    assert(userViewModel.currentUser.value?.firstName == "newFirstName")
+
+    composeTestRule.onNodeWithTag("inputLastName").performTextClearance()
+    composeTestRule.onNodeWithTag("inputLastName").performTextInput("newLastName")
+    assert(userViewModel.currentUser.value?.lastName == "testLastName")
+    composeTestRule.onNodeWithTag("modifyUserButton").performClick()
+    assert(userViewModel.currentUser.value?.lastName == "newLastName")
   }
 }
