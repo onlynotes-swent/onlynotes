@@ -14,7 +14,8 @@ import java.io.IOException
 
 /**
  * TextRecognizer class that extracts text from an image URI using Google ML Kit’s Text Recognition
- * API.
+ * v2 API. https://developers.google.com/ml-kit/vision/text-recognition/v2 inspired by:
+ * https://github.com/mundodigitalpro/MLVisionKotlin/tree/master
  *
  * @param activity the ComponentActivity that will use the TextRecognizer
  */
