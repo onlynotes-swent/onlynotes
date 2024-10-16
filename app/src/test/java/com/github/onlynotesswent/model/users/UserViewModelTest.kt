@@ -11,7 +11,6 @@ import org.junit.runner.RunWith
 import org.mockito.Mock
 import org.mockito.Mockito.anyString
 import org.mockito.Mockito.mock
-import org.mockito.Mockito.times
 import org.mockito.Mockito.`when`
 import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
@@ -29,7 +28,9 @@ class UserViewModelTest {
 
   private val user =
       User(
-          name = "User",
+          firstName = "User",
+          lastName = "Name",
+          userName = "username",
           email = "example@gmail.com",
           uid = "1",
           dateOfJoining = Timestamp.now(),
@@ -46,7 +47,7 @@ class UserViewModelTest {
     `when`(mockFirebaseUser.email).thenReturn("example@gmail.com")
 
     // Mock the getUserByEmail method to return a valid user
-    `when`(mockRepositoryFirestore.getUserByEmail(anyString(), any(), any())).thenAnswer {
+    `when`(mockRepositoryFirestore.getUserByEmail(anyString(), any(), any(), any())).thenAnswer {
       val onSuccess = it.arguments[1] as (User) -> Unit
       onSuccess(user)
     }
@@ -57,12 +58,17 @@ class UserViewModelTest {
 
     // Initialize UserViewModel with the mocked repository and FirebaseAuth
     userViewModel = UserViewModel(mockRepositoryFirestore)
-    userViewModel.setCurrentUser(mockFirebaseAuth)
+    userViewModel.setCurrentUser(user)
   }
 
   @Test
   fun `init should call repository init`() {
     verify(mockRepositoryFirestore, timeout(1000)).init(any(), any())
+  }
+
+  @Test
+  fun `getCurrentUser should return current user`() {
+    assertEquals(user, userViewModel.currentUser.value)
   }
 
   @Test
@@ -92,15 +98,14 @@ class UserViewModelTest {
 
   @Test
   fun `getUserById should call repository getUserById`() {
-    userViewModel.getUserById(user.uid, {}, {})
-    verify(mockRepositoryFirestore, timeout(1000)).getUserById(anyString(), any(), any())
+    userViewModel.getUserById(user.uid, {}, {}, {})
+    verify(mockRepositoryFirestore, timeout(1000)).getUserById(anyString(), any(), any(), any())
   }
 
   @Test
   fun `getUserByEmail should call repository getUserByEmail`() {
-    userViewModel.getUserByEmail(user.email, {}, {})
-    verify(mockRepositoryFirestore, timeout(1000).times(2))
-        .getUserByEmail(anyString(), any(), any())
+    userViewModel.getUserByEmail(user.email, {}, {}, {})
+    verify(mockRepositoryFirestore, timeout(1000)).getUserByEmail(anyString(), any(), any(), any())
   }
 
   @Test
@@ -108,7 +113,9 @@ class UserViewModelTest {
     // Ensure user is properly initialized
     val user =
         User(
-            name = "User",
+            firstName = "User",
+            lastName = "Name",
+            userName = "username",
             email = "example@gmail.com",
             uid = "1",
             dateOfJoining = Timestamp.now(),

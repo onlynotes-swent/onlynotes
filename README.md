@@ -16,3 +16,4 @@ and share information, streamlining the note-taking process for people who rely 
 ## Useful links
 1. [Drive](https://drive.google.com/drive/folders/1Z_0MuY4JhpFN-IeMG6ytGRAj3sbTMDrl?usp=drive_link)
 2. [Figma](https://www.figma.com/design/qkiGRJgbbuy79hYA70nIec/OnlyNotes-app?node-id=4-191&t=1SxOEvGvdryeW4uC-1)
+3. [architecture diagram](https://miro.com/welcomeonboard/T2pLOFVJUG5yaWl0azg3VzhERU5RUjRKZUY1T3Uwc0tibXFSMjdPSlRua0NPNm9NS3BQaVZCOVFQdUlpSGJuY3wzNDU4NzY0NjAzNDA5NTE2NTM5fDI=?share_link_id=106863103050)
