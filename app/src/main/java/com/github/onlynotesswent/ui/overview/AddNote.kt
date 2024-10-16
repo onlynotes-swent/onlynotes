@@ -131,37 +131,27 @@ fun AddNoteScreen(
 
               Button(
                   onClick = {
+                    var type = Type.NORMAL_TEXT
                     if (saveButton == "Take Picture") {
                       // call scan image API or functions. Once scanned, add the note to database
                       scanner.scan()
-                      noteViewModel.addNote(
-                          // provisional note, we will have to change this later
-                          note =
-                              Note(
-                                  id = noteViewModel.getNewUid(),
-                                  name = "scanned",
-                                  type = Type.PDF,
-                                  title = title,
-                                  content = "",
-                                  date = Timestamp.now(),
-                                  userId = "1",
-                                  image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)),
-                          userID = "1")
+                      type = Type.PDF
                     } else if (saveButton == "Create Note") {
-                      // create the note and add it to database
-                      noteViewModel.addNote(
-                          // provisional note, we will have to change this later
-                          Note(
-                              id = noteViewModel.getNewUid(),
-                              name = "name",
-                              type = Type.NORMAL_TEXT,
-                              title = title,
-                              content = "",
-                              date = Timestamp.now(),
-                              userId = "1",
-                              image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)),
-                          "1")
+                      type = Type.NORMAL_TEXT
                     }
+                    // create the note and add it to database
+                    noteViewModel.addNote(
+                        // provisional note, we will have to change this later
+                        Note(
+                            id = noteViewModel.getNewUid(),
+                            name = "name",
+                            type = type,
+                            title = title,
+                            content = "",
+                            date = Timestamp.now(),
+                            userId = "1",
+                            image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)),
+                        "1")
                     navigationActions.goBack()
                   },
                   enabled =

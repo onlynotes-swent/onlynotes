@@ -6,6 +6,7 @@ package com.github.onlynotesswent.model.scanner
 */
 
 import android.app.Activity
+import android.content.ActivityNotFoundException
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -34,7 +35,7 @@ import java.io.File
  *
  * ToDo, potentially enable each user to choose the options they want
  */
-class Scanner(
+open class Scanner(
     private val activity: ComponentActivity,
     private var scanner: GmsDocumentScanner =
         GmsDocumentScanning.getClient(
@@ -65,9 +66,15 @@ class Scanner(
     scanner
         .getStartScanIntent(activity)
         .addOnSuccessListener { intentSender ->
-          scannerLauncher.launch(IntentSenderRequest.Builder(intentSender).build())
+          try {
+            scannerLauncher.launch(IntentSenderRequest.Builder(intentSender).build())
+          } catch (e: ActivityNotFoundException) {
+            Log.e(TAG, "Failed to launch scanner: ${e.message}")
+            Toast.makeText(activity, "Failed to launch scanner", Toast.LENGTH_LONG).show()
+          }
         }
-        .addOnFailureListener() { e: Exception ->
+        .addOnFailureListener { e: Exception ->
+          Log.e(TAG, "Failed to scan: ${e.message}")
           Toast.makeText(activity, "Failed to scan: ${e.message}", Toast.LENGTH_LONG).show()
         }
   }
@@ -88,15 +95,21 @@ class Scanner(
     if (resultCode == Activity.RESULT_OK && result != null) {
       val path = result.pdf?.uri?.path
       if (path != null) {
-        val externalUri = FileProvider.getUriForFile(activity, fileProviderAuthority, File(path))
-        // TODO Currently only showing the pdf file returned Uri in toast, to change later
-        Toast.makeText(
-                activity,
-                "Scanner success, pdf handling not implemented: ${externalUri}",
-                Toast.LENGTH_LONG)
-            .show()
+        try {
+          val externalUri = FileProvider.getUriForFile(activity, fileProviderAuthority, File(path))
+          // TODO Currently only showing the pdf file returned Uri in toast, to change later
+          Toast.makeText(
+                  activity,
+                  "Scanner success, pdf handling not implemented: $externalUri",
+                  Toast.LENGTH_LONG)
+              .show()
+        } catch (e: IllegalArgumentException) {
+          // Shouldn't happen, so no toast is shown
+          Log.e(TAG, "$path is outside the paths supported by the File provider.")
+        }
       } else {
         Log.e(TAG, "Path to pdf file is null")
+        Toast.makeText(activity, "Scanned pdf not found", Toast.LENGTH_SHORT).show()
       }
     } else if (resultCode == Activity.RESULT_CANCELED) {
       Log.d(TAG, "Scanner cancelled")
@@ -108,6 +121,6 @@ class Scanner(
   }
 
   companion object {
-    const val TAG = "MainActivity"
+    const val TAG = "Scanner"
   }
 }
