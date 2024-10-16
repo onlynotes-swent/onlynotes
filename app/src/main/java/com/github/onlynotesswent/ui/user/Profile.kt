@@ -39,9 +39,9 @@ import com.github.onlynotesswent.ui.navigation.Screen
 fun ProfileScreen(navigationActions: NavigationActions, userViewModel: UserViewModel) {
   val user = userViewModel.currentUser.collectAsState()
 
-  var firstName by remember { mutableStateOf(user.value?.firstName ?: "") }
-  var lastName by remember { mutableStateOf(user.value?.lastName ?: "") }
-  var userName by remember { mutableStateOf(user.value?.userName ?: "") }
+  var newFirstName by remember { mutableStateOf(user.value?.firstName ?: "") }
+  var newLastName by remember { mutableStateOf(user.value?.lastName ?: "") }
+  var newUserName by remember { mutableStateOf(user.value?.userName ?: "") }
   var userNameError by remember { mutableStateOf(false) }
   val context = LocalContext.current
 
@@ -71,28 +71,26 @@ fun ProfileScreen(navigationActions: NavigationActions, userViewModel: UserViewM
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally) {
               OutlinedTextField(
-                  value = firstName,
-                  onValueChange = { firstName = it },
+                  value = newFirstName,
+                  onValueChange = { newFirstName = it },
                   label = { Text("First Name") },
                   modifier =
-                      Modifier.fillMaxWidth(0.8f)
-                          .padding(vertical = 8.dp)
-                          .testTag("inputFirstName"))
+                      Modifier.fillMaxWidth(0.8f).padding(vertical = 12.dp).testTag("inputFirstName"))
 
               OutlinedTextField(
-                  value = lastName,
-                  onValueChange = { lastName = it },
+                  value = newLastName,
+                  onValueChange = { newLastName = it },
                   label = { Text("Last Name") },
                   modifier =
-                      Modifier.fillMaxWidth(0.8f).padding(vertical = 8.dp).testTag("inputLastName"))
+                      Modifier.fillMaxWidth(0.8f).padding(vertical = 12.dp).testTag("inputLastName"))
 
               OutlinedTextField(
-                  value = userName,
-                  onValueChange = { userName = it },
+                  value = newUserName,
+                  onValueChange = { newUserName = it },
                   label = { Text("* User Name") },
                   isError = userNameError,
                   modifier =
-                      Modifier.fillMaxWidth(0.8f).padding(vertical = 8.dp).testTag("inputUserName"))
+                      Modifier.fillMaxWidth(0.8f).padding(vertical = 12.dp).testTag("inputUserName"))
 
               // Save Button
               Button(
@@ -100,9 +98,9 @@ fun ProfileScreen(navigationActions: NavigationActions, userViewModel: UserViewM
                     val updatedUser =
                         user.value?.let {
                           User(
-                              firstName = firstName,
-                              lastName = lastName,
-                              userName = userName,
+                              firstName = newFirstName,
+                              lastName = newLastName,
+                              userName = newUserName,
                               email = it.email,
                               uid = it.uid,
                               dateOfJoining = it.dateOfJoining,
@@ -137,7 +135,7 @@ fun ProfileScreen(navigationActions: NavigationActions, userViewModel: UserViewM
                           .padding(vertical = 16.dp)
                           .testTag("modifyUserButton"),
                   // Disable the button if the user name is empty
-                  enabled = userName.isNotBlank()) {
+                  enabled = newUserName.isNotBlank()) {
                     Text("Save")
                   }
             }
