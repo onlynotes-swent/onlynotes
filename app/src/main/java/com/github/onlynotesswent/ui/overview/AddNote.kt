@@ -40,6 +40,7 @@ import com.github.onlynotesswent.R
 import com.github.onlynotesswent.model.note.Note
 import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.model.note.Type
+import com.github.onlynotesswent.model.scanner.Scanner
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.google.firebase.Timestamp
 
@@ -47,7 +48,8 @@ import com.google.firebase.Timestamp
 @Composable
 fun AddNoteScreen(
     navigationActions: NavigationActions,
-    noteViewModel: NoteViewModel = viewModel(factory = NoteViewModel.Factory)
+    scanner: Scanner,
+    noteViewModel: NoteViewModel = viewModel(factory = NoteViewModel.Factory),
 ) {
 
   var title by remember { mutableStateOf("") }
@@ -129,25 +131,28 @@ fun AddNoteScreen(
 
               Button(
                   onClick = {
-                    if (saveButton == "Scan Image") {
+                    var type = Type.NORMAL_TEXT
+                    if (saveButton == "Take Picture") {
                       // call scan image API or functions. Once scanned, add the note to database
-
+                      scanner.scan()
+                      type = Type.PDF
                     } else if (saveButton == "Create Note") {
-                      // create the note and add it to database
-                      noteViewModel.addNote(
-                          // provisional note, we will have to change this later
-                          Note(
-                              id = noteViewModel.getNewUid(),
-                              name = "name",
-                              type = Type.NORMAL_TEXT,
-                              title = title,
-                              content = "",
-                              date = Timestamp.now(),
-                              userId = "1",
-                              image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)),
-                          "1")
-                      navigationActions.goBack()
+                      type = Type.NORMAL_TEXT
                     }
+                    // create the note and add it to database
+                    noteViewModel.addNote(
+                        // provisional note, we will have to change this later
+                        Note(
+                            id = noteViewModel.getNewUid(),
+                            name = "name",
+                            type = type,
+                            title = title,
+                            content = "",
+                            date = Timestamp.now(),
+                            userId = "1",
+                            image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)),
+                        "1")
+                    navigationActions.goBack()
                   },
                   enabled =
                       title.isNotEmpty() &&
