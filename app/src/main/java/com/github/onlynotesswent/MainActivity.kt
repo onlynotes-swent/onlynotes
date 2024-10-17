@@ -73,7 +73,7 @@ fun OnlyNotesApp(scanner: Scanner) {
         startDestination = Screen.PROFILE,
         route = Route.PROFILE,
     ) {
-      composable(Screen.PROFILE) { // ProfileScreen(navigationActions, ViewModel)
+      composable(Screen.PROFILE) { ProfileScreen(navigationActions, userViewModel)
       }
     }
   }
