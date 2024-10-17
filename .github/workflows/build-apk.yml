@@ -98,6 +98,10 @@ jobs:
       - name: Verify APK Signature
         run: |
           ${ANDROID_HOME}/build-tools/${{ env.build_tools_version }}/apksigner verify app/build/outputs/apk/debug/app-debug.apk
+
+      # Verify APK Signature using SHA1
+      - name: Verify APK Signature using SHA1
+        run: keytool -printcert -jarfile app/build/outputs/apk/debug/app-debug.apk
           
 
 
