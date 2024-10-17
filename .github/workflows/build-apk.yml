@@ -69,8 +69,10 @@ jobs:
 
       # Build the APK with signing
       - name: Build APK
-        run: ./gradlew assembleRelease -Pandroid.injected.signing.store.file=~/.android/debug.keystore \
-          -Pandroid.injected.signing.store.password=${{ secrets.KEYSTORE_PASSWORD }} \
+        run: |
+          ./gradlew assembleRelease \
+            -Pandroid.injected.signing.store.file=~/.android/debug.keystore \
+            -Pandroid.injected.signing.store.password=${{ secrets.KEYSTORE_PASSWORD }}
 
 
 
