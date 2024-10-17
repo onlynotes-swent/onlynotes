@@ -33,6 +33,9 @@ class NavigationActionsTest {
 
     navigationActions.navigateTo(Screen.AUTH)
     verify(navHostController).navigate(Screen.AUTH)
+
+    navigationActions.navigateTo(TopLevelDestinations.SEARCH)
+    verify(navHostController).navigate(eq(Route.SEARCH), any<NavOptionsBuilder.() -> Unit>())
   }
 
   @Test
