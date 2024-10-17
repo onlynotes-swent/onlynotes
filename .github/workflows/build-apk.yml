@@ -1,6 +1,9 @@
 name: Build APK
 
 on:
+  push:
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:
@@ -11,6 +14,10 @@ jobs:
       # Checkout the latest code
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Generate SHA-1 for debug keystore
+        run: |
+            keytool -list -v -keystore ~/.android/debug.keystore -alias androiddebugkey -storepass android -keypass android
 
       # Set up JDK 11 for Android build
       - name: Setup JDK
