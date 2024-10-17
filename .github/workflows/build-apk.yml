@@ -3,7 +3,6 @@ name: Build APK
 on:
   push:
     branches:
-      - main
       - Fix/APK_BUILD
   workflow_dispatch:
 
@@ -16,9 +15,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Generate Debug Keystore
+        run: |
+          keytool -genkeypair -v -keystore ~/.android/debug.keystore -alias androiddebugkey -storepass android -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
+
       - name: Generate SHA-1 for debug keystore
         run: |
-            keytool -list -v -keystore ~/.android/debug.keystore -alias androiddebugkey -storepass android -keypass android
+          keytool -list -v -keystore ~/.android/debug.keystore -alias androiddebugkey -storepass android -keypass android
 
       # Set up JDK 11 for Android build
       - name: Setup JDK
