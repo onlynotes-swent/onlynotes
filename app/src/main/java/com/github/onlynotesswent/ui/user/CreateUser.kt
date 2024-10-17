@@ -17,6 +17,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -35,13 +36,21 @@ import com.google.firebase.Firebase
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.auth
 
+/**
+ * A composable function that displays the profile screen.
+ *
+ * @param navigationActions An instance of NavigationActions to handle navigation events.
+ * @param userViewModel An instance of UserViewModel to manage user data.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateUserScreen(navigationActions: NavigationActions, userViewModel: UserViewModel) {
-  var firstName by remember { mutableStateOf("") }
-  var lastName by remember { mutableStateOf("") }
-  var userName by remember { mutableStateOf("") }
-  var userNameError by remember { mutableStateOf(false) }
+  // State variables to hold user input
+  val firstName = remember { mutableStateOf("") }
+  val lastName = remember { mutableStateOf("") }
+  val userName = remember { mutableStateOf("") }
+  val userNameError = remember { mutableStateOf(false) }
+  val saveEnabled = remember { mutableStateOf(false) }
   val context = LocalContext.current
 
   Scaffold(
@@ -63,40 +72,22 @@ fun CreateUserScreen(navigationActions: NavigationActions, userViewModel: UserVi
             modifier = Modifier.fillMaxSize().padding(paddingValues),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally) {
+              // Logo
               Logo()
-
-              OutlinedTextField(
-                  value = firstName,
-                  onValueChange = { firstName = it },
-                  label = { Text("First Name") },
-                  modifier =
-                      Modifier.fillMaxWidth(0.8f)
-                          .padding(vertical = 8.dp)
-                          .testTag("inputFirstName"))
-
-              OutlinedTextField(
-                  value = lastName,
-                  onValueChange = { lastName = it },
-                  label = { Text("Last Name") },
-                  modifier =
-                      Modifier.fillMaxWidth(0.8f).padding(vertical = 8.dp).testTag("inputLastName"))
-
-              OutlinedTextField(
-                  value = userName,
-                  onValueChange = { userName = it },
-                  label = { Text("* User Name") },
-                  isError = userNameError,
-                  modifier =
-                      Modifier.fillMaxWidth(0.8f).padding(vertical = 8.dp).testTag("inputUserName"))
+              // Text Fields
+              FirstNameTextField(firstName)
+              LastNameTextField(lastName)
+              UserNameTextField(userName, userNameError)
 
               // Save Button
-              Button(
+              saveEnabled.value = userName.value.isNotBlank()
+              SaveButton(
                   onClick = {
                     val user =
                         User(
-                            firstName = firstName,
-                            lastName = lastName,
-                            userName = userName,
+                            firstName = firstName.value,
+                            lastName = lastName.value,
+                            userName = userName.value,
                             email = Firebase.auth.currentUser?.email ?: "",
                             uid = userViewModel.getNewUid(),
                             dateOfJoining = Timestamp.now(),
@@ -110,21 +101,76 @@ fun CreateUserScreen(navigationActions: NavigationActions, userViewModel: UserVi
                         onFailure = { exception ->
                           Toast.makeText(
                                   context,
-                                  "Error while adding user: $exception",
+                                  "Error while adding user: ${exception.message}",
                                   Toast.LENGTH_SHORT)
                               .show()
-                          userNameError =
+                          userNameError.value =
                               exception is UserRepositoryFirestore.UsernameTakenException
                         })
                   },
-                  modifier =
-                      Modifier.fillMaxWidth(0.8f)
-                          .padding(vertical = 16.dp)
-                          .testTag("createUserButton"),
                   // Disable the button if the user name is empty
-                  enabled = userName.isNotBlank()) {
-                    Text("Save")
-                  }
+                  enabled = saveEnabled)
             }
       })
+}
+
+/**
+ * A composable function that creates an OutlinedTextField for entering the first name.
+ *
+ * @param newFirstName A MutableState object that holds the value of the first name.
+ */
+@Composable
+fun FirstNameTextField(newFirstName: MutableState<String>) {
+  OutlinedTextField(
+      value = newFirstName.value,
+      onValueChange = { newFirstName.value = it },
+      label = { Text("First Name") },
+      modifier = Modifier.fillMaxWidth(0.8f).padding(vertical = 12.dp).testTag("inputFirstName"))
+}
+
+/**
+ * A composable function that creates an OutlinedTextField for entering the user name.
+ *
+ * @param newUserName A MutableState object that holds the value of the user name.
+ * @param userNameError A MutableState object that indicates whether there is an error with the user
+ *   name.
+ */
+@Composable
+fun UserNameTextField(newUserName: MutableState<String>, userNameError: MutableState<Boolean>) {
+  OutlinedTextField(
+      value = newUserName.value,
+      onValueChange = { newUserName.value = it },
+      label = { Text("* User Name") },
+      isError = userNameError.value,
+      modifier = Modifier.fillMaxWidth(0.8f).padding(vertical = 12.dp).testTag("inputUserName"))
+}
+
+/**
+ * A composable function that creates an OutlinedTextField for entering the last name.
+ *
+ * @param newLastName A MutableState object that holds the value of the last name.
+ */
+@Composable
+fun LastNameTextField(newLastName: MutableState<String>) {
+  OutlinedTextField(
+      value = newLastName.value,
+      onValueChange = { newLastName.value = it },
+      label = { Text("Last Name") },
+      modifier = Modifier.fillMaxWidth(0.8f).padding(vertical = 12.dp).testTag("inputLastName"))
+}
+
+/**
+ * A composable function that creates a Button for saving the user information.
+ *
+ * @param onClick A lambda function to be executed when the button is clicked.
+ * @param enabled A MutableState object that indicates whether the button is enabled.
+ */
+@Composable
+fun SaveButton(onClick: () -> Unit, enabled: MutableState<Boolean>) {
+  Button(
+      onClick = onClick,
+      modifier = Modifier.fillMaxWidth(0.8f).padding(vertical = 16.dp).testTag("saveButton"),
+      enabled = enabled.value) {
+        Text("Save")
+      }
 }
