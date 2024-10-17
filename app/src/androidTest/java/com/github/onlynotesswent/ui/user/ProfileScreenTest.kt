@@ -92,6 +92,7 @@ class ProfileScreenTest {
     verify(mockNavigationActions).navigateTo(Screen.OVERVIEW)
   }
 
+  // test that modifying the profile works
   @Test
   fun modifyProfile() {
     composeTestRule.setContent { ProfileScreen(mockNavigationActions, userViewModel) }
