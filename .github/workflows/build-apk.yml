@@ -62,8 +62,7 @@ jobs:
 
         # Generate SHA1 fingerprint from keystore
       - name: Generate SHA1
-        run: keytool -list -v -keystore ~/.android/debug.keystore -alias androiddebugkey -storepass android -keypass android
-
+        run: keytool -list -v -keystore ~/.android/debug.keystore -alias androiddebugkey -storepass ${{ secrets.KEYSTORE_PASSWORD }} -keypass ${{ secrets.KEYSTORE_PASSWORD }}
       # Build the debug APK
       - name: Build APK
         run: ./gradlew assembleDebug
