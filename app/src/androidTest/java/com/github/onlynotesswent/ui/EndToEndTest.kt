@@ -160,8 +160,8 @@ class EndToEndTest {
     composeTestRule.onNodeWithTag("inputUserName").performTextInput(testUser.userName)
 
     // Verify that the "Create User" button is enabled and then click it
-    composeTestRule.onNodeWithTag("createUserButton").assertIsEnabled()
-    composeTestRule.onNodeWithTag("createUserButton").performClick()
+    composeTestRule.onNodeWithTag("saveButton").assertIsEnabled()
+    composeTestRule.onNodeWithTag("saveButton").performClick()
 
     // Interact with the note creation flow
     composeTestRule.onNodeWithTag("createNote").assertIsDisplayed()
