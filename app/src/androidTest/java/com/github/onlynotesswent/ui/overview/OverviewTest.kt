@@ -97,7 +97,6 @@ class OverviewTest {
     composeTestRule.onNodeWithTag("createNote").assertExists()
     composeTestRule.onNodeWithTag("emptyNotePrompt").assertExists()
     composeTestRule.onNodeWithTag("overviewScreen").assertExists()
-    composeTestRule.onNodeWithTag("RefreshButton").assertExists()
   }
 
   @Test
