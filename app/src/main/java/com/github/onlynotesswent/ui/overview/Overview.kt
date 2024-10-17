@@ -65,7 +65,7 @@ fun OverviewScreen(navigationActions: NavigationActions, noteViewModel: NoteView
             tabList = LIST_TOP_LEVEL_DESTINATION,
             selectedItem = navigationActions.currentRoute())
       }) { pd ->
-        Box() {
+        Box {
           if (notes.value.isNotEmpty()) {
             LazyColumn(
                 contentPadding = PaddingValues(vertical = 40.dp),
@@ -86,12 +86,6 @@ fun OverviewScreen(navigationActions: NavigationActions, noteViewModel: NoteView
                 modifier = Modifier.padding(pd).testTag("emptyNotePrompt"),
                 text = "You have no Notes yet.")
           }
-          FloatingActionButton(
-              modifier =
-                  Modifier.align(Alignment.BottomCenter).padding(20.dp).testTag("RefreshButton"),
-              onClick = { noteViewModel.getNotes("1") }) {
-                Text("Refresh")
-              }
         }
       }
 }
@@ -133,10 +127,6 @@ fun NoteItem(note: Note, onClick: () -> Unit) {
           Spacer(modifier = Modifier.height(4.dp))
           Text(
               text = note.title,
-              style = MaterialTheme.typography.bodyMedium,
-              fontWeight = FontWeight.Bold)
-          Text(
-              text = note.name,
               style = MaterialTheme.typography.bodyMedium,
               fontWeight = FontWeight.Bold)
           Text(text = note.id, style = MaterialTheme.typography.bodySmall, color = Color.Gray)
