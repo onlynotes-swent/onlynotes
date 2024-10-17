@@ -140,6 +140,7 @@ fun ProfileScreen(navigationActions: NavigationActions, userViewModel: UserViewM
                       Modifier.fillMaxWidth(0.8f)
                           .padding(vertical = 16.dp)
                           .testTag("modifyUserButton"),
+
                   // Disable the button if the user name is empty
                   enabled = newUserName.isNotBlank()) {
                     Text("Save")
