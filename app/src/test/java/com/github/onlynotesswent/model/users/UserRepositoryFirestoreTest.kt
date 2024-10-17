@@ -106,10 +106,41 @@ class UserRepositoryFirestoreTest {
 
   @Test
   fun `updateUser should call Firestore collection`() {
-    `when`(mockDocumentReference.set(any())).thenReturn(mockResolveTask)
-    `when`(mockResolveTask.addOnSuccessListener(any())).thenReturn(mockResolveTask)
+    val mockQueryTask = mock<Task<QuerySnapshot>>()
+    val mockQuery = mock<Query>()
+    val mockQuerySnapshot = mock<QuerySnapshot>()
 
+    `when`(mockCollectionReference.whereEqualTo("userName", user.userName))
+        .thenReturn(mockCollectionReference)
+    `when`(mockCollectionReference.whereNotEqualTo("uid", user.uid)).thenReturn(mockQuery)
+
+    `when`(mockQuery.get()).thenReturn(mockQueryTask)
+
+    // Mock the behavior of the QuerySnapshot task
+    `when`(mockQueryTask.addOnSuccessListener(any())).thenAnswer { invocation ->
+      val listener =
+          invocation.arguments[0] as com.google.android.gms.tasks.OnSuccessListener<QuerySnapshot>
+      // Simulate a result being passed to the listener
+      `when`(mockQuerySnapshot.isEmpty).thenReturn(true)
+      listener.onSuccess(mockQuerySnapshot)
+      mockQueryTask
+    }
+
+    `when`(mockQueryTask.addOnFailureListener(any())).thenReturn(mockQueryTask)
+
+    // Mock the behavior of the DocumentReference set operation
+    `when`(mockDocumentReference.set(any())).thenReturn(mockResolveTask)
+    `when`(mockResolveTask.addOnSuccessListener(any())).thenAnswer { invocation ->
+      val listener = invocation.arguments[0] as com.google.android.gms.tasks.OnSuccessListener<Void>
+      listener.onSuccess(null)
+      mockResolveTask
+    }
+    `when`(mockResolveTask.addOnFailureListener(any())).thenReturn(mockResolveTask)
+
+    // Call addUser method
     userRepositoryFirestore.updateUser(user, {}, {})
+
+    // Verify if Firestore collection was called
     verify(mockCollectionReference, timeout(1000)).document(user.uid)
   }
 

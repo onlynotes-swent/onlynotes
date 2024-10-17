@@ -37,8 +37,9 @@ jobs:
           accept-android-sdk-licenses: true
           cmdline-tools-version: "latest"  # Ensure you use the correct version if needed
 
+
       # Load google-services.json
-      - name: Decode secrets
+      - name: Decode google-services.json
         env:
           GOOGLE_SERVICES: ${{ secrets.GOOGLE_SERVICES }}
         run: |
@@ -48,13 +49,44 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
 
-      # Build the APK
+      # Decode the Keystore from secret
+      - name: Decode Keystore
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          mkdir -p ~/.android
+          echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > ~/.android/debug.keystore
+
+        # display the SHA1 of the keystore
+      - name: Print SHA1
+        run: keytool -list -v -keystore ~/.android/debug.keystore -storepass ${{ secrets.KEYSTORE_PASSWORD }} -keypass ${{ secrets.KEYSTORE_PASSWORD }}
+
+      # Build the debug APK
       - name: Build APK
         run: ./gradlew assembleDebug
 
+      # Find the latest version of build-tools
+      - name: Find latest build-tools version
+        id: build_tools
+        run: echo "build_tools_version=$(ls ${ANDROID_HOME}/build-tools | sort -V | tail -n 1)" >> $GITHUB_ENV
+
+      # Sign the debug APK using apksigner
+      - name: Sign Debug APK with apksigner
+        run: |
+          ${ANDROID_HOME}/build-tools/${{ env.build_tools_version }}/apksigner sign --ks ~/.android/debug.keystore --ks-key-alias ${{ secrets.KEY_ALIAS }} --ks-pass pass:${{ secrets.KEYSTORE_PASSWORD }} --key-pass pass:${{ secrets.KEYSTORE_PASSWORD }} app/build/outputs/apk/debug/app-debug.apk
+
+      # Verify APK signature
+      - name: Verify APK Signature
+        run: |
+          ${ANDROID_HOME}/build-tools/${{ env.build_tools_version }}/apksigner verify app/build/outputs/apk/debug/app-debug.apk
+
+      # print the SHA1 of the APK
+      - name: Print the SHA1 of the APK
+        run: keytool -printcert -jarfile app/build/outputs/apk/debug/app-debug.apk
+          
 
 
-      # Upload the APK as an artifact
+      # Upload the debug APK as an artifact
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
