@@ -70,7 +70,7 @@ jobs:
       # Sign APK with custom keystore
       - name: Sign APK
         run: |
-          jarsigner -verbose -sigalg SHA1withRSA -digestalg SHA1 -keystore ~/.android/my-release-key.keystore -storepass ${{ secrets.KEYSTORE_PASSWORD }} 
+          jarsigner -verbose -sigalg SHA1withRSA -digestalg SHA1 -keystore ~/.android/debug.keystore -storepass ${{ secrets.KEYSTORE_PASSWORD }} 
 
 
       # Upload the debug APK as an artifact
