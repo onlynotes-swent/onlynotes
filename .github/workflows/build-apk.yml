@@ -3,7 +3,7 @@ name: Build APK
 on:
   push:
     branches:
-      - Fix/APK_BUILD
+      - main  # Adjust as needed
   workflow_dispatch:
 
 jobs:
@@ -15,7 +15,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # Set up JDK 11 for Android build
+      # Set up JDK for Android build
       - name: Setup JDK
         uses: actions/setup-java@v4
         with:
@@ -33,14 +33,14 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
-      # Download Android SDK components
+      # Set up Android SDK
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
         with:
           accept-android-sdk-licenses: true
-          cmdline-tools-version: "latest"  # Ensure you use the correct version if needed
+          cmdline-tools-version: "latest"
 
-      # Decode the Keystore from secret and store it in the proper directory
+      # Decode the Keystore from secret
       - name: Decode Keystore
         env:
           ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
@@ -48,26 +48,15 @@ jobs:
           mkdir -p ~/.android
           echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > ~/.android/debug.keystore
 
-      # Load google-services.json
-      - name: Decode google-services.json
-        env:
-          GOOGLE_SERVICES: ${{ secrets.GOOGLE_SERVICES }}
-        run: |
-          echo "$GOOGLE_SERVICES" | base64 --decode > ./app/google-services.json
-
-       # Grant execute permission for the gradlew script
-      - name: Grant execute permission for gradlew
-        run: chmod +x ./gradlew
-
-      # Build the APK
+      # Build the APK with signing
       - name: Build APK
-        run: ./gradlew assembleDebug
-
+        run: ./gradlew assembleRelease -Pandroid.injected.signing.store.file=~/.android/debug.keystore \
+          -Pandroid.injected.signing.store.password=${{ secrets.KEYSTORE_PASSWORD }} \
 
 
       # Upload the APK as an artifact
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: app-debug.apk
-          path: app/build/outputs/apk/debug/app-debug.apk
+          name: app-release.apk
+          path: app/build/outputs/apk/release/app-release.apk
