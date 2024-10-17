@@ -76,13 +76,29 @@ jobs:
               #--ks ~/.android/debug.jks \
            #   --ks-pass pass:${{ secrets.KEYSTORE_PASSWORD }} \
             #  app/build/outputs/apk/debug/app-debug.apk
+     # - name: Sign APK
+       # run: |
+       #     jarsigner -verbose -sigalg SHA1withRSA -digestalg SHA1 \
+         #   -keystore  ~/.android/debug.keystore \
+         #   -storepass ${{ secrets.KEYSTORE_PASSWORD }} \
+          #  -keypass ${{ secrets.KEYSTORE_PASSWORD }} \
+#            app/build/outputs/apk/debug/app-debug.apk ${{ secrets.KEY_ALIAS }}
+
       - name: Sign APK
         run: |
-            jarsigner -verbose -sigalg SHA1withRSA -digestalg SHA1 \
-            -keystore  ~/.android/debug.keystore \
-            -storepass ${{ secrets.KEYSTORE_PASSWORD }} \
-            -keypass ${{ secrets.KEYSTORE_PASSWORD }} \
-            app/build/outputs/apk/debug/app-debug.apk ${{ secrets.KEY_ALIAS }}
+          $ANDROID_HOME/build-tools/$ANDROID_BUILD_TOOLS_VERSION/apksigner sign \
+          --ks ~/.android/debug.keystore \
+          --ks-pass pass:${{ secrets.KEYSTORE_PASSWORD }} \
+          --key-pass pass:${{ secrets.KEYSTORE_PASSWORD }} \
+          --out app/build/outputs/apk/debug/app-debug-signed.apk \
+          app/build/outputs/apk/debug/app-debug.apk
+          
+
+      - name: Align APK
+        run: |
+          $ANDROID_HOME/build-tools/$ANDROID_BUILD_TOOLS_VERSION/zipalign -v 4 \
+          app/build/outputs/apk/debug/app-debug-signed.apk \
+          app/build/outputs/apk/debug/app-debug-aligned.apk   
 
 
       # Upload the debug APK as an artifact
@@ -90,4 +106,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: app-debug.apk
-          path: app/build/outputs/apk/debug/app-debug.apk
+          path: app/build/outputs/apk/debug/app-debug-aligned.apk
