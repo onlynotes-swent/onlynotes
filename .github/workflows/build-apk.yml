@@ -84,20 +84,26 @@ jobs:
           #  -keypass ${{ secrets.KEYSTORE_PASSWORD }} \
 #            app/build/outputs/apk/debug/app-debug.apk ${{ secrets.KEY_ALIAS }}
 
-      - name: Sign APK
+      # Find the latest version of build-tools
+      - name: Find latest build-tools version
+        id: build_tools
+        run: echo "build_tools_version=$(ls ${ANDROID_HOME}/build-tools | sort -V | tail -n 1)" >> $GITHUB_ENV
+
+      # Sign the debug APK using apksigner
+      - name: Sign Debug APK with apksigner
         run: |
-          $ANDROID_HOME/build-tools/$ANDROID_BUILD_TOOLS_VERSION/apksigner sign \
-          --ks ~/.android/debug.keystore \
-          --ks-pass pass:${{ secrets.KEYSTORE_PASSWORD }} \
-          --key-pass pass:${{ secrets.KEYSTORE_PASSWORD }} \
-          --out app/build/outputs/apk/debug/app-debug-signed.apk \
-          app/build/outputs/apk/debug/app-debug.apk
+          ${ANDROID_HOME}/build-tools/${{ env.build_tools_version }}/apksigner sign --ks ~/.android/debug.keystore --ks-key-alias ${{ secrets.KEY_ALIAS }} --ks-pass pass:${{ secrets.KEYSTORE_PASSWORD }} --key-pass pass:${{ secrets.KEYSTORE_PASSWORD }} app/build/outputs/apk/debug/app-debug.apk
+
+      # Verify APK signature
+      - name: Verify APK Signature
+        run: |
+          ${ANDROID_HOME}/build-tools/${{ env.build_tools_version }}/apksigner verify app/build/outputs/apk/debug/app-debug.apk
           
 
       - name: Align APK
         run: |
           $ANDROID_HOME/build-tools/$ANDROID_BUILD_TOOLS_VERSION/zipalign -v 4 \
-          app/build/outputs/apk/debug/app-debug-signed.apk \
+          app/build/outputs/apk/debug/app-debug.apk \
           app/build/outputs/apk/debug/app-debug-aligned.apk   
 
 
