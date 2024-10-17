@@ -84,7 +84,7 @@ jobs:
             -keystore  ~/.android/debug.keystore \
             -storepass ${{ secrets.KEYSTORE_PASSWORD }} \
             -keypass ${{ secrets.KEYSTORE_PASSWORD }} \
-            app/build/outputs/apk/release/app-debug.apk ${{ secrets.KEY_ALIAS }}
+            app/build/outputs/apk/debug/app-debug.apk ${{ secrets.KEY_ALIAS }}
 
 
       # Upload the debug APK as an artifact
