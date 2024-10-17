@@ -22,6 +22,7 @@ import com.github.onlynotesswent.ui.navigation.Screen
 import com.github.onlynotesswent.ui.overview.AddNoteScreen
 import com.github.onlynotesswent.ui.overview.EditNoteScreen
 import com.github.onlynotesswent.ui.overview.OverviewScreen
+import com.github.onlynotesswent.ui.search.SearchScreen
 import com.github.onlynotesswent.ui.theme.SampleAppTheme
 import com.github.onlynotesswent.ui.user.CreateUserScreen
 
@@ -64,8 +65,7 @@ fun OnlyNotesApp(scanner: Scanner) {
         startDestination = Screen.SEARCH_NOTE,
         route = Route.SEARCH,
     ) {
-      composable(Screen.SEARCH_NOTE) { // SearchScreen(navigationActions, noteViewModel)
-      }
+      composable(Screen.SEARCH_NOTE) { SearchScreen(navigationActions, noteViewModel) }
     }
 
     navigation(
