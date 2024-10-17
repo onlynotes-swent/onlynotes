@@ -14,10 +14,10 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
   private data class FirebaseNote(
       val id: String,
       val type: Type,
-      val name: String,
       val title: String,
       val content: String,
       val date: Timestamp,
+      val public: Boolean,
       val userId: String,
       val image: String
   )
@@ -30,7 +30,7 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
    */
   private fun convertNotes(note: Note): FirebaseNote {
     return FirebaseNote(
-        note.id, note.type, note.name, note.title, note.content, note.date, note.userId, "null")
+        note.id, note.type, note.title, note.content, note.date, note.public, note.userId, "null")
   }
 
   private val collectionPath = "notes"
@@ -139,23 +139,22 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
     return try {
       val id = document.id
       val type = Type.valueOf(document.getString("type") ?: return null)
-      val name = document.getString("name") ?: return null
       val title = document.getString("title") ?: return null
       val content = document.getString("content") ?: return null
       val date = document.getTimestamp("date") ?: return null
+      val public = document.getBoolean("public") ?: true
       val userId = document.getString("userId") ?: return null
       val image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)
       // Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888) is the default bitMap, to be changed
-      // when
-      // we implement images by URL
+      // when we implement images by URL
 
       Note(
           id = id,
           type = type,
-          name = name,
           title = title,
           content = content,
           date = date,
+          public = public,
           userId = userId,
           image = image)
     } catch (e: Exception) {

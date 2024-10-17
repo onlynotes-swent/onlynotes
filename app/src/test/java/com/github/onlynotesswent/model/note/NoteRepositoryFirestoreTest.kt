@@ -39,10 +39,10 @@ class NoteRepositoryFirestoreTest {
       Note(
           id = "1",
           type = Type.NORMAL_TEXT,
-          name = "name",
           title = "title",
           content = "content",
           date = Timestamp.now(),
+          public = true,
           userId = "1",
           image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888))
 
@@ -74,10 +74,10 @@ class NoteRepositoryFirestoreTest {
 
     `when`(mockDocumentSnapshot.id).thenReturn("1")
     `when`(mockDocumentSnapshot.getString("type")).thenReturn(Type.NORMAL_TEXT.name)
-    `when`(mockDocumentSnapshot.getString("name")).thenReturn("name")
     `when`(mockDocumentSnapshot.getString("title")).thenReturn("title")
     `when`(mockDocumentSnapshot.getString("content")).thenReturn("content")
     `when`(mockDocumentSnapshot.getTimestamp("date")).thenReturn(currentTime)
+    `when`(mockDocumentSnapshot.getBoolean("public")).thenReturn(true)
     `when`(mockDocumentSnapshot.getString("userId")).thenReturn("1")
     val bitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)
     `when`(mockDocumentSnapshot.get("image")).thenReturn(bitmap)
@@ -87,10 +87,10 @@ class NoteRepositoryFirestoreTest {
     assertNotNull(note)
     assert(note?.id == "1")
     assert(note?.type == Type.NORMAL_TEXT)
-    assert(note?.name == "name")
     assert(note?.title == "title")
     assert(note?.content == "content")
     assert(note?.date == currentTime)
+    assert(note?.public == true)
     assert(note?.userId == "1")
     note?.image?.let { assert(it.sameAs(bitmap)) }
   }

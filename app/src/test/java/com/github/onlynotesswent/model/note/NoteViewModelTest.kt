@@ -23,10 +23,10 @@ class NoteViewModelTest {
       Note(
           id = "1",
           type = Type.NORMAL_TEXT,
-          name = "name",
           title = "title",
           content = "content",
           date = Timestamp.now(),
+          public = true,
           userId = "1",
           image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888))
 

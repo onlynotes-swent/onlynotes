@@ -129,10 +129,6 @@ fun NoteItem(note: Note, onClick: () -> Unit) {
               text = note.title,
               style = MaterialTheme.typography.bodyMedium,
               fontWeight = FontWeight.Bold)
-          Text(
-              text = note.name,
-              style = MaterialTheme.typography.bodyMedium,
-              fontWeight = FontWeight.Bold)
           Text(text = note.id, style = MaterialTheme.typography.bodySmall, color = Color.Gray)
         }
       }

@@ -34,10 +34,10 @@ class OverviewTest {
           Note(
               id = "1",
               type = Type.NORMAL_TEXT,
-              name = "Sample Note",
               title = "Sample Title",
               content = "This is a sample content.",
               date = Timestamp.now(), // Use current timestamp
+              public = true,
               userId = "1",
               image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888) // Placeholder Bitmap
               ))
