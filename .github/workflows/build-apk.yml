@@ -81,8 +81,9 @@ jobs:
       - name: Sign APK
         run: |
             jarsigner -verbose -sigalg SHA1withRSA -digestalg SHA1 \
-            -keystore your-key-name.keystore \
+            -keystore  ~/.android/debug.keystore \
             -storepass ${{ secrets.KEYSTORE_PASSWORD }} \
+            -keypass ${{ secrets.KEYSTORE_PASSWORD }} \
             app/build/outputs/apk/release/app-debug.apk ${{ secrets.KEY_ALIAS }}
 
 
