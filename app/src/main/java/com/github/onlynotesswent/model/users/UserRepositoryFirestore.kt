@@ -73,9 +73,10 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore) : UserRepositor
   override fun updateUser(user: User, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) {
     db.collection(collectionPath)
         .whereEqualTo("userName", user.userName)
+        .whereNotEqualTo("uid", user.uid)
         .get()
         .addOnSuccessListener { result ->
-          if (result.isEmpty or (result.documents[0].id == user.uid)) {
+          if (result.isEmpty) {
             db.collection(collectionPath)
                 .document(user.uid)
                 .set(user)

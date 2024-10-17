@@ -106,7 +106,7 @@ class UserRepositoryFirestoreTest {
 
   @Test
   fun `updateUser should call Firestore collection`() {
-    `when`(mockDocumentReference.delete()).thenReturn(mockResolveTask)
+    `when`(mockDocumentReference.set(any())).thenReturn(mockResolveTask)
     `when`(mockResolveTask.addOnSuccessListener(any())).thenReturn(mockResolveTask)
 
     userRepositoryFirestore.updateUser(user, {}, {})
