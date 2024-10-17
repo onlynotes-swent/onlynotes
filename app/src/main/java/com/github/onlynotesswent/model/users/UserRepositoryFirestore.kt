@@ -71,21 +71,20 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore) : UserRepositor
   }
 
   override fun updateUser(user: User, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) {
-      db.collection(collectionPath)
-          .whereEqualTo("userName", user.userName)
-          .get()
-          .addOnSuccessListener { result ->
-              if (result.isEmpty or (result.documents[0].id == user.uid)) {
-                  db.collection(collectionPath)
-                      .document(user.uid)
-                      .set(user)
-                      .addOnSuccessListener { onSuccess() }
-                      .addOnFailureListener { exception -> onFailure(exception) }
-              } else onFailure(UsernameTakenException())
-          }
-          .addOnFailureListener { exception -> onFailure(exception) }
+    db.collection(collectionPath)
+        .whereEqualTo("userName", user.userName)
+        .get()
+        .addOnSuccessListener { result ->
+          if (result.isEmpty or (result.documents[0].id == user.uid)) {
+            db.collection(collectionPath)
+                .document(user.uid)
+                .set(user)
+                .addOnSuccessListener { onSuccess() }
+                .addOnFailureListener { exception -> onFailure(exception) }
+          } else onFailure(UsernameTakenException())
+        }
+        .addOnFailureListener { exception -> onFailure(exception) }
   }
-
 
   override fun deleteUserById(id: String, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) {
     db.collection(collectionPath)
