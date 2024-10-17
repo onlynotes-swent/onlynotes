@@ -39,8 +39,6 @@ jobs:
         with:
           accept-android-sdk-licenses: true
           cmdline-tools-version: "latest"  # Ensure you use the correct version if needed
-          components: |
-            build-tools;30.0.3  # Install Build Tools to access apksigner
 
 
       # Load google-services.json
