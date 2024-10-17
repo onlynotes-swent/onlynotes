@@ -144,11 +144,11 @@ fun AddNoteScreen(
                         // provisional note, we will have to change this later
                         Note(
                             id = noteViewModel.getNewUid(),
-                            name = "name",
                             type = type,
                             title = title,
                             content = "",
                             date = Timestamp.now(),
+                            public = (visibility == "Public"),
                             userId = "1",
                             image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)),
                         "1")
