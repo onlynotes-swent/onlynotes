@@ -17,15 +17,16 @@ import com.google.firebase.Timestamp
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.mockito.Mockito.mock
+import org.mockito.Mock
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
+import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
 
 class ProfileScreenTest {
-  private lateinit var userRepository: UserRepository
+  @Mock private lateinit var mockUserRepository: UserRepository
+  @Mock private lateinit var mockNavigationActions: NavigationActions
   private lateinit var userViewModel: UserViewModel
-  private lateinit var navigationActions: NavigationActions
   private val testUid = "testUid123"
   private val testUser =
       User(
@@ -44,14 +45,13 @@ class ProfileScreenTest {
   @Before
   fun setUp() {
     // Mock is a way to create a fake object that can be used in place of a real object
-    userRepository = mock(UserRepository::class.java)
-    navigationActions = mock(NavigationActions::class.java)
-    userViewModel = UserViewModel(userRepository)
+    MockitoAnnotations.openMocks(this)
+    userViewModel = UserViewModel(mockUserRepository)
 
     // Mock the current route to be the user create screen
-    `when`(navigationActions.currentRoute()).thenReturn(Screen.PROFILE)
+    `when`(mockNavigationActions.currentRoute()).thenReturn(Screen.PROFILE)
 
-    `when`(userRepository.updateUser(any(), any(), any())).thenAnswer {
+    `when`(mockUserRepository.updateUser(any(), any(), any())).thenAnswer {
       val user = it.arguments[0] as User
       val onSuccess = it.arguments[1] as () -> Unit
       val onFailure = it.arguments[2] as (Exception) -> Unit
@@ -69,14 +69,14 @@ class ProfileScreenTest {
 
   @Test
   fun displayAllComponents() {
-    composeTestRule.setContent { ProfileScreen(navigationActions, userViewModel) }
+    composeTestRule.setContent { ProfileScreen(mockNavigationActions, userViewModel) }
 
     composeTestRule.onNodeWithTag("ProfileScreen").assertExists()
     composeTestRule.onNodeWithTag("goBackButton").assertExists()
     composeTestRule.onNodeWithTag("inputFirstName").assertExists()
     composeTestRule.onNodeWithTag("inputLastName").assertExists()
     composeTestRule.onNodeWithTag("inputUserName").assertExists()
-    composeTestRule.onNodeWithTag("modifyUserButton").assertExists()
+    composeTestRule.onNodeWithTag("saveButton").assertExists()
   }
 
   private fun hasError(): SemanticsMatcher {
@@ -86,32 +86,32 @@ class ProfileScreenTest {
   // test that submit does navigate to the overview screen
   @Test
   fun submitNavigatesToOverview() {
-    composeTestRule.setContent { ProfileScreen(navigationActions, userViewModel) }
+    composeTestRule.setContent { ProfileScreen(mockNavigationActions, userViewModel) }
 
-    composeTestRule.onNodeWithTag("modifyUserButton").performClick()
-    verify(navigationActions).navigateTo(Screen.OVERVIEW)
+    composeTestRule.onNodeWithTag("saveButton").performClick()
+    verify(mockNavigationActions).navigateTo(Screen.OVERVIEW)
   }
 
   @Test
-  fun modifyProfil() {
-    composeTestRule.setContent { ProfileScreen(navigationActions, userViewModel) }
+  fun modifyProfile() {
+    composeTestRule.setContent { ProfileScreen(mockNavigationActions, userViewModel) }
 
     composeTestRule.onNodeWithTag("inputUserName").performTextClearance()
     composeTestRule.onNodeWithTag("inputUserName").performTextInput("newUserName")
     assert(userViewModel.currentUser.value?.userName == "testUserName")
-    composeTestRule.onNodeWithTag("modifyUserButton").performClick()
+    composeTestRule.onNodeWithTag("saveButton").performClick()
     assert(userViewModel.currentUser.value?.userName == "newUserName")
 
     composeTestRule.onNodeWithTag("inputFirstName").performTextClearance()
     composeTestRule.onNodeWithTag("inputFirstName").performTextInput("newFirstName")
     assert(userViewModel.currentUser.value?.firstName == "testFirstName")
-    composeTestRule.onNodeWithTag("modifyUserButton").performClick()
+    composeTestRule.onNodeWithTag("saveButton").performClick()
     assert(userViewModel.currentUser.value?.firstName == "newFirstName")
 
     composeTestRule.onNodeWithTag("inputLastName").performTextClearance()
     composeTestRule.onNodeWithTag("inputLastName").performTextInput("newLastName")
     assert(userViewModel.currentUser.value?.lastName == "testLastName")
-    composeTestRule.onNodeWithTag("modifyUserButton").performClick()
+    composeTestRule.onNodeWithTag("saveButton").performClick()
     assert(userViewModel.currentUser.value?.lastName == "newLastName")
   }
 }
