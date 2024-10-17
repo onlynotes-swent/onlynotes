@@ -67,12 +67,15 @@ jobs:
       - name: Build APK
         run: ./gradlew assembleDebug
 
+      #  jarsigner -verbose -sigalg SHA1withRSA -digestalg SHA1 -keystore ~/.android/debug.keystore -storepass ${{ secrets.KEYSTORE_PASSWORD }} app/build/outputs/apk/debug/app-debug.apk
+
       # Sign APK with custom keystore
       - name: Sign APK
         run: |
-        #  jarsigner -verbose -sigalg SHA1withRSA -digestalg SHA1 -keystore ~/.android/debug.keystore -storepass ${{ secrets.KEYSTORE_PASSWORD }} app/build/outputs/apk/debug/app-debug.apk
-          apksigner sign --ks ~/.android/debug.jks --ks-pass pass:${{ secrets.KEYSTORE_PASSWORD }}  app-debug.apk
-
+            apksigner sign \
+              --ks ~/.android/debug.jks \
+              --ks-pass pass:${{ secrets.KEYSTORE_PASSWORD }} \
+              app/build/outputs/apk/debug/app-debug.apk
 
       # Upload the debug APK as an artifact
       - name: Upload APK
