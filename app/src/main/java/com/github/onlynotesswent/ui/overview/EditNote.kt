@@ -68,10 +68,10 @@ fun EditNoteScreen(navigationActions: NavigationActions, noteViewModel: NoteView
                   Note(
                       id = note?.id ?: "1",
                       type = Type.NORMAL_TEXT,
-                      name = note?.name ?: "error",
                       title = updatedNoteTitle,
                       content = updatedNoteText,
                       date = Timestamp.now(), // Use current timestamp
+                      public = note?.public ?: true,
                       userId = note?.userId ?: "1",
                       image =
                           note?.image
