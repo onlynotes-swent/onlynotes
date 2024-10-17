@@ -57,9 +57,10 @@ jobs:
           mkdir -p ~/.android
           echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > ~/.android/debug.keystore
 
-        # Generate SHA1 fingerprint from keystore
-      - name: Generate SHA1
+        # display the SHA1 of the keystore
+      - name: Print SHA1
         run: keytool -list -v -keystore ~/.android/debug.keystore -storepass ${{ secrets.KEYSTORE_PASSWORD }} -keypass ${{ secrets.KEYSTORE_PASSWORD }}
+
       # Build the debug APK
       - name: Build APK
         run: ./gradlew assembleDebug
@@ -79,8 +80,8 @@ jobs:
         run: |
           ${ANDROID_HOME}/build-tools/${{ env.build_tools_version }}/apksigner verify app/build/outputs/apk/debug/app-debug.apk
 
-      # Verify APK Signature using SHA1
-      - name: Verify APK Signature using SHA1
+      # print the SHA1 of the APK
+      - name: Print the SHA1 of the APK
         run: keytool -printcert -jarfile app/build/outputs/apk/debug/app-debug.apk
           
 
