@@ -23,7 +23,7 @@ import com.github.onlynotesswent.ui.overview.AddNoteScreen
 import com.github.onlynotesswent.ui.overview.EditNoteScreen
 import com.github.onlynotesswent.ui.overview.OverviewScreen
 import com.github.onlynotesswent.ui.search.SearchScreen
-import com.github.onlynotesswent.ui.theme.SampleAppTheme
+import com.github.onlynotesswent.ui.theme.AppTheme
 import com.github.onlynotesswent.ui.user.CreateUserScreen
 import com.github.onlynotesswent.ui.user.ProfileScreen
 
@@ -31,9 +31,7 @@ class MainActivity : ComponentActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     val scanner = Scanner(this).apply { init() }
-    setContent {
-      SampleAppTheme { Surface(modifier = Modifier.fillMaxSize()) { OnlyNotesApp(scanner) } }
-    }
+    setContent { AppTheme { Surface(modifier = Modifier.fillMaxSize()) { OnlyNotesApp(scanner) } } }
   }
 }
 
