@@ -6,10 +6,10 @@ import com.google.firebase.Timestamp
 data class Note(
     val id: String,
     val type: Type,
-    val name: String,
     val title: String,
     val content: String,
     val date: Timestamp,
+    val public: Boolean,
     val userId: String,
     val image: Bitmap
 )
@@ -17,5 +17,6 @@ data class Note(
 enum class Type {
   JPEG,
   PNG,
+  PDF,
   NORMAL_TEXT
 }

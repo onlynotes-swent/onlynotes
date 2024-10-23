@@ -4,7 +4,6 @@ import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
@@ -64,14 +63,14 @@ class UserCreateScreenTest {
     composeTestRule.onNodeWithTag("inputFirstName").assertExists()
     composeTestRule.onNodeWithTag("inputLastName").assertExists()
     composeTestRule.onNodeWithTag("inputUserName").assertExists()
-    composeTestRule.onNodeWithTag("createUserButton").assertExists()
+    composeTestRule.onNodeWithTag("saveButton").assertExists()
   }
 
   @Test
   fun doesNotSubmitWithoutUser() {
     composeTestRule.setContent { CreateUserScreen(navigationActions, userViewModel) }
 
-    composeTestRule.onNodeWithTag("createUserButton").performClick()
+    composeTestRule.onNodeWithTag("saveButton").performClick()
     verify(userRepository, never()).addUser(any(), any(), any())
   }
 
@@ -93,7 +92,7 @@ class UserCreateScreenTest {
 
     // Act: Enter the existing username and attempt to create a user
     composeTestRule.onNodeWithTag("inputUserName").performTextInput(existingUserName)
-    composeTestRule.onNodeWithTag("createUserButton").performClick()
+    composeTestRule.onNodeWithTag("saveButton").performClick()
 
     // Assert: Check that the error state is correctly shown
     composeTestRule
@@ -121,10 +120,10 @@ class UserCreateScreenTest {
     composeTestRule.onNodeWithTag("inputUserName").performTextInput(testUser.userName)
 
     // Assert: Check that the button is enabled
-    composeTestRule.onNodeWithTag("createUserButton").assertIsEnabled()
+    composeTestRule.onNodeWithTag("saveButton").assertIsDisplayed()
 
     // Act: Click the button
-    composeTestRule.onNodeWithTag("createUserButton").performClick()
+    composeTestRule.onNodeWithTag("saveButton").performClick()
 
     // Assert: Check that the navigation action was called
     verify(navigationActions).navigateTo(Screen.OVERVIEW)

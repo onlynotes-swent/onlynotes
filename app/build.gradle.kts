@@ -179,6 +179,7 @@ dependencies {
     testImplementation(libs.robolectric)
 
     // ----------         ML Kit        ------------
+    implementation(libs.mlkit.document.scanner)
     implementation(libs.mlkit.text.recognition)
 }
 

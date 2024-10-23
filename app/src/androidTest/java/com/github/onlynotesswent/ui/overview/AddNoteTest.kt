@@ -1,5 +1,6 @@
 package com.github.onlynotesswent.ui.overview
 
+import androidx.activity.ComponentActivity
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotDisplayed
@@ -15,6 +16,7 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
 import com.github.onlynotesswent.model.note.NoteRepository
 import com.github.onlynotesswent.model.note.NoteViewModel
+import com.github.onlynotesswent.model.scanner.Scanner
 import com.github.onlynotesswent.model.users.UserRepository
 import com.github.onlynotesswent.model.users.UserViewModel
 import com.github.onlynotesswent.ui.navigation.NavigationActions
@@ -23,9 +25,10 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.mockito.Mockito.mock
-import org.mockito.Mockito.never
-import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
+import org.mockito.kotlin.any
+import org.mockito.kotlin.never
+import org.mockito.kotlin.verify
 
 class AddNoteTest {
   private lateinit var userRepository: UserRepository
@@ -33,6 +36,7 @@ class AddNoteTest {
   private lateinit var navigationActions: NavigationActions
   private lateinit var noteViewModel: NoteViewModel
   private lateinit var noteRepository: NoteRepository
+  private lateinit var scanner: Scanner
 
   @get:Rule val composeTestRule = createComposeRule()
 
@@ -44,6 +48,7 @@ class AddNoteTest {
     userViewModel = UserViewModel(userRepository)
     noteRepository = mock(NoteRepository::class.java)
     noteViewModel = NoteViewModel(noteRepository)
+    scanner = Scanner(mock(ComponentActivity::class.java))
 
     // Mock the current route to be the add note screen
     `when`(navigationActions.currentRoute()).thenReturn(Screen.ADD_NOTE)
@@ -51,7 +56,7 @@ class AddNoteTest {
 
   @Test
   fun displayAllComponents() {
-    composeTestRule.setContent { AddNoteScreen(navigationActions, noteViewModel) }
+    composeTestRule.setContent { AddNoteScreen(navigationActions, scanner, noteViewModel) }
 
     composeTestRule.onNodeWithTag("addNoteScreen").assertIsDisplayed()
     composeTestRule.onNodeWithTag("addNoteTitle").assertIsDisplayed()
@@ -73,7 +78,7 @@ class AddNoteTest {
 
   @Test
   fun clickGoBackButton() {
-    composeTestRule.setContent { AddNoteScreen(navigationActions, noteViewModel) }
+    composeTestRule.setContent { AddNoteScreen(navigationActions, scanner, noteViewModel) }
 
     composeTestRule.onNodeWithTag("goBackButton").performClick()
 
@@ -83,7 +88,7 @@ class AddNoteTest {
 
   @Test
   fun doesNotSubmitWithoutTitleAndOptionsSelected() {
-    composeTestRule.setContent { AddNoteScreen(navigationActions, noteViewModel) }
+    composeTestRule.setContent { AddNoteScreen(navigationActions, scanner, noteViewModel) }
 
     composeTestRule.onNodeWithTag("createNoteButton").assertIsNotEnabled()
 
@@ -112,7 +117,7 @@ class AddNoteTest {
 
   @Test
   fun createNoteButtonTextChangesWhenScanImageSelected() {
-    composeTestRule.setContent { AddNoteScreen(navigationActions, noteViewModel) }
+    composeTestRule.setContent { AddNoteScreen(navigationActions, scanner, noteViewModel) }
 
     // Initially, the button text should be "Create Note"
     composeTestRule.onNodeWithTag("createNoteButton").assertTextEquals("Create Note")
@@ -132,7 +137,7 @@ class AddNoteTest {
 
   @Test
   fun createNoteButtonTextChangesWhenCreateFromScratchSelected() {
-    composeTestRule.setContent { AddNoteScreen(navigationActions, noteViewModel) }
+    composeTestRule.setContent { AddNoteScreen(navigationActions, scanner, noteViewModel) }
 
     // Initially, the button text should be "Create Note"
     composeTestRule.onNodeWithTag("createNoteButton").assertTextEquals("Create Note")
@@ -148,5 +153,39 @@ class AddNoteTest {
 
     // Now the button text should be "Create Note"
     composeTestRule.onNodeWithTag("createNoteButton").assertTextEquals("Create Note")
+  }
+
+  @Test
+  fun createNoteFromScratchButtonCorrect() {
+    composeTestRule.setContent { AddNoteScreen(navigationActions, scanner, noteViewModel) }
+
+    composeTestRule.onNodeWithTag("inputNoteTitle").performTextInput("test")
+
+    // Set the template dropdown to "Private"
+    composeTestRule.onNodeWithTag("visibilityButton").performClick()
+    composeTestRule
+        .onNodeWithTag("visibilityMenu")
+        .onChildren()
+        .filter(hasText("Private"))
+        .onFirst()
+        .performClick()
+
+    // Set the template dropdown to "Create Note From Scratch"
+    composeTestRule.onNodeWithTag("templateButton").performClick()
+    composeTestRule
+        .onNodeWithTag("templateMenu")
+        .onChildren()
+        .filter(hasText("Create Note From Scratch"))
+        .onFirst()
+        .performClick()
+
+    // Now the button text should be "Create Note"
+    composeTestRule.onNodeWithTag("createNoteButton").assertTextEquals("Create Note")
+
+    `when`(noteRepository.getNewUid()).thenReturn("1")
+    composeTestRule.onNodeWithTag("createNoteButton").performClick()
+    verify(noteRepository).addNote(any(), any<() -> Unit>(), any<(Exception) -> Unit>())
+    verify(navigationActions).goBack()
+    verify(noteRepository).getNewUid()
   }
 }

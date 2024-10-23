@@ -30,6 +30,7 @@ navigationCompose = "2.8.2"
 espressoIntents = "3.6.1"
 transportationConsumer = "2.3.0"
 
+documentScanner = "16.0.0-beta1"
 textRecognition = "16.0.0"
 
 [libraries]
@@ -67,9 +68,9 @@ firebase-ui-auth = { module = "com.firebaseui:firebase-ui-auth", version.ref = "
 androidx-navigation-common-ktx = { group = "androidx.navigation", name = "navigation-common-ktx", version.ref = "navigationCommonKtx" }
 androidx-navigation-runtime-ktx = { group = "androidx.navigation", name = "navigation-runtime-ktx", version.ref = "navigationRuntimeKtx" }
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigationCompose" }
-transportation-consumer = { group = "com.google.android.libraries.mapsplatform.transportation", name = "transportation-consumer", version.ref = "transportationConsumer" }
 androidx-espresso-intents = { group = "androidx.test.espresso", name = "espresso-intents", version.ref = "espressoIntents" }
-
+transportation-consumer = { group = "com.google.android.libraries.mapsplatform.transportation", name = "transportation-consumer", version.ref = "transportationConsumer" }
+mlkit-document-scanner = { group = "com.google.android.gms", name = "play-services-mlkit-document-scanner", version.ref = "documentScanner" }
 mlkit-text-recognition = { module = "com.google.mlkit:text-recognition", version.ref = "textRecognition" }
 
 [plugins]
