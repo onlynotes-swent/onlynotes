@@ -85,6 +85,8 @@ class TextRecognizer(
    * Shares the recognized text using an Android sharing intent.
    *
    * @param text the text to share
+   *
+   * TODO: Update function when we know what to do with the recognized text
    */
   private fun shareText(text: String) {
     val shareIntent =
