@@ -19,12 +19,12 @@ import java.io.IOException
 */
 
 /**
- * TextRecognizer class that extracts text from an image URI
+ * CustomTextRecognizer class that detects latin-based text from an image URI
  *
- * @param activity the ComponentActivity that will use the TextRecognizer
+ * @param activity the ComponentActivity that will use the CustomTextRecognizer
  * @param textRecognizer the TextRecognizer object, initialized with the default options
  */
-class TextRecognizer(
+class CustomTextRecognizer(
     private val activity: ComponentActivity,
     private val textRecognizer: TextRecognizer =
         TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
@@ -99,6 +99,6 @@ class TextRecognizer(
   }
 
   companion object {
-    const val TAG = "TextRecognizer"
+    const val TAG = "CustomTextRecognizer"
   }
 }
