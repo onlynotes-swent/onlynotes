@@ -9,19 +9,28 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
+import com.google.mlkit.vision.text.TextRecognizer
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import java.io.IOException
 
+/* Using Google ML Kit’s Text Recognition v2 API to extract text from an image:
+  https://developers.google.com/ml-kit/vision/text-recognition/v2
+ Inspired by: https://github.com/mundodigitalpro/MLVisionKotlin/tree/master
+*/
+
 /**
- * TextRecognizer class that extracts text from an image URI using Google ML Kit’s Text Recognition
- * v2 API. https://developers.google.com/ml-kit/vision/text-recognition/v2 inspired by:
- * https://github.com/mundodigitalpro/MLVisionKotlin/tree/master
+ * TextRecognizer class that extracts text from an image URI
  *
  * @param activity the ComponentActivity that will use the TextRecognizer
+ * @param textRecognizer the TextRecognizer object, initialized with the default options
  */
-class TextRecognizer(private val activity: ComponentActivity) {
+class TextRecognizer(
+    private val activity: ComponentActivity,
+    private val textRecognizer: TextRecognizer =
+        TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
+) {
+
   private lateinit var textRecognitionLauncher: ActivityResultLauncher<String>
-  private val textRecognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
 
   /**
    * Initializes the activity result launcher to handle the image result. To be called in the
