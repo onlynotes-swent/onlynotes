@@ -19,7 +19,7 @@ import java.io.IOException
 */
 
 /**
- * CustomTextRecognizer class that detects latin-based text from an image URI
+ * CustomTextRecognizer class that detects latin-based text from an input image
  *
  * @param activity the ComponentActivity that will use the CustomTextRecognizer
  * @param textRecognizer the TextRecognizer object, initialized with the default options
