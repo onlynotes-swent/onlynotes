@@ -357,8 +357,8 @@ class UserRepositoryFirestoreTest {
   @Test
   fun `addFollowerTo should call Firestore collection`() {
     // Mock the behavior of the DocumentReference update operation
-    `when`(mockDocumentReference.update(eq("followers"), any())).thenReturn(mockResolveTask)
-    `when`(mockDocumentReference.update(eq("following"), any())).thenReturn(mockResolveTask)
+    `when`(mockDocumentReference.update(eq("friends.followers"), any())).thenReturn(mockResolveTask)
+    `when`(mockDocumentReference.update(eq("friends.following"), any())).thenReturn(mockResolveTask)
 
     // Call addFollowerTo method
     var onSuccessCalled = false
