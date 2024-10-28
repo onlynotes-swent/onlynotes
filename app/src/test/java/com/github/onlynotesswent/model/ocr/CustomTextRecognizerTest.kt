@@ -1,5 +1,6 @@
 package com.github.onlynotesswent.model.ocr
 
+import android.content.ActivityNotFoundException
 import android.content.Context
 import android.net.Uri
 import android.util.Log
@@ -65,12 +66,67 @@ class CustomTextRecognizerTest {
   }
 
   @Test
+  fun scanImageLogsErrorWhenNotInitializedTest() {
+    customTextRecognizer.scanImage()
+
+    // Get all the logs
+    val logs = ShadowLog.getLogs()
+
+    // Check for the error log that should be generated
+    val errorLog =
+        logs.find {
+          it.type == Log.ERROR &&
+              it.tag == CustomTextRecognizer.TAG &&
+              it.msg == "Error: textRecognitionLauncher is not initialized"
+        }
+    assert(errorLog != null) { "Expected error log was not found!" }
+  }
+
+  @Test
   fun scanImageLaunchesImagePickerIntentTest() {
     customTextRecognizer.init()
     customTextRecognizer.scanImage()
 
     // Verify that the activity result launcher was launched with the correct MIME type
     verify(mockActivityResultLauncher).launch("image/*")
+  }
+
+  @Test
+  fun scanImageHandlesActivityNotFoundExceptionTest() {
+    // Simulate ActivityNotFoundException when launching the image picker
+    `when`(mockActivityResultLauncher.launch("image/*"))
+        .thenThrow(ActivityNotFoundException::class.java)
+
+    mockStatic(Toast::class.java).use { toastMock ->
+      val mockToast = mock(Toast::class.java)
+      toastMock
+          .`when`<Toast> { Toast.makeText(any<Context>(), any<String>(), any()) }
+          .thenReturn(mockToast)
+
+      // Start the activity
+      customTextRecognizer.init()
+      customTextRecognizer.scanImage()
+
+      // Get all the logs
+      val logs = ShadowLog.getLogs()
+
+      // Check for the error log that should be generated
+      val errorLog =
+          logs.find {
+            it.type == Log.ERROR &&
+                it.tag == CustomTextRecognizer.TAG &&
+                it.msg == "Failed to launch gallery"
+          }
+      assert(errorLog != null) { "Expected error log was not found!" }
+
+      // Verify that Toast.makeText() was called with the appropriate arguments
+      toastMock.verify {
+        Toast.makeText(eq(mockActivity), eq("Failed to launch gallery"), eq(Toast.LENGTH_LONG))
+      }
+
+      // Verify that Toast.show() was called on the returned Toast object
+      verify(mockToast).show()
+    }
   }
 
   @Test
