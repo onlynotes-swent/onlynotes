@@ -2,12 +2,22 @@ package com.github.onlynotesswent.ui.user
 
 import android.util.Log
 import android.widget.Toast
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.layout.Box
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -15,13 +25,18 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.unit.dp
+import coil.compose.rememberAsyncImagePainter
 import com.github.onlynotesswent.model.users.User
 import com.github.onlynotesswent.model.users.UserRepositoryFirestore
 import com.github.onlynotesswent.model.users.UserViewModel
@@ -29,6 +44,7 @@ import com.github.onlynotesswent.ui.navigation.BottomNavigationMenu
 import com.github.onlynotesswent.ui.navigation.LIST_TOP_LEVEL_DESTINATION
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
+
 
 /**
  * A composable function that displays the profile screen.
@@ -74,6 +90,8 @@ fun ProfileScreen(navigationActions: NavigationActions, userViewModel: UserViewM
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally) {
 
+            ProfilePicture(user.value?.profilePicture)
+
               // Text Fields for user information
               FirstNameTextField(newFirstName)
               LastNameTextField(newLastName)
@@ -92,7 +110,9 @@ fun ProfileScreen(navigationActions: NavigationActions, userViewModel: UserViewM
                               email = it.email,
                               uid = it.uid,
                               dateOfJoining = it.dateOfJoining,
-                              rating = it.rating)
+                              rating = it.rating,
+                              profilePicture = it.profilePicture,
+                          )
                         }
                     if (updatedUser == null) {
                       Toast.makeText(
@@ -123,4 +143,47 @@ fun ProfileScreen(navigationActions: NavigationActions, userViewModel: UserViewM
                   enabled = saveEnabled)
             }
       })
+}
+
+
+@Composable
+fun ProfilePicture(profileImageUrl: String?) {
+
+    Box(modifier = Modifier.size(150.dp)) {
+        val painter = if (!profileImageUrl.isNullOrEmpty()) {
+            rememberAsyncImagePainter(profileImageUrl)
+        } else {
+           rememberVectorPainter(Icons.Default.AccountCircle)
+        }
+
+        Image(
+            painter = painter,
+            contentDescription = "Profile Picture",
+            modifier = Modifier
+                .testTag("profilePicture")
+                .size(150.dp)
+                .clip(CircleShape)
+                .border(2.dp, Color.Gray, CircleShape),
+            contentScale = ContentScale.Crop
+        )
+
+        // Edit Icon Overlay
+        Icon(
+            imageVector = Icons.Default.Edit,
+            contentDescription = "Edit Profile Picture",
+            modifier = Modifier
+                .testTag("editProfilePicture")
+                .size(40.dp)  // Size of the edit icon
+                .align(Alignment.BottomEnd)
+                .offset(x = (-8).dp, y = (-8).dp)  // Position on the bottom-left
+                .clip(CircleShape)
+                .background(Color.White)  // Optional: background for contrast
+                .clickable { editProfilePicture() },  // Trigger the onEditClick callback
+            tint = Color.Gray  // Icon color
+        )
+    }
+}
+
+fun editProfilePicture() {
+
 }

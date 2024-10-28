@@ -20,5 +20,6 @@ data class User(
     val email: String,
     val uid: String,
     val dateOfJoining: Timestamp,
-    val rating: Double
-)
+    val rating: Double,
+    val profilePicture: String= "",
+    )

@@ -136,6 +136,9 @@ dependencies {
     globalTestImplementation(libs.androidx.junit)
     globalTestImplementation(libs.androidx.espresso.core)
 
+
+
+
     // -------------- Firebase ---------------------
     implementation(libs.firebase.database.ktx)
     implementation(libs.firebase.firestore)
@@ -169,6 +172,11 @@ dependencies {
     testImplementation("org.mockito:mockito-inline:4.0.0")
     androidTestImplementation(libs.mockito.kotlin)
     androidTestImplementation("org.mockito:mockito-android:5.14.1")
+    
+
+    //Image Library
+    implementation("io.coil-kt:coil-compose:2.1.0")
+    implementation("com.github.Dhaval2404:imagepicker:2.1")
 
 
     // --------- Kaspresso test framework ----------

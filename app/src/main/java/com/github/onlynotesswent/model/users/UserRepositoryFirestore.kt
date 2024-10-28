@@ -30,7 +30,9 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore) : UserRepositor
         email = document.getString("email") ?: "",
         uid = document.getString("uid") ?: "",
         dateOfJoining = document.getTimestamp("dateOfJoining") ?: Timestamp.now(),
-        rating = document.getDouble("rating") ?: 0.0)
+        rating = document.getDouble("rating") ?: 0.0,
+        profilePicture = document.getString("profilePicture") ?: ""
+    )
   }
 
   override fun init(auth: FirebaseAuth, onSuccess: () -> Unit) {
