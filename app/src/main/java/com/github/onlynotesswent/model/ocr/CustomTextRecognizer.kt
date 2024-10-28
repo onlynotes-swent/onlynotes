@@ -1,5 +1,6 @@
 package com.github.onlynotesswent.model.ocr
 
+import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.net.Uri
 import android.util.Log
@@ -46,7 +47,17 @@ class CustomTextRecognizer(
 
   /** Launches an intent to pick an image from the gallery. */
   fun scanImage() {
-    textRecognitionLauncher.launch("image/*")
+    if (!::textRecognitionLauncher.isInitialized) {
+      Log.e(TAG, "Error: textRecognitionLauncher is not initialized")
+      return
+    }
+
+    try {
+      textRecognitionLauncher.launch("image/*")
+    } catch (e: ActivityNotFoundException) {
+      Toast.makeText(activity, "Failed to launch gallery", Toast.LENGTH_LONG).show()
+      Log.e(TAG, "Failed to launch gallery", e)
+    }
   }
 
   /**
