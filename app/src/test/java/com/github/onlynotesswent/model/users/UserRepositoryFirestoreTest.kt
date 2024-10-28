@@ -369,4 +369,39 @@ class UserRepositoryFirestoreTest {
     verify(mockCollectionReference, timeout(1000)).document(user.uid)
     assert(onSuccessCalled)
   }
+
+  @Test
+  fun `removeFollowerFrom should call Firestore collection`() {
+    // Mock the behavior of the DocumentReference update operation
+    `when`(mockDocumentReference.update(eq("friends.followers"), any())).thenReturn(mockResolveTask)
+    `when`(mockDocumentReference.update(eq("friends.following"), any())).thenReturn(mockResolveTask)
+
+    // Call addFollowerTo method
+    var onSuccessCalled = false
+    userRepositoryFirestore.removeFollowerFrom(
+        user = user.uid, follower = "4", { onSuccessCalled = true }, { assert(false) })
+
+    // Verify if Firestore collection was called
+    verify(mockCollectionReference, timeout(1000)).document(user.uid)
+    assert(onSuccessCalled)
+  }
+
+  @Test
+  fun `getUsersById should call Firestore collection`() {
+    // Mock whereIn method and QuerySnapshot task
+    `when`(mockCollectionReference.whereIn("uid", listOf(user.uid))).thenReturn(mockQuery)
+    `when`(mockQuerySnapshot.documents).thenReturn(listOf(mockDocumentSnapshot))
+
+    // Call getUsersById method
+    var users: List<User>? = null
+    userRepositoryFirestore.getUsersById(listOf(user.uid), { users = it }, { assert(false) })
+
+    // Verify if Firestore collection was called
+    verify(mockCollectionReference, timeout(1000)).whereIn("uid", listOf(user.uid))
+
+    // Assertions to verify that the correct user was returned
+    assertNotNull(users)
+    assertEquals(1, users!!.size)
+    assertEquals(user, users!![0])
+  }
 }
