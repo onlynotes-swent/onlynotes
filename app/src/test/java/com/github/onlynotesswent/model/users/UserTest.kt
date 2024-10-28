@@ -75,4 +75,16 @@ class UserTest {
 
     assertNotSame(user1, user2)
   }
+
+  @Test
+  fun `test user friends creation`() {
+    val friends = Friends(following = listOf("1", "2"), followers = listOf("3", "4"))
+
+    assertEquals(listOf("1", "2"), friends.following)
+    assertEquals(listOf("3", "4"), friends.followers)
+
+    val emptyFriends = Friends()
+    assertEquals(emptyList<String>(), emptyFriends.following)
+    assertEquals(emptyList<String>(), emptyFriends.followers)
+  }
 }

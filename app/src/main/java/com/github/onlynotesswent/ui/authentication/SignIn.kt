@@ -103,11 +103,10 @@ internal fun authSuccessHandler(
     showMessage("Login Failed!")
     return
   }
-  userViewModel.getUserByEmail(
+  userViewModel.getCurrentUserByEmail(
       result.user!!.email!!,
       onSuccess = { user ->
         showMessage("Welcome ${user.userName}!")
-        userViewModel.setCurrentUser(user)
         navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
       },
       onUserNotFound = {
