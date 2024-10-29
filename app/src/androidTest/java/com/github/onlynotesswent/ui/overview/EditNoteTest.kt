@@ -44,11 +44,18 @@ class EditNoteTest {
     composeTestRule.onNodeWithTag("EditNote textField").assertIsDisplayed()
     composeTestRule.onNodeWithTag("EditTitle textField").assertIsDisplayed()
     composeTestRule.onNodeWithTag("Save button").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("Delete button").assertIsDisplayed()
   }
 
   @Test
   fun saveClickCallsNavActions() {
     composeTestRule.onNodeWithTag("Save button").performClick()
+    verify(navigationActions).goBack()
+  }
+
+  @Test
+  fun deleteClickCallsNavActions() {
+    composeTestRule.onNodeWithTag("Delete button").performClick()
     verify(navigationActions).goBack()
   }
 }

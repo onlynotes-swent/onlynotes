@@ -84,5 +84,14 @@ fun EditNoteScreen(navigationActions: NavigationActions, noteViewModel: NoteView
             modifier = Modifier.testTag("Save button")) {
               Text("Save")
             }
+
+        Button(
+            onClick = {
+              noteViewModel.deleteNoteById(note?.id ?: "1", note?.userId ?: "1")
+              navigationActions.goBack()
+            },
+            modifier = Modifier.testTag("Delete button")) {
+              Text("Delete")
+            }
       }
 }
