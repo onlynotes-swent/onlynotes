@@ -25,6 +25,10 @@
             </intent-filter>
         </activity>
 
+        <meta-data
+            android:name="com.google.firebase.ml.vision.DEPENDENCIES"
+            android:value="ocr" />
+
         <!-- File Provider used to securely transfer files from external apps (mlkit Document Scanner)
              to the onlynotes app, using content:// uri instead of unsafe file:// uri, following:
              https://developer.android.com/reference/androidx/core/content/FileProvider -->
