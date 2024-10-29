@@ -48,16 +48,24 @@ fun OnlyNotesApp(scanner: Scanner) {
         route = Route.AUTH,
     ) {
       composable(Screen.AUTH) { SignInScreen(navigationActions, userViewModel) }
-      composable(Screen.CREATE_USER) { CreateUserScreen(navigationActions, userViewModel) }
+      composable(Screen.CREATE_USER) {
+        CreateUserScreen(navigationActions, noteViewModel, userViewModel)
+      }
     }
 
     navigation(
         startDestination = Screen.OVERVIEW,
         route = Route.OVERVIEW,
     ) {
-      composable(Screen.OVERVIEW) { OverviewScreen(navigationActions, noteViewModel) }
-      composable(Screen.ADD_NOTE) { AddNoteScreen(navigationActions, scanner, noteViewModel) }
-      composable(Screen.EDIT_NOTE) { EditNoteScreen(navigationActions, noteViewModel) }
+      composable(Screen.OVERVIEW) {
+        OverviewScreen(navigationActions, noteViewModel, userViewModel)
+      }
+      composable(Screen.ADD_NOTE) {
+        AddNoteScreen(navigationActions, scanner, noteViewModel, userViewModel)
+      }
+      composable(Screen.EDIT_NOTE) {
+        EditNoteScreen(navigationActions, noteViewModel, userViewModel)
+      }
     }
 
     navigation(
@@ -71,7 +79,7 @@ fun OnlyNotesApp(scanner: Scanner) {
         startDestination = Screen.PROFILE,
         route = Route.PROFILE,
     ) {
-      composable(Screen.PROFILE) { ProfileScreen(navigationActions, userViewModel) }
+      composable(Screen.PROFILE) { ProfileScreen(navigationActions, noteViewModel, userViewModel) }
     }
   }
 }

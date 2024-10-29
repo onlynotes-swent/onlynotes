@@ -79,7 +79,7 @@ class EndToEndTest {
           title = "title",
           content = "",
           date = Timestamp.now(),
-          userId = "1",
+          userId = testUid,
           public = true,
           image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888))
 
@@ -104,7 +104,7 @@ class EndToEndTest {
       onSuccess()
     }
 
-    `when`(noteRepository.getNewUid()).thenReturn("1")
+    `when`(noteRepository.getNewUid()).thenReturn(testNote.id)
 
     // Initialize Intents for handling navigation intents in the test
     Intents.init()
@@ -125,7 +125,7 @@ class EndToEndTest {
                     route = createUserRoute,
                 ) {
                   composable(Screen.CREATE_USER) {
-                    CreateUserScreen(navigationActions, userViewModel)
+                    CreateUserScreen(navigationActions, noteViewModel, userViewModel)
                   }
                 }
 
@@ -133,11 +133,15 @@ class EndToEndTest {
                     startDestination = Screen.OVERVIEW,
                     route = Route.OVERVIEW,
                 ) {
-                  composable(Screen.OVERVIEW) { OverviewScreen(navigationActions, noteViewModel) }
-                  composable(Screen.ADD_NOTE) {
-                    AddNoteScreen(navigationActions, scanner, noteViewModel)
+                  composable(Screen.OVERVIEW) {
+                    OverviewScreen(navigationActions, noteViewModel, userViewModel)
                   }
-                  composable(Screen.EDIT_NOTE) { EditNoteScreen(navigationActions, noteViewModel) }
+                  composable(Screen.ADD_NOTE) {
+                    AddNoteScreen(navigationActions, scanner, noteViewModel, userViewModel)
+                  }
+                  composable(Screen.EDIT_NOTE) {
+                    EditNoteScreen(navigationActions, noteViewModel, userViewModel)
+                  }
                 }
               }
         }
@@ -196,13 +200,13 @@ class EndToEndTest {
     composeTestRule.onNodeWithTag("createNoteButton").performClick()
 
     // Mock retrieval of notes
-    `when`(noteRepository.getNotes(eq("1"), any(), any())).thenAnswer { invocation ->
+    `when`(noteRepository.getNotes(eq(testUser.uid), any(), any())).thenAnswer { invocation ->
       val onSuccess = invocation.getArgument<(List<Note>) -> Unit>(1)
       onSuccess(listOf(testNote))
     }
 
     // Trigger note retrieval and verify the notes are displayed
-    noteViewModel.getNotes("1")
+    noteViewModel.getNotes(testUser.uid)
     composeTestRule.onNodeWithTag("noteList").assertIsDisplayed()
 
     // Verify note details and navigate to the note editing screen

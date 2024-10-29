@@ -2,6 +2,8 @@ package com.github.onlynotesswent.model.users
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.firestore
@@ -29,13 +31,9 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
   }
 
   companion object {
-    val Factory: ViewModelProvider.Factory =
-        object : ViewModelProvider.Factory {
-          @Suppress("UNCHECKED_CAST")
-          override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            return UserViewModel(UserRepositoryFirestore(Firebase.firestore)) as T
-          }
-        }
+    val Factory: ViewModelProvider.Factory = viewModelFactory {
+      initializer { UserViewModel(UserRepositoryFirestore(Firebase.firestore)) }
+    }
   }
 
   /**

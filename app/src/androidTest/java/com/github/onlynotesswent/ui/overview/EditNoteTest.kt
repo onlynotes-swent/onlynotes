@@ -6,10 +6,12 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import com.github.onlynotesswent.model.note.NoteRepository
 import com.github.onlynotesswent.model.note.NoteViewModel
+import com.github.onlynotesswent.model.users.User
 import com.github.onlynotesswent.model.users.UserRepository
 import com.github.onlynotesswent.model.users.UserViewModel
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
+import com.google.firebase.Timestamp
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -34,9 +36,11 @@ class EditNoteTest {
     noteRepository = mock(NoteRepository::class.java)
     noteViewModel = NoteViewModel(noteRepository)
 
+    userViewModel.setCurrentUser(User("", "", "testUserName", "", "testUID", Timestamp.now(), 0.0))
+
     // Mock the current route to be the user create screen
     `when`(navigationActions.currentRoute()).thenReturn(Screen.EDIT_NOTE)
-    composeTestRule.setContent { EditNoteScreen(navigationActions, noteViewModel) }
+    composeTestRule.setContent { EditNoteScreen(navigationActions, noteViewModel, userViewModel) }
   }
 
   @Test
@@ -48,6 +52,7 @@ class EditNoteTest {
 
   @Test
   fun saveClickCallsNavActions() {
+
     composeTestRule.onNodeWithTag("Save button").performClick()
     verify(navigationActions).goBack()
   }

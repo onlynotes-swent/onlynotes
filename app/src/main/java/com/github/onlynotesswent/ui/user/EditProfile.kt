@@ -22,6 +22,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.model.users.User
 import com.github.onlynotesswent.model.users.UserRepositoryFirestore
 import com.github.onlynotesswent.model.users.UserViewModel
@@ -38,7 +39,11 @@ import com.github.onlynotesswent.ui.navigation.Screen
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProfileScreen(navigationActions: NavigationActions, userViewModel: UserViewModel) {
+fun ProfileScreen(
+    navigationActions: NavigationActions,
+    noteViewModel: NoteViewModel,
+    userViewModel: UserViewModel
+) {
   val user = userViewModel.currentUser.collectAsState()
 
   val newFirstName = remember { mutableStateOf(user.value?.firstName ?: "") }
@@ -106,6 +111,7 @@ fun ProfileScreen(navigationActions: NavigationActions, userViewModel: UserViewM
                           user = updatedUser,
                           onSuccess = {
                             userViewModel.setCurrentUser(updatedUser)
+                            noteViewModel.getNotes(userID = updatedUser.uid)
                             navigationActions.navigateTo(Screen.OVERVIEW)
                           },
                           onFailure = { exception ->

@@ -7,6 +7,8 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextClearance
 import androidx.compose.ui.test.performTextInput
+import com.github.onlynotesswent.model.note.NoteRepository
+import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.model.users.User
 import com.github.onlynotesswent.model.users.UserRepository
 import com.github.onlynotesswent.model.users.UserRepositoryFirestore
@@ -22,10 +24,13 @@ import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
+import org.mockito.kotlin.eq
 
 class ProfileScreenTest {
   @Mock private lateinit var mockUserRepository: UserRepository
   @Mock private lateinit var mockNavigationActions: NavigationActions
+  @Mock private lateinit var mockNoteRepository: NoteRepository
+  private lateinit var noteViewModel: NoteViewModel
   private lateinit var userViewModel: UserViewModel
   private val testUid = "testUid123"
   private val testUser =
@@ -47,6 +52,7 @@ class ProfileScreenTest {
     // Mock is a way to create a fake object that can be used in place of a real object
     MockitoAnnotations.openMocks(this)
     userViewModel = UserViewModel(mockUserRepository)
+    noteViewModel = NoteViewModel(mockNoteRepository)
 
     // Mock the current route to be the user create screen
     `when`(mockNavigationActions.currentRoute()).thenReturn(Screen.PROFILE)
@@ -69,7 +75,9 @@ class ProfileScreenTest {
 
   @Test
   fun displayAllComponents() {
-    composeTestRule.setContent { ProfileScreen(mockNavigationActions, userViewModel) }
+    composeTestRule.setContent {
+      ProfileScreen(mockNavigationActions, noteViewModel, userViewModel)
+    }
 
     composeTestRule.onNodeWithTag("ProfileScreen").assertExists()
     composeTestRule.onNodeWithTag("goBackButton").assertExists()
@@ -86,16 +94,21 @@ class ProfileScreenTest {
   // test that submit does navigate to the overview screen
   @Test
   fun submitNavigatesToOverview() {
-    composeTestRule.setContent { ProfileScreen(mockNavigationActions, userViewModel) }
+    composeTestRule.setContent {
+      ProfileScreen(mockNavigationActions, noteViewModel, userViewModel)
+    }
 
     composeTestRule.onNodeWithTag("saveButton").performClick()
     verify(mockNavigationActions).navigateTo(Screen.OVERVIEW)
+    verify(mockNoteRepository).getNotes(eq(testUser.uid), any(), any())
   }
 
   // test that modifying the profile works
   @Test
   fun modifyProfile() {
-    composeTestRule.setContent { ProfileScreen(mockNavigationActions, userViewModel) }
+    composeTestRule.setContent {
+      ProfileScreen(mockNavigationActions, noteViewModel, userViewModel)
+    }
 
     composeTestRule.onNodeWithTag("inputUserName").performTextClearance()
     composeTestRule.onNodeWithTag("inputUserName").performTextInput("newUserName")

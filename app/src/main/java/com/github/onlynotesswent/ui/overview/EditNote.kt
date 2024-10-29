@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import com.github.onlynotesswent.model.note.Note
 import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.model.note.Type
+import com.github.onlynotesswent.model.users.UserViewModel
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.google.firebase.Timestamp
 
@@ -37,7 +38,11 @@ import com.google.firebase.Timestamp
  *   updates.
  */
 @Composable
-fun EditNoteScreen(navigationActions: NavigationActions, noteViewModel: NoteViewModel) {
+fun EditNoteScreen(
+    navigationActions: NavigationActions,
+    noteViewModel: NoteViewModel,
+    userViewModel: UserViewModel
+) {
   val note by noteViewModel.note.collectAsState()
   var updatedNoteText by remember { mutableStateOf(note?.content ?: "") } // Keep track of changes
   var updatedNoteTitle by remember { mutableStateOf(note?.title ?: "") } // Keep track of changes
@@ -72,13 +77,13 @@ fun EditNoteScreen(navigationActions: NavigationActions, noteViewModel: NoteView
                       content = updatedNoteText,
                       date = Timestamp.now(), // Use current timestamp
                       public = note?.public ?: true,
-                      userId = note?.userId ?: "1",
+                      userId = note?.userId ?: userViewModel.currentUser.value!!.uid,
                       image =
                           note?.image
                               ?: Bitmap.createBitmap(
                                   1, 1, Bitmap.Config.ARGB_8888) // Placeholder Bitmap
                       ),
-                  "1")
+                  userViewModel.currentUser.value!!.uid)
               navigationActions.goBack()
             },
             modifier = Modifier.testTag("Save button")) {

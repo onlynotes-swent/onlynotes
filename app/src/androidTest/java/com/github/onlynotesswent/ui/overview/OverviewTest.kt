@@ -9,6 +9,7 @@ import com.github.onlynotesswent.model.note.Note
 import com.github.onlynotesswent.model.note.NoteRepository
 import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.model.note.Type
+import com.github.onlynotesswent.model.users.User
 import com.github.onlynotesswent.model.users.UserRepository
 import com.github.onlynotesswent.model.users.UserViewModel
 import com.github.onlynotesswent.ui.navigation.NavigationActions
@@ -53,9 +54,32 @@ class OverviewTest {
     noteRepository = mock(NoteRepository::class.java)
     noteViewModel = NoteViewModel(noteRepository)
 
+    userViewModel.setCurrentUser(
+        User(
+            firstName = "testFirstName",
+            lastName = "testLastName",
+            userName = "testUserName",
+            email = "testEmail",
+            uid = "1",
+            dateOfJoining = Timestamp.now(),
+            rating = 0.0))
+
     // Mock the current route to be the user create screen
     `when`(navigationActions.currentRoute()).thenReturn(Screen.OVERVIEW)
-    composeTestRule.setContent { OverviewScreen(navigationActions, noteViewModel) }
+    composeTestRule.setContent { OverviewScreen(navigationActions, noteViewModel, userViewModel) }
+  }
+
+  @Test
+  fun refreshButtonWorks() {
+    `when`(noteRepository.getNotes(eq("1"), any(), any())).then { invocation ->
+      val onSuccess = invocation.getArgument<(List<Note>) -> Unit>(1)
+      onSuccess(noteList)
+    }
+    composeTestRule.onNodeWithTag("emptyNotePrompt").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("refreshButton").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("refreshButton").performClick()
+    verify(noteRepository).getNotes(eq("1"), any(), any())
+    composeTestRule.onNodeWithTag("noteList").assertIsDisplayed()
   }
 
   @Test
@@ -88,7 +112,16 @@ class OverviewTest {
       onSuccess(listOf())
     }
     noteViewModel.getNotes("1")
+    composeTestRule.onNodeWithTag("emptyNotePrompt").assertIsDisplayed()
+  }
 
+  @Test
+  fun displayTextWhenUserHasNoNotes() {
+    `when`(noteRepository.getNotes(eq("1"), any(), any())).then { invocation ->
+      val onSuccess = invocation.getArgument<(List<Note>) -> Unit>(1)
+      onSuccess(noteList)
+    }
+    noteViewModel.getNotes("2") // User 2 has no notes
     composeTestRule.onNodeWithTag("emptyNotePrompt").assertIsDisplayed()
   }
 

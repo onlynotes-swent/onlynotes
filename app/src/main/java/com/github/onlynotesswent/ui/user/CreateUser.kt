@@ -26,6 +26,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
+import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.model.users.User
 import com.github.onlynotesswent.model.users.UserRepositoryFirestore
 import com.github.onlynotesswent.model.users.UserViewModel
@@ -44,7 +45,11 @@ import com.google.firebase.auth.auth
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CreateUserScreen(navigationActions: NavigationActions, userViewModel: UserViewModel) {
+fun CreateUserScreen(
+    navigationActions: NavigationActions,
+    noteViewModel: NoteViewModel,
+    userViewModel: UserViewModel
+) {
   // State variables to hold user input
   val firstName = remember { mutableStateOf("") }
   val lastName = remember { mutableStateOf("") }
@@ -96,6 +101,7 @@ fun CreateUserScreen(navigationActions: NavigationActions, userViewModel: UserVi
                         user = user,
                         onSuccess = {
                           userViewModel.setCurrentUser(user)
+                          noteViewModel.getNotes(userID = user.uid)
                           navigationActions.navigateTo(Screen.OVERVIEW)
                         },
                         onFailure = { exception ->
