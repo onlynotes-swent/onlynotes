@@ -3,6 +3,7 @@ package com.github.onlynotesswent.model.users
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentSnapshot
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 
 /**
@@ -31,6 +32,11 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore) : UserRepositor
         uid = document.getString("uid") ?: "",
         dateOfJoining = document.getTimestamp("dateOfJoining") ?: Timestamp.now(),
         rating = document.getDouble("rating") ?: 0.0,
+        friends =
+            Friends(
+                following = document.get("friends.following") as? List<String> ?: emptyList(),
+                followers = document.get("friends.followers") as? List<String> ?: emptyList(),
+            )
         profilePicture = document.getString("profilePicture") ?: ""
     )
   }
@@ -125,5 +131,58 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore) : UserRepositor
 
   override fun getNewUid(): String {
     return db.collection(collectionPath).document().id
+  }
+
+  override fun addFollowerTo(
+      user: String,
+      follower: String,
+      onSuccess: () -> Unit,
+      onFailure: (Exception) -> Unit
+  ) {
+    db.collection(collectionPath)
+        .document(user)
+        .update("friends.followers", FieldValue.arrayUnion(follower))
+        .addOnSuccessListener {
+          db.collection(collectionPath)
+              .document(follower)
+              .update("friends.following", FieldValue.arrayUnion(user))
+              .addOnSuccessListener { onSuccess() }
+              .addOnFailureListener { exception -> onFailure(exception) }
+        }
+        .addOnFailureListener { exception -> onFailure(exception) }
+  }
+
+  override fun removeFollowerFrom(
+      user: String,
+      follower: String,
+      onSuccess: () -> Unit,
+      onFailure: (Exception) -> Unit
+  ) {
+    db.collection(collectionPath)
+        .document(user)
+        .update("friends.followers", FieldValue.arrayRemove(follower))
+        .addOnSuccessListener {
+          db.collection(collectionPath)
+              .document(follower)
+              .update("friends.following", FieldValue.arrayRemove(user))
+              .addOnSuccessListener { onSuccess() }
+              .addOnFailureListener { exception -> onFailure(exception) }
+        }
+        .addOnFailureListener { exception -> onFailure(exception) }
+  }
+
+  override fun getUsersById(
+      userIDs: List<String>,
+      onSuccess: (List<User>) -> Unit,
+      onFailure: (Exception) -> Unit
+  ) {
+    db.collection(collectionPath)
+        .whereIn("uid", userIDs)
+        .get()
+        .addOnSuccessListener { result ->
+          val users = result.documents.map { document -> documentSnapshotToUser(document) }
+          onSuccess(users)
+        }
+        .addOnFailureListener { exception -> onFailure(exception) }
   }
 }

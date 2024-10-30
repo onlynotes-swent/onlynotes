@@ -20,6 +20,21 @@ data class User(
     val email: String,
     val uid: String,
     val dateOfJoining: Timestamp,
-    val rating: Double,
-    val profilePicture: String= "",
-    )
+    val rating: Double = 0.0,
+    val friends: Friends = Friends(),
+    val profilePicture: String= ""
+)
+
+/**
+ * Data class representing a user's friends (following and followers), represented by lists of UIDs.
+ *
+ * @constructor Creates a Friends object with empty lists.
+ * @property following The list of users that the user is following.
+ * @property followers The list of users that are following the user.
+ */
+data class Friends(
+    val following: List<String> = emptyList(),
+    val followers: List<String> = emptyList()
+)
+
+

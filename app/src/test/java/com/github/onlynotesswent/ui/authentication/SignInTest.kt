@@ -29,7 +29,7 @@ class SignInTest {
     `when`(authResult.user).thenReturn(firebaseUser)
     `when`(firebaseUser.email).thenReturn(user.email)
 
-    `when`(userViewModel.getUserByEmail(anyString(), any(), any(), any())).thenAnswer {
+    `when`(userViewModel.getCurrentUserByEmail(anyString(), any(), any(), any())).thenAnswer {
       val email = it.arguments[0] as String
       val onSuccess: (User) -> Unit = it.arguments[1] as (User) -> Unit
       val onNotFound: () -> Unit = it.arguments[2] as () -> Unit
@@ -48,7 +48,7 @@ class SignInTest {
     // Verify the message and navigation actions
     assert(messageShown == "Welcome ${user.userName}!")
     verify(navigationActions).navigateTo(TopLevelDestinations.OVERVIEW)
-    verify(userViewModel).getUserByEmail(anyString(), any(), any(), any())
+    verify(userViewModel).getCurrentUserByEmail(anyString(), any(), any(), any())
   }
 
   @Test
@@ -63,7 +63,7 @@ class SignInTest {
     `when`(authResult.user).thenReturn(firebaseUser)
     `when`(firebaseUser.email).thenReturn(user.email)
 
-    `when`(userViewModel.getUserByEmail(anyString(), any(), any(), any())).thenAnswer {
+    `when`(userViewModel.getCurrentUserByEmail(anyString(), any(), any(), any())).thenAnswer {
       val onNotFound: () -> Unit = it.arguments[2] as () -> Unit
       onNotFound()
     }
@@ -76,7 +76,7 @@ class SignInTest {
     // Verify the message and navigation actions
     assert(messageShown == "Welcome to OnlyNotes!")
     verify(navigationActions).navigateTo(Screen.CREATE_USER)
-    verify(userViewModel).getUserByEmail(anyString(), any(), any(), any())
+    verify(userViewModel).getCurrentUserByEmail(anyString(), any(), any(), any())
   }
 
   @Test
@@ -91,7 +91,7 @@ class SignInTest {
     `when`(authResult.user).thenReturn(firebaseUser)
     `when`(firebaseUser.email).thenReturn(user.email)
 
-    `when`(userViewModel.getUserByEmail(anyString(), any(), any(), any())).thenAnswer {
+    `when`(userViewModel.getCurrentUserByEmail(anyString(), any(), any(), any())).thenAnswer {
       val onFailure: (Exception) -> Unit = it.arguments[3] as (Exception) -> Unit
       onFailure(Exception("TestError"))
     }
@@ -103,7 +103,7 @@ class SignInTest {
     }
     // Verify the message
     assertEquals(messageShown, "Error while fetching user: ${Exception("TestError")}")
-    verify(userViewModel).getUserByEmail(anyString(), any(), any(), any())
+    verify(userViewModel).getCurrentUserByEmail(anyString(), any(), any(), any())
   }
 
   @Test
