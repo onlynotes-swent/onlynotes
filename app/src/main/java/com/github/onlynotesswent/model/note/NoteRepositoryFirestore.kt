@@ -19,6 +19,10 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
       val date: Timestamp,
       val public: Boolean,
       val userId: String,
+      val classCode: String,
+      val className: String,
+      val classYear: Int,
+      val publicPath: String,
       val image: String
   )
 
@@ -30,7 +34,18 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
    */
   private fun convertNotes(note: Note): FirebaseNote {
     return FirebaseNote(
-        note.id, note.type, note.title, note.content, note.date, note.public, note.userId, "null")
+        note.id,
+        note.type,
+        note.title,
+        note.content,
+        note.date,
+        note.public,
+        note.userId,
+        note.noteClass.classCode,
+        note.noteClass.className,
+        note.noteClass.classYear,
+        note.noteClass.publicPath,
+        "null")
   }
 
   private val collectionPath = "notes"
@@ -144,6 +159,10 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
       val date = document.getTimestamp("date") ?: return null
       val public = document.getBoolean("public") ?: true
       val userId = document.getString("userId") ?: return null
+      val classCode = document.getString("classCode") ?: return null
+      val className = document.getString("className") ?: return null
+      val classYear = document.getLong("classYear")?.toInt() ?: return null
+      val classPath = document.getString("publicPath") ?: return null
       val image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)
       // Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888) is the default bitMap, to be changed
       // when we implement images by URL
@@ -156,6 +175,7 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
           date = date,
           public = public,
           userId = userId,
+          noteClass = Class(classCode, className, classYear, classPath),
           image = image)
     } catch (e: Exception) {
       Log.e("NoteRepositoryFirestore", "Error converting document to Note", e)

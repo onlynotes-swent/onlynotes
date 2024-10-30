@@ -25,7 +25,7 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
     val Factory: ViewModelProvider.Factory =
         object : ViewModelProvider.Factory {
           @Suppress("UNCHECKED_CAST")
-          override fun <T : ViewModel> create(modelClass: Class<T>): T {
+          override fun <T : ViewModel> create(modelClass: java.lang.Class<T>): T {
             return NoteViewModel(NoteRepositoryFirestore(Firebase.firestore)) as T
           }
         }
@@ -34,6 +34,7 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
   fun selectedNote(note: Note) {
     _note.value = note
   }
+
   /**
    * Generates a new unique ID.
    *

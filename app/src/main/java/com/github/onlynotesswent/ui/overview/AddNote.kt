@@ -1,16 +1,15 @@
 package com.github.onlynotesswent.ui.overview
 
 import android.graphics.Bitmap
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.ArrowDropDown
@@ -27,23 +26,37 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.github.onlynotesswent.R
+import com.github.onlynotesswent.model.note.Class
 import com.github.onlynotesswent.model.note.Note
 import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.model.note.Type
 import com.github.onlynotesswent.model.scanner.Scanner
 import com.github.onlynotesswent.ui.navigation.NavigationActions
+import com.github.onlynotesswent.ui.navigation.Screen
 import com.google.firebase.Timestamp
+import java.util.Calendar
 
+/**
+ * Displays the add note screen, where users can create a new note. The screen includes text fields
+ * for entering the note's title, class name, class code, and class year, as well as dropdown menus
+ * for selecting the note's visibility and template. The screen also includes a button to create the
+ * note, which navigates to the edit note screen if the template is "Create Note", or navigates back
+ * to the overview screen if the template is "Upload Note" or "Scan Note".
+ *
+ * @param navigationActions The navigation view model used to transition between different screens.
+ * @param scanner The scanner used to scan images and create notes.
+ * @param noteViewModel The ViewModel that provides the current note to be edited and handles note
+ *   updates.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddNoteScreen(
@@ -52,18 +65,29 @@ fun AddNoteScreen(
     noteViewModel: NoteViewModel = viewModel(factory = NoteViewModel.Factory),
 ) {
 
+  val currentYear = Calendar.getInstance().get(Calendar.YEAR)
   var title by remember { mutableStateOf("") }
+  var className by remember { mutableStateOf("") }
+  var classCode by remember { mutableStateOf("") }
+  var classYear by remember { mutableIntStateOf(currentYear) }
   var template by remember { mutableStateOf("Choose An Option") }
   var visibility by remember { mutableStateOf("Choose An Option") }
   var expandedVisibility by remember { mutableStateOf(false) }
   var expandedTemplate by remember { mutableStateOf(false) }
-  var saveButton by remember { mutableStateOf("Create Note") }
 
   Scaffold(
       modifier = Modifier.testTag("addNoteScreen"),
       topBar = {
         TopAppBar(
-            title = { Text("Create a new note", Modifier.testTag("addNoteTitle")) },
+            title = {
+              Row(
+                  modifier = Modifier.fillMaxWidth(),
+                  verticalAlignment = Alignment.CenterVertically) {
+                    Spacer(modifier = Modifier.weight(1f))
+                    Text("Create a new note", Modifier.testTag("addNoteTitle"))
+                    Spacer(modifier = Modifier.weight(2f))
+                  }
+            },
             navigationIcon = {
               IconButton(
                   onClick = { navigationActions.goBack() }, Modifier.testTag("goBackButton")) {
@@ -78,11 +102,6 @@ fun AddNoteScreen(
             modifier = Modifier.fillMaxSize().padding(16.dp).padding(paddingValues),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(8.dp)) {
-              Image(
-                  painter = painterResource(id = R.drawable.add_note),
-                  contentDescription = "Create Note Image",
-                  modifier = Modifier.size(200.dp).testTag("addNoteImage"))
-
               Spacer(modifier = Modifier.height(30.dp))
 
               OutlinedTextField(
@@ -97,7 +116,7 @@ fun AddNoteScreen(
                     }
                   })
 
-              Spacer(modifier = Modifier.height(30.dp))
+              Spacer(modifier = Modifier.height(10.dp))
 
               OptionDropDownMenu(
                   value = visibility,
@@ -108,7 +127,34 @@ fun AddNoteScreen(
                   items = listOf("Public", "Private"),
                   onItemClick = { visibility = it })
 
-              Spacer(modifier = Modifier.height(30.dp))
+              Spacer(modifier = Modifier.height(10.dp))
+
+              OutlinedTextField(
+                  value = className,
+                  onValueChange = { className = it },
+                  label = { Text("Class Name") },
+                  placeholder = { Text("Set the Class Name for the Note") },
+                  modifier = Modifier.fillMaxWidth().testTag("ClassNameTextField"))
+
+              Spacer(modifier = Modifier.height(5.dp))
+
+              OutlinedTextField(
+                  value = classCode,
+                  onValueChange = { classCode = it },
+                  label = { Text("Class Code") },
+                  placeholder = { Text("Set the Class Code for the Note") },
+                  modifier = Modifier.fillMaxWidth().testTag("ClassCodeTextField"))
+
+              Spacer(modifier = Modifier.height(5.dp))
+
+              OutlinedTextField(
+                  value = classYear.toString(),
+                  onValueChange = { classYear = it.toIntOrNull() ?: currentYear },
+                  label = { Text("Class Year") },
+                  placeholder = { Text("Set the Class Year for the Note") },
+                  modifier = Modifier.fillMaxWidth().testTag("ClassYearTextField"))
+
+              Spacer(modifier = Modifier.height(10.dp))
 
               OptionDropDownMenu(
                   value = template,
@@ -116,32 +162,30 @@ fun AddNoteScreen(
                   buttonTag = "templateButton",
                   menuTag = "templateMenu",
                   onExpandedChange = { expandedTemplate = it },
-                  items = listOf("Scan Image", "Create Note From Scratch"),
-                  onItemClick = {
-                    template = it
-                    saveButton =
-                        if (template == "Scan Image") {
-                          "Take Picture"
-                        } else {
-                          "Create Note"
-                        }
-                  })
+                  items = listOf("Scan Note", "Create Note", "Upload Note"),
+                  onItemClick = { template = it })
 
-              Spacer(modifier = Modifier.height(80.dp))
+              Spacer(modifier = Modifier.height(70.dp))
 
               Button(
                   onClick = {
                     var type = Type.NORMAL_TEXT
-                    if (saveButton == "Take Picture") {
-                      // call scan image API or functions. Once scanned, add the note to database
-                      scanner.scan()
-                      type = Type.PDF
-                    } else if (saveButton == "Create Note") {
-                      type = Type.NORMAL_TEXT
+                    when (template) {
+                      "Scan Note" -> {
+                        // call scan image API or functions. Once scanned, add the note to database
+                        scanner.scan()
+                        type = Type.PDF
+                      }
+                      "Create Note" -> {
+                        type = Type.NORMAL_TEXT
+                      }
+                      "Upload Note" -> {
+                        // upload image implementation here
+                        type = Type.JPEG
+                      }
                     }
-                    // create the note and add it to database
-                    noteViewModel.addNote(
-                        // provisional note, we will have to change this later
+                    // provisional note, we will have to change this later
+                    val note =
                         Note(
                             id = noteViewModel.getNewUid(),
                             type = type,
@@ -150,16 +194,24 @@ fun AddNoteScreen(
                             date = Timestamp.now(),
                             public = (visibility == "Public"),
                             userId = "1",
-                            image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)),
-                        "1")
-                    navigationActions.goBack()
+                            noteClass = Class(classCode, className, classYear, "path"),
+                            image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888))
+                    // create the note and add it to database
+                    noteViewModel.addNote(note, "1")
+
+                    if (type == Type.NORMAL_TEXT) {
+                      noteViewModel.selectedNote(note)
+                      navigationActions.navigateTo(Screen.EDIT_NOTE)
+                    } else {
+                      navigationActions.goBack()
+                    }
                   },
                   enabled =
                       title.isNotEmpty() &&
                           visibility != "Choose An Option" &&
                           template != "Choose An Option",
                   modifier = Modifier.fillMaxWidth().testTag("createNoteButton")) {
-                    Text(text = saveButton)
+                    Text(text = template)
                   }
             }
       })
