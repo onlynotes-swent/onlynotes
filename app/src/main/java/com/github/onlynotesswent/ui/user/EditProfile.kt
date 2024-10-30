@@ -2,6 +2,7 @@ package com.github.onlynotesswent.ui.user
 
 import android.util.Log
 import android.widget.Toast
+import androidx.collection.scatterSetOf
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -44,6 +45,7 @@ import com.github.onlynotesswent.ui.navigation.BottomNavigationMenu
 import com.github.onlynotesswent.ui.navigation.LIST_TOP_LEVEL_DESTINATION
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
+import com.github.onlynotesswent.model.users.ProfilePictureTaker
 
 
 /**
@@ -54,7 +56,11 @@ import com.github.onlynotesswent.ui.navigation.Screen
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProfileScreen(navigationActions: NavigationActions, userViewModel: UserViewModel) {
+fun ProfileScreen(
+    navigationActions: NavigationActions,
+    userViewModel: UserViewModel,
+    profilePictureTaker: ProfilePictureTaker
+) {
   val user = userViewModel.currentUser.collectAsState()
 
   val newFirstName = remember { mutableStateOf(user.value?.firstName ?: "") }
@@ -88,9 +94,9 @@ fun ProfileScreen(navigationActions: NavigationActions, userViewModel: UserViewM
         Column(
             modifier = Modifier.fillMaxSize().padding(paddingValues),
             verticalArrangement = Arrangement.Center,
-            horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally) {
+            horizontalAlignment = Alignment.CenterHorizontally) {
 
-            ProfilePicture(user.value?.profilePicture)
+            ProfilePicture(user.value?.profilePicture, userViewModel, profilePictureTaker)
 
               // Text Fields for user information
               FirstNameTextField(newFirstName)
@@ -147,7 +153,9 @@ fun ProfileScreen(navigationActions: NavigationActions, userViewModel: UserViewM
 
 
 @Composable
-fun ProfilePicture(profileImageUrl: String?) {
+fun ProfilePicture(profileImageUrl: String?,
+                   userViewModel: UserViewModel,
+                   profilePictureTaker: ProfilePictureTaker) {
 
     Box(modifier = Modifier.size(150.dp)) {
         val painter = if (!profileImageUrl.isNullOrEmpty()) {
@@ -178,12 +186,19 @@ fun ProfilePicture(profileImageUrl: String?) {
                 .offset(x = (-8).dp, y = (-8).dp)  // Position on the bottom-left
                 .clip(CircleShape)
                 .background(Color.White)  // Optional: background for contrast
-                .clickable { editProfilePicture() },  // Trigger the onEditClick callback
+                .clickable {
+                    //add  the image here
+                    editProfilePicture(profilePictureTaker,userViewModel)},  // Trigger the onEditClick callback
             tint = Color.Gray  // Icon color
         )
     }
 }
 
-fun editProfilePicture() {
-
+fun editProfilePicture(profilePictureTaker: ProfilePictureTaker, userViewModel: UserViewModel) {
+    profilePictureTaker.onImageSelected = { uri -> userViewModel.updateUser(
+        userViewModel.currentUser.value!!.copy(profilePicture = uri.toString()),
+        {},
+        { e -> println(e) }
+    ) }
+    profilePictureTaker.pickImage()
 }

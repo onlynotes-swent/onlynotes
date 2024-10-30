@@ -69,7 +69,11 @@ class ProfileScreenTest {
 
   @Test
   fun displayAllComponents() {
-    composeTestRule.setContent { ProfileScreen(mockNavigationActions, userViewModel) }
+    composeTestRule.setContent { ProfileScreen(
+        mockNavigationActions,
+        userViewModel,
+        profilePictureTaker
+    ) }
 
     composeTestRule.onNodeWithTag("ProfileScreen").assertExists()
     composeTestRule.onNodeWithTag("goBackButton").assertExists()
@@ -86,7 +90,11 @@ class ProfileScreenTest {
   // test that submit does navigate to the overview screen
   @Test
   fun submitNavigatesToOverview() {
-    composeTestRule.setContent { ProfileScreen(mockNavigationActions, userViewModel) }
+    composeTestRule.setContent { ProfileScreen(
+        mockNavigationActions,
+        userViewModel,
+        profilePictureTaker
+    ) }
 
     composeTestRule.onNodeWithTag("saveButton").performClick()
     verify(mockNavigationActions).navigateTo(Screen.OVERVIEW)
@@ -95,7 +103,11 @@ class ProfileScreenTest {
   // test that modifying the profile works
   @Test
   fun modifyProfile() {
-    composeTestRule.setContent { ProfileScreen(mockNavigationActions, userViewModel) }
+    composeTestRule.setContent { ProfileScreen(
+        mockNavigationActions,
+        userViewModel,
+        profilePictureTaker
+    ) }
 
     composeTestRule.onNodeWithTag("inputUserName").performTextClearance()
     composeTestRule.onNodeWithTag("inputUserName").performTextInput("newUserName")

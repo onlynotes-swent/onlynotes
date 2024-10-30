@@ -7,6 +7,7 @@ plugins {
     id("com.google.gms.google-services")
 }
 
+
 android {
     namespace = "com.github.onlynotesswent"
     compileSdk = 34
@@ -172,11 +173,12 @@ dependencies {
     testImplementation("org.mockito:mockito-inline:4.0.0")
     androidTestImplementation(libs.mockito.kotlin)
     androidTestImplementation("org.mockito:mockito-android:5.14.1")
-    
+
 
     //Image Library
     implementation("io.coil-kt:coil-compose:2.1.0")
-    implementation("com.github.Dhaval2404:imagepicker:2.1")
+    //implementation( "com.github.dhaval2404:imagepicker-support:1.7.1")
+    implementation("com.github.dhaval2404:imagepicker:2.1")
 
 
     // --------- Kaspresso test framework ----------
