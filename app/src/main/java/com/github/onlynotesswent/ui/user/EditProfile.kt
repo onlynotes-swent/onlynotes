@@ -2,7 +2,6 @@ package com.github.onlynotesswent.ui.user
 
 import android.util.Log
 import android.widget.Toast
-import androidx.collection.scatterSetOf
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -133,7 +132,6 @@ fun ProfileScreen(
                       userViewModel.updateUser(
                           user = updatedUser,
                           onSuccess = {
-                            userViewModel.setCurrentUser(updatedUser)
                             navigationActions.navigateTo(Screen.OVERVIEW)
                           },
                           onFailure = { exception ->
