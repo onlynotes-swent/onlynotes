@@ -25,6 +25,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -66,6 +67,7 @@ fun ProfileScreen(
   val newFirstName = remember { mutableStateOf(user.value?.firstName ?: "") }
   val newLastName = remember { mutableStateOf(user.value?.lastName ?: "") }
   val newUserName = remember { mutableStateOf(user.value?.userName ?: "") }
+  val newProfilePicture = remember { mutableStateOf(user.value?.profilePicture ?: "") }
   val userNameError = remember { mutableStateOf(false) }
   val saveEnabled = remember { mutableStateOf(true) }
   val context = LocalContext.current
@@ -96,7 +98,7 @@ fun ProfileScreen(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally) {
 
-            ProfilePicture(user.value?.profilePicture, userViewModel, profilePictureTaker)
+            ProfilePicture(newProfilePicture, userViewModel, profilePictureTaker)
 
               // Text Fields for user information
               FirstNameTextField(newFirstName)
@@ -153,13 +155,13 @@ fun ProfileScreen(
 
 
 @Composable
-fun ProfilePicture(profileImageUrl: String?,
+fun ProfilePicture(profileImage: MutableState<String>,
                    userViewModel: UserViewModel,
                    profilePictureTaker: ProfilePictureTaker) {
 
     Box(modifier = Modifier.size(150.dp)) {
-        val painter = if (!profileImageUrl.isNullOrEmpty()) {
-            rememberAsyncImagePainter(profileImageUrl)
+        val painter = if (profileImage.value.isNotEmpty()) {
+            rememberAsyncImagePainter(profileImage.value)
         } else {
            rememberVectorPainter(Icons.Default.AccountCircle)
         }
@@ -188,17 +190,20 @@ fun ProfilePicture(profileImageUrl: String?,
                 .background(Color.White)  // Optional: background for contrast
                 .clickable {
                     //add  the image here
-                    editProfilePicture(profilePictureTaker,userViewModel)},  // Trigger the onEditClick callback
+                    editProfilePicture(profilePictureTaker,userViewModel, profileImage )},  // Trigger the onEditClick callback
             tint = Color.Gray  // Icon color
         )
     }
 }
 
-fun editProfilePicture(profilePictureTaker: ProfilePictureTaker, userViewModel: UserViewModel) {
+fun editProfilePicture(profilePictureTaker: ProfilePictureTaker, userViewModel: UserViewModel, profileImage: MutableState<String>) {
     profilePictureTaker.onImageSelected = { uri -> userViewModel.updateUser(
-        userViewModel.currentUser.value!!.copy(profilePicture = uri.toString()),
+        userViewModel.currentUser.value!!.copy(profilePicture = uri.toString())
+        ,
         {},
         { e -> println(e) }
-    ) }
+    )
+        profileImage.value=uri.toString()
+    }
     profilePictureTaker.pickImage()
 }
