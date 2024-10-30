@@ -1,6 +1,7 @@
 package com.github.onlynotesswent.ui.overview
 
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsNotDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
@@ -16,6 +17,7 @@ import org.junit.Test
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
+import org.mockito.kotlin.never
 
 class EditNoteTest {
   private lateinit var userRepository: UserRepository
@@ -41,21 +43,35 @@ class EditNoteTest {
 
   @Test
   fun displayBaseComponents() {
-    composeTestRule.onNodeWithTag("EditNote textField").assertIsDisplayed()
     composeTestRule.onNodeWithTag("EditTitle textField").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("editNoteTitle").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("goBackButton").assertIsDisplayed()
     composeTestRule.onNodeWithTag("Save button").assertIsDisplayed()
     composeTestRule.onNodeWithTag("Delete button").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("visibilityEditButton").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("visibilityEditMenu").assertIsNotDisplayed()
+
+    composeTestRule.onNodeWithTag("visibilityEditButton").performClick()
+    composeTestRule.onNodeWithTag("visibilityEditMenu").assertIsDisplayed()
+  }
+
+  @Test
+  fun clickGoBackButton() {
+    composeTestRule.onNodeWithTag("goBackButton").performClick()
+
+    org.mockito.kotlin.verify(navigationActions).goBack()
+    org.mockito.kotlin.verify(navigationActions, never()).navigateTo(Screen.OVERVIEW)
   }
 
   @Test
   fun saveClickCallsNavActions() {
     composeTestRule.onNodeWithTag("Save button").performClick()
-    verify(navigationActions).goBack()
+    verify(navigationActions).navigateTo(Screen.OVERVIEW)
   }
 
   @Test
   fun deleteClickCallsNavActions() {
     composeTestRule.onNodeWithTag("Delete button").performClick()
-    verify(navigationActions).goBack()
+    verify(navigationActions).navigateTo(Screen.OVERVIEW)
   }
 }

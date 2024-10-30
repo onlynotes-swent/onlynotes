@@ -28,6 +28,7 @@ class NoteViewModelTest {
           date = Timestamp.now(),
           public = true,
           userId = "1",
+          noteClass = Class("CS-100", "Sample Class", 2024, "path"),
           image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888))
 
   @Before

@@ -44,6 +44,7 @@ class NoteRepositoryFirestoreTest {
           date = Timestamp.now(),
           public = true,
           userId = "1",
+          noteClass = Class("CS-100", "Sample Class", 2024, "path"),
           image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888))
 
   @Before
@@ -79,6 +80,10 @@ class NoteRepositoryFirestoreTest {
     `when`(mockDocumentSnapshot.getTimestamp("date")).thenReturn(currentTime)
     `when`(mockDocumentSnapshot.getBoolean("public")).thenReturn(true)
     `when`(mockDocumentSnapshot.getString("userId")).thenReturn("1")
+    `when`(mockDocumentSnapshot.getString("classCode")).thenReturn("CS-100")
+    `when`(mockDocumentSnapshot.getString("className")).thenReturn("Sample Class")
+    `when`(mockDocumentSnapshot.getLong("classYear")).thenReturn(2024)
+    `when`(mockDocumentSnapshot.getString("publicPath")).thenReturn("path")
     val bitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)
     `when`(mockDocumentSnapshot.get("image")).thenReturn(bitmap)
 
@@ -92,6 +97,10 @@ class NoteRepositoryFirestoreTest {
     assert(note?.date == currentTime)
     assert(note?.public == true)
     assert(note?.userId == "1")
+    assert(note?.noteClass?.classCode == "CS-100")
+    assert(note?.noteClass?.className == "Sample Class")
+    assert(note?.noteClass?.classYear == 2024)
+    assert(note?.noteClass?.publicPath == "path")
     note?.image?.let { assert(it.sameAs(bitmap)) }
   }
 

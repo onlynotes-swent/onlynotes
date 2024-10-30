@@ -3,6 +3,7 @@ package com.github.onlynotesswent.ui.search
 import android.graphics.Bitmap
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
+import com.github.onlynotesswent.model.note.Class
 import com.github.onlynotesswent.model.note.Note
 import com.github.onlynotesswent.model.note.NoteRepository
 import com.github.onlynotesswent.model.note.NoteViewModel
@@ -35,6 +36,7 @@ class SearchScreenTest {
               date = Timestamp.now(),
               public = true,
               userId = "test",
+              noteClass = Class("CS-100", "Sample Class 1", 2024, "path"),
               image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)),
           Note(
               id = "1",
@@ -44,6 +46,7 @@ class SearchScreenTest {
               date = Timestamp.now(),
               public = true,
               userId = "test",
+              noteClass = Class("CS-200", "Sample Class 2", 2024, "path"),
               image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)),
       )
 

@@ -61,11 +61,13 @@ class AddNoteTest {
     composeTestRule.onNodeWithTag("addNoteScreen").assertIsDisplayed()
     composeTestRule.onNodeWithTag("addNoteTitle").assertIsDisplayed()
     composeTestRule.onNodeWithTag("goBackButton").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("addNoteImage").assertIsDisplayed()
     composeTestRule.onNodeWithTag("inputNoteTitle").assertIsDisplayed()
     composeTestRule.onNodeWithTag("createNoteButton").assertIsDisplayed()
     composeTestRule.onNodeWithTag("visibilityButton").assertIsDisplayed()
     composeTestRule.onNodeWithTag("templateButton").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("ClassNameTextField").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("ClassCodeTextField").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("ClassYearTextField").assertIsDisplayed()
     composeTestRule.onNodeWithTag("visibilityMenu").assertIsNotDisplayed()
     composeTestRule.onNodeWithTag("templateMenu").assertIsNotDisplayed()
 
@@ -107,7 +109,7 @@ class AddNoteTest {
     composeTestRule
         .onNodeWithTag("templateMenu")
         .onChildren()
-        .filter(hasText("Scan Image"))
+        .filter(hasText("Scan Note"))
         .onFirst()
         .performClick()
 
@@ -116,38 +118,38 @@ class AddNoteTest {
   }
 
   @Test
-  fun createNoteButtonTextChangesWhenScanImageSelected() {
+  fun createNoteButtonTextChangesWhenScanNoteSelected() {
     composeTestRule.setContent { AddNoteScreen(navigationActions, scanner, noteViewModel) }
 
     // Initially, the button text should be "Create Note"
-    composeTestRule.onNodeWithTag("createNoteButton").assertTextEquals("Create Note")
+    composeTestRule.onNodeWithTag("createNoteButton").assertTextEquals("Choose An Option")
 
     // Set the template dropdown to "Scan Image"
     composeTestRule.onNodeWithTag("templateButton").performClick()
     composeTestRule
         .onNodeWithTag("templateMenu")
         .onChildren()
-        .filter(hasText("Scan Image"))
+        .filter(hasText("Scan Note"))
         .onFirst()
         .performClick()
 
     // Now the button text should be "Take Picture"
-    composeTestRule.onNodeWithTag("createNoteButton").assertTextEquals("Take Picture")
+    composeTestRule.onNodeWithTag("createNoteButton").assertTextEquals("Scan Note")
   }
 
   @Test
-  fun createNoteButtonTextChangesWhenCreateFromScratchSelected() {
+  fun createNoteButtonTextChangesWhenCreateNoteSelected() {
     composeTestRule.setContent { AddNoteScreen(navigationActions, scanner, noteViewModel) }
 
     // Initially, the button text should be "Create Note"
-    composeTestRule.onNodeWithTag("createNoteButton").assertTextEquals("Create Note")
+    composeTestRule.onNodeWithTag("createNoteButton").assertTextEquals("Choose An Option")
 
     // Set the template dropdown to "Create Note From Scratch"
     composeTestRule.onNodeWithTag("templateButton").performClick()
     composeTestRule
         .onNodeWithTag("templateMenu")
         .onChildren()
-        .filter(hasText("Create Note From Scratch"))
+        .filter(hasText("Create Note"))
         .onFirst()
         .performClick()
 
@@ -156,7 +158,27 @@ class AddNoteTest {
   }
 
   @Test
-  fun createNoteFromScratchButtonCorrect() {
+  fun createNoteButtonTextChangesWhenUploadNoteSelected() {
+    composeTestRule.setContent { AddNoteScreen(navigationActions, scanner, noteViewModel) }
+
+    // Initially, the button text should be "Create Note"
+    composeTestRule.onNodeWithTag("createNoteButton").assertTextEquals("Choose An Option")
+
+    // Set the template dropdown to "Create Note From Scratch"
+    composeTestRule.onNodeWithTag("templateButton").performClick()
+    composeTestRule
+        .onNodeWithTag("templateMenu")
+        .onChildren()
+        .filter(hasText("Upload Note"))
+        .onFirst()
+        .performClick()
+
+    // Now the button text should be "Create Note"
+    composeTestRule.onNodeWithTag("createNoteButton").assertTextEquals("Upload Note")
+  }
+
+  @Test
+  fun createNoteButtonCorrect() {
     composeTestRule.setContent { AddNoteScreen(navigationActions, scanner, noteViewModel) }
 
     composeTestRule.onNodeWithTag("inputNoteTitle").performTextInput("test")
@@ -175,7 +197,7 @@ class AddNoteTest {
     composeTestRule
         .onNodeWithTag("templateMenu")
         .onChildren()
-        .filter(hasText("Create Note From Scratch"))
+        .filter(hasText("Create Note"))
         .onFirst()
         .performClick()
 
@@ -185,7 +207,7 @@ class AddNoteTest {
     `when`(noteRepository.getNewUid()).thenReturn("1")
     composeTestRule.onNodeWithTag("createNoteButton").performClick()
     verify(noteRepository).addNote(any(), any<() -> Unit>(), any<(Exception) -> Unit>())
-    verify(navigationActions).goBack()
+    verify(navigationActions).navigateTo(Screen.EDIT_NOTE)
     verify(noteRepository).getNewUid()
   }
 }
