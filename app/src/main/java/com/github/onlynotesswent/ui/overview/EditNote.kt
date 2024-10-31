@@ -164,6 +164,7 @@ fun EditNoteScreen(navigationActions: NavigationActions, noteViewModel: NoteView
 
               item {
                 Button(
+                    enabled = updatedNoteTitle.isNotEmpty(),
                     onClick = {
                       noteViewModel.updateNote(
                           Note(
