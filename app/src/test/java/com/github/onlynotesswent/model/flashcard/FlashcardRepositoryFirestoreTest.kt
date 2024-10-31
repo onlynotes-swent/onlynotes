@@ -64,7 +64,12 @@ class FlashcardRepositoryFirestoreTest {
     val convertedFlashcard =
         flashcardRepositoryFirestore.documentSnapshotToFlashcard(mockDocumentSnapshot)
 
-    assert(convertedFlashcard == flashcard)
+    assert(convertedFlashcard.id == flashcard.id)
+    assert(convertedFlashcard.front == flashcard.front)
+    assert(convertedFlashcard.back == flashcard.back)
+    assert(convertedFlashcard.nextReview == flashcard.nextReview)
+    assert(convertedFlashcard.userId == flashcard.userId)
+    assert(convertedFlashcard.folderId == flashcard.folderId)
   }
 
   @Test
