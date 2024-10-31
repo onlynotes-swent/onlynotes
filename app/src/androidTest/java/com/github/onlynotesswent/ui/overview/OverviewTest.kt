@@ -54,7 +54,13 @@ class OverviewTest {
     noteRepository = mock(NoteRepository::class.java)
     noteViewModel = NoteViewModel(noteRepository)
 
-    userViewModel.setCurrentUser(
+    // Mock the addUser method to call the onSuccess callback
+    `when`(userRepository.addUser(any(), any(), any())).thenAnswer { invocation ->
+      val onSuccess = invocation.getArgument<() -> Unit>(1)
+      onSuccess()
+    }
+
+    val testUser =
         User(
             firstName = "testFirstName",
             lastName = "testLastName",
@@ -62,7 +68,8 @@ class OverviewTest {
             email = "testEmail",
             uid = "1",
             dateOfJoining = Timestamp.now(),
-            rating = 0.0))
+            rating = 0.0)
+    userViewModel.addUser(testUser, {}, {})
 
     // Mock the current route to be the user create screen
     `when`(navigationActions.currentRoute()).thenReturn(Screen.OVERVIEW)

@@ -54,6 +54,11 @@ class AddNoteTest {
 
     // Mock the current route to be the add note screen
     `when`(mockNavigationActions.currentRoute()).thenReturn(Screen.ADD_NOTE)
+      // Mock the addUser method to call the onSuccess callback
+      `when`(mockUserRepository.addUser(any(), any(), any())).thenAnswer { invocation ->
+          val onSuccess = invocation.getArgument<() -> Unit>(1)
+          onSuccess()
+      }
   }
 
   @Test
@@ -198,7 +203,8 @@ class AddNoteTest {
 
     `when`(mockNoteRepository.getNewUid()).thenReturn("1")
     val testUser = User("", "", "username", "", "userID", Timestamp.now(), 0.0)
-    userViewModel.setCurrentUser(testUser)
+
+    userViewModel.addUser(testUser,{},{})
 
     composeTestRule.onNodeWithTag("createNoteButton").performClick()
     verify(mockNoteRepository).addNote(any(), any<() -> Unit>(), any<(Exception) -> Unit>())

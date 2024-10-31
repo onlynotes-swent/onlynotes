@@ -105,10 +105,7 @@ fun ProfileScreen(
                     } else {
                       userViewModel.updateUser(
                           user = updatedUser,
-                          onSuccess = {
-                            userViewModel.setCurrentUser(updatedUser)
-                            navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
-                          },
+                          onSuccess = { navigationActions.navigateTo(TopLevelDestinations.OVERVIEW) },
                           onFailure = { exception ->
                             Toast.makeText(
                                     context,

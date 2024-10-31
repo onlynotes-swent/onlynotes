@@ -93,7 +93,6 @@ fun CreateUserScreen(navigationActions: NavigationActions, userViewModel: UserVi
                     userViewModel.addUser(
                         user = user,
                         onSuccess = {
-                          userViewModel.setCurrentUser(user)
                           navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
                         },
                         onFailure = { exception ->
