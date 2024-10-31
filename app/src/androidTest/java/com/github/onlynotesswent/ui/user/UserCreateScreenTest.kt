@@ -16,6 +16,7 @@ import com.github.onlynotesswent.model.users.UserRepositoryFirestore
 import com.github.onlynotesswent.model.users.UserViewModel
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
+import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
 import com.google.firebase.Timestamp
 import org.junit.Before
 import org.junit.Rule
@@ -62,7 +63,7 @@ class UserCreateScreenTest {
   @Test
   fun displayAllComponents() {
     composeTestRule.setContent {
-      CreateUserScreen(mockNavigationActions, noteViewModel, userViewModel)
+      CreateUserScreen(mockNavigationActions, userViewModel)
     }
 
     composeTestRule.onNodeWithTag("loginLogo").assertIsDisplayed()
@@ -77,7 +78,7 @@ class UserCreateScreenTest {
   @Test
   fun doesNotSubmitWithoutUser() {
     composeTestRule.setContent {
-      CreateUserScreen(mockNavigationActions, noteViewModel, userViewModel)
+      CreateUserScreen(mockNavigationActions, userViewModel)
     }
 
     composeTestRule.onNodeWithTag("saveButton").performClick()
@@ -99,7 +100,7 @@ class UserCreateScreenTest {
     }
 
     composeTestRule.setContent {
-      CreateUserScreen(mockNavigationActions, noteViewModel, userViewModel)
+      CreateUserScreen(mockNavigationActions, userViewModel)
     }
 
     // Act: Enter the existing username and attempt to create a user
@@ -125,7 +126,7 @@ class UserCreateScreenTest {
     }
 
     composeTestRule.setContent {
-      CreateUserScreen(mockNavigationActions, noteViewModel, userViewModel)
+      CreateUserScreen(mockNavigationActions, userViewModel)
     }
 
     // Act: Enter the user data and create the user
@@ -140,7 +141,6 @@ class UserCreateScreenTest {
     composeTestRule.onNodeWithTag("saveButton").performClick()
 
     // Assert: Check that the navigation action was called
-    verify(mockNavigationActions).navigateTo(Screen.OVERVIEW)
-    verify(mockNoteRepository).getNotes(eq(testUser.uid), any(), any())
+    verify(mockNavigationActions).navigateTo(TopLevelDestinations.OVERVIEW)
   }
 }

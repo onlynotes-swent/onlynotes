@@ -18,21 +18,18 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
-import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.model.users.User
 import com.github.onlynotesswent.model.users.UserRepositoryFirestore
 import com.github.onlynotesswent.model.users.UserViewModel
 import com.github.onlynotesswent.ui.authentication.Logo
 import com.github.onlynotesswent.ui.navigation.NavigationActions
-import com.github.onlynotesswent.ui.navigation.Screen
+import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
 import com.google.firebase.Firebase
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.auth
@@ -45,11 +42,7 @@ import com.google.firebase.auth.auth
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CreateUserScreen(
-    navigationActions: NavigationActions,
-    noteViewModel: NoteViewModel,
-    userViewModel: UserViewModel
-) {
+fun CreateUserScreen(navigationActions: NavigationActions, userViewModel: UserViewModel) {
   // State variables to hold user input
   val firstName = remember { mutableStateOf("") }
   val lastName = remember { mutableStateOf("") }
@@ -101,8 +94,7 @@ fun CreateUserScreen(
                         user = user,
                         onSuccess = {
                           userViewModel.setCurrentUser(user)
-                          noteViewModel.getNotes(userID = user.uid)
-                          navigationActions.navigateTo(Screen.OVERVIEW)
+                          navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
                         },
                         onFailure = { exception ->
                           Toast.makeText(

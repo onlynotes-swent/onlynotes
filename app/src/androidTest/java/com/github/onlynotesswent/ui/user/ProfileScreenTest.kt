@@ -15,6 +15,7 @@ import com.github.onlynotesswent.model.users.UserRepositoryFirestore
 import com.github.onlynotesswent.model.users.UserViewModel
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
+import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
 import com.google.firebase.Timestamp
 import org.junit.Before
 import org.junit.Rule
@@ -76,7 +77,7 @@ class ProfileScreenTest {
   @Test
   fun displayAllComponents() {
     composeTestRule.setContent {
-      ProfileScreen(mockNavigationActions, noteViewModel, userViewModel)
+      ProfileScreen(mockNavigationActions, userViewModel)
     }
 
     composeTestRule.onNodeWithTag("ProfileScreen").assertExists()
@@ -95,19 +96,18 @@ class ProfileScreenTest {
   @Test
   fun submitNavigatesToOverview() {
     composeTestRule.setContent {
-      ProfileScreen(mockNavigationActions, noteViewModel, userViewModel)
+      ProfileScreen(mockNavigationActions, userViewModel)
     }
 
     composeTestRule.onNodeWithTag("saveButton").performClick()
-    verify(mockNavigationActions).navigateTo(Screen.OVERVIEW)
-    verify(mockNoteRepository).getNotes(eq(testUser.uid), any(), any())
+    verify(mockNavigationActions).navigateTo(TopLevelDestinations.OVERVIEW)
   }
 
   // test that modifying the profile works
   @Test
   fun modifyProfile() {
     composeTestRule.setContent {
-      ProfileScreen(mockNavigationActions, noteViewModel, userViewModel)
+      ProfileScreen(mockNavigationActions, userViewModel)
     }
 
     composeTestRule.onNodeWithTag("inputUserName").performTextClearance()

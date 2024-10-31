@@ -43,12 +43,12 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 
 /**
- * Displays the overview screen which contains a list of notes retrieved from the ViewModel. If
- * there are no notes, it shows a text to the user indicating no notes are available. It also
- * provides a floating action button to add a new note.
+ * Displays the overview screen which contains a list of publicNotes retrieved from the ViewModel.
+ * If there are no publicNotes, it shows a text to the user indicating no publicNotes are available.
+ * It also provides a floating action button to add a new note.
  *
  * @param navigationActions The navigation view model used to transition between different screens.
- * @param noteViewModel The ViewModel that provides the list of notes to display.
+ * @param noteViewModel The ViewModel that provides the list of publicNotes to display.
  */
 @Composable
 fun OverviewScreen(
@@ -56,8 +56,8 @@ fun OverviewScreen(
     noteViewModel: NoteViewModel,
     userViewModel: UserViewModel
 ) {
-  val allNotes = noteViewModel.notes.collectAsState()
-  val notes = allNotes.value.filter { it.userId == userViewModel.currentUser.value?.uid }
+  val userNotes = noteViewModel.userNotes.collectAsState()
+  userViewModel.currentUser.collectAsState().value?.let { noteViewModel.getNotesFrom(it.uid) }
 
   Scaffold(
       modifier = Modifier.testTag("overviewScreen"),
@@ -75,7 +75,7 @@ fun OverviewScreen(
             selectedItem = navigationActions.currentRoute())
       }) { pd ->
         Box(modifier = Modifier.fillMaxSize().padding(pd)) {
-          if (notes.isNotEmpty()) {
+          if (userNotes.value.isNotEmpty()) {
             LazyColumn(
                 contentPadding = PaddingValues(vertical = 40.dp),
                 modifier =
@@ -83,9 +83,9 @@ fun OverviewScreen(
                         .padding(horizontal = 16.dp)
                         .padding(pd)
                         .testTag("noteList")) {
-                  items(notes.size) { index ->
-                    NoteItem(note = notes[index]) {
-                      noteViewModel.selectedNote(notes[index])
+                  items(userNotes.value.size) { index ->
+                    NoteItem(note = userNotes.value[index]) {
+                      noteViewModel.selectedNote(userNotes.value[index])
                       navigationActions.navigateTo(Screen.EDIT_NOTE)
                     }
                   }
@@ -98,19 +98,27 @@ fun OverviewScreen(
             ) {
               Text(modifier = Modifier.testTag("emptyNotePrompt"), text = "You have no Notes yet.")
               Spacer(modifier = Modifier.height(50.dp))
-              ElevatedButton(
-                  modifier = Modifier.testTag("refreshButton"),
-                  onClick = {
-                    userViewModel.currentUser.value?.let { noteViewModel.getNotes(it.uid) }
-                  }) {
-                    Text("Refresh")
-                    Icon(imageVector = Icons.Default.Refresh, contentDescription = "Refresh")
-                  }
+              RefreshButton {
+                userViewModel.currentUser.value?.let { noteViewModel.getNotesFrom(it.uid) }
+              }
               Spacer(modifier = Modifier.height(20.dp))
             }
           }
         }
       }
+}
+
+/**
+ * A composable function that displays a refresh button.
+ *
+ * @param onClick A lambda function to be invoked when the button is clicked.
+ */
+@Composable
+fun RefreshButton(onClick: () -> Unit) {
+  ElevatedButton(onClick = onClick, modifier = Modifier.testTag("refreshButton")) {
+    Text("Refresh")
+    Icon(imageVector = Icons.Default.Refresh, contentDescription = "Refresh")
+  }
 }
 
 /**

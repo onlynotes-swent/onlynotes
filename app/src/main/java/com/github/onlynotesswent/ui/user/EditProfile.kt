@@ -15,21 +15,18 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
-import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.model.users.User
 import com.github.onlynotesswent.model.users.UserRepositoryFirestore
 import com.github.onlynotesswent.model.users.UserViewModel
 import com.github.onlynotesswent.ui.navigation.BottomNavigationMenu
 import com.github.onlynotesswent.ui.navigation.LIST_TOP_LEVEL_DESTINATION
 import com.github.onlynotesswent.ui.navigation.NavigationActions
-import com.github.onlynotesswent.ui.navigation.Screen
+import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
 
 /**
  * A composable function that displays the profile screen.
@@ -41,7 +38,6 @@ import com.github.onlynotesswent.ui.navigation.Screen
 @Composable
 fun ProfileScreen(
     navigationActions: NavigationActions,
-    noteViewModel: NoteViewModel,
     userViewModel: UserViewModel
 ) {
   val user = userViewModel.currentUser.collectAsState()
@@ -111,8 +107,7 @@ fun ProfileScreen(
                           user = updatedUser,
                           onSuccess = {
                             userViewModel.setCurrentUser(updatedUser)
-                            noteViewModel.getNotes(userID = updatedUser.uid)
-                            navigationActions.navigateTo(Screen.OVERVIEW)
+                            navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
                           },
                           onFailure = { exception ->
                             Toast.makeText(

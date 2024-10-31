@@ -39,7 +39,6 @@ import androidx.compose.ui.unit.dp
 import com.github.onlynotesswent.R
 import com.github.onlynotesswent.model.note.Note
 import com.github.onlynotesswent.model.note.NoteViewModel
-import com.github.onlynotesswent.model.note.Type
 import com.github.onlynotesswent.model.scanner.Scanner
 import com.github.onlynotesswent.model.users.UserViewModel
 import com.github.onlynotesswent.ui.navigation.NavigationActions
@@ -56,7 +55,7 @@ fun AddNoteScreen(
 
   var title by remember { mutableStateOf("") }
   var template by remember { mutableStateOf("Choose An Option") }
-  var visibility by remember { mutableStateOf("Choose An Option") }
+  var visibility: Note.Visibility? by remember { mutableStateOf(null) }
   var expandedVisibility by remember { mutableStateOf(false) }
   var expandedTemplate by remember { mutableStateOf(false) }
   var saveButton by remember { mutableStateOf("Create Note") }
@@ -104,13 +103,13 @@ fun AddNoteScreen(
               Spacer(modifier = Modifier.height(30.dp))
 
               OptionDropDownMenu(
-                  value = visibility,
+                  value = visibility?.toReadableString() ?: "Choose an option",
                   expanded = expandedVisibility,
                   buttonTag = "visibilityButton",
                   menuTag = "visibilityMenu",
                   onExpandedChange = { expandedVisibility = it },
-                  items = listOf("Public", "Private"),
-                  onItemClick = { visibility = it })
+                  items = Note.Visibility.READABLE_STRINGS,
+                  onItemClick = { visibility = Note.Visibility.fromReadableString(it) })
 
               Spacer(modifier = Modifier.height(30.dp))
 
@@ -135,13 +134,13 @@ fun AddNoteScreen(
 
               Button(
                   onClick = {
-                    var type = Type.NORMAL_TEXT
+                    var type = Note.Type.NORMAL_TEXT
                     if (saveButton == "Take Picture") {
                       // call scan image API or functions. Once scanned, add the note to database
                       scanner.scan()
-                      type = Type.PDF
+                      type = Note.Type.PDF
                     } else if (saveButton == "Create Note") {
-                      type = Type.NORMAL_TEXT
+                      type = Note.Type.NORMAL_TEXT
                     }
 
                     // create the note and add it to database
@@ -153,16 +152,14 @@ fun AddNoteScreen(
                             title = title,
                             content = "",
                             date = Timestamp.now(),
-                            public = (visibility == "Public"),
+                            visibility = visibility!!,
                             userId = userViewModel.currentUser.value!!.uid,
                             image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)),
                         userViewModel.currentUser.value!!.uid)
                     navigationActions.goBack()
                   },
                   enabled =
-                      title.isNotEmpty() &&
-                          visibility != "Choose An Option" &&
-                          template != "Choose An Option",
+                      title.isNotEmpty() && visibility != null && template != "Choose An Option",
                   modifier = Modifier.fillMaxWidth().testTag("createNoteButton")) {
                     Text(text = saveButton)
                   }

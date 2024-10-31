@@ -22,7 +22,6 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.github.onlynotesswent.model.note.Note
 import com.github.onlynotesswent.model.note.NoteViewModel
-import com.github.onlynotesswent.model.note.Type
 import com.github.onlynotesswent.model.users.UserViewModel
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.google.firebase.Timestamp
@@ -43,7 +42,7 @@ fun EditNoteScreen(
     noteViewModel: NoteViewModel,
     userViewModel: UserViewModel
 ) {
-  val note by noteViewModel.note.collectAsState()
+  val note by noteViewModel.selectedNote.collectAsState()
   var updatedNoteText by remember { mutableStateOf(note?.content ?: "") } // Keep track of changes
   var updatedNoteTitle by remember { mutableStateOf(note?.title ?: "") } // Keep track of changes
 
@@ -72,11 +71,11 @@ fun EditNoteScreen(
               noteViewModel.updateNote(
                   Note(
                       id = note?.id ?: "1",
-                      type = Type.NORMAL_TEXT,
+                      type = Note.Type.NORMAL_TEXT,
                       title = updatedNoteTitle,
                       content = updatedNoteText,
                       date = Timestamp.now(), // Use current timestamp
-                      public = note?.public ?: true,
+                      visibility = note?.visibility ?: Note.Visibility.DEFAULT,
                       userId = note?.userId ?: userViewModel.currentUser.value!!.uid,
                       image =
                           note?.image
