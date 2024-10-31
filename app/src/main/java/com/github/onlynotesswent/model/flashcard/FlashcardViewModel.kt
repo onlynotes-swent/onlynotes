@@ -10,12 +10,15 @@ import kotlinx.coroutines.flow.asStateFlow
 
 class FlashcardViewModel(private val repository: FlashcardRepository) {
 
+  // The flashcards of the user
   private val _flashcards = MutableStateFlow<List<Flashcard>>(emptyList())
   val flashcards: StateFlow<List<Flashcard>> = _flashcards.asStateFlow()
 
+  // The selected flashcard
   private val _flashcard = MutableStateFlow<Flashcard?>(null)
   val flashcard: StateFlow<Flashcard?> = _flashcard.asStateFlow()
 
+  // The flashcards in the selected folder
   private val _selectedFolderFlashcards = MutableStateFlow<List<Flashcard>>(emptyList())
   val selectedFolderFlashcards: StateFlow<List<Flashcard>> = _selectedFolderFlashcards.asStateFlow()
 
