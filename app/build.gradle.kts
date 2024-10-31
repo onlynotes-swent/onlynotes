@@ -181,6 +181,9 @@ dependencies {
     // ----------         ML Kit        ------------
     implementation(libs.mlkit.document.scanner)
     implementation(libs.mlkit.text.recognition)
+
+    // ----------      Json handling   ------------
+    implementation(libs.gson)
 }
 
 tasks.withType<Test> {
