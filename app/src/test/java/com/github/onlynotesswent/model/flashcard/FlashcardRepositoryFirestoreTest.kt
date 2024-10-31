@@ -53,6 +53,20 @@ class FlashcardRepositoryFirestoreTest {
   }
 
   @Test
+  fun documentSnapshotToFlashcardConvertsToFlashcard() {
+    `when`(mockDocumentSnapshot.id).thenReturn(flashcard.id)
+    `when`(mockDocumentSnapshot.getString("front")).thenReturn(flashcard.front)
+    `when`(mockDocumentSnapshot.getString("back")).thenReturn(flashcard.back)
+    `when`(mockDocumentSnapshot.getTimestamp("nextReview")).thenReturn(flashcard.nextReview)
+    `when`(mockDocumentSnapshot.getString("userId")).thenReturn(flashcard.userId)
+    `when`(mockDocumentSnapshot.getString("folderId")).thenReturn(flashcard.folderId)
+
+    val convertedFlashcard = flashcardRepositoryFirestore.documentSnapshotToFlashcard(mockDocumentSnapshot)
+
+    assert(convertedFlashcard == flashcard)
+  }
+
+  @Test
   fun getNewUid() {
     `when`(mockCollectionReference.document()).thenReturn(mockDocumentReference)
     `when`(mockDocumentReference.id).thenReturn(flashcard.id)

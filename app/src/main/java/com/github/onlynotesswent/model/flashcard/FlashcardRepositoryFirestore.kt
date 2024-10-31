@@ -16,7 +16,7 @@ class FlashcardRepositoryFirestore(private val db: FirebaseFirestore) : Flashcar
    * @param document The DocumentSnapshot to convert.
    * @return The converted Flashcard object.
    */
-  private fun documentSnapshotToFlashcard(document: DocumentSnapshot): Flashcard {
+  fun documentSnapshotToFlashcard(document: DocumentSnapshot): Flashcard {
     return Flashcard(
         id = document.id,
         front = document.getString("front") ?: "",
