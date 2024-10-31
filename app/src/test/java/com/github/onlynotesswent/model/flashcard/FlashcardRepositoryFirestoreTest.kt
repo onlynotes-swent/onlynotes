@@ -61,7 +61,8 @@ class FlashcardRepositoryFirestoreTest {
     `when`(mockDocumentSnapshot.getString("userId")).thenReturn(flashcard.userId)
     `when`(mockDocumentSnapshot.getString("folderId")).thenReturn(flashcard.folderId)
 
-    val convertedFlashcard = flashcardRepositoryFirestore.documentSnapshotToFlashcard(mockDocumentSnapshot)
+    val convertedFlashcard =
+        flashcardRepositoryFirestore.documentSnapshotToFlashcard(mockDocumentSnapshot)
 
     assert(convertedFlashcard == flashcard)
   }
