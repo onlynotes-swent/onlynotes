@@ -39,18 +39,18 @@ import androidx.compose.ui.unit.dp
 import com.github.onlynotesswent.R
 import com.github.onlynotesswent.model.note.Note
 import com.github.onlynotesswent.model.note.NoteViewModel
-import com.github.onlynotesswent.utils.Scanner
 import com.github.onlynotesswent.model.users.UserViewModel
 import com.github.onlynotesswent.ui.navigation.NavigationActions
+import com.github.onlynotesswent.utils.Scanner
 import com.google.firebase.Timestamp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddNoteScreen(
-  navigationActions: NavigationActions,
-  scanner: Scanner,
-  noteViewModel: NoteViewModel,
-  userViewModel: UserViewModel
+    navigationActions: NavigationActions,
+    scanner: Scanner,
+    noteViewModel: NoteViewModel,
+    userViewModel: UserViewModel
 ) {
 
   var title by remember { mutableStateOf("") }
