@@ -13,7 +13,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import com.github.onlynotesswent.model.note.NoteViewModel
-import com.github.onlynotesswent.model.scanner.Scanner
+import com.github.onlynotesswent.utils.Scanner
 import com.github.onlynotesswent.model.users.UserViewModel
 import com.github.onlynotesswent.ui.authentication.SignInScreen
 import com.github.onlynotesswent.ui.navigation.NavigationActions

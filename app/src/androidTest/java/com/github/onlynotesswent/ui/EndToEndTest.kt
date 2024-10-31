@@ -25,7 +25,7 @@ import androidx.test.espresso.intent.Intents
 import com.github.onlynotesswent.model.note.Note
 import com.github.onlynotesswent.model.note.NoteRepository
 import com.github.onlynotesswent.model.note.NoteViewModel
-import com.github.onlynotesswent.model.scanner.Scanner
+import com.github.onlynotesswent.utils.Scanner
 import com.github.onlynotesswent.model.users.User
 import com.github.onlynotesswent.model.users.UserRepository
 import com.github.onlynotesswent.model.users.UserViewModel
