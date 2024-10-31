@@ -27,7 +27,6 @@ import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
-import org.mockito.kotlin.eq
 
 class UserCreateScreenTest {
   @Mock private lateinit var mockUserRepository: UserRepository
@@ -62,9 +61,7 @@ class UserCreateScreenTest {
 
   @Test
   fun displayAllComponents() {
-    composeTestRule.setContent {
-      CreateUserScreen(mockNavigationActions, userViewModel)
-    }
+    composeTestRule.setContent { CreateUserScreen(mockNavigationActions, userViewModel) }
 
     composeTestRule.onNodeWithTag("loginLogo").assertIsDisplayed()
     composeTestRule.onNodeWithTag("addUserScreen").assertExists()
@@ -77,9 +74,7 @@ class UserCreateScreenTest {
 
   @Test
   fun doesNotSubmitWithoutUser() {
-    composeTestRule.setContent {
-      CreateUserScreen(mockNavigationActions, userViewModel)
-    }
+    composeTestRule.setContent { CreateUserScreen(mockNavigationActions, userViewModel) }
 
     composeTestRule.onNodeWithTag("saveButton").performClick()
     verify(mockUserRepository, never()).addUser(any(), any(), any())
@@ -99,9 +94,7 @@ class UserCreateScreenTest {
       onFailure(UserRepositoryFirestore.UsernameTakenException())
     }
 
-    composeTestRule.setContent {
-      CreateUserScreen(mockNavigationActions, userViewModel)
-    }
+    composeTestRule.setContent { CreateUserScreen(mockNavigationActions, userViewModel) }
 
     // Act: Enter the existing username and attempt to create a user
     composeTestRule.onNodeWithTag("inputUserName").performTextInput(existingUserName)
@@ -125,9 +118,7 @@ class UserCreateScreenTest {
       onSuccess()
     }
 
-    composeTestRule.setContent {
-      CreateUserScreen(mockNavigationActions, userViewModel)
-    }
+    composeTestRule.setContent { CreateUserScreen(mockNavigationActions, userViewModel) }
 
     // Act: Enter the user data and create the user
     composeTestRule.onNodeWithTag("inputFirstName").performTextInput(testUser.firstName)

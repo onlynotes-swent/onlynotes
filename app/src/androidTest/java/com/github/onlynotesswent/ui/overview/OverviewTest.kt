@@ -93,8 +93,9 @@ class OverviewTest {
     }
     composeTestRule.onNodeWithTag("refreshButton").performClick()
 
-    // Verify that the repository was called twice, once during the initial load and once during the refresh click
-    verify(noteRepository,times(2)).getNotesFrom(eq("1"), any(), any())
+    // Verify that the repository was called twice, once during the initial load and once during the
+    // refresh click
+    verify(noteRepository, times(2)).getNotesFrom(eq("1"), any(), any())
     composeTestRule.onNodeWithTag("noteList").assertIsDisplayed()
   }
 

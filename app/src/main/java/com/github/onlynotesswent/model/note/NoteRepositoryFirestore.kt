@@ -54,15 +54,16 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
     }
   }
 
-    /**
-     * Fetches all public notes from the Firestore database.
-     *
-     * @param onSuccess A callback function that is called with the list of public notes if the operation is successful.
-     * @param onFailure A callback function that is called with an exception if the operation fails.
-     */
+  /**
+   * Fetches all public notes from the Firestore database.
+   *
+   * @param onSuccess A callback function that is called with the list of public notes if the
+   *   operation is successful.
+   * @param onFailure A callback function that is called with an exception if the operation fails.
+   */
   override fun getPublicNotes(onSuccess: (List<Note>) -> Unit, onFailure: (Exception) -> Unit) {
     db.collection(collectionPath).get().addOnCompleteListener { task ->
-        if (task.isSuccessful) {
+      if (task.isSuccessful) {
         val publicNotes =
             task.result.documents
                 .mapNotNull { document -> documentSnapshotToNote(document) }

@@ -36,10 +36,7 @@ import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProfileScreen(
-    navigationActions: NavigationActions,
-    userViewModel: UserViewModel
-) {
+fun ProfileScreen(navigationActions: NavigationActions, userViewModel: UserViewModel) {
   val user = userViewModel.currentUser.collectAsState()
 
   val newFirstName = remember { mutableStateOf(user.value?.firstName ?: "") }
@@ -105,7 +102,9 @@ fun ProfileScreen(
                     } else {
                       userViewModel.updateUser(
                           user = updatedUser,
-                          onSuccess = { navigationActions.navigateTo(TopLevelDestinations.OVERVIEW) },
+                          onSuccess = {
+                            navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
+                          },
                           onFailure = { exception ->
                             Toast.makeText(
                                     context,

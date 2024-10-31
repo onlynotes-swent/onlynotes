@@ -24,30 +24,28 @@ class SearchScreenTest {
 
   @get:Rule val composeTestRule = createComposeRule()
 
-  private val testNote1 = Note(
-      id = "",
-      type = Note.Type.NORMAL_TEXT,
-      title = "Note 1",
-      content = "",
-      date = Timestamp.now(),
-      visibility = Note.Visibility.PUBLIC,
-      userId = "test",
-      image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888))
-    private val testNote2 = Note(
-        id = "1",
-        type = Note.Type.NORMAL_TEXT,
-        title = "Note 2",
-        content = "",
-        date = Timestamp.now(),
-        visibility = Note.Visibility.PUBLIC,
-        userId = "test",
-        image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888))
+  private val testNote1 =
+      Note(
+          id = "",
+          type = Note.Type.NORMAL_TEXT,
+          title = "Note 1",
+          content = "",
+          date = Timestamp.now(),
+          visibility = Note.Visibility.PUBLIC,
+          userId = "test",
+          image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888))
+  private val testNote2 =
+      Note(
+          id = "1",
+          type = Note.Type.NORMAL_TEXT,
+          title = "Note 2",
+          content = "",
+          date = Timestamp.now(),
+          visibility = Note.Visibility.PUBLIC,
+          userId = "test",
+          image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888))
 
-    private val mockNotes =
-      listOf(
-          testNote1,
-          testNote2
-      )
+  private val mockNotes = listOf(testNote1, testNote2)
 
   @Before
   fun setUp() {

@@ -28,7 +28,6 @@ import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
-import org.mockito.kotlin.eq
 
 class ProfileScreenTest {
   @Mock private lateinit var mockUserRepository: UserRepository
@@ -85,9 +84,7 @@ class ProfileScreenTest {
 
   @Test
   fun displayAllComponents() {
-    composeTestRule.setContent {
-      ProfileScreen(mockNavigationActions, userViewModel)
-    }
+    composeTestRule.setContent { ProfileScreen(mockNavigationActions, userViewModel) }
 
     composeTestRule.onNodeWithTag("ProfileScreen").assertExists()
     composeTestRule.onNodeWithTag("goBackButton").assertExists()
@@ -103,9 +100,7 @@ class ProfileScreenTest {
 
   @Test
   fun submitNavigatesToOverview() {
-    composeTestRule.setContent {
-      ProfileScreen(mockNavigationActions, userViewModel)
-    }
+    composeTestRule.setContent { ProfileScreen(mockNavigationActions, userViewModel) }
 
     composeTestRule.onNodeWithTag("saveButton").performClick()
     verify(mockNavigationActions).navigateTo(TopLevelDestinations.OVERVIEW)
@@ -113,9 +108,7 @@ class ProfileScreenTest {
 
   @Test
   fun modifyProfile() {
-    composeTestRule.setContent {
-      ProfileScreen(mockNavigationActions, userViewModel)
-    }
+    composeTestRule.setContent { ProfileScreen(mockNavigationActions, userViewModel) }
 
     composeTestRule.onNodeWithTag("inputUserName").performTextClearance()
     composeTestRule.onNodeWithTag("inputUserName").performTextInput("newUserName")
