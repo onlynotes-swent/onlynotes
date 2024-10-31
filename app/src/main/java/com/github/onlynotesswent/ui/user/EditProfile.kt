@@ -26,7 +26,7 @@ import com.github.onlynotesswent.model.users.UserViewModel
 import com.github.onlynotesswent.ui.navigation.BottomNavigationMenu
 import com.github.onlynotesswent.ui.navigation.LIST_TOP_LEVEL_DESTINATION
 import com.github.onlynotesswent.ui.navigation.NavigationActions
-import com.github.onlynotesswent.ui.navigation.Screen
+import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
 
 /**
  * A composable function that displays the profile screen.
@@ -102,7 +102,9 @@ fun ProfileScreen(navigationActions: NavigationActions, userViewModel: UserViewM
                     } else {
                       userViewModel.updateUser(
                           user = updatedUser,
-                          onSuccess = { navigationActions.navigateTo(Screen.OVERVIEW) },
+                          onSuccess = {
+                            navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
+                          },
                           onFailure = { exception ->
                             Toast.makeText(
                                     context,

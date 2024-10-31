@@ -6,7 +6,9 @@ interface NoteRepository {
 
   fun init(onSuccess: () -> Unit)
 
-  fun getNotes(userId: String, onSuccess: (List<Note>) -> Unit, onFailure: (Exception) -> Unit)
+  fun getPublicNotes(onSuccess: (List<Note>) -> Unit, onFailure: (Exception) -> Unit)
+
+  fun getNotesFrom(userId: String, onSuccess: (List<Note>) -> Unit, onFailure: (Exception) -> Unit)
 
   fun getNoteById(id: String, onSuccess: (Note) -> Unit, onFailure: (Exception) -> Unit)
 
