@@ -5,7 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.result.contract.ActivityResultContracts
 import com.github.dhaval2404.imagepicker.ImagePicker
 
-class ProfilePictureTaker(
+open class ProfilePictureTaker(
     private val activity: ComponentActivity,
     var onImageSelected: (Uri?) -> Unit
 ) {

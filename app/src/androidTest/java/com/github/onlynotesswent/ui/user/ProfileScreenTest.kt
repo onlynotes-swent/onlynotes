@@ -105,13 +105,14 @@ class ProfileScreenTest {
   }
 
   @Test
-  fun submitNavigatesToOverview() {
+  fun submitNavigatesBack() {
     composeTestRule.setContent {
       EditProfileScreen(mockNavigationActions, userViewModel, profilePictureTaker)
     }
 
     composeTestRule.onNodeWithTag("saveButton").performClick()
-    verify(mockNavigationActions).navigateTo(TopLevelDestinations.OVERVIEW)
+    verify(mockNavigationActions).goBack()
+
   }
 
   @Test
