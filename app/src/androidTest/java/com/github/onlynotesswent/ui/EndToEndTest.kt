@@ -27,7 +27,6 @@ import com.github.onlynotesswent.model.note.Class
 import com.github.onlynotesswent.model.note.Note
 import com.github.onlynotesswent.model.note.NoteRepository
 import com.github.onlynotesswent.model.note.NoteViewModel
-import com.github.onlynotesswent.model.note.Type
 import com.github.onlynotesswent.model.scanner.Scanner
 import com.github.onlynotesswent.model.users.User
 import com.github.onlynotesswent.model.users.UserRepository
@@ -77,12 +76,12 @@ class EndToEndTest {
   private val testNote =
       Note(
           id = "1",
-          type = Type.NORMAL_TEXT,
+          type = Note.Type.NORMAL_TEXT,
           title = "title",
           content = "",
           date = Timestamp.now(),
-          userId = "1",
-          public = true,
+          userId = testUid,
+          visibility = Note.Visibility.DEFAULT,
           noteClass = Class("classCode", "className", 2024, "publicPath"),
           image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888))
 
@@ -107,7 +106,7 @@ class EndToEndTest {
       onSuccess()
     }
 
-    `when`(noteRepository.getNewUid()).thenReturn("1")
+    `when`(noteRepository.getNewUid()).thenReturn(testNote.id)
 
     // Initialize Intents for handling navigation intents in the test
     Intents.init()
@@ -136,11 +135,15 @@ class EndToEndTest {
                     startDestination = Screen.OVERVIEW,
                     route = Route.OVERVIEW,
                 ) {
-                  composable(Screen.OVERVIEW) { OverviewScreen(navigationActions, noteViewModel) }
-                  composable(Screen.ADD_NOTE) {
-                    AddNoteScreen(navigationActions, scanner, noteViewModel)
+                  composable(Screen.OVERVIEW) {
+                    OverviewScreen(navigationActions, noteViewModel, userViewModel)
                   }
-                  composable(Screen.EDIT_NOTE) { EditNoteScreen(navigationActions, noteViewModel) }
+                  composable(Screen.ADD_NOTE) {
+                    AddNoteScreen(navigationActions, scanner, noteViewModel, userViewModel)
+                  }
+                  composable(Screen.EDIT_NOTE) {
+                    EditNoteScreen(navigationActions, noteViewModel, userViewModel)
+                  }
                 }
               }
         }
@@ -211,13 +214,13 @@ class EndToEndTest {
     composeTestRule.onNodeWithTag("Save button").performClick()
 
     // Mock retrieval of notes
-    `when`(noteRepository.getNotes(eq("1"), any(), any())).thenAnswer { invocation ->
+    `when`(noteRepository.getNotesFrom(eq(testUser.uid), any(), any())).thenAnswer { invocation ->
       val onSuccess = invocation.getArgument<(List<Note>) -> Unit>(1)
       onSuccess(listOf(testNote))
     }
 
     // Trigger note retrieval and verify the notes are displayed
-    noteViewModel.getNotes("1")
+    noteViewModel.getNotesFrom(testUser.uid)
     composeTestRule.onNodeWithTag("noteList").assertIsDisplayed()
 
     // Verify that the note card is displayed

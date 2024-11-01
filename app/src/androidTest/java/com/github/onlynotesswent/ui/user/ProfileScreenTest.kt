@@ -2,17 +2,23 @@ package com.github.onlynotesswent.ui.user
 
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.assert
+import androidx.compose.ui.test.assertIsEnabled
+import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextClearance
 import androidx.compose.ui.test.performTextInput
+import com.github.onlynotesswent.model.note.NoteRepository
+import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.model.users.User
 import com.github.onlynotesswent.model.users.UserRepository
 import com.github.onlynotesswent.model.users.UserRepositoryFirestore
 import com.github.onlynotesswent.model.users.UserViewModel
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
+import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
 import com.google.firebase.Timestamp
 import org.junit.Before
 import org.junit.Rule
@@ -26,6 +32,8 @@ import org.mockito.kotlin.any
 class ProfileScreenTest {
   @Mock private lateinit var mockUserRepository: UserRepository
   @Mock private lateinit var mockNavigationActions: NavigationActions
+  @Mock private lateinit var mockNoteRepository: NoteRepository
+  private lateinit var noteViewModel: NoteViewModel
   private lateinit var userViewModel: UserViewModel
   private val testUid = "testUid123"
   private val testUser =
@@ -47,10 +55,20 @@ class ProfileScreenTest {
     // Mock is a way to create a fake object that can be used in place of a real object
     MockitoAnnotations.openMocks(this)
     userViewModel = UserViewModel(mockUserRepository)
+    noteViewModel = NoteViewModel(mockNoteRepository)
 
     // Mock the current route to be the user create screen
     `when`(mockNavigationActions.currentRoute()).thenReturn(Screen.PROFILE)
 
+    // Mock add user to initialize current user
+    `when`(mockUserRepository.addUser(any(), any(), any())).thenAnswer {
+      val onSuccess = it.arguments[1] as () -> Unit
+      onSuccess()
+    }
+    // Initialize current user
+    userViewModel.addUser(testUser, {}, {})
+
+    // Mock update user to throw error when applicable, or update user
     `when`(mockUserRepository.updateUser(any(), any(), any())).thenAnswer {
       val user = it.arguments[0] as User
       val onSuccess = it.arguments[1] as () -> Unit
@@ -62,9 +80,6 @@ class ProfileScreenTest {
         onSuccess()
       }
     }
-
-    // Mock the current user to be the test user
-    userViewModel.setCurrentUser(testUser)
   }
 
   @Test
@@ -83,16 +98,14 @@ class ProfileScreenTest {
     return SemanticsMatcher.expectValue(SemanticsProperties.Error, "Invalid input")
   }
 
-  // test that submit does navigate to the overview screen
   @Test
   fun submitNavigatesToOverview() {
     composeTestRule.setContent { ProfileScreen(mockNavigationActions, userViewModel) }
 
     composeTestRule.onNodeWithTag("saveButton").performClick()
-    verify(mockNavigationActions).navigateTo(Screen.OVERVIEW)
+    verify(mockNavigationActions).navigateTo(TopLevelDestinations.OVERVIEW)
   }
 
-  // test that modifying the profile works
   @Test
   fun modifyProfile() {
     composeTestRule.setContent { ProfileScreen(mockNavigationActions, userViewModel) }
@@ -114,5 +127,33 @@ class ProfileScreenTest {
     assert(userViewModel.currentUser.value?.lastName == "testLastName")
     composeTestRule.onNodeWithTag("saveButton").performClick()
     assert(userViewModel.currentUser.value?.lastName == "newLastName")
+  }
+
+  @Test
+  fun userNameFieldDisplaysError() {
+    composeTestRule.setContent { ProfileScreen(mockNavigationActions, userViewModel) }
+
+    composeTestRule.onNodeWithTag("inputFirstName").performTextClearance()
+    composeTestRule.onNodeWithTag("inputFirstName").performTextInput("newFirstName")
+
+    composeTestRule.onNodeWithTag("inputUserName").performTextClearance()
+    composeTestRule.onNodeWithTag("inputUserName").performTextInput(existingUserName)
+
+    composeTestRule.onNodeWithTag("saveButton").performClick() // error occurs
+    composeTestRule.onNodeWithTag("inputUserName").assert(hasError()) // error shown
+
+    assert(userViewModel.currentUser.value?.userName == "testUserName") // did not change
+    assert(userViewModel.currentUser.value?.firstName == "testFirstName") // did not change
+  }
+
+  @Test
+  fun saveButtonDisabledWhenUserNameIsEmpty() {
+    composeTestRule.setContent { ProfileScreen(mockNavigationActions, userViewModel) }
+
+    composeTestRule.onNodeWithTag("saveButton").assertIsEnabled()
+    composeTestRule.onNodeWithTag("inputUserName").performTextClearance()
+    composeTestRule.onNodeWithTag("saveButton").assertIsNotEnabled()
+    composeTestRule.onNodeWithTag("inputUserName").performTextInput("test")
+    composeTestRule.onNodeWithTag("saveButton").assertIsEnabled()
   }
 }

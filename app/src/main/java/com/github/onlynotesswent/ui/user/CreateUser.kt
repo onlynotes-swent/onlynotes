@@ -18,10 +18,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
@@ -31,7 +29,7 @@ import com.github.onlynotesswent.model.users.UserRepositoryFirestore
 import com.github.onlynotesswent.model.users.UserViewModel
 import com.github.onlynotesswent.ui.authentication.Logo
 import com.github.onlynotesswent.ui.navigation.NavigationActions
-import com.github.onlynotesswent.ui.navigation.Screen
+import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
 import com.google.firebase.Firebase
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.auth
@@ -94,10 +92,7 @@ fun CreateUserScreen(navigationActions: NavigationActions, userViewModel: UserVi
                             rating = 0.0)
                     userViewModel.addUser(
                         user = user,
-                        onSuccess = {
-                          userViewModel.setCurrentUser(user)
-                          navigationActions.navigateTo(Screen.OVERVIEW)
-                        },
+                        onSuccess = { navigationActions.navigateTo(TopLevelDestinations.OVERVIEW) },
                         onFailure = { exception ->
                           Toast.makeText(
                                   context,

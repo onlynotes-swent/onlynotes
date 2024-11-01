@@ -34,12 +34,12 @@ import com.github.onlynotesswent.ui.overview.NoteItem
  * Displays the search screen where users can search notes by title.
  *
  * @param navigationActions The navigation view model used to transition between different screens.
- * @param noteViewModel The ViewModel that provides the list of notes to search from.
+ * @param noteViewModel The ViewModel that provides the list of publicNotes to search from.
  */
 @Composable
 fun SearchScreen(navigationActions: NavigationActions, noteViewModel: NoteViewModel) {
   var searchQuery by remember { mutableStateOf(TextFieldValue("")) }
-  val notes = noteViewModel.notes.collectAsState()
+  val notes = noteViewModel.publicNotes.collectAsState()
 
   val filteredNotes = notes.value.filter { it.title.contains(searchQuery.text, ignoreCase = true) }
 
@@ -48,7 +48,10 @@ fun SearchScreen(navigationActions: NavigationActions, noteViewModel: NoteViewMo
       topBar = {
         OutlinedTextField(
             value = searchQuery,
-            onValueChange = { searchQuery = it },
+            onValueChange = {
+              searchQuery = it
+              noteViewModel.getPublicNotes()
+            },
             placeholder = { Text("Search ...") },
             leadingIcon = {
               Icon(

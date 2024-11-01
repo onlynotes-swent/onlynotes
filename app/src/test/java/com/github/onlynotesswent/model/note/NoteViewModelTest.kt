@@ -19,14 +19,14 @@ class NoteViewModelTest {
   private lateinit var noteRepository: NoteRepository
   private lateinit var noteViewModel: NoteViewModel
 
-  private val note =
+  private val testNote =
       Note(
           id = "1",
-          type = Type.NORMAL_TEXT,
+          type = Note.Type.NORMAL_TEXT,
           title = "title",
           content = "content",
           date = Timestamp.now(),
-          public = true,
+          visibility = Note.Visibility.DEFAULT,
           userId = "1",
           noteClass = Class("CS-100", "Sample Class", 2024, "path"),
           image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888))
@@ -44,9 +44,20 @@ class NoteViewModelTest {
   }
 
   @Test
-  fun getNotesCallsRepository() {
-    noteViewModel.getNotes("1")
-    verify(noteRepository).getNotes(eq("1"), any(), any())
+  fun initCallsRepository() {
+    verify(noteRepository).init(any())
+  }
+
+  @Test
+  fun getPublicNotesCallsRepository() {
+    noteViewModel.getPublicNotes()
+    verify(noteRepository).getPublicNotes(any(), any())
+  }
+
+  @Test
+  fun getNotesFromCallsRepository() {
+    noteViewModel.getNotesFrom("1")
+    verify(noteRepository).getNotesFrom(eq("1"), any(), any())
   }
 
   @Test
@@ -57,14 +68,14 @@ class NoteViewModelTest {
 
   @Test
   fun addNoteCallsRepository() {
-    noteViewModel.addNote(note, "1")
-    verify(noteRepository).addNote(eq(note), any(), any())
+    noteViewModel.addNote(testNote, "1")
+    verify(noteRepository).addNote(eq(testNote), any(), any())
   }
 
   @Test
   fun updateNoteCallsRepository() {
-    noteViewModel.updateNote(note, "1")
-    verify(noteRepository).updateNote(eq(note), any(), any())
+    noteViewModel.updateNote(testNote, "1")
+    verify(noteRepository).updateNote(eq(testNote), any(), any())
   }
 
   @Test

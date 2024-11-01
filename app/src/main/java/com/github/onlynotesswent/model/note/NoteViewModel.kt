@@ -10,14 +10,17 @@ import kotlinx.coroutines.flow.asStateFlow
 
 class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
 
-  private val _notes = MutableStateFlow<List<Note>>(emptyList())
-  val notes: StateFlow<List<Note>> = _notes.asStateFlow()
+  private val _publicNotes = MutableStateFlow<List<Note>>(emptyList())
+  val publicNotes: StateFlow<List<Note>> = _publicNotes.asStateFlow()
 
-  private val _note = MutableStateFlow<Note?>(null)
-  val note: StateFlow<Note?> = _note.asStateFlow()
+  private val _userNotes = MutableStateFlow<List<Note>>(emptyList())
+  val userNotes: StateFlow<List<Note>> = _userNotes.asStateFlow()
+
+  private val _selectedNote = MutableStateFlow<Note?>(null)
+  val selectedNote: StateFlow<Note?> = _selectedNote.asStateFlow()
 
   init {
-    repository.init { getNotes("1") }
+    repository.init { getPublicNotes() }
   }
 
   // create factory
@@ -31,8 +34,8 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
         }
   }
 
-  fun selectedNote(note: Note) {
-    _note.value = note
+  fun selectedNote(selectedNote: Note) {
+    _selectedNote.value = selectedNote
   }
 
   /**
@@ -44,9 +47,14 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
     return repository.getNewUid()
   }
 
-  /** Gets all Note documents. */
-  fun getNotes(userID: String) {
-    repository.getNotes(userID, onSuccess = { _notes.value = it }, onFailure = {})
+  /** Gets all public Note documents. */
+  fun getPublicNotes() {
+    repository.getPublicNotes(onSuccess = { _publicNotes.value = it }, onFailure = {})
+  }
+
+  /** Gets all Note documents from a user, specified by their ID. */
+  fun getNotesFrom(userID: String) {
+    repository.getNotesFrom(userID, onSuccess = { _userNotes.value = it }, onFailure = {})
   }
 
   /**
@@ -55,7 +63,7 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
    * @param noteId The ID of the Note document to be fetched.
    */
   fun getNoteById(noteId: String) {
-    repository.getNoteById(id = noteId, onSuccess = { _note.value = it }, onFailure = {})
+    repository.getNoteById(id = noteId, onSuccess = { _selectedNote.value = it }, onFailure = {})
   }
 
   /**
@@ -65,7 +73,7 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
    * @param userID The user ID.
    */
   fun addNote(note: Note, userID: String) {
-    repository.addNote(note = note, onSuccess = { getNotes(userID) }, onFailure = {})
+    repository.addNote(note = note, onSuccess = { getNotesFrom(userID) }, onFailure = {})
   }
 
   /**
@@ -75,7 +83,7 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
    * @param userID The user ID.
    */
   fun updateNote(note: Note, userID: String) {
-    repository.updateNote(note = note, onSuccess = { getNotes(userID) }, onFailure = {})
+    repository.updateNote(note = note, onSuccess = { getNotesFrom(userID) }, onFailure = {})
   }
 
   /**
@@ -85,6 +93,6 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
    * @param userID The user ID.
    */
   fun deleteNoteById(noteId: String, userID: String) {
-    repository.deleteNoteById(id = noteId, onSuccess = { getNotes(userID) }, onFailure = {})
+    repository.deleteNoteById(id = noteId, onSuccess = { getNotesFrom(userID) }, onFailure = {})
   }
 }

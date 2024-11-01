@@ -76,7 +76,7 @@ interface UserRepository {
    * @param onSuccess Callback to be invoked with the list of retrieved users.
    * @param onFailure Callback to be invoked if an error occurs.
    */
-  fun getUsers(onSuccess: (List<User>) -> Unit, onFailure: (Exception) -> Unit)
+  fun getAllUsers(onSuccess: (List<User>) -> Unit, onFailure: (Exception) -> Unit)
 
   /**
    * Generates a new unique ID for a user.
@@ -84,4 +84,47 @@ interface UserRepository {
    * @return A new unique user ID.
    */
   fun getNewUid(): String
+
+  /**
+   * Adds a follower to a specified user.
+   *
+   * @param user The ID of the user to whom the follower is to be added.
+   * @param follower The ID of the follower to be added.
+   * @param onSuccess Callback to be invoked when the operation is successful.
+   * @param onFailure Callback to be invoked if an error occurs.
+   */
+  fun addFollowerTo(
+      user: String,
+      follower: String,
+      onSuccess: () -> Unit,
+      onFailure: (Exception) -> Unit
+  )
+
+  /**
+   * Removes a follower from a specified user.
+   *
+   * @param user The ID of the user from whom the follower is to be removed.
+   * @param follower The ID of the follower to be removed.
+   * @param onSuccess Callback to be invoked when the operation is successful.
+   * @param onFailure Callback to be invoked if an error occurs.
+   */
+  fun removeFollowerFrom(
+      user: String,
+      follower: String,
+      onSuccess: () -> Unit,
+      onFailure: (Exception) -> Unit
+  )
+
+  /**
+   * Retrieves a list of users by their IDs.
+   *
+   * @param userIDs The list of user IDs to retrieve.
+   * @param onSuccess Callback to be invoked with the list of retrieved users.
+   * @param onFailure Callback to be invoked if an error occurs.
+   */
+  fun getUsersById(
+      userIDs: List<String>,
+      onSuccess: (List<User>) -> Unit,
+      onFailure: (Exception) -> Unit
+  )
 }

@@ -15,10 +15,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
@@ -28,7 +26,7 @@ import com.github.onlynotesswent.model.users.UserViewModel
 import com.github.onlynotesswent.ui.navigation.BottomNavigationMenu
 import com.github.onlynotesswent.ui.navigation.LIST_TOP_LEVEL_DESTINATION
 import com.github.onlynotesswent.ui.navigation.NavigationActions
-import com.github.onlynotesswent.ui.navigation.Screen
+import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
 
 /**
  * A composable function that displays the profile screen.
@@ -105,8 +103,7 @@ fun ProfileScreen(navigationActions: NavigationActions, userViewModel: UserViewM
                       userViewModel.updateUser(
                           user = updatedUser,
                           onSuccess = {
-                            userViewModel.setCurrentUser(updatedUser)
-                            navigationActions.navigateTo(Screen.OVERVIEW)
+                            navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
                           },
                           onFailure = { exception ->
                             Toast.makeText(

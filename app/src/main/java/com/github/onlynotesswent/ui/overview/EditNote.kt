@@ -33,7 +33,7 @@ import androidx.compose.ui.unit.dp
 import com.github.onlynotesswent.model.note.Class
 import com.github.onlynotesswent.model.note.Note
 import com.github.onlynotesswent.model.note.NoteViewModel
-import com.github.onlynotesswent.model.note.Type
+import com.github.onlynotesswent.model.users.UserViewModel
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
 import com.google.firebase.Timestamp
@@ -51,8 +51,12 @@ import java.util.Calendar
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EditNoteScreen(navigationActions: NavigationActions, noteViewModel: NoteViewModel) {
-  val note by noteViewModel.note.collectAsState()
+fun EditNoteScreen(
+    navigationActions: NavigationActions,
+    noteViewModel: NoteViewModel,
+    userViewModel: UserViewModel
+) {
+  val note by noteViewModel.selectedNote.collectAsState()
   val currentYear = Calendar.getInstance().get(Calendar.YEAR)
   var updatedNoteText by remember { mutableStateOf(note?.content ?: "") }
   var updatedNoteTitle by remember { mutableStateOf(note?.title ?: "") }
@@ -169,21 +173,19 @@ fun EditNoteScreen(navigationActions: NavigationActions, noteViewModel: NoteView
                       noteViewModel.updateNote(
                           Note(
                               id = note?.id ?: "1",
-                              type = note?.type ?: Type.NORMAL_TEXT,
+                              type = note?.type ?: Note.Type.NORMAL_TEXT,
                               title = updatedNoteTitle,
                               content = updatedNoteText,
                               date = Timestamp.now(), // Use current timestamp
-                              public = (visibility == "Public"),
-                              userId = note?.userId ?: "1",
-                              noteClass =
-                                  Class(
-                                      updatedClassCode, updatedClassName, updatedClassYear, "path"),
+                              visibility = note?.visibility ?: Note.Visibility.DEFAULT,                      
+                              noteClass = Class(updatedClassCode, updatedClassName, updatedClassYear, "path"),
+                              userId = note?.userId ?: userViewModel.currentUser.value!!.uid,
                               image =
                                   note?.image
                                       ?: Bitmap.createBitmap(
                                           1, 1, Bitmap.Config.ARGB_8888) // Placeholder Bitmap
                               ),
-                          "1")
+                          userViewModel.currentUser.value!!.uid)
                       navigationActions.navigateTo(Screen.OVERVIEW)
                     },
                     modifier = Modifier.testTag("Save button")) {
