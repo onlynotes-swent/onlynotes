@@ -8,6 +8,7 @@ import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.QuerySnapshot
 import junit.framework.TestCase.fail
 import org.junit.Before
@@ -15,6 +16,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mock
 import org.mockito.Mockito.anyString
+import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
@@ -30,6 +32,7 @@ class FlashcardRepositoryFirestoreTest {
   @Mock private lateinit var mockCollectionReference: CollectionReference
   @Mock private lateinit var mockDocumentSnapshot: DocumentSnapshot
   @Mock private lateinit var mockToDoQuerySnapshot: QuerySnapshot
+  @Mock private lateinit var mockQuery: Query
 
   private lateinit var flashcardRepositoryFirestore: FlashcardRepositoryFirestore
 
@@ -50,6 +53,7 @@ class FlashcardRepositoryFirestoreTest {
 
     `when`(mockFirestore.collection(any())).thenReturn(mockCollectionReference)
     `when`(mockCollectionReference.document(any())).thenReturn(mockDocumentReference)
+    `when`(mockQuery.get()).thenReturn(Tasks.forResult(mockToDoQuerySnapshot))
   }
 
   @Test
@@ -64,12 +68,12 @@ class FlashcardRepositoryFirestoreTest {
     val convertedFlashcard =
         flashcardRepositoryFirestore.documentSnapshotToFlashcard(mockDocumentSnapshot)
 
-    assert(convertedFlashcard.id == flashcard.id)
-    assert(convertedFlashcard.front == flashcard.front)
-    assert(convertedFlashcard.back == flashcard.back)
-    assert(convertedFlashcard.nextReview == flashcard.nextReview)
-    assert(convertedFlashcard.userId == flashcard.userId)
-    assert(convertedFlashcard.folderId == flashcard.folderId)
+    assert(convertedFlashcard?.id == flashcard.id)
+    assert(convertedFlashcard?.front == flashcard.front)
+    assert(convertedFlashcard?.back == flashcard.back)
+    assert(convertedFlashcard?.nextReview == flashcard.nextReview)
+    assert(convertedFlashcard?.userId == flashcard.userId)
+    assert(convertedFlashcard?.folderId == flashcard.folderId)
   }
 
   @Test
@@ -99,6 +103,38 @@ class FlashcardRepositoryFirestoreTest {
 
     // Verify that the 'documents' field was accessed
     verify(timeout(100)) { (mockToDoQuerySnapshot).documents }
+  }
+
+  @Test
+  fun getFlashcards_success() {
+    // Create mock QuerySnapshot with mock documents
+    `when`(mockToDoQuerySnapshot.documents).thenReturn(listOf(mockDocumentSnapshot))
+    `when`(mockDocumentSnapshot.getString("userId")).thenReturn(flashcard.userId)
+
+    // Mock the successful task result with the mock QuerySnapshot
+    val mockTask: Task<QuerySnapshot> = Tasks.forResult(mockToDoQuerySnapshot)
+    `when`(mockCollectionReference.get()).thenReturn(mockTask)
+
+    flashcardRepositoryFirestore.getFlashcards(
+        flashcard.userId,
+        onSuccess = { flashcards ->
+          assert(flashcards.isNotEmpty())
+          assert(flashcards[0].userId == flashcard.userId)
+        },
+        onFailure = { fail("Failure callback should not be called") })
+  }
+
+  @Test
+  fun getFlashcards_failure() {
+    // Create a failed task with an exception
+    val exception = Exception("Test exception")
+    val mockTask: Task<QuerySnapshot> = Tasks.forException(exception)
+    `when`(mockCollectionReference.get()).thenReturn(mockTask)
+
+    flashcardRepositoryFirestore.getFlashcards(
+        flashcard.userId,
+        onSuccess = { fail("Success callback should not be called") },
+        onFailure = { error -> assert(error.message == "Test exception") })
   }
 
   @Test
@@ -143,6 +179,50 @@ class FlashcardRepositoryFirestoreTest {
 
     // Verify that the 'get()' method was called
     verify(timeout(100)) { mockDocumentReference.get() }
+  }
+
+  @Test
+  fun getFlashcardsByFolder_success() {
+    // Create a mock Query to represent the result of whereEqualTo
+    val mockQuery: Query = mock(Query::class.java)
+
+    // Set up whereEqualTo to return the mock Query
+    `when`(mockCollectionReference.whereEqualTo(anyString(), any())).thenReturn(mockQuery)
+
+    // Create a mock Task that returns a successful QuerySnapshot
+    val mockQueryTask: Task<QuerySnapshot> = Tasks.forResult(mockToDoQuerySnapshot)
+    `when`(mockQuery.get()).thenReturn(mockQueryTask)
+
+    // Mock the documents in the QuerySnapshot
+    `when`(mockToDoQuerySnapshot.documents).thenReturn(listOf(mockDocumentSnapshot))
+    `when`(mockDocumentSnapshot.getString("folderId")).thenReturn(flashcard.folderId)
+
+    flashcardRepositoryFirestore.getFlashcardsByFolder(
+        flashcard.folderId,
+        onSuccess = { flashcards ->
+          assert(flashcards.isNotEmpty())
+          assert(flashcards[0].folderId == flashcard.folderId)
+        },
+        onFailure = { fail("Failure callback should not be called") })
+  }
+
+  @Test
+  fun getFlashcardsByFolder_failure() {
+    // Create a mock Query to represent the result of whereEqualTo
+    val mockQuery: Query = mock(Query::class.java)
+
+    // Set up whereEqualTo to return the mock Query
+    `when`(mockCollectionReference.whereEqualTo(anyString(), any())).thenReturn(mockQuery)
+
+    // Create a mock Task that returns an exception
+    val exception = Exception("Test exception")
+    val mockQueryTask: Task<QuerySnapshot> = Tasks.forException(exception)
+    `when`(mockQuery.get()).thenReturn(mockQueryTask)
+
+    flashcardRepositoryFirestore.getFlashcardsByFolder(
+        flashcard.folderId,
+        onSuccess = { fail("Success callback should not be called") },
+        onFailure = { error -> assert(error.message == "Test exception") })
   }
 
   @Test
