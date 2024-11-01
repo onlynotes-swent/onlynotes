@@ -2,6 +2,8 @@ package com.github.onlynotesswent.model.note
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.firestore
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -25,18 +27,15 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
 
   // create factory
   companion object {
-    val Factory: ViewModelProvider.Factory =
-        object : ViewModelProvider.Factory {
-          @Suppress("UNCHECKED_CAST")
-          override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            return NoteViewModel(NoteRepositoryFirestore(Firebase.firestore)) as T
-          }
-        }
+    val Factory: ViewModelProvider.Factory = viewModelFactory {
+      initializer { NoteViewModel(NoteRepositoryFirestore(Firebase.firestore)) }
+    }
   }
 
   fun selectedNote(selectedNote: Note) {
     _selectedNote.value = selectedNote
   }
+
   /**
    * Generates a new unique ID.
    *

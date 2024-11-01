@@ -33,6 +33,7 @@ class SearchScreenTest {
           date = Timestamp.now(),
           visibility = Note.Visibility.PUBLIC,
           userId = "test",
+          noteClass = Note.Class("CS-100", "Sample Class 1", 2024, "path"),
           image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888))
   private val testNote2 =
       Note(
@@ -43,6 +44,7 @@ class SearchScreenTest {
           date = Timestamp.now(),
           visibility = Note.Visibility.PUBLIC,
           userId = "test",
+          noteClass = Note.Class("CS-200", "Sample Class 2", 2024, "path"),
           image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888))
 
   private val mockNotes = listOf(testNote1, testNote2)
