@@ -13,11 +13,11 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
 
   private data class FirebaseNote(
       val id: String,
-      val type: Type,
+      val type: Note.Type,
       val title: String,
       val content: String,
       val date: Timestamp,
-      val public: Boolean,
+      val visibility: Note.Visibility,
       val userId: String,
       val image: String
   )
@@ -30,7 +30,14 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
    */
   private fun convertNotes(note: Note): FirebaseNote {
     return FirebaseNote(
-        note.id, note.type, note.title, note.content, note.date, note.public, note.userId, "null")
+        note.id,
+        note.type,
+        note.title,
+        note.content,
+        note.date,
+        note.visibility,
+        note.userId,
+        "null")
   }
 
   private val collectionPath = "notes"
@@ -47,7 +54,31 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
     }
   }
 
-  override fun getNotes(
+  /**
+   * Fetches all public notes from the Firestore database.
+   *
+   * @param onSuccess A callback function that is called with the list of public notes if the
+   *   operation is successful.
+   * @param onFailure A callback function that is called with an exception if the operation fails.
+   */
+  override fun getPublicNotes(onSuccess: (List<Note>) -> Unit, onFailure: (Exception) -> Unit) {
+    db.collection(collectionPath).get().addOnCompleteListener { task ->
+      if (task.isSuccessful) {
+        val publicNotes =
+            task.result.documents
+                .mapNotNull { document -> documentSnapshotToNote(document) }
+                .filter { it.visibility == Note.Visibility.PUBLIC } ?: emptyList()
+        onSuccess(publicNotes)
+      } else {
+        task.exception?.let { e ->
+          Log.e("NoteRepositoryFirestore", "Error getting visibility documents", e)
+          onFailure(e)
+        }
+      }
+    }
+  }
+
+  override fun getNotesFrom(
       userId: String,
       onSuccess: (List<Note>) -> Unit,
       onFailure: (Exception) -> Unit
@@ -55,9 +86,9 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
     db.collection(collectionPath).get().addOnCompleteListener { task ->
       if (task.isSuccessful) {
         val userNotes =
-            task.result
-                ?.mapNotNull { document -> documentSnapshotToNote(document) }
-                ?.filter { it.userId == userId } ?: emptyList()
+            task.result.documents
+                .mapNotNull { document -> documentSnapshotToNote(document) }
+                .filter { it.userId == userId } ?: emptyList()
         onSuccess(userNotes)
       } else {
         task.exception?.let { e ->
@@ -138,11 +169,13 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
   fun documentSnapshotToNote(document: DocumentSnapshot): Note? {
     return try {
       val id = document.id
-      val type = Type.valueOf(document.getString("type") ?: return null)
+      val type = Note.Type.valueOf(document.getString("type") ?: return null)
       val title = document.getString("title") ?: return null
       val content = document.getString("content") ?: return null
       val date = document.getTimestamp("date") ?: return null
-      val public = document.getBoolean("public") ?: true
+      val visibility =
+          Note.Visibility.fromString(
+              document.getString("visibility") ?: Note.Visibility.DEFAULT.toString())
       val userId = document.getString("userId") ?: return null
       val image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)
       // Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888) is the default bitMap, to be changed
@@ -154,7 +187,7 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
           title = title,
           content = content,
           date = date,
-          public = public,
+          visibility = visibility,
           userId = userId,
           image = image)
     } catch (e: Exception) {

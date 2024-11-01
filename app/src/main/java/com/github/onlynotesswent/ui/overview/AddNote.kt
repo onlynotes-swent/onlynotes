@@ -32,15 +32,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.github.onlynotesswent.R
 import com.github.onlynotesswent.model.note.Note
 import com.github.onlynotesswent.model.note.NoteViewModel
-import com.github.onlynotesswent.model.note.Type
 import com.github.onlynotesswent.model.scanner.Scanner
+import com.github.onlynotesswent.model.users.UserViewModel
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.google.firebase.Timestamp
 
@@ -49,15 +49,18 @@ import com.google.firebase.Timestamp
 fun AddNoteScreen(
     navigationActions: NavigationActions,
     scanner: Scanner,
-    noteViewModel: NoteViewModel = viewModel(factory = NoteViewModel.Factory),
+    noteViewModel: NoteViewModel,
+    userViewModel: UserViewModel
 ) {
 
   var title by remember { mutableStateOf("") }
   var template by remember { mutableStateOf("Choose An Option") }
-  var visibility by remember { mutableStateOf("Choose An Option") }
+  var visibility: Note.Visibility? by remember { mutableStateOf(null) }
   var expandedVisibility by remember { mutableStateOf(false) }
   var expandedTemplate by remember { mutableStateOf(false) }
   var saveButton by remember { mutableStateOf("Create Note") }
+
+  val context = LocalContext.current
 
   Scaffold(
       modifier = Modifier.testTag("addNoteScreen"),
@@ -100,13 +103,13 @@ fun AddNoteScreen(
               Spacer(modifier = Modifier.height(30.dp))
 
               OptionDropDownMenu(
-                  value = visibility,
+                  value = visibility?.toReadableString() ?: "Choose an option",
                   expanded = expandedVisibility,
                   buttonTag = "visibilityButton",
                   menuTag = "visibilityMenu",
                   onExpandedChange = { expandedVisibility = it },
-                  items = listOf("Public", "Private"),
-                  onItemClick = { visibility = it })
+                  items = Note.Visibility.READABLE_STRINGS,
+                  onItemClick = { visibility = Note.Visibility.fromReadableString(it) })
 
               Spacer(modifier = Modifier.height(30.dp))
 
@@ -131,14 +134,15 @@ fun AddNoteScreen(
 
               Button(
                   onClick = {
-                    var type = Type.NORMAL_TEXT
+                    var type = Note.Type.NORMAL_TEXT
                     if (saveButton == "Take Picture") {
                       // call scan image API or functions. Once scanned, add the note to database
                       scanner.scan()
-                      type = Type.PDF
+                      type = Note.Type.PDF
                     } else if (saveButton == "Create Note") {
-                      type = Type.NORMAL_TEXT
+                      type = Note.Type.NORMAL_TEXT
                     }
+
                     // create the note and add it to database
                     noteViewModel.addNote(
                         // provisional note, we will have to change this later
@@ -148,16 +152,14 @@ fun AddNoteScreen(
                             title = title,
                             content = "",
                             date = Timestamp.now(),
-                            public = (visibility == "Public"),
-                            userId = "1",
+                            visibility = visibility!!,
+                            userId = userViewModel.currentUser.value!!.uid,
                             image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)),
-                        "1")
+                        userViewModel.currentUser.value!!.uid)
                     navigationActions.goBack()
                   },
                   enabled =
-                      title.isNotEmpty() &&
-                          visibility != "Choose An Option" &&
-                          template != "Choose An Option",
+                      title.isNotEmpty() && visibility != null && template != "Choose An Option",
                   modifier = Modifier.fillMaxWidth().testTag("createNoteButton")) {
                     Text(text = saveButton)
                   }

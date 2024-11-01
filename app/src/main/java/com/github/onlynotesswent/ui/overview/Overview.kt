@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -14,8 +15,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -31,6 +34,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.github.onlynotesswent.model.note.Note
 import com.github.onlynotesswent.model.note.NoteViewModel
+import com.github.onlynotesswent.model.users.UserViewModel
 import com.github.onlynotesswent.ui.navigation.BottomNavigationMenu
 import com.github.onlynotesswent.ui.navigation.LIST_TOP_LEVEL_DESTINATION
 import com.github.onlynotesswent.ui.navigation.NavigationActions
@@ -39,16 +43,21 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 
 /**
- * Displays the overview screen which contains a list of notes retrieved from the ViewModel. If
- * there are no notes, it shows a text to the user indicating no notes are available. It also
- * provides a floating action button to add a new note.
+ * Displays the overview screen which contains a list of publicNotes retrieved from the ViewModel.
+ * If there are no publicNotes, it shows a text to the user indicating no publicNotes are available.
+ * It also provides a floating action button to add a new note.
  *
  * @param navigationActions The navigation view model used to transition between different screens.
- * @param noteViewModel The ViewModel that provides the list of notes to display.
+ * @param noteViewModel The ViewModel that provides the list of publicNotes to display.
  */
 @Composable
-fun OverviewScreen(navigationActions: NavigationActions, noteViewModel: NoteViewModel) {
-  val notes = noteViewModel.notes.collectAsState()
+fun OverviewScreen(
+    navigationActions: NavigationActions,
+    noteViewModel: NoteViewModel,
+    userViewModel: UserViewModel
+) {
+  val userNotes = noteViewModel.userNotes.collectAsState()
+  userViewModel.currentUser.collectAsState().value?.let { noteViewModel.getNotesFrom(it.uid) }
 
   Scaffold(
       modifier = Modifier.testTag("overviewScreen"),
@@ -65,8 +74,8 @@ fun OverviewScreen(navigationActions: NavigationActions, noteViewModel: NoteView
             tabList = LIST_TOP_LEVEL_DESTINATION,
             selectedItem = navigationActions.currentRoute())
       }) { pd ->
-        Box {
-          if (notes.value.isNotEmpty()) {
+        Box(modifier = Modifier.fillMaxSize().padding(pd)) {
+          if (userNotes.value.isNotEmpty()) {
             LazyColumn(
                 contentPadding = PaddingValues(vertical = 40.dp),
                 modifier =
@@ -74,20 +83,42 @@ fun OverviewScreen(navigationActions: NavigationActions, noteViewModel: NoteView
                         .padding(horizontal = 16.dp)
                         .padding(pd)
                         .testTag("noteList")) {
-                  items(notes.value.size) { index ->
-                    NoteItem(note = notes.value[index]) {
-                      noteViewModel.selectedNote(notes.value[index])
+                  items(userNotes.value.size) { index ->
+                    NoteItem(note = userNotes.value[index]) {
+                      noteViewModel.selectedNote(userNotes.value[index])
                       navigationActions.navigateTo(Screen.EDIT_NOTE)
                     }
                   }
                 }
           } else {
-            Text(
-                modifier = Modifier.padding(pd).testTag("emptyNotePrompt"),
-                text = "You have no Notes yet.")
+            Column(
+                modifier = Modifier.fillMaxSize().padding(pd),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+              Text(modifier = Modifier.testTag("emptyNotePrompt"), text = "You have no Notes yet.")
+              Spacer(modifier = Modifier.height(50.dp))
+              RefreshButton {
+                userViewModel.currentUser.value?.let { noteViewModel.getNotesFrom(it.uid) }
+              }
+              Spacer(modifier = Modifier.height(20.dp))
+            }
           }
         }
       }
+}
+
+/**
+ * A composable function that displays a refresh button.
+ *
+ * @param onClick A lambda function to be invoked when the button is clicked.
+ */
+@Composable
+fun RefreshButton(onClick: () -> Unit) {
+  ElevatedButton(onClick = onClick, modifier = Modifier.testTag("refreshButton")) {
+    Text("Refresh")
+    Icon(imageVector = Icons.Default.Refresh, contentDescription = "Refresh")
+  }
 }
 
 /**

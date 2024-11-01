@@ -10,6 +10,8 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextClearance
 import androidx.compose.ui.test.performTextInput
+import com.github.onlynotesswent.model.note.NoteRepository
+import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.model.users.User
 import com.github.onlynotesswent.model.users.UserRepository
 import com.github.onlynotesswent.model.users.UserRepositoryFirestore
@@ -17,6 +19,7 @@ import com.github.onlynotesswent.model.users.UserViewModel
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
 import com.github.onlynotesswent.utils.ProfilePictureTaker
+import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
 import com.google.firebase.Timestamp
 import org.junit.Before
 import org.junit.Rule
@@ -31,6 +34,8 @@ class ProfileScreenTest {
   @Mock private lateinit var mockUserRepository: UserRepository
   @Mock private lateinit var mockNavigationActions: NavigationActions
   @Mock private lateinit var profilePictureTaker: ProfilePictureTaker
+  @Mock private lateinit var mockNoteRepository: NoteRepository
+  private lateinit var noteViewModel: NoteViewModel
   private lateinit var userViewModel: UserViewModel
   private val testUid = "testUid123"
   private val testUser =
@@ -52,6 +57,7 @@ class ProfileScreenTest {
     // Mock is a way to create a fake object that can be used in place of a real object
     MockitoAnnotations.openMocks(this)
     userViewModel = UserViewModel(mockUserRepository)
+    noteViewModel = NoteViewModel(mockNoteRepository)
 
     // Mock the current route to be the user create screen
     `when`(mockNavigationActions.currentRoute()).thenReturn(Screen.PROFILE)
@@ -105,7 +111,7 @@ class ProfileScreenTest {
     }
 
     composeTestRule.onNodeWithTag("saveButton").performClick()
-    verify(mockNavigationActions).navigateTo(Screen.OVERVIEW)
+    verify(mockNavigationActions).navigateTo(TopLevelDestinations.OVERVIEW)
   }
 
   @Test
