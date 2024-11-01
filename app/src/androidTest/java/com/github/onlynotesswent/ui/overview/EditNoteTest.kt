@@ -5,6 +5,7 @@ import androidx.compose.ui.test.assertIsNotDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTextInput
 import com.github.onlynotesswent.model.note.NoteRepository
 import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.model.users.User
@@ -77,6 +78,8 @@ class EditNoteTest {
 
   @Test
   fun saveClickCallsNavActions() {
+    // Ensure the button is enabled
+    composeTestRule.onNodeWithTag("EditTitle textField").performTextInput("title")
 
     composeTestRule.onNodeWithTag("Save button").performClick()
     verify(navigationActions).navigateTo(Screen.OVERVIEW)

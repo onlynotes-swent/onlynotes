@@ -5,7 +5,6 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
-import com.github.onlynotesswent.model.note.Class
 import com.github.onlynotesswent.model.note.Note
 import com.github.onlynotesswent.model.note.NoteRepository
 import com.github.onlynotesswent.model.note.NoteViewModel
@@ -41,7 +40,7 @@ class OverviewTest {
               date = Timestamp.now(), // Use current timestamp
               visibility = Note.Visibility.DEFAULT,
               userId = "1",
-              noteClass = Class("CS-100", "Sample Class", 2024, "path"),
+              noteClass = Note.Class("CS-100", "Sample Class", 2024, "path"),
               image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888) // Placeholder Bitmap
               ))
 

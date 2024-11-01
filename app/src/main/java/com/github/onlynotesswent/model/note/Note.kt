@@ -52,13 +52,13 @@ data class Note(
   }
 
   /**
-  * Represents a class that a note belongs to.
-  *
-  * @param classCode The code of the class.
-  * @param className The name of the class.
-  * @param classYear The year of the class.
-  * @param publicPath The public path of the class.
-  */
+   * Represents a class that a note belongs to.
+   *
+   * @param classCode The code of the class.
+   * @param className The name of the class.
+   * @param classYear The year of the class.
+   * @param publicPath The public path of the class.
+   */
   data class Class(
       val classCode: String,
       val className: String,

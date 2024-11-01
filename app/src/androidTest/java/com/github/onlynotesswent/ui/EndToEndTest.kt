@@ -23,7 +23,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navigation
 import androidx.test.espresso.intent.Intents
-import com.github.onlynotesswent.model.note.Class
 import com.github.onlynotesswent.model.note.Note
 import com.github.onlynotesswent.model.note.NoteRepository
 import com.github.onlynotesswent.model.note.NoteViewModel
@@ -82,7 +81,7 @@ class EndToEndTest {
           date = Timestamp.now(),
           userId = testUid,
           visibility = Note.Visibility.DEFAULT,
-          noteClass = Class("classCode", "className", 2024, "publicPath"),
+          noteClass = Note.Class("classCode", "className", 2024, "publicPath"),
           image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888))
 
   // Setup Compose test rule for UI testing
@@ -200,10 +199,6 @@ class EndToEndTest {
     // Verify that the "Create Note" button is now enabled and click it
     composeTestRule.onNodeWithTag("createNoteButton").assertIsEnabled()
     composeTestRule.onNodeWithTag("createNoteButton").performClick()
-
-    // Verify note details and navigate to the note editing screen
-    // composeTestRule.onNodeWithTag("noteCard").assertIsDisplayed()
-    // composeTestRule.onNodeWithTag("noteCard").performClick()
 
     // Modify the note title and save the changes
     composeTestRule.onNodeWithTag("EditTitle textField").assertIsDisplayed()

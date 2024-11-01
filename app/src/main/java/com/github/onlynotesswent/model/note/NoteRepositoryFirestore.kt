@@ -40,11 +40,11 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
         note.content,
         note.date,
         note.visibility,
+        note.userId,
         note.noteClass.classCode,
         note.noteClass.className,
         note.noteClass.classYear,
         note.noteClass.publicPath,
-        note.userId,
         "null")
   }
 
@@ -75,7 +75,7 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
         val publicNotes =
             task.result.documents
                 .mapNotNull { document -> documentSnapshotToNote(document) }
-                .filter { it.visibility == Note.Visibility.PUBLIC } ?: emptyList()
+                .filter { it.visibility == Note.Visibility.PUBLIC }
         onSuccess(publicNotes)
       } else {
         task.exception?.let { e ->
@@ -96,7 +96,7 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
         val userNotes =
             task.result.documents
                 .mapNotNull { document -> documentSnapshotToNote(document) }
-                .filter { it.userId == userId } ?: emptyList()
+                .filter { it.userId == userId }
         onSuccess(userNotes)
       } else {
         task.exception?.let { e ->
@@ -201,7 +201,7 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
           date = date,
           visibility = visibility,
           userId = userId,
-          noteClass = Class(classCode, className, classYear, classPath),
+          noteClass = Note.Class(classCode, className, classYear, classPath),
           image = image)
     } catch (e: Exception) {
       Log.e("NoteRepositoryFirestore", "Error converting document to Note", e)

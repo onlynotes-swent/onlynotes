@@ -12,6 +12,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -19,6 +20,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -28,9 +30,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
-import com.github.onlynotesswent.model.note.Class
 import com.github.onlynotesswent.model.note.Note
 import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.model.users.UserViewModel
@@ -63,13 +65,14 @@ fun EditNoteScreen(
   var updatedClassName by remember { mutableStateOf(note?.noteClass?.className ?: "") }
   var updatedClassCode by remember { mutableStateOf(note?.noteClass?.classCode ?: "") }
   var updatedClassYear by remember { mutableIntStateOf(note?.noteClass?.classYear ?: currentYear) }
-  var visibility by remember { mutableStateOf(visibilityToString(note?.public ?: false)) }
+  var visibility by remember { mutableStateOf(note?.visibility) }
   var expandedVisibility by remember { mutableStateOf(false) }
 
   Scaffold(
       modifier = Modifier.testTag("editNoteScreen"),
       topBar = {
         TopAppBar(
+            colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFB3E5FC)),
             title = {
               Row(
                   modifier = Modifier.fillMaxWidth(),
@@ -108,13 +111,15 @@ fun EditNoteScreen(
 
               item {
                 OptionDropDownMenu(
-                    value = visibility,
+                    value =
+                        visibility?.toReadableString()
+                            ?: Note.Visibility.DEFAULT.toReadableString(),
                     expanded = expandedVisibility,
                     buttonTag = "visibilityEditButton",
                     menuTag = "visibilityEditMenu",
                     onExpandedChange = { expandedVisibility = it },
-                    items = listOf("Public", "Private"),
-                    onItemClick = { visibility = it })
+                    items = Note.Visibility.READABLE_STRINGS,
+                    onItemClick = { visibility = Note.Visibility.fromReadableString(it) })
               }
 
               item {
@@ -147,14 +152,14 @@ fun EditNoteScreen(
               item {
                 OutlinedTextField(
                     value =
-                        if (note?.type == Type.NORMAL_TEXT) "Typed note"
+                        if (note?.type == Note.Type.NORMAL_TEXT) "Typed note"
                         else note?.type?.name ?: "Typed note",
                     onValueChange = {},
                     readOnly = true,
                     label = { Text("Note Type") },
                     modifier = Modifier.fillMaxWidth().testTag("EditType textField"))
               }
-              if (note?.type == Type.NORMAL_TEXT) {
+              if (note?.type == Note.Type.NORMAL_TEXT) {
                 item {
                   OutlinedTextField(
                       value = updatedNoteText,
@@ -177,8 +182,10 @@ fun EditNoteScreen(
                               title = updatedNoteTitle,
                               content = updatedNoteText,
                               date = Timestamp.now(), // Use current timestamp
-                              visibility = note?.visibility ?: Note.Visibility.DEFAULT,                      
-                              noteClass = Class(updatedClassCode, updatedClassName, updatedClassYear, "path"),
+                              visibility = visibility ?: Note.Visibility.DEFAULT,
+                              noteClass =
+                                  Note.Class(
+                                      updatedClassCode, updatedClassName, updatedClassYear, "path"),
                               userId = note?.userId ?: userViewModel.currentUser.value!!.uid,
                               image =
                                   note?.image
@@ -195,8 +202,10 @@ fun EditNoteScreen(
 
               item {
                 Button(
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF0000)),
                     onClick = {
-                      noteViewModel.deleteNoteById(note?.id ?: "1", note?.userId ?: "1")
+                      noteViewModel.deleteNoteById(
+                          note?.id ?: "", note?.userId ?: userViewModel.currentUser.value!!.uid)
                       navigationActions.navigateTo(Screen.OVERVIEW)
                     },
                     modifier = Modifier.testTag("Delete button")) {
@@ -205,14 +214,4 @@ fun EditNoteScreen(
               }
             }
       })
-}
-
-/**
- * Converts a boolean visibility value to its string representation.
- *
- * @param visibility The visibility value to convert.
- * @return The string representation of the visibility value.
- */
-fun visibilityToString(visibility: Boolean): String {
-  return if (visibility) "Public" else "Private"
 }

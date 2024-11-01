@@ -15,6 +15,7 @@ import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.ArrowDropDown
 import androidx.compose.material.icons.outlined.Clear
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -24,6 +25,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -32,12 +34,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.github.onlynotesswent.model.note.Class
-import com.github.onlynotesswent.R
 import com.github.onlynotesswent.model.note.Note
 import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.model.scanner.Scanner
@@ -77,14 +76,12 @@ fun AddNoteScreen(
   var visibility: Note.Visibility? by remember { mutableStateOf(null) }
   var expandedVisibility by remember { mutableStateOf(false) }
   var expandedTemplate by remember { mutableStateOf(false) }
-  var saveButton by remember { mutableStateOf("Create Note") }
-
-  val context = LocalContext.current
 
   Scaffold(
       modifier = Modifier.testTag("addNoteScreen"),
       topBar = {
         TopAppBar(
+            colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFB3E5FC)),
             title = {
               Row(
                   modifier = Modifier.fillMaxWidth(),
@@ -133,7 +130,34 @@ fun AddNoteScreen(
                   items = Note.Visibility.READABLE_STRINGS,
                   onItemClick = { visibility = Note.Visibility.fromReadableString(it) })
 
-              Spacer(modifier = Modifier.height(30.dp))
+              Spacer(modifier = Modifier.height(10.dp))
+
+              OutlinedTextField(
+                  value = className,
+                  onValueChange = { className = it },
+                  label = { Text("Class Name") },
+                  placeholder = { Text("Set the Class Name for the Note") },
+                  modifier = Modifier.fillMaxWidth().testTag("ClassNameTextField"))
+
+              Spacer(modifier = Modifier.height(5.dp))
+
+              OutlinedTextField(
+                  value = classCode,
+                  onValueChange = { classCode = it },
+                  label = { Text("Class Code") },
+                  placeholder = { Text("Set the Class Code for the Note") },
+                  modifier = Modifier.fillMaxWidth().testTag("ClassCodeTextField"))
+
+              Spacer(modifier = Modifier.height(5.dp))
+
+              OutlinedTextField(
+                  value = classYear.toString(),
+                  onValueChange = { classYear = it.toIntOrNull() ?: currentYear },
+                  label = { Text("Class Year") },
+                  placeholder = { Text("Set the Class Year for the Note") },
+                  modifier = Modifier.fillMaxWidth().testTag("ClassYearTextField"))
+
+              Spacer(modifier = Modifier.height(10.dp))
 
               OptionDropDownMenu(
                   value = template,
@@ -160,7 +184,7 @@ fun AddNoteScreen(
                       }
                       "Upload Note" -> {
                         // upload image implementation here
-                        type = Note.type.JPEG
+                        type = Note.Type.JPEG
                       }
                     }
                     // provisional note, we will have to change this later
@@ -172,19 +196,20 @@ fun AddNoteScreen(
                             content = "",
                             date = Timestamp.now(),
                             visibility = visibility!!,
-                            noteClass = Class(classCode, className, classYear, "path"),
+                            noteClass = Note.Class(classCode, className, classYear, "path"),
                             userId = userViewModel.currentUser.value!!.uid,
                             image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888))
                     // create the note and add it to database
-                    noteViewModel.addNote(note, userViewModel.currentUser.value!!.uid)    
+                    noteViewModel.addNote(note, userViewModel.currentUser.value!!.uid)
 
-                    if (type == Type.NORMAL_TEXT) {
+                    if (type == Note.Type.NORMAL_TEXT) {
                       noteViewModel.selectedNote(note)
                       navigationActions.navigateTo(Screen.EDIT_NOTE)
                     } else {
                       navigationActions.goBack()
                     }
                   },
+                  colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50)),
                   enabled =
                       title.isNotEmpty() && visibility != null && template != "Choose An Option",
                   modifier = Modifier.fillMaxWidth().testTag("createNoteButton")) {
