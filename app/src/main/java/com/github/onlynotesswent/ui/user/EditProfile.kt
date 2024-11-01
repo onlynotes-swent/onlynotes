@@ -7,13 +7,13 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.layout.Box
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.filled.AccountCircle
@@ -45,8 +45,7 @@ import com.github.onlynotesswent.ui.navigation.BottomNavigationMenu
 import com.github.onlynotesswent.ui.navigation.LIST_TOP_LEVEL_DESTINATION
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
-import com.github.onlynotesswent.model.users.ProfilePictureTaker
-
+import com.github.onlynotesswent.utils.ProfilePictureTaker
 
 /**
  * A composable function that displays the profile screen.
@@ -56,7 +55,7 @@ import com.github.onlynotesswent.model.users.ProfilePictureTaker
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProfileScreen(
+fun EditProfileScreen(
     navigationActions: NavigationActions,
     userViewModel: UserViewModel,
     profilePictureTaker: ProfilePictureTaker
@@ -96,8 +95,7 @@ fun ProfileScreen(
             modifier = Modifier.fillMaxSize().padding(paddingValues),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally) {
-
-            ProfilePicture(newProfilePicture, userViewModel, profilePictureTaker)
+              ProfilePicture(newProfilePicture, userViewModel, profilePictureTaker)
 
               // Text Fields for user information
               FirstNameTextField(newFirstName)
@@ -131,9 +129,7 @@ fun ProfileScreen(
                     } else {
                       userViewModel.updateUser(
                           user = updatedUser,
-                          onSuccess = {
-                            navigationActions.navigateTo(Screen.OVERVIEW)
-                          },
+                          onSuccess = { navigationActions.navigateTo(Screen.OVERVIEW) },
                           onFailure = { exception ->
                             Toast.makeText(
                                     context,
@@ -151,57 +147,62 @@ fun ProfileScreen(
       })
 }
 
-
 @Composable
-fun ProfilePicture(profileImage: MutableState<String>,
-                   userViewModel: UserViewModel,
-                   profilePictureTaker: ProfilePictureTaker) {
+fun ProfilePicture(
+    profileImage: MutableState<String>,
+    userViewModel: UserViewModel,
+    profilePictureTaker: ProfilePictureTaker
+) {
 
-    Box(modifier = Modifier.size(150.dp)) {
-        val painter = if (profileImage.value.isNotEmpty()) {
-            rememberAsyncImagePainter(profileImage.value)
+  Box(modifier = Modifier.size(150.dp)) {
+    val painter =
+        if (profileImage.value.isNotEmpty()) {
+          rememberAsyncImagePainter(profileImage.value)
         } else {
-           rememberVectorPainter(Icons.Default.AccountCircle)
+          rememberVectorPainter(Icons.Default.AccountCircle)
         }
 
-        Image(
-            painter = painter,
-            contentDescription = "Profile Picture",
-            modifier = Modifier
-                .testTag("profilePicture")
+    Image(
+        painter = painter,
+        contentDescription = "Profile Picture",
+        modifier =
+            Modifier.testTag("profilePicture")
                 .size(150.dp)
                 .clip(CircleShape)
                 .border(2.dp, Color.Gray, CircleShape),
-            contentScale = ContentScale.Crop
-        )
+        contentScale = ContentScale.Crop)
 
-        // Edit Icon Overlay
-        Icon(
-            imageVector = Icons.Default.Edit,
-            contentDescription = "Edit Profile Picture",
-            modifier = Modifier
-                .testTag("editProfilePicture")
-                .size(40.dp)  // Size of the edit icon
+    // Edit Icon Overlay
+    Icon(
+        imageVector = Icons.Default.Edit,
+        contentDescription = "Edit Profile Picture",
+        modifier =
+            Modifier.testTag("editProfilePicture")
+                .size(40.dp) // Size of the edit icon
                 .align(Alignment.BottomEnd)
-                .offset(x = (-8).dp, y = (-8).dp)  // Position on the bottom-left
+                .offset(x = (-8).dp, y = (-8).dp) // Position on the bottom-left
                 .clip(CircleShape)
-                .background(Color.White)  // Optional: background for contrast
+                .background(Color.White) // Optional: background for contrast
                 .clickable {
-                    //add  the image here
-                    editProfilePicture(profilePictureTaker,userViewModel, profileImage )},  // Trigger the onEditClick callback
-            tint = Color.Gray  // Icon color
+                  // add  the image here
+                  editProfilePicture(profilePictureTaker, userViewModel, profileImage)
+                }, // Trigger the onEditClick callback
+        tint = Color.Gray // Icon color
         )
-    }
+  }
 }
 
-fun editProfilePicture(profilePictureTaker: ProfilePictureTaker, userViewModel: UserViewModel, profileImage: MutableState<String>) {
-    profilePictureTaker.onImageSelected = { uri -> userViewModel.updateUser(
-        userViewModel.currentUser.value!!.copy(profilePicture = uri.toString())
-        ,
+fun editProfilePicture(
+    profilePictureTaker: ProfilePictureTaker,
+    userViewModel: UserViewModel,
+    profileImage: MutableState<String>
+) {
+  profilePictureTaker.onImageSelected = { uri ->
+    userViewModel.updateUser(
+        userViewModel.currentUser.value!!.copy(profilePicture = uri.toString()),
         {},
-        { e -> println(e) }
-    )
-        profileImage.value=uri.toString()
-    }
-    profilePictureTaker.pickImage()
+        { e -> println(e) })
+    profileImage.value = uri.toString()
+  }
+  profilePictureTaker.pickImage()
 }

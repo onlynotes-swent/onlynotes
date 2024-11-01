@@ -16,6 +16,7 @@ import com.github.onlynotesswent.model.users.UserRepositoryFirestore
 import com.github.onlynotesswent.model.users.UserViewModel
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
+import com.github.onlynotesswent.utils.ProfilePictureTaker
 import com.google.firebase.Timestamp
 import org.junit.Before
 import org.junit.Rule
@@ -29,6 +30,7 @@ import org.mockito.kotlin.any
 class ProfileScreenTest {
   @Mock private lateinit var mockUserRepository: UserRepository
   @Mock private lateinit var mockNavigationActions: NavigationActions
+  @Mock private lateinit var profilePictureTaker: ProfilePictureTaker
   private lateinit var userViewModel: UserViewModel
   private val testUid = "testUid123"
   private val testUser =
@@ -78,11 +80,9 @@ class ProfileScreenTest {
 
   @Test
   fun displayAllComponents() {
-    composeTestRule.setContent { ProfileScreen(
-        mockNavigationActions,
-        userViewModel,
-        profilePictureTaker
-    ) }
+    composeTestRule.setContent {
+      EditProfileScreen(mockNavigationActions, userViewModel, profilePictureTaker)
+    }
 
     composeTestRule.onNodeWithTag("ProfileScreen").assertExists()
     composeTestRule.onNodeWithTag("goBackButton").assertExists()
@@ -90,6 +90,8 @@ class ProfileScreenTest {
     composeTestRule.onNodeWithTag("inputLastName").assertExists()
     composeTestRule.onNodeWithTag("inputUserName").assertExists()
     composeTestRule.onNodeWithTag("saveButton").assertExists()
+    composeTestRule.onNodeWithTag("profilePicture").assertExists()
+    composeTestRule.onNodeWithTag("editProfilePicture").assertExists()
   }
 
   private fun hasError(): SemanticsMatcher {
@@ -98,11 +100,9 @@ class ProfileScreenTest {
 
   @Test
   fun submitNavigatesToOverview() {
-    composeTestRule.setContent { ProfileScreen(
-        mockNavigationActions,
-        userViewModel,
-        profilePictureTaker
-    ) }
+    composeTestRule.setContent {
+      EditProfileScreen(mockNavigationActions, userViewModel, profilePictureTaker)
+    }
 
     composeTestRule.onNodeWithTag("saveButton").performClick()
     verify(mockNavigationActions).navigateTo(Screen.OVERVIEW)
@@ -110,11 +110,9 @@ class ProfileScreenTest {
 
   @Test
   fun modifyProfile() {
-    composeTestRule.setContent { ProfileScreen(
-        mockNavigationActions,
-        userViewModel,
-        profilePictureTaker
-    ) }
+    composeTestRule.setContent {
+      EditProfileScreen(mockNavigationActions, userViewModel, profilePictureTaker)
+    }
 
     composeTestRule.onNodeWithTag("inputUserName").performTextClearance()
     composeTestRule.onNodeWithTag("inputUserName").performTextInput("newUserName")
@@ -137,7 +135,9 @@ class ProfileScreenTest {
 
   @Test
   fun userNameFieldDisplaysError() {
-    composeTestRule.setContent { ProfileScreen(mockNavigationActions, userViewModel) }
+    composeTestRule.setContent {
+      EditProfileScreen(mockNavigationActions, userViewModel, profilePictureTaker)
+    }
 
     composeTestRule.onNodeWithTag("inputFirstName").performTextClearance()
     composeTestRule.onNodeWithTag("inputFirstName").performTextInput("newFirstName")
@@ -154,7 +154,9 @@ class ProfileScreenTest {
 
   @Test
   fun saveButtonDisabledWhenUserNameIsEmpty() {
-    composeTestRule.setContent { ProfileScreen(mockNavigationActions, userViewModel) }
+    composeTestRule.setContent {
+      EditProfileScreen(mockNavigationActions, userViewModel, profilePictureTaker)
+    }
 
     composeTestRule.onNodeWithTag("saveButton").assertIsEnabled()
     composeTestRule.onNodeWithTag("inputUserName").performTextClearance()

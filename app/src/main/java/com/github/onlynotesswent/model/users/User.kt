@@ -22,7 +22,7 @@ data class User(
     val dateOfJoining: Timestamp,
     val rating: Double = 0.0,
     val friends: Friends = Friends(),
-    val profilePicture: String= ""
+    val profilePicture: String = ""
 )
 
 /**
@@ -36,5 +36,3 @@ data class Friends(
     val following: List<String> = emptyList(),
     val followers: List<String> = emptyList()
 )
-
-
