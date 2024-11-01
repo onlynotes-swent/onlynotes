@@ -25,7 +25,8 @@ class FlashcardRepositoryFirestore(private val db: FirebaseFirestore) : Flashcar
       val nextReview = document.getTimestamp("nextReview") ?: Timestamp.now()
       val userId = document.getString("userId") ?: ""
       val folderId = document.getString("folderId") ?: ""
-      Flashcard(id, front, back, nextReview, userId, folderId)
+      val noteId = document.getString("noteId") ?: ""
+      Flashcard(id, front, back, nextReview, userId, folderId, noteId)
     } catch (e: Exception) {
       Log.e("Firestore", "Error converting document to Flashcard", e)
       null

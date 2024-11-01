@@ -8,5 +8,6 @@ data class Flashcard(
     val back: String, // The back side of the flashcard which contains the answer.
     val nextReview: Timestamp,
     val userId: String,
-    val folderId: String
+    val folderId: String,
+    val noteId: String
 )

@@ -42,8 +42,9 @@ class FlashcardRepositoryFirestoreTest {
           front = "front",
           back = "back",
           nextReview = Timestamp.now(),
-          userId = "1",
-          folderId = "1")
+          userId = "2",
+          folderId = "3",
+          noteId = "4")
 
   @Before
   fun setUp() {

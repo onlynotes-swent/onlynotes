@@ -22,7 +22,8 @@ class FlashcardViewModelTest {
           back = "back",
           nextReview = Timestamp.now(),
           userId = "2",
-          folderId = "3")
+          folderId = "3",
+          noteId = "4")
 
   @Before
   fun setUp() {
@@ -39,7 +40,7 @@ class FlashcardViewModelTest {
   @Test
   fun selectFlashcardUpdatesSelectedFlashcard() {
     flashcardViewModel.selectFlashcard(flashcard)
-    assertThat(flashcardViewModel.flashcard.value, `is`(flashcard))
+    assertThat(flashcardViewModel.selectedFlashcard.value, `is`(flashcard))
   }
 
   @Test
