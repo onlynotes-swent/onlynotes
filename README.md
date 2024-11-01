@@ -1,5 +1,5 @@
-![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=onlynotes-swent&metric=alert_status)
-![Coverage](https://sonarcloud.io/api/project_badges/measure?project=onlynotes-swent&metric=coverage)
+![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=onlynotes-swent_onlynotes&metric=alert_status)
+![Coverage](https://sonarcloud.io/api/project_badges/measure?project=onlynotes-swent_onlynotes&metric=coverage)
 
 
 # OnlyNotes
