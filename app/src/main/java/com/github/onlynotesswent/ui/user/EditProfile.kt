@@ -46,7 +46,6 @@ import com.github.onlynotesswent.ui.navigation.LIST_TOP_LEVEL_DESTINATION
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
 import com.github.onlynotesswent.utils.ProfilePictureTaker
-import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
 
 /**
  * A composable function that displays the profile screen.
