@@ -3,6 +3,7 @@ package com.github.onlynotesswent.model.flashcard
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.google.firebase.Firebase
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.firestore
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -21,6 +22,13 @@ class FlashcardViewModel(private val repository: FlashcardRepository) : ViewMode
   // The flashcards in the selected folder
   private val _folderFlashcards = MutableStateFlow<List<Flashcard>>(emptyList())
   val folderFlashcards: StateFlow<List<Flashcard>> = _folderFlashcards.asStateFlow()
+
+  /** Initializes the FlashcardViewModel and the repository. */
+  // TODO: Once we change user uid to firebase auth uid, we can call getFlashcards with the uid for
+  // the success callback
+  init {
+    repository.init(FirebaseAuth.getInstance()) {}
+  }
 
   companion object {
     val Factory: ViewModelProvider.Factory =
@@ -48,13 +56,6 @@ class FlashcardViewModel(private val repository: FlashcardRepository) : ViewMode
    */
   fun getNewUid(): String {
     return repository.getNewUid()
-  }
-
-  /** Initializes the FlashcardViewModel and the repository. */
-  // TODO: Once we change user uid to firebase auth uid, we can call getFlashcards with the uid for
-  // the success callback
-  fun init() {
-    repository.init {}
   }
 
   /**

@@ -1,5 +1,7 @@
 package com.github.onlynotesswent.model.flashcard
 
+import com.google.firebase.auth.FirebaseAuth
+
 interface FlashcardRepository {
 
   /** @return a new unique identifier. */
@@ -10,7 +12,7 @@ interface FlashcardRepository {
    *
    * @param onSuccess The callback to be invoked when the initialization is successful.
    */
-  fun init(onSuccess: () -> Unit)
+  fun init(auth: FirebaseAuth, onSuccess: () -> Unit)
 
   /**
    * Retrieves all flashcards for the given user.

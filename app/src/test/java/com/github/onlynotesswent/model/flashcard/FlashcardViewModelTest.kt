@@ -1,16 +1,21 @@
 package com.github.onlynotesswent.model.flashcard
 
+import com.google.firebase.FirebaseApp
 import com.google.firebase.Timestamp
 import org.hamcrest.CoreMatchers.`is`
 import org.hamcrest.MatcherAssert.assertThat
 import org.junit.Before
 import org.junit.Test
+import org.junit.runner.RunWith
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
+import org.mockito.kotlin.timeout
+import org.robolectric.RobolectricTestRunner
 
+@RunWith(RobolectricTestRunner::class)
 class FlashcardViewModelTest {
   private lateinit var flashcardRepository: FlashcardRepository
   private lateinit var flashcardViewModel: FlashcardViewModel
@@ -28,13 +33,17 @@ class FlashcardViewModelTest {
   @Before
   fun setUp() {
     flashcardRepository = mock(FlashcardRepository::class.java)
+
+    // Initialize FirebaseApp with Robolectric context
+    val context = org.robolectric.RuntimeEnvironment.getApplication()
+    FirebaseApp.initializeApp(context)
+
     flashcardViewModel = FlashcardViewModel(flashcardRepository)
   }
 
   @Test
   fun initCallsRepository() {
-    flashcardViewModel.init()
-    verify(flashcardRepository).init(any())
+    verify(flashcardRepository, timeout(1000)).init(any(), any())
   }
 
   @Test

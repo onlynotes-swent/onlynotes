@@ -4,6 +4,8 @@ import android.os.Looper
 import com.google.android.gms.tasks.Task
 import com.google.android.gms.tasks.Tasks
 import com.google.firebase.Timestamp
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.DocumentSnapshot
@@ -55,6 +57,17 @@ class FlashcardRepositoryFirestoreTest {
     `when`(mockFirestore.collection(any())).thenReturn(mockCollectionReference)
     `when`(mockCollectionReference.document(any())).thenReturn(mockDocumentReference)
     `when`(mockQuery.get()).thenReturn(Tasks.forResult(mockToDoQuerySnapshot))
+  }
+
+  @Test
+  fun init_callsAuthStateListener() {
+    val mockAuth = mock(FirebaseAuth::class.java)
+    val mockUser = mock(FirebaseUser::class.java)
+    `when`(mockAuth.currentUser).thenReturn(mockUser)
+
+    var onSuccessCalled = false
+    flashcardRepositoryFirestore.init(mockAuth) { onSuccessCalled = true }
+    assert(onSuccessCalled)
   }
 
   @Test
