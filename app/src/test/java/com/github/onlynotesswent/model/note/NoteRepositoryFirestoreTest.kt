@@ -128,6 +128,11 @@ class NoteRepositoryFirestoreTest {
     assert(note1.date == note2.date)
     assert(note1.visibility == note2.visibility)
     assert(note1.userId == note2.userId)
+    assert(note1.noteClass.classCode == note2.noteClass.classCode)
+    assert(note1.noteClass.className == note2.noteClass.className)
+    assert(note1.noteClass.classYear == note2.noteClass.classYear)
+    assert(note1.noteClass.publicPath == note2.noteClass.publicPath)
+
   }
 
   @Test
