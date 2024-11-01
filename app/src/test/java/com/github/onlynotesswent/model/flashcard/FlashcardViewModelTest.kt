@@ -31,6 +31,12 @@ class FlashcardViewModelTest {
   }
 
   @Test
+  fun initCallsRepository() {
+    flashcardViewModel.init()
+    verify(flashcardRepository).init(any())
+  }
+
+  @Test
   fun selectFlashcardUpdatesSelectedFlashcard() {
     flashcardViewModel.selectFlashcard(flashcard)
     assertThat(flashcardViewModel.flashcard.value, `is`(flashcard))
