@@ -31,6 +31,12 @@ class FlashcardViewModelTest {
   }
 
   @Test
+  fun selectFlashcardUpdatesSelectedFlashcard() {
+    flashcardViewModel.selectFlashcard(flashcard)
+    assertThat(flashcardViewModel.flashcard.value, `is`(flashcard))
+  }
+
+  @Test
   fun getNewUid() {
     `when`(flashcardRepository.getNewUid()).thenReturn(flashcard.id)
     assertThat(flashcardViewModel.getNewUid(), `is`(flashcard.id))
