@@ -47,13 +47,13 @@ class FlashcardRepositoryFirestore(private val db: FirebaseFirestore) : Flashcar
       onSuccess: (List<Flashcard>) -> Unit,
       onFailure: (Exception) -> Unit
   ) {
-    db.collection(collectionPath).get().addOnCompleteListener { task ->
+    db.collection(collectionPath).whereEqualTo("userId", userId).get().addOnCompleteListener { task
+      ->
       if (task.isSuccessful) {
-        val userFlashcards =
-            task.result
-                ?.mapNotNull { document -> documentSnapshotToFlashcard(document) }
-                ?.filter { it.userId == userId } ?: emptyList()
-        onSuccess(userFlashcards)
+        val flashcards =
+            task.result?.mapNotNull { document -> documentSnapshotToFlashcard(document) }
+                ?: emptyList()
+        onSuccess(flashcards)
       } else {
         onFailure(task.exception ?: Exception("Unknown exception"))
       }
