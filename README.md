@@ -1,3 +1,7 @@
+![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=onlynotes-swent&metric=alert_status)
+![Coverage](https://sonarcloud.io/api/project_badges/measure?project=onlynotes-swent&metric=coverage)
+
+
 # OnlyNotes
 
 ## Description
