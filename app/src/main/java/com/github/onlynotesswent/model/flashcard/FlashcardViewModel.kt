@@ -8,19 +8,19 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
-class FlashcardViewModel(private val repository: FlashcardRepository) {
+class FlashcardViewModel(private val repository: FlashcardRepository) : ViewModel() {
 
   // The flashcards of the user
-  private val _flashcards = MutableStateFlow<List<Flashcard>>(emptyList())
-  val flashcards: StateFlow<List<Flashcard>> = _flashcards.asStateFlow()
+  private val _userFlashcards = MutableStateFlow<List<Flashcard>>(emptyList())
+  val userFlashcards: StateFlow<List<Flashcard>> = _userFlashcards.asStateFlow()
 
   // The selected flashcard
-  private val _flashcard = MutableStateFlow<Flashcard?>(null)
-  val flashcard: StateFlow<Flashcard?> = _flashcard.asStateFlow()
+  private val _selectedFlashcard = MutableStateFlow<Flashcard?>(null)
+  val selectedFlashcard: StateFlow<Flashcard?> = _selectedFlashcard.asStateFlow()
 
   // The flashcards in the selected folder
-  private val _selectedFolderFlashcards = MutableStateFlow<List<Flashcard>>(emptyList())
-  val selectedFolderFlashcards: StateFlow<List<Flashcard>> = _selectedFolderFlashcards.asStateFlow()
+  private val _folderFlashcards = MutableStateFlow<List<Flashcard>>(emptyList())
+  val folderFlashcards: StateFlow<List<Flashcard>> = _folderFlashcards.asStateFlow()
 
   companion object {
     val Factory: ViewModelProvider.Factory =
@@ -38,7 +38,7 @@ class FlashcardViewModel(private val repository: FlashcardRepository) {
    * @param flashcard The flashcard to be selected.
    */
   fun selectFlashcard(flashcard: Flashcard) {
-    _flashcard.value = flashcard
+    _selectedFlashcard.value = flashcard
   }
 
   /**
@@ -63,7 +63,7 @@ class FlashcardViewModel(private val repository: FlashcardRepository) {
    * @param userId The identifier of the user.
    */
   fun getFlashcards(userId: String) {
-    repository.getFlashcards(userId, { _flashcards.value = it }, {})
+    repository.getFlashcards(userId, { _userFlashcards.value = it }, {})
   }
 
   /**
@@ -72,7 +72,7 @@ class FlashcardViewModel(private val repository: FlashcardRepository) {
    * @param id The identifier of the flashcard to retrieve.
    */
   fun getFlashcardById(id: String) {
-    repository.getFlashcardById(id, { _flashcard.value = it }, {})
+    repository.getFlashcardById(id, { _selectedFlashcard.value = it }, {})
   }
 
   /**
@@ -81,7 +81,7 @@ class FlashcardViewModel(private val repository: FlashcardRepository) {
    * @param folderId The identifier of the folder.
    */
   fun getFlashcardsByFolder(folderId: String) {
-    repository.getFlashcardsByFolder(folderId, { _selectedFolderFlashcards.value = it }, {})
+    repository.getFlashcardsByFolder(folderId, { _folderFlashcards.value = it }, {})
   }
 
   /**
