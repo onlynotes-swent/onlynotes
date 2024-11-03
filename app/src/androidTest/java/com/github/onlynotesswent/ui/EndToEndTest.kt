@@ -75,7 +75,7 @@ class EndToEndTest {
   private val testNote =
       Note(
           id = "1",
-          type = Type.NORMAL_TEXT,
+          type = Type.TEXT,
           title = "title",
           content = "",
           date = Timestamp.now(),

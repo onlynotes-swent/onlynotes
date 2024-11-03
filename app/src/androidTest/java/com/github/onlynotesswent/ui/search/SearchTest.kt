@@ -29,7 +29,7 @@ class SearchScreenTest {
       listOf(
           Note(
               id = "",
-              type = Type.NORMAL_TEXT,
+              type = Type.TEXT,
               title = "Note 1",
               content = "",
               date = Timestamp.now(),
@@ -38,7 +38,7 @@ class SearchScreenTest {
               image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)),
           Note(
               id = "1",
-              type = Type.NORMAL_TEXT,
+              type = Type.TEXT,
               title = "Note 2",
               content = "",
               date = Timestamp.now(),

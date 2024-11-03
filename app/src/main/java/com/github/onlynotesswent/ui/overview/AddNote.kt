@@ -131,13 +131,13 @@ fun AddNoteScreen(
 
               Button(
                   onClick = {
-                    var type = Type.NORMAL_TEXT
+                    var type = Type.TEXT
                     if (saveButton == "Take Picture") {
                       // call scan image API or functions. Once scanned, add the note to database
                       scanner.scan()
                       type = Type.PDF
                     } else if (saveButton == "Create Note") {
-                      type = Type.NORMAL_TEXT
+                      type = Type.TEXT
                     }
                     // create the note and add it to database
                     noteViewModel.addNote(

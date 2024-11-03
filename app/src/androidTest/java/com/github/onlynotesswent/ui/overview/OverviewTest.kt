@@ -33,7 +33,7 @@ class OverviewTest {
       listOf(
           Note(
               id = "1",
-              type = Type.NORMAL_TEXT,
+              type = Type.TEXT,
               title = "Sample Title",
               content = "This is a sample content.",
               date = Timestamp.now(), // Use current timestamp

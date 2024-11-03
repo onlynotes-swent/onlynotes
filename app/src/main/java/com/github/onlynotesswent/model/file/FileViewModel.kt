@@ -1,4 +1,4 @@
-package com.github.onlynotesswent.model.images
+package com.github.onlynotesswent.model.file
 
 import android.content.Context
 import android.net.Uri

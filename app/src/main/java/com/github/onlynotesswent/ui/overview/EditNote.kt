@@ -67,7 +67,7 @@ fun EditNoteScreen(navigationActions: NavigationActions, noteViewModel: NoteView
               noteViewModel.updateNote(
                   Note(
                       id = note?.id ?: "1",
-                      type = Type.NORMAL_TEXT,
+                      type = Type.TEXT,
                       title = updatedNoteTitle,
                       content = updatedNoteText,
                       date = Timestamp.now(), // Use current timestamp

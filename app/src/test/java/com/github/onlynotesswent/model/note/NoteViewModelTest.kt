@@ -22,7 +22,7 @@ class NoteViewModelTest {
   private val note =
       Note(
           id = "1",
-          type = Type.NORMAL_TEXT,
+          type = Type.TEXT,
           title = "title",
           content = "content",
           date = Timestamp.now(),

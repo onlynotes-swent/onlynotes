@@ -38,7 +38,7 @@ class NoteRepositoryFirestoreTest {
   private val note =
       Note(
           id = "1",
-          type = Type.NORMAL_TEXT,
+          type = Type.TEXT,
           title = "title",
           content = "content",
           date = Timestamp.now(),
@@ -73,7 +73,7 @@ class NoteRepositoryFirestoreTest {
     val currentTime = Timestamp.now()
 
     `when`(mockDocumentSnapshot.id).thenReturn("1")
-    `when`(mockDocumentSnapshot.getString("type")).thenReturn(Type.NORMAL_TEXT.name)
+    `when`(mockDocumentSnapshot.getString("type")).thenReturn(Type.TEXT.name)
     `when`(mockDocumentSnapshot.getString("title")).thenReturn("title")
     `when`(mockDocumentSnapshot.getString("content")).thenReturn("content")
     `when`(mockDocumentSnapshot.getTimestamp("date")).thenReturn(currentTime)
@@ -86,7 +86,7 @@ class NoteRepositoryFirestoreTest {
 
     assertNotNull(note)
     assert(note?.id == "1")
-    assert(note?.type == Type.NORMAL_TEXT)
+    assert(note?.type == Type.TEXT)
     assert(note?.title == "title")
     assert(note?.content == "content")
     assert(note?.date == currentTime)
