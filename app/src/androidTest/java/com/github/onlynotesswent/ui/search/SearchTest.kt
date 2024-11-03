@@ -6,7 +6,6 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import com.github.onlynotesswent.model.note.Note
 import com.github.onlynotesswent.model.note.NoteRepository
 import com.github.onlynotesswent.model.note.NoteViewModel
-import com.github.onlynotesswent.model.note.Type
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
 import com.google.firebase.Timestamp
@@ -25,27 +24,30 @@ class SearchScreenTest {
 
   @get:Rule val composeTestRule = createComposeRule()
 
-  private val mockNotes =
-      listOf(
-          Note(
-              id = "",
-              type = Type.TEXT,
-              title = "Note 1",
-              content = "",
-              date = Timestamp.now(),
-              public = true,
-              userId = "test",
-              image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)),
-          Note(
-              id = "1",
-              type = Type.TEXT,
-              title = "Note 2",
-              content = "",
-              date = Timestamp.now(),
-              public = true,
-              userId = "test",
-              image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)),
-      )
+  private val testNote1 =
+      Note(
+          id = "",
+          type = Note.Type.NORMAL_TEXT,
+          title = "Note 1",
+          content = "",
+          date = Timestamp.now(),
+          visibility = Note.Visibility.PUBLIC,
+          userId = "test",
+          noteClass = Note.Class("CS-100", "Sample Class 1", 2024, "path"),
+          image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888))
+  private val testNote2 =
+      Note(
+          id = "1",
+          type = Note.Type.NORMAL_TEXT,
+          title = "Note 2",
+          content = "",
+          date = Timestamp.now(),
+          visibility = Note.Visibility.PUBLIC,
+          userId = "test",
+          noteClass = Note.Class("CS-200", "Sample Class 2", 2024, "path"),
+          image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888))
+
+  private val mockNotes = listOf(testNote1, testNote2)
 
   @Before
   fun setUp() {
@@ -54,12 +56,12 @@ class SearchScreenTest {
     noteViewModel = NoteViewModel(noteRepository)
 
     `when`(navigationActions.currentRoute()).thenReturn(Screen.SEARCH_NOTE)
-    `when`(noteRepository.getNotes(any(), any(), any())).thenAnswer { invocation ->
-      val onSuccess = invocation.getArgument<(List<Note>) -> Unit>(1)
+    `when`(noteRepository.getPublicNotes(any(), any())).thenAnswer { invocation ->
+      val onSuccess = invocation.getArgument<(List<Note>) -> Unit>(0)
       onSuccess(mockNotes)
     }
 
-    noteViewModel.getNotes("test")
+    noteViewModel.getPublicNotes()
   }
 
   @Test
@@ -81,13 +83,13 @@ class SearchScreenTest {
   fun testValidSearchQueryShowsOneResult() {
     composeTestRule.setContent { SearchScreen(navigationActions, noteViewModel) }
 
-    composeTestRule.onNodeWithTag("searchTextField").performTextInput("Note 1")
+    composeTestRule.onNodeWithTag("searchTextField").performTextInput(testNote1.title)
 
     composeTestRule.onNodeWithTag("filteredNoteList").assertIsDisplayed()
     composeTestRule.onNodeWithTag("noSearchResults").assertIsNotDisplayed()
     composeTestRule
         .onAllNodesWithTag("noteCard")
-        .filter(hasText("Note 1"))
+        .filter(hasText(testNote1.title))
         .onFirst()
         .assertIsDisplayed()
     composeTestRule.onAllNodesWithTag("noteCard").assertCountEquals(1)
@@ -128,7 +130,7 @@ class SearchScreenTest {
   fun testNoteSelectionNavigatesToEditScreen() {
     composeTestRule.setContent { SearchScreen(navigationActions, noteViewModel) }
 
-    composeTestRule.onNodeWithTag("searchTextField").performTextInput("Note 1")
+    composeTestRule.onNodeWithTag("searchTextField").performTextInput(testNote1.title)
     composeTestRule.onNodeWithTag("filteredNoteList").onChildren().onFirst().performClick()
 
     verify(navigationActions).navigateTo(Screen.EDIT_NOTE)

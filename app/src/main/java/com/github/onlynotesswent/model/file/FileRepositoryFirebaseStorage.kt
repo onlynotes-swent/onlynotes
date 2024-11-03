@@ -2,7 +2,7 @@ package com.github.onlynotesswent.model.file
 
 import android.net.Uri
 import android.util.Log
-import com.github.onlynotesswent.model.note.Type
+import com.github.onlynotesswent.model.note.Note.Type
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.component1
@@ -94,7 +94,7 @@ class FileRepositoryFirebaseStorage(private val db: FirebaseStorage) : FileRepos
     private fun getFileRef(uid: String, fileType: Type): StorageReference {
         return when (fileType) {
             Type.PNG, Type.JPEG -> profilePicFolderRef.child(uid + fileType.fileExtension)
-            Type.PDF, Type.TEXT -> notesFilesFolderRef.child(uid).child(noteFileName +  fileType.fileExtension)
+            Type.PDF, Type.NORMAL_TEXT -> notesFilesFolderRef.child(uid).child(noteFileName +  fileType.fileExtension)
         }
     }
 

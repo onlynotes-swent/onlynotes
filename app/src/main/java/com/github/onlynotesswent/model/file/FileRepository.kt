@@ -1,7 +1,7 @@
 package com.github.onlynotesswent.model.file
 
 import android.net.Uri
-import com.github.onlynotesswent.model.note.Type
+import com.github.onlynotesswent.model.note.Note.Type
 import java.io.File
 
 interface FileRepository {

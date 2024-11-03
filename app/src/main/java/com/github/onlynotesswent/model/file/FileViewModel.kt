@@ -4,7 +4,7 @@ import android.content.Context
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.github.onlynotesswent.model.note.Type
+import com.github.onlynotesswent.model.note.Note.Type
 import com.google.firebase.Firebase
 import com.google.firebase.storage.storage
 import java.io.File

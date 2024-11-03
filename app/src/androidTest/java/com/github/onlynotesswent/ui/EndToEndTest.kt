@@ -15,6 +15,7 @@ import androidx.compose.ui.test.onChildren
 import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollToIndex
 import androidx.compose.ui.test.performTextInput
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -25,7 +26,6 @@ import androidx.test.espresso.intent.Intents
 import com.github.onlynotesswent.model.note.Note
 import com.github.onlynotesswent.model.note.NoteRepository
 import com.github.onlynotesswent.model.note.NoteViewModel
-import com.github.onlynotesswent.model.note.Type
 import com.github.onlynotesswent.model.scanner.Scanner
 import com.github.onlynotesswent.model.users.User
 import com.github.onlynotesswent.model.users.UserRepository
@@ -75,12 +75,13 @@ class EndToEndTest {
   private val testNote =
       Note(
           id = "1",
-          type = Type.TEXT,
+          type = Note.Type.NORMAL_TEXT,
           title = "title",
           content = "",
           date = Timestamp.now(),
-          userId = "1",
-          public = true,
+          userId = testUid,
+          visibility = Note.Visibility.DEFAULT,
+          noteClass = Note.Class("classCode", "className", 2024, "publicPath"),
           image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888))
 
   // Setup Compose test rule for UI testing
@@ -104,7 +105,7 @@ class EndToEndTest {
       onSuccess()
     }
 
-    `when`(noteRepository.getNewUid()).thenReturn("1")
+    `when`(noteRepository.getNewUid()).thenReturn(testNote.id)
 
     // Initialize Intents for handling navigation intents in the test
     Intents.init()
@@ -133,11 +134,15 @@ class EndToEndTest {
                     startDestination = Screen.OVERVIEW,
                     route = Route.OVERVIEW,
                 ) {
-                  composable(Screen.OVERVIEW) { OverviewScreen(navigationActions, noteViewModel) }
-                  composable(Screen.ADD_NOTE) {
-                    AddNoteScreen(navigationActions, scanner, noteViewModel)
+                  composable(Screen.OVERVIEW) {
+                    OverviewScreen(navigationActions, noteViewModel, userViewModel)
                   }
-                  composable(Screen.EDIT_NOTE) { EditNoteScreen(navigationActions, noteViewModel) }
+                  composable(Screen.ADD_NOTE) {
+                    AddNoteScreen(navigationActions, scanner, noteViewModel, userViewModel)
+                  }
+                  composable(Screen.EDIT_NOTE) {
+                    EditNoteScreen(navigationActions, noteViewModel, userViewModel)
+                  }
                 }
               }
         }
@@ -182,12 +187,12 @@ class EndToEndTest {
         .onFirst()
         .performClick()
 
-    // Set template to "Create Note From Scratch"
+    // Set template to "Create Note"
     composeTestRule.onNodeWithTag("templateButton").performClick()
     composeTestRule
         .onNodeWithTag("templateMenu")
         .onChildren()
-        .filter(hasText("Create Note From Scratch"))
+        .filter(hasText("Create Note"))
         .onFirst()
         .performClick()
 
@@ -195,25 +200,25 @@ class EndToEndTest {
     composeTestRule.onNodeWithTag("createNoteButton").assertIsEnabled()
     composeTestRule.onNodeWithTag("createNoteButton").performClick()
 
+    // Modify the note title and save the changes
+    composeTestRule.onNodeWithTag("EditTitle textField").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("EditTitle textField").performTextInput("Updated Title")
+
+    val saveButtonIndex = 8
+    composeTestRule.onNodeWithTag("editNoteColumn").performScrollToIndex(saveButtonIndex)
+    composeTestRule.onNodeWithTag("Save button").performClick()
+
     // Mock retrieval of notes
-    `when`(noteRepository.getNotes(eq("1"), any(), any())).thenAnswer { invocation ->
+    `when`(noteRepository.getNotesFrom(eq(testUser.uid), any(), any())).thenAnswer { invocation ->
       val onSuccess = invocation.getArgument<(List<Note>) -> Unit>(1)
       onSuccess(listOf(testNote))
     }
 
     // Trigger note retrieval and verify the notes are displayed
-    noteViewModel.getNotes("1")
+    noteViewModel.getNotesFrom(testUser.uid)
     composeTestRule.onNodeWithTag("noteList").assertIsDisplayed()
 
-    // Verify note details and navigate to the note editing screen
-    composeTestRule.onNodeWithTag("noteCard").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("noteCard").performClick()
-
-    // Modify the note title and save the changes
-    composeTestRule.onNodeWithTag("EditTitle textField").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("EditTitle textField").performTextInput("Updated Title")
-    composeTestRule.onNodeWithTag("Save button").performClick()
-
+    // Verify that the note card is displayed
     composeTestRule.onNodeWithTag("noteCard").assertIsDisplayed()
   }
 }
