@@ -77,6 +77,12 @@ class FlashcardViewModelTest {
   }
 
   @Test
+  fun getFlashcardsByNoteCallsRepository() {
+    flashcardViewModel.getFlashcardsByNote(flashcard.noteId)
+    verify(flashcardRepository).getFlashcardsByNote(eq(flashcard.noteId), any(), any())
+  }
+
+  @Test
   fun addFlashcardCallsRepository() {
     flashcardViewModel.addFlashcard(flashcard)
     verify(flashcardRepository).addFlashcard(eq(flashcard), any(), any())
