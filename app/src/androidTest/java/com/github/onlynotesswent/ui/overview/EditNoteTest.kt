@@ -86,6 +86,15 @@ class EditNoteTest {
   }
 
   @Test
+  fun clickAddCommentButtonAndDelete() {
+    composeTestRule.onNodeWithTag("Add Comment Button").performClick()
+    composeTestRule.onNodeWithTag("DeleteCommentButton_0").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("EditCommentTextField_0").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("DeleteCommentButton_0").performClick()
+    composeTestRule.onNodeWithTag("EditCommentTextField_0").assertIsNotDisplayed()
+  }
+
+  @Test
   fun saveClickCallsNavActions() {
     // Ensure the button is enabled
     composeTestRule.onNodeWithTag("EditTitle textField").performTextInput("title")
