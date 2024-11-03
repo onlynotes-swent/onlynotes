@@ -65,6 +65,7 @@ class FlashcardRepositoryFirestoreTest {
     `when`(mockCollectionReference.document()).thenReturn(mockDocumentReference)
     `when`(mockCollectionReference.whereEqualTo("userId", flashcard.userId)).thenReturn(mockQuery)
     `when`(mockCollectionReference.get()).thenReturn(mockQueryTask)
+    `when`(mockQuerySnapshot.documents).thenReturn(listOf())
 
     // Mock the behavior of the QuerySnapshot task
     `when`(mockQuery.get()).thenReturn(mockQueryTask)
@@ -151,9 +152,6 @@ class FlashcardRepositoryFirestoreTest {
   fun getFlashcards_callsDocuments() {
     // Ensure that mockQuerySnapshot is properly initialized and mocked
     `when`(mockCollectionReference.get()).thenReturn(Tasks.forResult(mockQuerySnapshot))
-
-    // Ensure the QuerySnapshot returns a list of mock DocumentSnapshots
-    `when`(mockQuerySnapshot.documents).thenReturn(listOf())
 
     // Call the method under test
     flashcardRepositoryFirestore.getFlashcards(
@@ -256,15 +254,6 @@ class FlashcardRepositoryFirestoreTest {
     `when`(mockCollectionReference.whereEqualTo(anyString(), any()))
         .thenReturn(mockCollectionReference) // return the mock collection reference itself
 
-    // Create a mock Task that would represent the get() operation
-    val mockQueryTask: Task<QuerySnapshot> = Tasks.forResult(mockQuerySnapshot)
-
-    // Set up the get() method to return the mocked Task
-    `when`(mockCollectionReference.get()).thenReturn(mockQueryTask)
-
-    // Mock the query snapshot to return an empty list for documents
-    `when`(mockQuerySnapshot.documents).thenReturn(listOf())
-
     // Call the method under test
     flashcardRepositoryFirestore.getFlashcardsByFolder(
         flashcard.folderId,
@@ -319,6 +308,24 @@ class FlashcardRepositoryFirestoreTest {
         flashcard.folderId,
         onSuccess = { fail("Success callback should not be called") },
         onFailure = { error -> assert(error.message == "Test exception") })
+  }
+
+  @Test
+  fun getFlashcardsByNote_callsDocuments() {
+    // mock whereEqualTo and get() method to return a mock Task<QuerySnapshot>
+    `when`(mockCollectionReference.whereEqualTo(anyString(), any()))
+        .thenReturn(mockCollectionReference) // return the mock collection reference itself
+
+    // Call the method under test
+    flashcardRepositoryFirestore.getFlashcardsByNote(
+        flashcard.noteId,
+        onSuccess = {
+          // Do nothing; we just want to verify that the 'documents' field was accessed
+        },
+        onFailure = { fail("Failure callback should not be called") })
+
+    // Verify that the 'get()' method was called
+    verify(timeout(100)) { mockDocumentReference.get() }
   }
 
   @Test
