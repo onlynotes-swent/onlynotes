@@ -63,9 +63,10 @@ class FlashcardRepositoryFirestoreTest {
     `when`(mockFirestore.collection(any())).thenReturn(mockCollectionReference)
     `when`(mockCollectionReference.document(any())).thenReturn(mockDocumentReference)
     `when`(mockCollectionReference.document()).thenReturn(mockDocumentReference)
-    `when`(mockCollectionReference.whereEqualTo("userId", flashcard.userId)).thenReturn(mockQuery)
+    // Set up whereEqualTo to return the mock Query
+    `when`(mockCollectionReference.whereEqualTo(anyString(), any())).thenReturn(mockQuery)
     `when`(mockCollectionReference.get()).thenReturn(mockQueryTask)
-    `when`(mockQuerySnapshot.documents).thenReturn(listOf())
+    `when`(mockQuerySnapshot.documents).thenReturn(listOf(mockDocumentSnapshot))
 
     // Mock the behavior of the QuerySnapshot task
     `when`(mockQuery.get()).thenReturn(mockQueryTask)
@@ -142,7 +143,6 @@ class FlashcardRepositoryFirestoreTest {
 
   @Test
   fun getNewUid() {
-    `when`(mockCollectionReference.document()).thenReturn(mockDocumentReference)
     `when`(mockDocumentReference.id).thenReturn(flashcard.id)
     val uid = flashcardRepositoryFirestore.getNewUid()
     assert(uid == flashcard.id)
@@ -168,9 +168,6 @@ class FlashcardRepositoryFirestoreTest {
 
   @Test
   fun getFlashcards_success() {
-    // Mock the QuerySnapshot to return a list containing the mock DocumentSnapshot
-    `when`(mockQuerySnapshot.documents).thenReturn(listOf(mockDocumentSnapshot))
-
     var flashcardTest: Flashcard? = null
     flashcardRepositoryFirestore.getFlashcards(
         flashcard.userId,
@@ -268,20 +265,6 @@ class FlashcardRepositoryFirestoreTest {
 
   @Test
   fun getFlashcardsByFolder_success() {
-    // Create a mock Query to represent the result of whereEqualTo
-    val mockQuery: Query = mock(Query::class.java)
-
-    // Set up whereEqualTo to return the mock Query
-    `when`(mockCollectionReference.whereEqualTo(anyString(), any())).thenReturn(mockQuery)
-
-    // Create a mock Task that returns a successful QuerySnapshot
-    val mockQueryTask: Task<QuerySnapshot> = Tasks.forResult(mockQuerySnapshot)
-    `when`(mockQuery.get()).thenReturn(mockQueryTask)
-
-    // Mock the documents in the QuerySnapshot
-    `when`(mockQuerySnapshot.documents).thenReturn(listOf(mockDocumentSnapshot))
-    `when`(mockDocumentSnapshot.getString("folderId")).thenReturn(flashcard.folderId)
-
     flashcardRepositoryFirestore.getFlashcardsByFolder(
         flashcard.folderId,
         onSuccess = { flashcards ->
@@ -293,12 +276,6 @@ class FlashcardRepositoryFirestoreTest {
 
   @Test
   fun getFlashcardsByFolder_failure() {
-    // Create a mock Query to represent the result of whereEqualTo
-    val mockQuery: Query = mock(Query::class.java)
-
-    // Set up whereEqualTo to return the mock Query
-    `when`(mockCollectionReference.whereEqualTo(anyString(), any())).thenReturn(mockQuery)
-
     // Create a mock Task that returns an exception
     val exception = Exception("Test exception")
     val mockQueryTask: Task<QuerySnapshot> = Tasks.forException(exception)
@@ -326,6 +303,30 @@ class FlashcardRepositoryFirestoreTest {
 
     // Verify that the 'get()' method was called
     verify(timeout(100)) { mockDocumentReference.get() }
+  }
+
+  @Test
+  fun getFlashcardsByNote_success() {
+    flashcardRepositoryFirestore.getFlashcardsByNote(
+        flashcard.noteId,
+        onSuccess = { flashcards ->
+          assert(flashcards.isNotEmpty())
+          assert(flashcards[0].noteId == flashcard.noteId)
+        },
+        onFailure = { fail("Failure callback should not be called") })
+  }
+
+  @Test
+  fun getFlashcardsByNote_failure() {
+    // Create a mock Task that returns an exception
+    val exception = Exception("Test exception")
+    val mockQueryTask: Task<QuerySnapshot> = Tasks.forException(exception)
+    `when`(mockQuery.get()).thenReturn(mockQueryTask)
+
+    flashcardRepositoryFirestore.getFlashcardsByNote(
+        flashcard.noteId,
+        onSuccess = { fail("Success callback should not be called") },
+        onFailure = { error -> assert(error.message == "Test exception") })
   }
 
   @Test
