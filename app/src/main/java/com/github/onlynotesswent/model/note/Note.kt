@@ -14,9 +14,9 @@ data class Note(
     val image: Bitmap
 )
 
-enum class Type {
-  JPEG,
-  PNG,
-  PDF,
-  NORMAL_TEXT
+enum class Type(val fileExtension: String) {
+  JPEG(".jpg"),
+  PNG(".png"),
+  PDF(".pdf"),
+  TEXT(".md"),
 }
