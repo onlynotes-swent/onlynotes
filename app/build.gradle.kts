@@ -142,8 +142,9 @@ dependencies {
     implementation(libs.firebase.ui.auth)
     implementation(libs.firebase.auth.ktx)
     implementation(libs.firebase.auth)
-    // Import the BoM for the Firebase platform
-    implementation(libs.firebase.bom)
+    // Import the BoM for the Firebase platform TODO implement for better version managing, but need
+    //  Todo to update google sign in
+    //implementation(libs.firebase.bom)
     // Add the dependency for the Cloud Storage library
     // When using the BoM, you don't specify versions in Firebase library dependencies
     implementation(libs.firebase.storage)
