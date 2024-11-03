@@ -23,6 +23,10 @@ class FlashcardViewModel(private val repository: FlashcardRepository) : ViewMode
   private val _folderFlashcards = MutableStateFlow<List<Flashcard>>(emptyList())
   val folderFlashcards: StateFlow<List<Flashcard>> = _folderFlashcards.asStateFlow()
 
+  // The flashcards in the selected note
+  private val _noteFlashcards = MutableStateFlow<List<Flashcard>>(emptyList())
+  val noteFlashcards: StateFlow<List<Flashcard>> = _noteFlashcards.asStateFlow()
+
   /** Initializes the FlashcardViewModel and the repository. */
   // TODO: Once we change user uid to firebase auth uid, we can call getFlashcards with the uid for
   // the success callback
@@ -83,6 +87,15 @@ class FlashcardViewModel(private val repository: FlashcardRepository) : ViewMode
    */
   fun getFlashcardsByFolder(folderId: String) {
     repository.getFlashcardsByFolder(folderId, { _folderFlashcards.value = it }, {})
+  }
+
+  /**
+   * Retrieves all flashcards for the given note.
+   *
+   * @param noteId The identifier of the note.
+   */
+  fun getFlashcardsByNote(noteId: String) {
+    repository.getFlashcardsByNote(noteId, { _noteFlashcards.value = it }, {})
   }
 
   /**

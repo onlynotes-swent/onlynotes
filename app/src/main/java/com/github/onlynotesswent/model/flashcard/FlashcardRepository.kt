@@ -53,6 +53,20 @@ interface FlashcardRepository {
   )
 
   /**
+   * Retrieves all flashcards for the given note.
+   *
+   * @param noteId The identifier of the note.
+   * @param onSuccess The callback to be invoked when the flashcards are successfully retrieved.
+   * @param onFailure The callback to be invoked if an error occurs.
+   * @return all flashcards for the given note.
+   */
+  fun getFlashcardsByNote(
+      noteId: String,
+      onSuccess: (List<Flashcard>) -> Unit,
+      onFailure: (Exception) -> Unit
+  )
+
+  /**
    * Adds the given flashcard.
    *
    * @param flashcard The flashcard to add.
