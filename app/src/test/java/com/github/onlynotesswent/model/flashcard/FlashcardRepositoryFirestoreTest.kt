@@ -12,6 +12,8 @@ import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.QuerySnapshot
+import junit.framework.TestCase.assertEquals
+import junit.framework.TestCase.assertNotNull
 import junit.framework.TestCase.fail
 import org.junit.Before
 import org.junit.Test
@@ -30,11 +32,14 @@ import org.robolectric.Shadows.shadowOf
 @RunWith(RobolectricTestRunner::class)
 class FlashcardRepositoryFirestoreTest {
   @Mock private lateinit var mockFirestore: FirebaseFirestore
-  @Mock private lateinit var mockDocumentReference: DocumentReference
   @Mock private lateinit var mockCollectionReference: CollectionReference
+  @Mock private lateinit var mockDocumentReference: DocumentReference
   @Mock private lateinit var mockDocumentSnapshot: DocumentSnapshot
-  @Mock private lateinit var mockToDoQuerySnapshot: QuerySnapshot
   @Mock private lateinit var mockQuery: Query
+  @Mock private lateinit var mockQuerySnapshot: QuerySnapshot
+  @Mock private lateinit var mockQueryTask: Task<QuerySnapshot>
+  @Mock private lateinit var mockResolveTask: Task<Void>
+  @Mock private lateinit var mockDocumentTask: Task<DocumentSnapshot>
 
   private lateinit var flashcardRepositoryFirestore: FlashcardRepositoryFirestore
 
@@ -54,9 +59,53 @@ class FlashcardRepositoryFirestoreTest {
 
     flashcardRepositoryFirestore = FlashcardRepositoryFirestore(mockFirestore)
 
+    // Mock the behavior of the Firestore database
     `when`(mockFirestore.collection(any())).thenReturn(mockCollectionReference)
     `when`(mockCollectionReference.document(any())).thenReturn(mockDocumentReference)
-    `when`(mockQuery.get()).thenReturn(Tasks.forResult(mockToDoQuerySnapshot))
+    `when`(mockCollectionReference.document()).thenReturn(mockDocumentReference)
+    `when`(mockCollectionReference.whereEqualTo("userId", flashcard.userId)).thenReturn(mockQuery)
+    `when`(mockCollectionReference.get()).thenReturn(mockQueryTask)
+
+    // Mock the behavior of the QuerySnapshot task
+    `when`(mockQuery.get()).thenReturn(mockQueryTask)
+    `when`(mockQueryTask.addOnSuccessListener(any())).thenAnswer { invocation ->
+      val listener =
+          invocation.arguments[0] as com.google.android.gms.tasks.OnSuccessListener<QuerySnapshot>
+      // Simulate a result being passed to the listener
+      listener.onSuccess(mockQuerySnapshot)
+      mockQueryTask
+    }
+    `when`(mockQueryTask.addOnFailureListener(any())).thenReturn(mockQueryTask)
+
+    // Mock the behavior of the DocumentReference set operation
+    `when`(mockDocumentReference.set(any())).thenReturn(mockResolveTask)
+    `when`(mockResolveTask.addOnSuccessListener(any())).thenAnswer { invocation ->
+      val listener = invocation.arguments[0] as com.google.android.gms.tasks.OnSuccessListener<Void>
+      listener.onSuccess(null)
+      mockResolveTask
+    }
+    `when`(mockResolveTask.addOnFailureListener(any())).thenReturn(mockResolveTask)
+
+    // Mock the behavior of the DocumentReference get operation
+    `when`(mockDocumentReference.get()).thenReturn(mockDocumentTask)
+    `when`(mockDocumentTask.addOnSuccessListener(any())).thenAnswer { invocation ->
+      val listener =
+          invocation.arguments[0]
+              as com.google.android.gms.tasks.OnSuccessListener<DocumentSnapshot>
+      listener.onSuccess(mockDocumentSnapshot)
+      mockDocumentTask
+    }
+    `when`(mockDocumentTask.addOnFailureListener(any())).thenReturn(mockDocumentTask)
+
+    // Mock the DocumentSnapshot to return expected fields for a Flashcard
+    `when`(mockDocumentSnapshot.exists()).thenReturn(true)
+    `when`(mockDocumentSnapshot.id).thenReturn(flashcard.id)
+    `when`(mockDocumentSnapshot.getString("front")).thenReturn(flashcard.front)
+    `when`(mockDocumentSnapshot.getString("back")).thenReturn(flashcard.back)
+    `when`(mockDocumentSnapshot.getTimestamp("nextReview")).thenReturn(flashcard.nextReview)
+    `when`(mockDocumentSnapshot.getString("userId")).thenReturn(flashcard.userId)
+    `when`(mockDocumentSnapshot.getString("folderId")).thenReturn(flashcard.folderId)
+    `when`(mockDocumentSnapshot.getString("noteId")).thenReturn(flashcard.noteId)
   }
 
   @Test
@@ -100,11 +149,11 @@ class FlashcardRepositoryFirestoreTest {
 
   @Test
   fun getFlashcards_callsDocuments() {
-    // Ensure that mockToDoQuerySnapshot is properly initialized and mocked
-    `when`(mockCollectionReference.get()).thenReturn(Tasks.forResult(mockToDoQuerySnapshot))
+    // Ensure that mockQuerySnapshot is properly initialized and mocked
+    `when`(mockCollectionReference.get()).thenReturn(Tasks.forResult(mockQuerySnapshot))
 
     // Ensure the QuerySnapshot returns a list of mock DocumentSnapshots
-    `when`(mockToDoQuerySnapshot.documents).thenReturn(listOf())
+    `when`(mockQuerySnapshot.documents).thenReturn(listOf())
 
     // Call the method under test
     flashcardRepositoryFirestore.getFlashcards(
@@ -116,39 +165,41 @@ class FlashcardRepositoryFirestoreTest {
         onFailure = { fail("Failure callback should not be called") })
 
     // Verify that the 'documents' field was accessed
-    verify(timeout(100)) { (mockToDoQuerySnapshot).documents }
+    verify(timeout(100)) { (mockQuerySnapshot).documents }
   }
 
   @Test
   fun getFlashcards_success() {
-    // Create mock QuerySnapshot with mock documents
-    `when`(mockToDoQuerySnapshot.documents).thenReturn(listOf(mockDocumentSnapshot))
-    `when`(mockDocumentSnapshot.getString("userId")).thenReturn(flashcard.userId)
+    // Mock the QuerySnapshot to return a list containing the mock DocumentSnapshot
+    `when`(mockQuerySnapshot.documents).thenReturn(listOf(mockDocumentSnapshot))
 
-    // Mock the successful task result with the mock QuerySnapshot
-    val mockTask: Task<QuerySnapshot> = Tasks.forResult(mockToDoQuerySnapshot)
-    `when`(mockCollectionReference.get()).thenReturn(mockTask)
-
+    var flashcardTest: Flashcard? = null
     flashcardRepositoryFirestore.getFlashcards(
         flashcard.userId,
-        onSuccess = { flashcards ->
-          assert(flashcards.isNotEmpty())
-          assert(flashcards[0].userId == flashcard.userId)
-        },
+        onSuccess = { flashcard -> flashcardTest = flashcard.firstOrNull() },
         onFailure = { fail("Failure callback should not be called") })
+
+    // Assertions to verify that the correct flashcard is returned
+    assertNotNull(flashcardTest)
+    assertEquals(flashcard, flashcardTest)
   }
 
   @Test
   fun getFlashcards_failure() {
-    // Create a failed task with an exception
-    val exception = Exception("Test exception")
-    val mockTask: Task<QuerySnapshot> = Tasks.forException(exception)
-    `when`(mockCollectionReference.get()).thenReturn(mockTask)
-
+    // Mock exception occurring on query
+    `when`(mockQueryTask.addOnSuccessListener(any())).thenReturn(mockQueryTask)
+    `when`(mockQueryTask.addOnFailureListener(any())).thenAnswer { invocation ->
+      val listener = invocation.arguments[0] as com.google.android.gms.tasks.OnFailureListener
+      listener.onFailure(Exception("Query failed"))
+      mockQueryTask
+    }
+    // Call getUserByEmail
+    var failureCalled = false
     flashcardRepositoryFirestore.getFlashcards(
         flashcard.userId,
         onSuccess = { fail("Success callback should not be called") },
-        onFailure = { error -> assert(error.message == "Test exception") })
+        onFailure = { failureCalled = true })
+    assert(failureCalled)
   }
 
   @Test
@@ -169,19 +220,50 @@ class FlashcardRepositoryFirestoreTest {
   }
 
   @Test
+  fun getFlashcardById_success() {
+    var flashcardTest: Flashcard? = null
+    flashcardRepositoryFirestore.getFlashcardById(
+        flashcard.id,
+        onSuccess = { flashcard -> flashcardTest = flashcard },
+        onFailure = { fail("Failure callback should not be called") })
+
+    // Assertions to verify that the correct flashcard is returned
+    assertNotNull(flashcardTest)
+    assertEquals(flashcard, flashcardTest)
+  }
+
+  @Test
+  fun getFlashcardById_failure() {
+    // Mock exception occurring on query
+    `when`(mockDocumentTask.addOnSuccessListener(any())).thenReturn(mockDocumentTask)
+    `when`(mockDocumentTask.addOnFailureListener(any())).thenAnswer { invocation ->
+      val listener = invocation.arguments[0] as com.google.android.gms.tasks.OnFailureListener
+      listener.onFailure(Exception("Query failed"))
+      mockDocumentTask
+    }
+    // Call getUserByEmail
+    var failureCalled = false
+    flashcardRepositoryFirestore.getFlashcardById(
+        flashcard.id,
+        onSuccess = { fail("Success callback should not be called") },
+        onFailure = { failureCalled = true })
+    assert(failureCalled)
+  }
+
+  @Test
   fun getFlashcardsByFolder_callsDocuments() {
     // mock whereEqualTo and get() method to return a mock Task<QuerySnapshot>
     `when`(mockCollectionReference.whereEqualTo(anyString(), any()))
         .thenReturn(mockCollectionReference) // return the mock collection reference itself
 
     // Create a mock Task that would represent the get() operation
-    val mockQueryTask: Task<QuerySnapshot> = Tasks.forResult(mockToDoQuerySnapshot)
+    val mockQueryTask: Task<QuerySnapshot> = Tasks.forResult(mockQuerySnapshot)
 
     // Set up the get() method to return the mocked Task
     `when`(mockCollectionReference.get()).thenReturn(mockQueryTask)
 
     // Mock the query snapshot to return an empty list for documents
-    `when`(mockToDoQuerySnapshot.documents).thenReturn(listOf())
+    `when`(mockQuerySnapshot.documents).thenReturn(listOf())
 
     // Call the method under test
     flashcardRepositoryFirestore.getFlashcardsByFolder(
@@ -204,11 +286,11 @@ class FlashcardRepositoryFirestoreTest {
     `when`(mockCollectionReference.whereEqualTo(anyString(), any())).thenReturn(mockQuery)
 
     // Create a mock Task that returns a successful QuerySnapshot
-    val mockQueryTask: Task<QuerySnapshot> = Tasks.forResult(mockToDoQuerySnapshot)
+    val mockQueryTask: Task<QuerySnapshot> = Tasks.forResult(mockQuerySnapshot)
     `when`(mockQuery.get()).thenReturn(mockQueryTask)
 
     // Mock the documents in the QuerySnapshot
-    `when`(mockToDoQuerySnapshot.documents).thenReturn(listOf(mockDocumentSnapshot))
+    `when`(mockQuerySnapshot.documents).thenReturn(listOf(mockDocumentSnapshot))
     `when`(mockDocumentSnapshot.getString("folderId")).thenReturn(flashcard.folderId)
 
     flashcardRepositoryFirestore.getFlashcardsByFolder(
