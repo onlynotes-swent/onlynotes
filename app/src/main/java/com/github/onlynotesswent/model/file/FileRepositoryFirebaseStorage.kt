@@ -110,6 +110,23 @@ class FileRepositoryFirebaseStorage(private val db: FirebaseStorage) : FileRepos
         }
   }
 
+  /**
+   * Returns the file reference based on the UID and file type, according to our storage structure:
+   * - profile_pics
+   *     - userUid.jpg or userUid.png (which stores that user's profile picture)
+   *     - ...
+   * - notes
+   *     - noteUid
+   *         - note.md (Markdown text file associated to this note)
+   *         - note.pdf (Pdf file associated to this note)
+   *     - ...
+   *
+   * @param uid The unique identifier for the file, also functions as it's name. For profile
+   *   pictures, it's the user's UID For documents/texts of a note, it's the note's UID.
+   * @param fileType The type of the file. This type determines if it is a profile picture (JPEG or
+   *   PNG) or a note file (PDF or MD).
+   * @return The file reference.
+   */
   private fun getFileRef(uid: String, fileType: Type): StorageReference {
     return when (fileType) {
       Type.PNG,

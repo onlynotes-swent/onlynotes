@@ -346,7 +346,6 @@ class FileRepositoryFirebaseStorageTest {
   fun getFileSuccess() {
     `when`(mockFileReference.getBytes(any())).thenReturn(mockGetFileTask)
 
-
     `when`(mockGetFileTask.addOnSuccessListener(any())).thenAnswer {
       val listener = it.arguments[0] as OnSuccessListener<ByteArray>
       listener.onSuccess(ByteArray(10))
