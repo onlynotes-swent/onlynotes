@@ -151,24 +151,11 @@ fun EditNoteScreen(
 
               item {
                 OutlinedTextField(
-                    value =
-                        if (note?.type == Note.Type.NORMAL_TEXT) "Typed note"
-                        else note?.type?.name ?: "Typed note",
-                    onValueChange = {},
-                    readOnly = true,
-                    label = { Text("Note Type") },
-                    modifier = Modifier.fillMaxWidth().testTag("EditType textField"))
-              }
-              if (note?.type == Note.Type.NORMAL_TEXT) {
-                item {
-                  OutlinedTextField(
-                      value = updatedNoteText,
-                      onValueChange = { updatedNoteText = it },
-                      label = { Text("Note Content") },
-                      placeholder = { Text("Enter your note here...") },
-                      modifier =
-                          Modifier.fillMaxWidth().height(400.dp).testTag("EditNote textField"))
-                }
+                    value = updatedNoteText,
+                    onValueChange = { updatedNoteText = it },
+                    label = { Text("Note Content") },
+                    placeholder = { Text("Enter your note here...") },
+                    modifier = Modifier.fillMaxWidth().height(400.dp).testTag("EditNote textField"))
               }
 
               item {
@@ -178,7 +165,6 @@ fun EditNoteScreen(
                       noteViewModel.updateNote(
                           Note(
                               id = note?.id ?: "1",
-                              type = note?.type ?: Note.Type.NORMAL_TEXT,
                               title = updatedNoteTitle,
                               content = updatedNoteText,
                               date = Timestamp.now(), // Use current timestamp

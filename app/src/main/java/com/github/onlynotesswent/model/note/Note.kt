@@ -5,7 +5,6 @@ import com.google.firebase.Timestamp
 
 data class Note(
     val id: String,
-    val type: Type,
     val title: String,
     val content: String,
     val date: Timestamp,
@@ -42,13 +41,6 @@ data class Note(
         else -> "$this (not implemented)" // keep for maintainability
       }
     }
-  }
-
-  enum class Type(val fileExtension: String) {
-    JPEG(".jpg"),
-    PNG(".png"),
-    PDF(".pdf"),
-    NORMAL_TEXT(".md")
   }
 
   /**

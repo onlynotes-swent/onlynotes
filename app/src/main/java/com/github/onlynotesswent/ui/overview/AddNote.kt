@@ -159,39 +159,29 @@ fun AddNoteScreen(
 
               Spacer(modifier = Modifier.height(10.dp))
 
+              val scanNoteText = "Scan Note"
+              val createNoteText = "Create Note"
               OptionDropDownMenu(
                   value = template,
                   expanded = expandedTemplate,
                   buttonTag = "templateButton",
                   menuTag = "templateMenu",
                   onExpandedChange = { expandedTemplate = it },
-                  items = listOf("Scan Note", "Create Note", "Upload Note"),
+                  items = listOf(scanNoteText, createNoteText),
                   onItemClick = { template = it })
 
               Spacer(modifier = Modifier.height(70.dp))
 
               Button(
                   onClick = {
-                    var type = Note.Type.NORMAL_TEXT
-                    when (template) {
-                      "Scan Note" -> {
-                        // call scan image API or functions. Once scanned, add the note to database
-                        scanner.scan()
-                        type = Note.Type.PDF
-                      }
-                      "Create Note" -> {
-                        type = Note.Type.NORMAL_TEXT
-                      }
-                      "Upload Note" -> {
-                        // upload image implementation here
-                        type = Note.Type.JPEG
-                      }
+                    if (template == scanNoteText) {
+                      // call scan image API or functions. Once scanned, add the note to database
+                      scanner.scan()
                     }
                     // provisional note, we will have to change this later
                     val note =
                         Note(
                             id = noteViewModel.getNewUid(),
-                            type = type,
                             title = title,
                             content = "",
                             date = Timestamp.now(),
@@ -202,7 +192,7 @@ fun AddNoteScreen(
                     // create the note and add it to database
                     noteViewModel.addNote(note, userViewModel.currentUser.value!!.uid)
 
-                    if (type == Note.Type.NORMAL_TEXT) {
+                    if (template == createNoteText) {
                       noteViewModel.selectedNote(note)
                       navigationActions.navigateTo(Screen.EDIT_NOTE)
                     } else {

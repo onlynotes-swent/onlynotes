@@ -1,7 +1,6 @@
 package com.github.onlynotesswent.model.file
 
 import android.net.Uri
-import com.github.onlynotesswent.model.note.Note.Type
 import java.io.File
 
 interface FileRepository {
@@ -27,7 +26,7 @@ interface FileRepository {
   fun uploadFile(
       uid: String,
       fileUri: Uri,
-      fileType: Type,
+      fileType: FileType,
       onSuccess: () -> Unit,
       onFailure: (Exception) -> Unit
   )
@@ -45,7 +44,7 @@ interface FileRepository {
    */
   fun downloadFile(
       uid: String,
-      fileType: Type,
+      fileType: FileType,
       cacheDir: File,
       onSuccess: (File) -> Unit,
       onFailure: (Exception) -> Unit
@@ -61,7 +60,12 @@ interface FileRepository {
    * @param onSuccess The function to call when the deletion is successful.
    * @param onFailure The function to call when the deletion fails.
    */
-  fun deleteFile(uid: String, fileType: Type, onSuccess: () -> Unit, onFailure: (Exception) -> Unit)
+  fun deleteFile(
+      uid: String,
+      fileType: FileType,
+      onSuccess: () -> Unit,
+      onFailure: (Exception) -> Unit
+  )
 
   /**
    * Updates a file in Firebase Storage.
@@ -77,7 +81,7 @@ interface FileRepository {
   fun updateFile(
       uid: String,
       fileUri: Uri,
-      fileType: Type,
+      fileType: FileType,
       onSuccess: () -> Unit,
       onFailure: (Exception) -> Unit
   )
@@ -94,7 +98,7 @@ interface FileRepository {
    */
   fun getFile(
       uid: String,
-      fileType: Type,
+      fileType: FileType,
       onSuccess: (ByteArray) -> Unit,
       onFailure: (Exception) -> Unit
   )
