@@ -204,8 +204,7 @@ fun EditNoteScreen(
                     onValueChange = { updatedNoteText = it },
                     label = { Text("Note Content") },
                     placeholder = { Text("Enter your note here...") },
-                    modifier =
-                        Modifier.fillMaxWidth().height(400.dp).testTag("EditNote textField"),
+                    modifier = Modifier.fillMaxWidth().height(400.dp).testTag("EditNote textField"),
                     colors =
                         TextFieldDefaults.outlinedTextFieldColors(
                             focusedBorderColor = MaterialTheme.colorScheme.primary,
@@ -245,9 +244,9 @@ fun EditNoteScreen(
 
               Button(
                   colors =
-                  ButtonDefaults.buttonColors(
-                      containerColor = MaterialTheme.colorScheme.background,
-                      contentColor = MaterialTheme.colorScheme.error),
+                      ButtonDefaults.buttonColors(
+                          containerColor = MaterialTheme.colorScheme.background,
+                          contentColor = MaterialTheme.colorScheme.error),
                   border = BorderStroke(1.dp, MaterialTheme.colorScheme.error),
                   onClick = {
                     noteViewModel.deleteNoteById(
