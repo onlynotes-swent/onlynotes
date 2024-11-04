@@ -10,5 +10,6 @@ package com.github.onlynotesswent.model.folder
 data class Folder (
     val id: String,
     val name: String,
-    val userId: String
+    val userId: String,
+    val parentFolderId: String? = null   // if note not assigned to a folder, folderId is null
 )

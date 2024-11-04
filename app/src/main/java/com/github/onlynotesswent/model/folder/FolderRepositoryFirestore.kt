@@ -97,7 +97,25 @@ class FolderRepositoryFirestore(private val db: FirebaseFirestore) : FolderRepos
         }
   }
 
-  /**
+    override fun getFoldersByParentFolderId(
+        parentFolderId: String,
+        onSuccess: (List<Folder>) -> Unit,
+        onFailure: (Exception) -> Unit
+    ) {
+        db.collection(collectionPath).get().addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                val userFolders =
+                    task.result.documents
+                        .mapNotNull { document -> documentSnapshotToFolder(document) }
+                        .filter { it.parentFolderId == parentFolderId }
+                onSuccess(userFolders)
+            } else {
+                task.exception?.let { onFailure(it) }
+            }
+        }
+    }
+
+    /**
    * Converts a DocumentSnapshot to a Folder object.
    *
    * @param document The DocumentSnapshot to convert.
