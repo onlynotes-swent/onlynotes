@@ -226,7 +226,7 @@ fun EditNoteScreen(
                     Text("Add Comment")
                   }
 
-              updatedComments.commentsList.forEachIndexed { index, comment ->
+              updatedComments.commentsList.forEachIndexed { _, comment ->
                 val labelText = remember { mutableStateOf("Loading...") }
                 LaunchedEffect(comment.userId) {
                   userViewModel.getUserById(
