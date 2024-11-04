@@ -10,10 +10,10 @@ import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 
 class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepository {
+  private val commentDelimiter: String = '\u001F'.toString()
 
   private data class FirebaseNote(
       val id: String,
-      val type: Note.Type,
       val title: String,
       val content: String,
       val date: Timestamp,
@@ -23,8 +23,34 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
       val className: String,
       val classYear: Int,
       val publicPath: String,
-      val image: String
+      val image: String,
+      val commentsList: List<String>
   )
+  /**
+   * Converts a list of Comment objects to a list of snapshot strings for Firestore storage.
+   *
+   * @param commentsList The list of Comment objects to be converted.
+   * @return A list of snapshot strings where each string represents a Comment, formatted as
+   *   "commentId<delimiter>userId<delimiter>content".
+   */
+  private fun convertCommentsList(commentsList: List<Note.Comment>): List<String> {
+    return commentsList.map {
+      it.commentId + commentDelimiter + it.userId + commentDelimiter + it.content
+    }
+  }
+  /**
+   * Converts a list of snapshot strings to a list of Comment objects.
+   *
+   * @param snapshotList The list of snapshot strings, where each string represents a Comment in the
+   *   format "commentId<delimiter>userId<delimiter>content".
+   * @return A list of Comment objects created from the parsed snapshot strings.
+   */
+  private fun commentStringToCommentClass(commentSnapshotList: List<String>): List<Note.Comment> {
+    return commentSnapshotList.map {
+      val commentValues = it.split(commentDelimiter)
+      Note.Comment(commentValues[0], userId = commentValues[1], content = commentValues[2])
+    }
+  }
 
   /**
    * Converts a note into a FirebaseNote (a note that is compatible with Firebase).
@@ -35,7 +61,6 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
   private fun convertNotes(note: Note): FirebaseNote {
     return FirebaseNote(
         note.id,
-        note.type,
         note.title,
         note.content,
         note.date,
@@ -45,7 +70,8 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
         note.noteClass.className,
         note.noteClass.classYear,
         note.noteClass.publicPath,
-        "null")
+        "null",
+        convertCommentsList(note.comments.commentsList))
   }
 
   private val collectionPath = "notes"
@@ -177,7 +203,6 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
   fun documentSnapshotToNote(document: DocumentSnapshot): Note? {
     return try {
       val id = document.id
-      val type = Note.Type.valueOf(document.getString("type") ?: return null)
       val title = document.getString("title") ?: return null
       val content = document.getString("content") ?: return null
       val date = document.getTimestamp("date") ?: return null
@@ -190,19 +215,21 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
       val classYear = document.getLong("classYear")?.toInt() ?: return null
       val classPath = document.getString("publicPath") ?: return null
       val image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)
+      val comments =
+          commentStringToCommentClass(document.get("commentsList") as? List<String> ?: emptyList())
       // Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888) is the default bitMap, to be changed
       // when we implement images by URL
 
       Note(
           id = id,
-          type = type,
           title = title,
           content = content,
           date = date,
           visibility = visibility,
           userId = userId,
           noteClass = Note.Class(classCode, className, classYear, classPath),
-          image = image)
+          image = image,
+          comments = Note.CommentCollection(comments))
     } catch (e: Exception) {
       Log.e("NoteRepositoryFirestore", "Error converting document to Note", e)
       null

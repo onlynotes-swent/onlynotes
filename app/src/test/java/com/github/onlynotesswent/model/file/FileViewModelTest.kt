@@ -2,7 +2,6 @@ package com.github.onlynotesswent.model.file
 
 import android.content.Context
 import android.net.Uri
-import com.github.onlynotesswent.model.note.Note.Type
 import java.io.File
 import org.junit.Before
 import org.junit.Test
@@ -34,16 +33,16 @@ class FileViewModelTest {
   fun uploadFileCallsRepository() {
     val fileUri = Uri.parse("file://dummy")
     val uid = "testUid"
-    val fileType = Type.PNG
+    val fileType = FileType.PROFILE_PIC_JPEG
 
-    fileViewModel.uploadNoteFile(uid, fileUri, fileType)
+    fileViewModel.uploadFile(uid, fileUri, fileType)
     verify(mockFileRepository).uploadFile(eq(uid), eq(fileUri), eq(fileType), any(), any())
   }
 
   @Test
   fun downloadFileCallsRepository() {
     val uid = "testUid"
-    val fileType = Type.PNG
+    val fileType = FileType.PROFILE_PIC_JPEG
     val cacheDir = File("cacheDir")
 
     `when`(mockContext.cacheDir).thenReturn(cacheDir)
@@ -55,7 +54,7 @@ class FileViewModelTest {
   @Test
   fun deleteFileCallsRepository() {
     val uid = "testUid"
-    val fileType = Type.PNG
+    val fileType = FileType.PROFILE_PIC_JPEG
 
     fileViewModel.deleteFile(uid, fileType)
     verify(mockFileRepository).deleteFile(eq(uid), eq(fileType), any(), any())
@@ -65,7 +64,7 @@ class FileViewModelTest {
   fun updateFileCallsRepository() {
     val fileUri = Uri.parse("file://dummy")
     val uid = "testUid"
-    val fileType = Type.PNG
+    val fileType = FileType.PROFILE_PIC_JPEG
 
     fileViewModel.updateFile(uid, fileUri, fileType)
     verify(mockFileRepository).updateFile(eq(uid), eq(fileUri), eq(fileType), any(), any())
@@ -74,7 +73,7 @@ class FileViewModelTest {
   @Test
   fun getFileCallsRepository() {
     val uid = "testUid"
-    val fileType = Type.PNG
+    val fileType = FileType.PROFILE_PIC_JPEG
 
     fileViewModel.getFile(uid, fileType, {}, {})
     verify(mockFileRepository).getFile(eq(uid), eq(fileType), any(), any())

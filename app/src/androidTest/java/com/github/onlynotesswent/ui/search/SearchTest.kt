@@ -27,7 +27,6 @@ class SearchScreenTest {
   private val testNote1 =
       Note(
           id = "",
-          type = Note.Type.NORMAL_TEXT,
           title = "Note 1",
           content = "",
           date = Timestamp.now(),
@@ -38,7 +37,6 @@ class SearchScreenTest {
   private val testNote2 =
       Note(
           id = "1",
-          type = Note.Type.NORMAL_TEXT,
           title = "Note 2",
           content = "",
           date = Timestamp.now(),
