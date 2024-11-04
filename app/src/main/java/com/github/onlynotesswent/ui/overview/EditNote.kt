@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -23,7 +22,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -244,6 +242,7 @@ fun EditNoteScreen(
                       Text("Add Comment")
                     }
               }
+              /*
 
               items(updatedComments.commentsList.size) { index ->
                 val comment = updatedComments.commentsList[index]
@@ -284,7 +283,7 @@ fun EditNoteScreen(
                                 tint = Color.Red)
                           }
                     }
-              }
+              }*/
             }
       })
 }
