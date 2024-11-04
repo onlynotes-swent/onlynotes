@@ -1,6 +1,7 @@
 package com.github.onlynotesswent.ui.user
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.Image
@@ -73,6 +74,7 @@ fun EditProfileScreen(
   val userNameError = remember { mutableStateOf(false) }
   val saveEnabled = remember { mutableStateOf(true) }
   val isProfilePictureUpToDate = remember { mutableStateOf(false) }
+  val hasProfilePictureBeenChanged = remember { mutableStateOf(false) }
   val context = LocalContext.current
 
   Scaffold(
@@ -109,7 +111,10 @@ fun EditProfileScreen(
                   userViewModel,
                   profilePicture,
                   fileViewModel,
-                  isProfilePictureUpToDate)
+                  isProfilePictureUpToDate,
+                  hasProfilePictureBeenChanged,
+                  context
+              )
 
               // Text Fields for user information
               FirstNameTextField(newFirstName)
@@ -146,10 +151,13 @@ fun EditProfileScreen(
                           user = updatedUser,
                           onSuccess = {
                             navigationActions.goBack()
-                            fileViewModel.uploadNoteFile(
-                                userViewModel.currentUser.value!!.uid,
-                                profilePicture.value.toUri(),
-                                Note.Type.JPEG)
+                            // Upload the profile picture  if it has been changed
+                             if(hasProfilePictureBeenChanged.value) {
+                                fileViewModel.uploadNoteFile(
+                                    userViewModel.currentUser.value!!.uid,
+                                    profilePicture.value.toUri(),
+                                    Note.Type.JPEG)
+                             }
                           },
                           onFailure = { exception ->
                             Toast.makeText(
@@ -175,31 +183,34 @@ fun ProfilePicture(
     userViewModel: UserViewModel,
     profilePicture: MutableState<String>,
     fileViewModel: FileViewModel,
-    isProfilePictureUpToDate: MutableState<Boolean>
+    isProfilePictureUpToDate: MutableState<Boolean>,
+    hasProfilePictureBeenChanged: MutableState<Boolean>,
+    context: Context
 ) {
 
   Box(modifier = Modifier.size(150.dp)) {
+     // Download the profile picture from Firebase Storage if it hasn't been downloaded yet
     if (!isProfilePictureUpToDate.value && userViewModel.currentUser.value!!.hasProfilePicture) {
       fileViewModel.downloadFile(
           userViewModel.currentUser.value!!.uid,
           Note.Type.JPEG,
-          context = LocalContext.current,
+          context =context,
           onSuccess = { file -> profilePicture.value = file.absolutePath },
           onFailure = { e -> Log.e("ProfilePicture", "Error downloading profile picture", e) })
-
       isProfilePictureUpToDate.value = true
     }
 
+    // Profile Picture Painter
     val painter =
         if (profilePicture.value.isNotBlank()) {
+            // Load the profile picture if it exists
           rememberAsyncImagePainter(profilePicture.value)
         } else {
-          Log.i(
-              "ProfilePicture",
-              "No profile picture found, isProfilePictureUpToDate: $isProfilePictureUpToDate")
+            // Load the default profile picture if it doesn't exist
           rememberVectorPainter(Icons.Default.AccountCircle)
         }
 
+    // Profile Picture
     Image(
         painter = painter,
         contentDescription = "Profile Picture",
@@ -217,19 +228,20 @@ fun ProfilePicture(
         modifier =
             Modifier.testTag("editProfilePicture")
                 .size(40.dp) // Size of the edit icon
-                .align(Alignment.BottomEnd)
-                .offset(x = (-8).dp, y = (-8).dp) // Position on the bottom-left
+                .align(Alignment.BottomEnd)  // Position on the bottom-left corner
+                .offset(x = (-8).dp, y = (-8).dp)
                 .clip(CircleShape)
-                .background(Color.White) // Optional: background for contrast
+                .background(Color.White) // Background color
                 .clickable {
-                  // add  the image here
+                 // Edit hte image and save the URI to the profilePicture state
                   profilePictureTaker.onImageSelected = { uri ->
                     if (uri != null) {
                       profilePicture.value = uri.toString()
+                        hasProfilePictureBeenChanged.value = true
                     }
                   }
                   profilePictureTaker.pickImage()
-                }, // Trigger the onEditClick callback
+                },
         tint = Color.Gray // Icon color
         )
   }
