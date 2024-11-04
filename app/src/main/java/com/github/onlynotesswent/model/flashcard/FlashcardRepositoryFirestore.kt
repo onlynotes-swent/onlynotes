@@ -11,8 +11,8 @@ class FlashcardRepositoryFirestore(private val db: FirebaseFirestore) : Flashcar
   private val collectionPath = "flashcards"
 
   /**
-   * Converts a Firestore DocumentSnapshot to a Flashcard object.
-   * Try catch block is used to handle runtime exceptions.
+   * Converts a Firestore DocumentSnapshot to a Flashcard object. Try catch block is used to handle
+   * runtime exceptions.
    *
    * @param document The DocumentSnapshot to convert.
    * @return The converted Flashcard object. Returns null if the conversion fails.

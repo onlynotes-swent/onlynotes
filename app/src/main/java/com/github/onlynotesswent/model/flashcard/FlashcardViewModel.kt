@@ -28,8 +28,8 @@ class FlashcardViewModel(private val repository: FlashcardRepository) : ViewMode
   val noteFlashcards: StateFlow<List<Flashcard>> = _noteFlashcards.asStateFlow()
 
   /** Initializes the FlashcardViewModel and the repository. */
-  // TODO: Once we change user uid to firebase auth uid, we can call getFlashcards with the uid for
-  // the success callback
+  // TODO: Once we change user uid to firebase auth uid, we can call getFlashcardsFrom with
+  // the uid for the success callback
   init {
     repository.init(FirebaseAuth.getInstance()) {}
   }
