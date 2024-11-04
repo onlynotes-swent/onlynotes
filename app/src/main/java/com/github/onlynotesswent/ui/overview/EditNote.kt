@@ -73,11 +73,11 @@ fun EditNoteScreen(
   var visibility by remember { mutableStateOf(note?.visibility) }
   var expandedVisibility by remember { mutableStateOf(false) }
   var updatedComments by remember { mutableStateOf(note?.comments ?: Note.CommentCollection()) }
+
   fun updateOnlyNoteCommentAndDate() {
     noteViewModel.updateNote(
         Note(
             id = note?.id ?: "1",
-            type = note?.type ?: Note.Type.NORMAL_TEXT,
             title = note?.title ?: "",
             content = note?.content ?: "",
             date = Timestamp.now(), // Use current timestamp
@@ -163,21 +163,11 @@ fun EditNoteScreen(
                   modifier = Modifier.fillMaxWidth().testTag("EditClassYear textField"))
 
               OutlinedTextField(
-                  value =
-                      if (note?.type == Note.Type.NORMAL_TEXT) "Typed note"
-                      else note?.type?.name ?: "Typed note",
-                  onValueChange = {},
-                  readOnly = true,
-                  label = { Text("Note Type") },
-                  modifier = Modifier.fillMaxWidth().testTag("EditType textField"))
-              if (note?.type == Note.Type.NORMAL_TEXT) {
-                OutlinedTextField(
-                    value = updatedNoteText,
-                    onValueChange = { updatedNoteText = it },
-                    label = { Text("Note Content") },
-                    placeholder = { Text("Enter your note here...") },
-                    modifier = Modifier.fillMaxWidth().height(400.dp).testTag("EditNote textField"))
-              }
+                  value = updatedNoteText,
+                  onValueChange = { updatedNoteText = it },
+                  label = { Text("Note Content") },
+                  placeholder = { Text("Enter your note here...") },
+                  modifier = Modifier.fillMaxWidth().height(400.dp).testTag("EditNote textField"))
 
               Button(
                   enabled = updatedNoteTitle.isNotEmpty(),
@@ -185,7 +175,6 @@ fun EditNoteScreen(
                     noteViewModel.updateNote(
                         Note(
                             id = note?.id ?: "1",
-                            type = note?.type ?: Note.Type.NORMAL_TEXT,
                             title = updatedNoteTitle,
                             content = updatedNoteText,
                             date = Timestamp.now(), // Use current timestamp

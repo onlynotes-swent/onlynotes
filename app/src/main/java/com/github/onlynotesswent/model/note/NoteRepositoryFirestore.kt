@@ -14,7 +14,6 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
 
   private data class FirebaseNote(
       val id: String,
-      val type: Note.Type,
       val title: String,
       val content: String,
       val date: Timestamp,
@@ -98,7 +97,6 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
   private fun convertNotes(note: Note): FirebaseNote {
     return FirebaseNote(
         note.id,
-        note.type,
         note.title,
         note.content,
         note.date,
@@ -241,7 +239,6 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
   fun documentSnapshotToNote(document: DocumentSnapshot): Note? {
     return try {
       val id = document.id
-      val type = Note.Type.valueOf(document.getString("type") ?: return null)
       val title = document.getString("title") ?: return null
       val content = document.getString("content") ?: return null
       val date = document.getTimestamp("date") ?: return null
@@ -261,7 +258,6 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
 
       Note(
           id = id,
-          type = type,
           title = title,
           content = content,
           date = date,

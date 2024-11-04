@@ -4,10 +4,23 @@ import android.content.Context
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.github.onlynotesswent.model.note.Note.Type
 import com.google.firebase.Firebase
 import com.google.firebase.storage.storage
 import java.io.File
+
+/**
+ * Enum class for file types.
+ *
+ * PROFILE_PIC_JPEG: Profile picture in JPEG format. NOTE_PDF: PDF file for notes. NOTE_TEXT: Text
+ * file for notes, in MarkDown format.
+ *
+ * @property fileExtension The file extension for the file type.
+ */
+enum class FileType(val fileExtension: String) {
+  PROFILE_PIC_JPEG(".jpg"),
+  NOTE_PDF(".pdf"),
+  NOTE_TEXT(".md")
+}
 
 /**
  * ViewModel for managing file operations using a FileRepository.
@@ -31,7 +44,7 @@ class FileViewModel(private val repository: FileRepository) : ViewModel() {
   }
 
   /**
-   * Uploads a note file to the repository.
+   * Uploads a file to the repository.
    *
    * @param uid The unique identifier attached to the file, also functions as it's name. For profile
    *   pictures, it's the user's UID For documents/texts of a note, it's the note's UID.
@@ -39,7 +52,7 @@ class FileViewModel(private val repository: FileRepository) : ViewModel() {
    * @param fileType The type of the file. This type determines if it is a profile picture (JPEG or
    *   PNG) or a note file (PDF or MD).
    */
-  fun uploadNoteFile(uid: String, fileUri: Uri, fileType: Type) {
+  fun uploadFile(uid: String, fileUri: Uri, fileType: FileType) {
     repository.uploadFile(uid, fileUri, fileType, {}, {})
   }
 
@@ -57,7 +70,7 @@ class FileViewModel(private val repository: FileRepository) : ViewModel() {
    */
   fun downloadFile(
       uid: String,
-      fileType: Type,
+      fileType: FileType,
       context: Context,
       onSuccess: (File) -> Unit,
       onFailure: (Exception) -> Unit
@@ -73,7 +86,7 @@ class FileViewModel(private val repository: FileRepository) : ViewModel() {
    * @param fileType The type of the file. This type determines if it is a profile picture (JPEG or
    *   PNG) or a note file (PDF or MD).
    */
-  fun deleteFile(uid: String, fileType: Type) {
+  fun deleteFile(uid: String, fileType: FileType) {
     repository.deleteFile(uid, fileType, {}, {})
   }
 
@@ -86,7 +99,7 @@ class FileViewModel(private val repository: FileRepository) : ViewModel() {
    * @param fileType The type of the file. This type determines if it is a profile picture (JPEG or
    *   PNG) or a note file (PDF or MD).
    */
-  fun updateFile(uid: String, fileUri: Uri, fileType: Type) {
+  fun updateFile(uid: String, fileUri: Uri, fileType: FileType) {
     repository.updateFile(uid, fileUri, fileType, {}, {})
   }
 
@@ -103,7 +116,7 @@ class FileViewModel(private val repository: FileRepository) : ViewModel() {
    */
   fun getFile(
       uid: String,
-      fileType: Type,
+      fileType: FileType,
       onSuccess: (ByteArray) -> Unit,
       onFailure: (Exception) -> Unit
   ) {

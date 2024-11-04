@@ -42,7 +42,6 @@ class NoteRepositoryFirestoreTest {
   private val testNotePublic =
       Note(
           id = "1",
-          type = Note.Type.NORMAL_TEXT,
           title = "title",
           content = "content",
           date = Timestamp.now(),
@@ -56,7 +55,6 @@ class NoteRepositoryFirestoreTest {
   private val testNotePrivate =
       Note(
           id = "2",
-          type = Note.Type.NORMAL_TEXT,
           title = "title",
           content = "content",
           date = Timestamp.now(),
@@ -97,7 +95,6 @@ class NoteRepositoryFirestoreTest {
         .thenReturn(listOf(mockDocumentSnapshot, mockDocumentSnapshot2))
 
     `when`(mockDocumentSnapshot.id).thenReturn(testNotePublic.id)
-    `when`(mockDocumentSnapshot.getString("type")).thenReturn(testNotePublic.type.toString())
     `when`(mockDocumentSnapshot.getString("title")).thenReturn(testNotePublic.title)
     `when`(mockDocumentSnapshot.getString("content")).thenReturn(testNotePublic.content)
     `when`(mockDocumentSnapshot.getTimestamp("date")).thenReturn(testNotePublic.date)
@@ -115,7 +112,6 @@ class NoteRepositoryFirestoreTest {
     `when`(mockDocumentSnapshot.get("image")).thenReturn(testNotePublic.image)
 
     `when`(mockDocumentSnapshot2.id).thenReturn(testNotePrivate.id)
-    `when`(mockDocumentSnapshot2.getString("type")).thenReturn(testNotePrivate.type.toString())
     `when`(mockDocumentSnapshot2.getString("title")).thenReturn(testNotePrivate.title)
     `when`(mockDocumentSnapshot2.getString("content")).thenReturn(testNotePrivate.content)
     `when`(mockDocumentSnapshot2.getTimestamp("date")).thenReturn(testNotePrivate.date)
@@ -136,7 +132,6 @@ class NoteRepositoryFirestoreTest {
 
   private fun compareNotesButNotImage(note1: Note, note2: Note) {
     assert(note1.id == note2.id)
-    assert(note1.type == note2.type)
     assert(note1.title == note2.title)
     assert(note1.content == note2.content)
     assert(note1.date == note2.date)
