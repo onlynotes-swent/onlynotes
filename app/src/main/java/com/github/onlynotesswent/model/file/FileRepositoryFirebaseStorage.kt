@@ -2,7 +2,6 @@ package com.github.onlynotesswent.model.file
 
 import android.net.Uri
 import android.util.Log
-import com.github.onlynotesswent.model.note.Note.Type
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
 import java.io.File
@@ -24,7 +23,7 @@ class FileRepositoryFirebaseStorage(private val db: FirebaseStorage) : FileRepos
   override fun uploadFile(
       uid: String,
       fileUri: Uri,
-      fileType: Type,
+      fileType: FileType,
       onSuccess: () -> Unit,
       onFailure: (Exception) -> Unit
   ) {
@@ -41,7 +40,7 @@ class FileRepositoryFirebaseStorage(private val db: FirebaseStorage) : FileRepos
 
   override fun downloadFile(
       uid: String,
-      fileType: Type,
+      fileType: FileType,
       cacheDir: File,
       onSuccess: (File) -> Unit,
       onFailure: (Exception) -> Unit
@@ -65,7 +64,7 @@ class FileRepositoryFirebaseStorage(private val db: FirebaseStorage) : FileRepos
 
   override fun deleteFile(
       uid: String,
-      fileType: Type,
+      fileType: FileType,
       onSuccess: () -> Unit,
       onFailure: (Exception) -> Unit
   ) {
@@ -84,7 +83,7 @@ class FileRepositoryFirebaseStorage(private val db: FirebaseStorage) : FileRepos
   override fun updateFile(
       uid: String,
       fileUri: Uri,
-      fileType: Type,
+      fileType: FileType,
       onSuccess: () -> Unit,
       onFailure: (Exception) -> Unit
   ) {
@@ -93,7 +92,7 @@ class FileRepositoryFirebaseStorage(private val db: FirebaseStorage) : FileRepos
 
   override fun getFile(
       uid: String,
-      fileType: Type,
+      fileType: FileType,
       onSuccess: (ByteArray) -> Unit,
       onFailure: (Exception) -> Unit
   ) {
@@ -127,12 +126,11 @@ class FileRepositoryFirebaseStorage(private val db: FirebaseStorage) : FileRepos
    *   PNG) or a note file (PDF or MD).
    * @return The file reference.
    */
-  private fun getFileRef(uid: String, fileType: Type): StorageReference {
+  private fun getFileRef(uid: String, fileType: FileType): StorageReference {
     return when (fileType) {
-      Type.PNG,
-      Type.JPEG -> profilePicFolderRef.child(uid + fileType.fileExtension)
-      Type.PDF,
-      Type.NORMAL_TEXT ->
+      FileType.PROFILE_PIC_JPEG -> profilePicFolderRef.child(uid + fileType.fileExtension)
+      FileType.NOTE_PDF,
+      FileType.NOTE_TEXT ->
           notesFilesFolderRef.child(uid).child(noteFileName + fileType.fileExtension)
     }
   }
