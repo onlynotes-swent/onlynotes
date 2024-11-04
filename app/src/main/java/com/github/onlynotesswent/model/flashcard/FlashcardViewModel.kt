@@ -67,8 +67,8 @@ class FlashcardViewModel(private val repository: FlashcardRepository) : ViewMode
    *
    * @param userId The identifier of the user.
    */
-  fun getFlashcards(userId: String) {
-    repository.getFlashcards(userId, { _userFlashcards.value = it }, {})
+  fun getFlashcardsFrom(userId: String) {
+    repository.getFlashcardsFrom(userId, { _userFlashcards.value = it }, {})
   }
 
   /**
@@ -104,7 +104,7 @@ class FlashcardViewModel(private val repository: FlashcardRepository) : ViewMode
    * @param flashcard The flashcard to add.
    */
   fun addFlashcard(flashcard: Flashcard) {
-    repository.addFlashcard(flashcard, { getFlashcards(flashcard.userId) }, {})
+    repository.addFlashcard(flashcard, { getFlashcardsFrom(flashcard.userId) }, {})
   }
 
   /**
@@ -113,7 +113,7 @@ class FlashcardViewModel(private val repository: FlashcardRepository) : ViewMode
    * @param flashcard The flashcard to update.
    */
   fun updateFlashcard(flashcard: Flashcard) {
-    repository.updateFlashcard(flashcard, { getFlashcards(flashcard.userId) }, {})
+    repository.updateFlashcard(flashcard, { getFlashcardsFrom(flashcard.userId) }, {})
   }
 
   /**

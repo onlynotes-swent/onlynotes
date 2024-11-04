@@ -59,9 +59,9 @@ class FlashcardViewModelTest {
   }
 
   @Test
-  fun getFlashcardsCallsRepository() {
-    flashcardViewModel.getFlashcards(flashcard.userId)
-    verify(flashcardRepository).getFlashcards(eq(flashcard.userId), any(), any())
+  fun getFlashcardsFromCallsRepository() {
+    flashcardViewModel.getFlashcardsFrom(flashcard.userId)
+    verify(flashcardRepository).getFlashcardsFrom(eq(flashcard.userId), any(), any())
   }
 
   @Test

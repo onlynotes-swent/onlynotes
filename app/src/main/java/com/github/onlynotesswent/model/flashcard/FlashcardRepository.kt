@@ -22,7 +22,7 @@ interface FlashcardRepository {
    * @param onFailure The callback to be invoked if an error occurs.
    * @return all flashcards for the given user.
    */
-  fun getFlashcards(
+  fun getFlashcardsFrom(
       userId: String,
       onSuccess: (List<Flashcard>) -> Unit,
       onFailure: (Exception) -> Unit

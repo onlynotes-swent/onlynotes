@@ -154,7 +154,7 @@ class FlashcardRepositoryFirestoreTest {
     `when`(mockCollectionReference.get()).thenReturn(Tasks.forResult(mockQuerySnapshot))
 
     // Call the method under test
-    flashcardRepositoryFirestore.getFlashcards(
+    flashcardRepositoryFirestore.getFlashcardsFrom(
         flashcard.userId,
         onSuccess = {
 
@@ -169,7 +169,7 @@ class FlashcardRepositoryFirestoreTest {
   @Test
   fun getFlashcards_success() {
     var flashcardTest: Flashcard? = null
-    flashcardRepositoryFirestore.getFlashcards(
+    flashcardRepositoryFirestore.getFlashcardsFrom(
         flashcard.userId,
         onSuccess = { flashcard -> flashcardTest = flashcard.firstOrNull() },
         onFailure = { fail("Failure callback should not be called") })
@@ -190,7 +190,7 @@ class FlashcardRepositoryFirestoreTest {
     }
     // Call getUserByEmail
     var failureCalled = false
-    flashcardRepositoryFirestore.getFlashcards(
+    flashcardRepositoryFirestore.getFlashcardsFrom(
         flashcard.userId,
         onSuccess = { fail("Success callback should not be called") },
         onFailure = { failureCalled = true })

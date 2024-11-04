@@ -12,9 +12,10 @@ class FlashcardRepositoryFirestore(private val db: FirebaseFirestore) : Flashcar
 
   /**
    * Converts a Firestore DocumentSnapshot to a Flashcard object.
+   * Try catch block is used to handle runtime exceptions.
    *
    * @param document The DocumentSnapshot to convert.
-   * @return The converted Flashcard object.
+   * @return The converted Flashcard object. Returns null if the conversion fails.
    */
   fun documentSnapshotToFlashcard(document: DocumentSnapshot): Flashcard? {
     return try {
@@ -42,7 +43,7 @@ class FlashcardRepositoryFirestore(private val db: FirebaseFirestore) : Flashcar
     }
   }
 
-  override fun getFlashcards(
+  override fun getFlashcardsFrom(
       userId: String,
       onSuccess: (List<Flashcard>) -> Unit,
       onFailure: (Exception) -> Unit
