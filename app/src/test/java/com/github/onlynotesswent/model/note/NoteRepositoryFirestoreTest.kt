@@ -49,8 +49,10 @@ class NoteRepositoryFirestoreTest {
           visibility = Note.Visibility.PUBLIC,
           userId = "1",
           noteClass = Note.Class("CS-100", "Sample Class", 2024, "path"),
-          image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888))
-
+          image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888),
+          comments =
+              Note.CommentCollection(
+                  listOf(Note.Comment("1", "1", "bob", "1", Timestamp.now(), Timestamp.now()))))
   private val testNotePrivate =
       Note(
           id = "2",
@@ -61,7 +63,10 @@ class NoteRepositoryFirestoreTest {
           visibility = Note.Visibility.PRIVATE,
           userId = "1",
           noteClass = Note.Class("CS-100", "Sample Class", 2024, "path"),
-          image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888))
+          image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888),
+          comments =
+              Note.CommentCollection(
+                  listOf(Note.Comment("1", "1", "bob", "1", Timestamp.now(), Timestamp.now()))))
 
   @Before
   fun setUp() {
@@ -126,6 +131,7 @@ class NoteRepositoryFirestoreTest {
         .thenReturn(testNotePrivate.noteClass.publicPath)
     `when`(mockDocumentSnapshot2.getString("userId")).thenReturn(testNotePrivate.userId)
     `when`(mockDocumentSnapshot2.get("image")).thenReturn(testNotePrivate.image)
+    `when`(mockDocumentSnapshot2.get("commentsList")).thenReturn(testNotePrivate.comments)
   }
 
   private fun compareNotesButNotImage(note1: Note, note2: Note) {

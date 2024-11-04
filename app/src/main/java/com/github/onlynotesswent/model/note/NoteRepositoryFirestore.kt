@@ -76,11 +76,7 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
    *   "commentId<delimiter>userId<delimiter>content".
    */
   private fun convertCommentsList(commentsList: List<Note.Comment>): List<String> {
-    val convertedComments = mutableListOf<String>()
-    for (comment in commentsList) {
-      convertedComments.add(convertCommentToString(comment))
-    }
-    return convertedComments.toList()
+    return commentsList.map { convertCommentToString(it) }
   }
   /**
    * Converts a list of snapshot strings to a list of Comment objects.
@@ -90,11 +86,7 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
    * @return A list of Comment objects created from the parsed snapshot strings.
    */
   private fun commentStringToCommentClass(commentSnapshotList: List<String>): List<Note.Comment> {
-    val comments = mutableListOf<Note.Comment>()
-    for (commentSnapshot in commentSnapshotList) {
-      comments.add(convertCommentStringToComment(commentSnapshot))
-    }
-    return comments.toList()
+    return commentSnapshotList.map { convertCommentStringToComment(it) }
   }
 
   /**
