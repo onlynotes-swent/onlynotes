@@ -58,7 +58,7 @@ class ProfileScreenTest {
     noteViewModel = NoteViewModel(mockNoteRepository)
 
     // Mock the current route to be the user create screen
-    `when`(mockNavigationActions.currentRoute()).thenReturn(Screen.PROFILE)
+    `when`(mockNavigationActions.currentRoute()).thenReturn(Screen.USER_PROFILE)
 
     // Mock add user to initialize current user
     `when`(mockUserRepository.addUser(any(), any(), any())).thenAnswer {
@@ -84,7 +84,7 @@ class ProfileScreenTest {
 
   @Test
   fun displayAllComponents() {
-    composeTestRule.setContent { ProfileScreen(mockNavigationActions, userViewModel) }
+    composeTestRule.setContent { EditProfileScreen(mockNavigationActions, userViewModel) }
 
     composeTestRule.onNodeWithTag("ProfileScreen").assertExists()
     composeTestRule.onNodeWithTag("goBackButton").assertExists()
@@ -100,7 +100,7 @@ class ProfileScreenTest {
 
   @Test
   fun submitNavigatesToOverview() {
-    composeTestRule.setContent { ProfileScreen(mockNavigationActions, userViewModel) }
+    composeTestRule.setContent { EditProfileScreen(mockNavigationActions, userViewModel) }
 
     composeTestRule.onNodeWithTag("saveButton").performClick()
     verify(mockNavigationActions).navigateTo(TopLevelDestinations.OVERVIEW)
@@ -108,7 +108,7 @@ class ProfileScreenTest {
 
   @Test
   fun modifyProfile() {
-    composeTestRule.setContent { ProfileScreen(mockNavigationActions, userViewModel) }
+    composeTestRule.setContent { EditProfileScreen(mockNavigationActions, userViewModel) }
 
     composeTestRule.onNodeWithTag("inputUserName").performTextClearance()
     composeTestRule.onNodeWithTag("inputUserName").performTextInput("newUserName")
@@ -131,7 +131,7 @@ class ProfileScreenTest {
 
   @Test
   fun userNameFieldDisplaysError() {
-    composeTestRule.setContent { ProfileScreen(mockNavigationActions, userViewModel) }
+    composeTestRule.setContent { EditProfileScreen(mockNavigationActions, userViewModel) }
 
     composeTestRule.onNodeWithTag("inputFirstName").performTextClearance()
     composeTestRule.onNodeWithTag("inputFirstName").performTextInput("newFirstName")
@@ -148,7 +148,7 @@ class ProfileScreenTest {
 
   @Test
   fun saveButtonDisabledWhenUserNameIsEmpty() {
-    composeTestRule.setContent { ProfileScreen(mockNavigationActions, userViewModel) }
+    composeTestRule.setContent { EditProfileScreen(mockNavigationActions, userViewModel) }
 
     composeTestRule.onNodeWithTag("saveButton").assertIsEnabled()
     composeTestRule.onNodeWithTag("inputUserName").performTextClearance()

@@ -21,6 +21,9 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
   private val _currentUser = MutableStateFlow<User?>(null)
   val currentUser: StateFlow<User?> = _currentUser.asStateFlow()
 
+  private val _profileUser = MutableStateFlow<User?>(null)
+  val profileUser: StateFlow<User?> = _profileUser.asStateFlow()
+
   /** Exception thrown when a user is not logged in. */
   class UserNotLoggedInException : Exception("User Not Logged In")
 

@@ -25,7 +25,9 @@ import com.github.onlynotesswent.ui.overview.OverviewScreen
 import com.github.onlynotesswent.ui.search.SearchScreen
 import com.github.onlynotesswent.ui.theme.AppTheme
 import com.github.onlynotesswent.ui.user.CreateUserScreen
-import com.github.onlynotesswent.ui.user.ProfileScreen
+import com.github.onlynotesswent.ui.user.EditProfileScreen
+import com.github.onlynotesswent.ui.user.PublicProfileScreen
+import com.github.onlynotesswent.ui.user.UserProfileScreen
 
 class MainActivity : ComponentActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -74,10 +76,12 @@ fun OnlyNotesApp(scanner: Scanner) {
     }
 
     navigation(
-        startDestination = Screen.PROFILE,
+        startDestination = Screen.USER_PROFILE,
         route = Route.PROFILE,
     ) {
-      composable(Screen.PROFILE) { ProfileScreen(navigationActions, userViewModel) }
+      composable(Screen.USER_PROFILE) { UserProfileScreen(navigationActions, userViewModel) }
+      composable(Screen.PUBLIC_PROFILE) { PublicProfileScreen(navigationActions, userViewModel) }
+      composable(Screen.EDIT_PROFILE) { EditProfileScreen(navigationActions, userViewModel) }
     }
   }
 }

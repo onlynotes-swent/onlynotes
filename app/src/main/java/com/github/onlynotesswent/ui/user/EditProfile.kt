@@ -6,13 +6,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
@@ -36,7 +31,7 @@ import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProfileScreen(navigationActions: NavigationActions, userViewModel: UserViewModel) {
+fun EditProfileScreen(navigationActions: NavigationActions, userViewModel: UserViewModel) {
   val user = userViewModel.currentUser.collectAsState()
 
   val newFirstName = remember { mutableStateOf(user.value?.firstName ?: "") }
@@ -47,7 +42,7 @@ fun ProfileScreen(navigationActions: NavigationActions, userViewModel: UserViewM
   val context = LocalContext.current
 
   Scaffold(
-      modifier = Modifier.testTag("ProfileScreen"),
+      modifier = Modifier.testTag("EditProfileScreen"),
       bottomBar = {
         BottomNavigationMenu(
             onTabSelect = { route -> navigationActions.navigateTo(route) },
@@ -55,16 +50,7 @@ fun ProfileScreen(navigationActions: NavigationActions, userViewModel: UserViewM
             selectedItem = navigationActions.currentRoute())
       },
       topBar = {
-        TopAppBar(
-            title = {},
-            navigationIcon = {
-              IconButton(
-                  onClick = { navigationActions.goBack() }, Modifier.testTag("goBackButton")) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                        contentDescription = "Back")
-                  }
-            })
+        TopProfileBar(title = "Edit Your Profile", navigationActions = navigationActions)
       },
       content = { paddingValues ->
         Column(
