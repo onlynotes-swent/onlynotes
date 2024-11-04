@@ -27,15 +27,15 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
       val image: String,
       val commentsList: List<String>
   )
-    /**
-     * Converts a single Comment object into a formatted string for Firestore storage.
-     *
-     * @param comment The Comment object to convert.
-     * @return A string representing the Comment, formatted as
-     * "commentId<delimiter>userId<delimiter>userName<delimiter>content<delimiter>creationDate<delimiter>editedDate".
-     *
-     * Each field is separated by the `commentDelimiter` for easy parsing during retrieval.
-     */
+  /**
+   * Converts a single Comment object into a formatted string for Firestore storage.
+   *
+   * @param comment The Comment object to convert.
+   * @return A string representing the Comment, formatted as
+   *   "commentId<delimiter>userId<delimiter>userName<delimiter>content<delimiter>creationDate<delimiter>editedDate".
+   *
+   * Each field is separated by the `commentDelimiter` for easy parsing during retrieval.
+   */
   private fun convertCommentToString(comment: Note.Comment): String {
     return comment.commentId +
         commentDelimiter +
@@ -49,15 +49,15 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
         commentDelimiter +
         comment.editedDate.seconds.toString()
   }
-    /**
-     * Converts a formatted string snapshot of a comment back into a Comment object.
-     *
-     * @param commentSnapshot The string representing the comment, formatted as
-     * "commentId<delimiter>userId<delimiter>userName<delimiter>content<delimiter>creationDate<delimiter>editedDate".
-     * @return A Comment object created from the parsed string values.
-     *
-     * @throws IndexOutOfBoundsException if the comment snapshot is improperly formatted and does not contain the expected number of fields.
-     */
+  /**
+   * Converts a formatted string snapshot of a comment back into a Comment object.
+   *
+   * @param commentSnapshot The string representing the comment, formatted as
+   *   "commentId<delimiter>userId<delimiter>userName<delimiter>content<delimiter>creationDate<delimiter>editedDate".
+   * @return A Comment object created from the parsed string values.
+   * @throws IndexOutOfBoundsException if the comment snapshot is improperly formatted and does not
+   *   contain the expected number of fields.
+   */
   private fun convertCommentStringToComment(commentSnapshot: String): Note.Comment {
     val commentValues = commentSnapshot.split(commentDelimiter)
     return Note.Comment(
