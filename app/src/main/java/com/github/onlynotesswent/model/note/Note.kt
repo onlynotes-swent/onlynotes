@@ -158,8 +158,5 @@ data class Note(
    * @property userId The unique identifier of the user who posted the comment.
    * @property content The text content of the comment.
    */
-  data class Comment(
-      val commentId: String,
-      val userId: String,
-      val content: String)
+  data class Comment(val commentId: String, val userId: String, val content: String)
 }
