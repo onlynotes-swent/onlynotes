@@ -37,7 +37,7 @@ class ProfileScreenTest {
   @Mock private lateinit var mockNavigationActions: NavigationActions
   @Mock private lateinit var profilePictureTaker: ProfilePictureTaker
   @Mock private lateinit var mockNoteRepository: NoteRepository
-  @Mock private lateinit var fileRepository: FileRepository
+  @Mock private lateinit var mockFileRepository: FileRepository
   private lateinit var noteViewModel: NoteViewModel
   private lateinit var userViewModel: UserViewModel
   private lateinit var fileViewModel: FileViewModel
@@ -62,7 +62,7 @@ class ProfileScreenTest {
     MockitoAnnotations.openMocks(this)
     userViewModel = UserViewModel(mockUserRepository)
     noteViewModel = NoteViewModel(mockNoteRepository)
-    fileViewModel = FileViewModel(fileRepository)
+    fileViewModel = FileViewModel(mockFileRepository)
 
     // Mock the current route to be the user create screen
     `when`(mockNavigationActions.currentRoute()).thenReturn(Screen.PROFILE)
@@ -87,6 +87,8 @@ class ProfileScreenTest {
         onSuccess()
       }
     }
+
+    `when`(mockFileRepository.downloadFile(any(), any(), any(), any(), any())).thenAnswer {}
   }
 
   @Test
@@ -185,5 +187,37 @@ class ProfileScreenTest {
     composeTestRule.onNodeWithTag("saveButton").assertIsNotEnabled()
     composeTestRule.onNodeWithTag("inputUserName").performTextInput("test")
     composeTestRule.onNodeWithTag("saveButton").assertIsEnabled()
+  }
+
+  @Test
+  fun goBackButtonWork() {
+    composeTestRule.setContent {
+      EditProfileScreen(mockNavigationActions, userViewModel, profilePictureTaker, fileViewModel)
+    }
+
+    composeTestRule.onNodeWithTag("goBackButton").performClick()
+    verify(mockNavigationActions).goBack()
+  }
+
+  @Test
+  fun downloadProfilePicture() {
+    userViewModel.addUser(
+        User(
+            firstName = "testFirstName",
+            lastName = "testLastName",
+            userName = "testUserName",
+            email = "testEmail",
+            uid = testUid,
+            dateOfJoining = Timestamp.now(),
+            rating = 0.0,
+            hasProfilePicture = true),
+        {},
+        {})
+
+    composeTestRule.setContent {
+      EditProfileScreen(mockNavigationActions, userViewModel, profilePictureTaker, fileViewModel)
+    }
+    composeTestRule.onNodeWithTag("profilePicture").performClick()
+    verify(mockFileRepository).downloadFile(any(), any(), any(), any(), any())
   }
 }
