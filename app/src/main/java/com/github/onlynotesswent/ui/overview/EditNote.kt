@@ -25,7 +25,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -226,44 +225,55 @@ fun EditNoteScreen(
                     Text("Add Comment")
                   }
 
-              updatedComments.commentsList.forEachIndexed { _, comment ->
-                val labelText = remember { mutableStateOf("Loading...") }
-                LaunchedEffect(comment.userId) {
-                  userViewModel.getUserById(
-                      id = comment.userId,
-                      onSuccess = { user -> labelText.value = user.userName },
-                      onUserNotFound = { labelText.value = "User Not Found" },
-                      onFailure = { labelText.value = "Error Finding User" })
-                }
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
-                    verticalAlignment = Alignment.CenterVertically) {
-                      OutlinedTextField(
-                          value = comment.content,
-                          onValueChange = {
-                            updatedComments =
-                                Note.CommentCollection.editComment(
-                                    comment.commentId, it, updatedComments)
-                            updateOnlyNoteCommentAndDate()
-                          },
-                          label = { Text(labelText.value) },
-                          placeholder = { Text("Enter comment here") },
-                          modifier = Modifier.weight(1f).testTag("EditCommentTextField"))
+              if (updatedComments.commentsList.isEmpty()) {
+                Text(
+                    text = "No comments yet. Add a comment to start the discussion.",
+                    color = Color.Gray,
+                    modifier = Modifier.padding(8.dp).testTag("NoCommentsText"))
+              } else {
 
-                      IconButton(
-                          onClick = {
-                            updatedComments =
-                                Note.CommentCollection.deleteComment(
-                                    comment.commentId, updatedComments)
-                            updateOnlyNoteCommentAndDate()
-                          },
-                          modifier = Modifier.testTag("DeleteCommentButton")) {
-                            Icon(
-                                imageVector = Icons.Default.Delete,
-                                contentDescription = "Delete Comment",
-                                tint = Color.Red)
-                          }
-                    }
+                updatedComments.commentsList.forEachIndexed { _, comment ->
+                  // val labelText = remember { mutableStateOf("Loading...") }
+                  /*
+                  LaunchedEffect(comment.userId) {
+                      userViewModel.getUserById(
+                          id = comment.userId,
+                          onSuccess = { user -> labelText.value = user.userName },
+                          onUserNotFound = { labelText.value = "User Not Found" },
+                          onFailure = { labelText.value = "Error Finding User" })
+                  }*/
+
+                  Row(
+                      modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                      verticalAlignment = Alignment.CenterVertically) {
+                        OutlinedTextField(
+                            value = comment.content,
+                            onValueChange = {
+                              updatedComments =
+                                  Note.CommentCollection.editComment(
+                                      comment.commentId, it, updatedComments)
+                              updateOnlyNoteCommentAndDate()
+                            },
+                            label = { // Text(labelText.value)
+                            },
+                            placeholder = { Text("Enter comment here") },
+                            modifier = Modifier.weight(1f).testTag("EditCommentTextField"))
+
+                        IconButton(
+                            onClick = {
+                              updatedComments =
+                                  Note.CommentCollection.deleteComment(
+                                      comment.commentId, updatedComments)
+                              updateOnlyNoteCommentAndDate()
+                            },
+                            modifier = Modifier.testTag("DeleteCommentButton")) {
+                              Icon(
+                                  imageVector = Icons.Default.Delete,
+                                  contentDescription = "Delete Comment",
+                                  tint = Color.Red)
+                            }
+                      }
+                }
               }
             }
       })

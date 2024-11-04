@@ -62,6 +62,7 @@ class EditNoteTest {
     composeTestRule.onNodeWithTag("Save button").assertIsDisplayed()
     composeTestRule.onNodeWithTag("Delete button").assertIsDisplayed()
     composeTestRule.onNodeWithTag("Add Comment Button").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("NoCommentsText").assertIsDisplayed()
     composeTestRule.onNodeWithTag("visibilityEditButton").assertIsDisplayed()
     composeTestRule.onNodeWithTag("visibilityEditMenu").assertIsNotDisplayed()
 
