@@ -44,11 +44,11 @@ data class Note(
     }
   }
 
-  enum class Type {
-    JPEG,
-    PNG,
-    PDF,
-    NORMAL_TEXT
+  enum class Type(val fileExtension: String) {
+    JPEG(".jpg"),
+    PNG(".png"),
+    PDF(".pdf"),
+    NORMAL_TEXT(".md")
   }
 
   /**
