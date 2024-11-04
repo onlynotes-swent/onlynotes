@@ -105,11 +105,20 @@ data class Note(
        */
       fun addComment(
           userId: String,
+          userName: String,
           content: String,
           commentCollection: CommentCollection
       ): CommentCollection {
         val mutableCommentsList = commentCollection.commentsList.toMutableList()
-        mutableCommentsList.add(0, Comment(generateId(userId, content), userId, content))
+        mutableCommentsList.add(
+            0,
+            Comment(
+                generateId(userId, content),
+                userId,
+                userName,
+                content,
+                Timestamp.now(),
+                Timestamp.now()))
         return CommentCollection(mutableCommentsList.toList())
       }
       /**
@@ -129,7 +138,13 @@ data class Note(
         return CommentCollection(
             mutableCommentsList.map {
               if (it.commentId == commentId)
-                  Comment(generateId(it.userId, content), it.userId, content)
+                  Comment(
+                      generateId(it.userId, content),
+                      it.userId,
+                      it.userName,
+                      content,
+                      it.creationDate,
+                      Timestamp.now())
               else it
             })
       }
@@ -158,5 +173,17 @@ data class Note(
    * @property userId The unique identifier of the user who posted the comment.
    * @property content The text content of the comment.
    */
-  data class Comment(val commentId: String, val userId: String, val content: String)
+  data class Comment(
+      val commentId: String,
+      val userId: String,
+      val userName: String,
+      val content: String,
+      val creationDate: Timestamp,
+      val editedDate: Timestamp
+  ) {
+    // Method to check if creationDate is equal to editedDate
+    fun isUnedited(): Boolean {
+      return creationDate == editedDate
+    }
+  }
 }

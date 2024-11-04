@@ -8,6 +8,8 @@ import com.google.firebase.Timestamp
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepository {
   private val commentDelimiter: String = '\u001F'.toString()
@@ -36,7 +38,18 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
    */
   private fun convertCommentsList(commentsList: List<Note.Comment>): List<String> {
     return commentsList.map {
-      it.commentId + commentDelimiter + it.userId + commentDelimiter + it.content
+      val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+      it.commentId +
+          commentDelimiter +
+          it.userId +
+          commentDelimiter +
+          it.userName +
+          commentDelimiter +
+          it.content +
+          commentDelimiter +
+          it.creationDate.seconds.toString() +
+          commentDelimiter +
+          it.editedDate.seconds.toString()
     }
   }
   /**
@@ -49,7 +62,13 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
   private fun commentStringToCommentClass(commentSnapshotList: List<String>): List<Note.Comment> {
     return commentSnapshotList.map {
       val commentValues = it.split(commentDelimiter)
-      Note.Comment(commentValues[0], userId = commentValues[1], content = commentValues[2])
+      Note.Comment(
+          commentValues[0],
+          userId = commentValues[1],
+          userName = commentValues[2],
+          content = commentValues[2],
+          creationDate = Timestamp(commentValues[3].toLong(), 0),
+          editedDate = Timestamp(commentValues[4].toLong(), 0))
     }
   }
 

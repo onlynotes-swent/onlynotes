@@ -42,7 +42,9 @@ import com.github.onlynotesswent.model.users.UserViewModel
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
 import com.google.firebase.Timestamp
+import java.text.SimpleDateFormat
 import java.util.Calendar
+import java.util.Locale
 
 /**
  * Displays the edit note screen, where users can update the title and content of an existing note.
@@ -218,7 +220,10 @@ fun EditNoteScreen(
                   onClick = {
                     updatedComments =
                         Note.CommentCollection.addComment(
-                            userViewModel.currentUser.value?.uid ?: "1", "", updatedComments)
+                            userViewModel.currentUser.value?.uid ?: "1",
+                            userViewModel.currentUser.value?.userName ?: "Invalid username",
+                            "",
+                            updatedComments)
                     updateOnlyNoteCommentAndDate()
                   },
                   modifier = Modifier.testTag("Add Comment Button")) {
@@ -244,7 +249,18 @@ fun EditNoteScreen(
                                       comment.commentId, it, updatedComments)
                               updateOnlyNoteCommentAndDate()
                             },
-                            label = { Text(comment.userId) },
+                            label = {
+                              val formatter =
+                                  SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
+                              val formatedDate = formatter.format(comment.editedDate.toDate())
+                              val displayedText =
+                                  if (comment.isUnedited()) {
+                                    "${comment.userName} : ${formatedDate} "
+                                  } else {
+                                    "${comment.userName} edited: ${formatedDate}"
+                                  }
+                              Text(displayedText)
+                            },
                             placeholder = { Text("Enter comment here") },
                             modifier = Modifier.weight(1f).testTag("EditCommentTextField"))
 
