@@ -212,6 +212,18 @@ fun EditNoteScreen(
                       Text("Delete note")
                     }
               }
+              item {
+                Button(
+                    onClick = {
+                      /*updatedComments =
+                          Note.CommentCollection.addComment(
+                              userViewModel.currentUser.value?.uid ?: "1", "", updatedComments)
+                      updateOnlyNoteCommentAndDate()*/
+                    },
+                    modifier = Modifier.testTag("Add Comment Button")) {
+                      Text("Add Comment")
+                    }
+              }
             }
       })
 }
