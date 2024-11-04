@@ -144,30 +144,20 @@ class FlashcardRepositoryFirestoreTest {
   }
 
   @Test
-  fun getFlashcards_callsDocuments() {
+  fun getFlashcards_success() {
     // Ensure that mockQuerySnapshot is properly initialized and mocked
     `when`(mockCollectionReference.get()).thenReturn(Tasks.forResult(mockQuerySnapshot))
+
+    var flashcardTest: Flashcard? = null
 
     // Call the method under test
     flashcardRepositoryFirestore.getFlashcardsFrom(
         flashcard.userId,
-        onSuccess = {
-
-          // Do nothing; we just want to verify that the 'documents' field was accessed
-        },
+        onSuccess = { flashcard -> flashcardTest = flashcard.firstOrNull() },
         onFailure = { fail("Failure callback should not be called") })
 
     // Verify that the 'documents' field was accessed
     verify(timeout(100)) { (mockQuerySnapshot).documents }
-  }
-
-  @Test
-  fun getFlashcards_success() {
-    var flashcardTest: Flashcard? = null
-    flashcardRepositoryFirestore.getFlashcardsFrom(
-        flashcard.userId,
-        onSuccess = { flashcard -> flashcardTest = flashcard.firstOrNull() },
-        onFailure = { fail("Failure callback should not be called") })
 
     // Assertions to verify that the correct flashcard is returned
     assertNotNull(flashcardTest)
@@ -193,29 +183,17 @@ class FlashcardRepositoryFirestoreTest {
   }
 
   @Test
-  fun getFlashcardById_callsDocument() {
-    `when`(mockDocumentReference.get()).thenReturn(Tasks.forResult(mockDocumentSnapshot))
+  fun getFlashcardById_success() {
+    var flashcardTest: Flashcard? = null
 
     // Call the method under test
     flashcardRepositoryFirestore.getFlashcardById(
         flashcard.id,
-        onSuccess = {
-
-          // Do nothing; we just want to verify that the 'get()' method was called
-        },
+        onSuccess = { flashcard -> flashcardTest = flashcard },
         onFailure = { fail("Failure callback should not be called") })
 
     // Verify that the 'get()' method was called
     verify(timeout(100)) { mockDocumentReference.get() }
-  }
-
-  @Test
-  fun getFlashcardById_success() {
-    var flashcardTest: Flashcard? = null
-    flashcardRepositoryFirestore.getFlashcardById(
-        flashcard.id,
-        onSuccess = { flashcard -> flashcardTest = flashcard },
-        onFailure = { fail("Failure callback should not be called") })
 
     // Assertions to verify that the correct flashcard is returned
     assertNotNull(flashcardTest)
@@ -241,32 +219,25 @@ class FlashcardRepositoryFirestoreTest {
   }
 
   @Test
-  fun getFlashcardsByFolder_callsDocuments() {
+  fun getFlashcardsByFolder_success() {
     // mock whereEqualTo and get() method to return a mock Task<QuerySnapshot>
     `when`(mockCollectionReference.whereEqualTo(anyString(), any()))
         .thenReturn(mockCollectionReference) // return the mock collection reference itself
 
+    var flashcardTest: Flashcard? = null
+
     // Call the method under test
     flashcardRepositoryFirestore.getFlashcardsByFolder(
         flashcard.folderId,
-        onSuccess = {
-          // Do nothing; we just want to verify that the 'documents' field was accessed
-        },
+        onSuccess = { flashcards -> flashcardTest = flashcards.firstOrNull() },
         onFailure = { fail("Failure callback should not be called") })
 
     // Verify that the 'get()' method was called
     verify(timeout(100)) { mockDocumentReference.get() }
-  }
 
-  @Test
-  fun getFlashcardsByFolder_success() {
-    flashcardRepositoryFirestore.getFlashcardsByFolder(
-        flashcard.folderId,
-        onSuccess = { flashcards ->
-          assert(flashcards.isNotEmpty())
-          assert(flashcards[0].folderId == flashcard.folderId)
-        },
-        onFailure = { fail("Failure callback should not be called") })
+    // Assertions to verify that the correct flashcard is returned
+    assertNotNull(flashcardTest)
+    assertEquals(flashcard, flashcardTest)
   }
 
   @Test
@@ -283,32 +254,25 @@ class FlashcardRepositoryFirestoreTest {
   }
 
   @Test
-  fun getFlashcardsByNote_callsDocuments() {
+  fun getFlashcardsByNote_success() {
     // mock whereEqualTo and get() method to return a mock Task<QuerySnapshot>
     `when`(mockCollectionReference.whereEqualTo(anyString(), any()))
         .thenReturn(mockCollectionReference) // return the mock collection reference itself
 
+    var flashcardTest: Flashcard? = null
+
     // Call the method under test
     flashcardRepositoryFirestore.getFlashcardsByNote(
         flashcard.noteId,
-        onSuccess = {
-          // Do nothing; we just want to verify that the 'documents' field was accessed
-        },
+        onSuccess = { flashcard -> flashcardTest = flashcard.firstOrNull() },
         onFailure = { fail("Failure callback should not be called") })
 
-    // Verify that the 'get()' method was called
-    verify(timeout(100)) { mockDocumentReference.get() }
-  }
+    // Verify that the 'documents' field was accessed
+    verify(timeout(100)) { (mockQuerySnapshot).documents }
 
-  @Test
-  fun getFlashcardsByNote_success() {
-    flashcardRepositoryFirestore.getFlashcardsByNote(
-        flashcard.noteId,
-        onSuccess = { flashcards ->
-          assert(flashcards.isNotEmpty())
-          assert(flashcards[0].noteId == flashcard.noteId)
-        },
-        onFailure = { fail("Failure callback should not be called") })
+    // Assertions to verify that the correct flashcard is returned
+    assertNotNull(flashcardTest)
+    assertEquals(flashcard, flashcardTest)
   }
 
   @Test
