@@ -2,7 +2,6 @@ package com.github.onlynotesswent.model.file
 
 import android.net.Uri
 import android.util.Log
-import com.github.onlynotesswent.model.note.Note.Type
 import com.google.android.gms.tasks.OnFailureListener
 import com.google.android.gms.tasks.OnSuccessListener
 import com.google.android.gms.tasks.Task
@@ -74,7 +73,7 @@ class FileRepositoryFirebaseStorageTest {
     fileRepository.uploadFile(
         uid,
         fileUri,
-        Type.JPEG,
+        FileType.PROFILE_PIC_JPEG,
         onSuccess = {
           // Success callback
           assert(true)
@@ -87,7 +86,7 @@ class FileRepositoryFirebaseStorageTest {
     fileRepository.uploadFile(
         uid,
         fileUri,
-        Type.PDF,
+        FileType.NOTE_PDF,
         onSuccess = {
           // Success callback
           assert(true)
@@ -116,7 +115,7 @@ class FileRepositoryFirebaseStorageTest {
     fileRepository.uploadFile(
         uid,
         fileUri,
-        Type.JPEG,
+        FileType.PROFILE_PIC_JPEG,
         onSuccess = {
           // Success callback
           assert(false)
@@ -129,7 +128,7 @@ class FileRepositoryFirebaseStorageTest {
     fileRepository.uploadFile(
         uid,
         fileUri,
-        Type.PDF,
+        FileType.NOTE_PDF,
         onSuccess = {
           // Success callback
           assert(false)
@@ -170,7 +169,7 @@ class FileRepositoryFirebaseStorageTest {
 
       fileRepository.downloadFile(
           uid,
-          Type.JPEG,
+          FileType.PROFILE_PIC_JPEG,
           mockCacheDir,
           onSuccess = {
             // Verify that the onSuccess callback returns the mock File object
@@ -183,7 +182,7 @@ class FileRepositoryFirebaseStorageTest {
 
       fileRepository.downloadFile(
           uid,
-          Type.PDF,
+          FileType.NOTE_PDF,
           mockCacheDir,
           onSuccess = {
             // Verify that the onSuccess callback returns the mock File object
@@ -218,7 +217,7 @@ class FileRepositoryFirebaseStorageTest {
 
       fileRepository.downloadFile(
           uid,
-          Type.JPEG,
+          FileType.PROFILE_PIC_JPEG,
           mockCacheDir,
           onSuccess = {
             // Success callback
@@ -231,7 +230,7 @@ class FileRepositoryFirebaseStorageTest {
 
       fileRepository.downloadFile(
           uid,
-          Type.PDF,
+          FileType.NOTE_PDF,
           mockCacheDir,
           onSuccess = {
             // Success callback
@@ -268,7 +267,7 @@ class FileRepositoryFirebaseStorageTest {
 
     fileRepository.deleteFile(
         uid,
-        Type.JPEG,
+        FileType.PROFILE_PIC_JPEG,
         onSuccess = {
           // Success callback
           assert(true)
@@ -280,7 +279,7 @@ class FileRepositoryFirebaseStorageTest {
 
     fileRepository.deleteFile(
         uid,
-        Type.PDF,
+        FileType.NOTE_PDF,
         onSuccess = {
           // Success callback
           assert(true)
@@ -307,7 +306,7 @@ class FileRepositoryFirebaseStorageTest {
 
     fileRepository.deleteFile(
         uid,
-        Type.JPEG,
+        FileType.PROFILE_PIC_JPEG,
         onSuccess = {
           // Success callback
           assert(false)
@@ -319,7 +318,7 @@ class FileRepositoryFirebaseStorageTest {
 
     fileRepository.deleteFile(
         uid,
-        Type.PDF,
+        FileType.NOTE_PDF,
         onSuccess = {
           // Success callback
           assert(false)
@@ -354,7 +353,7 @@ class FileRepositoryFirebaseStorageTest {
 
     fileRepository.getFile(
         uid,
-        Type.JPEG,
+        FileType.PROFILE_PIC_JPEG,
         onSuccess = {
           // Verify that the onSuccess callback returns the mock File object
           assert(true)
@@ -366,7 +365,7 @@ class FileRepositoryFirebaseStorageTest {
 
     fileRepository.getFile(
         uid,
-        Type.PDF,
+        FileType.NOTE_PDF,
         onSuccess = {
           // Verify that the onSuccess callback returns the mock File object
           assert(true)
@@ -393,7 +392,7 @@ class FileRepositoryFirebaseStorageTest {
 
     fileRepository.getFile(
         uid,
-        Type.JPEG,
+        FileType.PROFILE_PIC_JPEG,
         onSuccess = {
           // Success callback
           assert(false)
@@ -405,7 +404,7 @@ class FileRepositoryFirebaseStorageTest {
 
     fileRepository.getFile(
         uid,
-        Type.PDF,
+        FileType.NOTE_PDF,
         onSuccess = {
           // Success callback
           assert(false)
@@ -443,7 +442,7 @@ class FileRepositoryFirebaseStorageTest {
 
     fileRepository.getFile(
         uid,
-        Type.JPEG,
+        FileType.PROFILE_PIC_JPEG,
         onSuccess = {
           // Success callback
           assert(false)
@@ -455,7 +454,7 @@ class FileRepositoryFirebaseStorageTest {
 
     fileRepository.getFile(
         uid,
-        Type.PDF,
+        FileType.NOTE_PDF,
         onSuccess = {
           // Success callback
           assert(false)
