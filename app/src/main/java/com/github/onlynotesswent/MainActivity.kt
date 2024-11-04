@@ -12,6 +12,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
+import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.model.scanner.Scanner
 import com.github.onlynotesswent.model.users.UserViewModel
@@ -48,6 +49,7 @@ fun OnlyNotesApp(scanner: Scanner, profilePictureTaker: ProfilePictureTaker) {
   val navigationActions = NavigationActions(navController)
   val userViewModel: UserViewModel = viewModel(factory = UserViewModel.Factory)
   val noteViewModel: NoteViewModel = viewModel(factory = NoteViewModel.Factory)
+  val fileViewModel: FileViewModel = viewModel(factory = FileViewModel.Factory)
 
   NavHost(navController = navController, startDestination = Route.AUTH) {
     navigation(
@@ -85,7 +87,7 @@ fun OnlyNotesApp(scanner: Scanner, profilePictureTaker: ProfilePictureTaker) {
         route = Route.PROFILE,
     ) {
       composable(Screen.PROFILE) {
-        EditProfileScreen(navigationActions, userViewModel, profilePictureTaker)
+        EditProfileScreen(navigationActions, userViewModel, profilePictureTaker,fileViewModel )
       }
     }
   }

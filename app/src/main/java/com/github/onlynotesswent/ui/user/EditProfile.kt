@@ -1,5 +1,6 @@
 package com.github.onlynotesswent.ui.user
 
+import android.annotation.SuppressLint
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.Image
@@ -38,6 +39,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import coil.compose.rememberAsyncImagePainter
+import com.github.onlynotesswent.model.file.FileViewModel
+import com.github.onlynotesswent.model.note.Note
 import com.github.onlynotesswent.model.users.User
 import com.github.onlynotesswent.model.users.UserRepositoryFirestore
 import com.github.onlynotesswent.model.users.UserViewModel
@@ -57,7 +60,8 @@ import com.github.onlynotesswent.utils.ProfilePictureTaker
 fun EditProfileScreen(
     navigationActions: NavigationActions,
     userViewModel: UserViewModel,
-    profilePictureTaker: ProfilePictureTaker
+    profilePictureTaker: ProfilePictureTaker,
+    fileViewModel: FileViewModel
 ) {
   val user = userViewModel.currentUser.collectAsState()
 
@@ -94,7 +98,7 @@ fun EditProfileScreen(
             modifier = Modifier.fillMaxSize().padding(paddingValues),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally) {
-              ProfilePicture(newProfilePicture, userViewModel, profilePictureTaker)
+              ProfilePicture(newProfilePicture, userViewModel, profilePictureTaker,fileViewModel)
 
               // Text Fields for user information
               FirstNameTextField(newFirstName)
@@ -146,17 +150,27 @@ fun EditProfileScreen(
       })
 }
 
+@SuppressLint("StateFlowValueCalledInComposition")
 @Composable
 fun ProfilePicture(
-    profileImage: MutableState<String>,
+    newProfilePicture: MutableState<String>,
     userViewModel: UserViewModel,
-    profilePictureTaker: ProfilePictureTaker
+    profilePictureTaker: ProfilePictureTaker,
+    fileViewModel: FileViewModel
 ) {
 
   Box(modifier = Modifier.size(150.dp)) {
     val painter =
-        if (profileImage.value.isNotEmpty()) {
-          rememberAsyncImagePainter(profileImage.value)
+        if (newProfilePicture.value.isNotEmpty()) {
+          Log.e("ProfilePicture", "newProfilePicture.value: ${newProfilePicture.value}")
+          fileViewModel.downloadFile(
+              userViewModel.currentUser.value!!.uid,
+              Note.Type.JPEG,
+              context = LocalContext.current,
+                onSuccess = { file -> newProfilePicture.value = file.absolutePath },
+                onFailure = { e -> Log.e("ProfilePicture", "Error downloading profile picture", e) }
+              )
+          rememberAsyncImagePainter(newProfilePicture.value)
         } else {
           rememberVectorPainter(Icons.Default.AccountCircle)
         }
@@ -184,7 +198,7 @@ fun ProfilePicture(
                 .background(Color.White) // Optional: background for contrast
                 .clickable {
                   // add  the image here
-                  editProfilePicture(profilePictureTaker, userViewModel, profileImage)
+                  editProfilePicture(profilePictureTaker, userViewModel, newProfilePicture,fileViewModel)
                 }, // Trigger the onEditClick callback
         tint = Color.Gray // Icon color
         )
@@ -194,9 +208,17 @@ fun ProfilePicture(
 fun editProfilePicture(
     profilePictureTaker: ProfilePictureTaker,
     userViewModel: UserViewModel,
-    profileImage: MutableState<String>
+    profileImage: MutableState<String>,
+    fileViewModel: FileViewModel
 ) {
   profilePictureTaker.onImageSelected = { uri ->
+      if (uri != null) {
+          fileViewModel.uploadNoteFile(
+              userViewModel.currentUser.value!!.uid,
+              uri,
+              Note.Type.JPEG)
+      }
+
     userViewModel.updateUser(
         userViewModel.currentUser.value!!.copy(profilePicture = uri.toString()),
         {},

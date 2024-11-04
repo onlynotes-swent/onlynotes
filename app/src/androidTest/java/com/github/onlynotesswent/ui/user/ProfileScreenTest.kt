@@ -87,7 +87,7 @@ class ProfileScreenTest {
   @Test
   fun displayAllComponents() {
     composeTestRule.setContent {
-      EditProfileScreen(mockNavigationActions, userViewModel, profilePictureTaker)
+      EditProfileScreen(mockNavigationActions, userViewModel, profilePictureTaker, fileViewModel)
     }
 
     composeTestRule.onNodeWithTag("ProfileScreen").assertExists()
@@ -107,7 +107,7 @@ class ProfileScreenTest {
   @Test
   fun submitNavigatesBack() {
     composeTestRule.setContent {
-      EditProfileScreen(mockNavigationActions, userViewModel, profilePictureTaker)
+      EditProfileScreen(mockNavigationActions, userViewModel, profilePictureTaker, fileViewModel)
     }
 
     composeTestRule.onNodeWithTag("saveButton").performClick()
@@ -117,7 +117,7 @@ class ProfileScreenTest {
   @Test
   fun modifyProfile() {
     composeTestRule.setContent {
-      EditProfileScreen(mockNavigationActions, userViewModel, profilePictureTaker)
+      EditProfileScreen(mockNavigationActions, userViewModel, profilePictureTaker, fileViewModel)
     }
 
     composeTestRule.onNodeWithTag("inputUserName").performTextClearance()
@@ -143,7 +143,7 @@ class ProfileScreenTest {
   fun editProfilePicture() {
     doNothing().`when`(profilePictureTaker).pickImage()
     composeTestRule.setContent {
-      EditProfileScreen(mockNavigationActions, userViewModel, profilePictureTaker)
+      EditProfileScreen(mockNavigationActions, userViewModel, profilePictureTaker, fileViewModel)
     }
     composeTestRule.onNodeWithTag("editProfilePicture").assertIsEnabled()
     composeTestRule.onNodeWithTag("editProfilePicture").performClick()
@@ -153,7 +153,7 @@ class ProfileScreenTest {
   @Test
   fun userNameFieldDisplaysError() {
     composeTestRule.setContent {
-      EditProfileScreen(mockNavigationActions, userViewModel, profilePictureTaker)
+      EditProfileScreen(mockNavigationActions, userViewModel, profilePictureTaker, fileViewModel)
     }
 
     composeTestRule.onNodeWithTag("inputFirstName").performTextClearance()
@@ -172,7 +172,7 @@ class ProfileScreenTest {
   @Test
   fun saveButtonDisabledWhenUserNameIsEmpty() {
     composeTestRule.setContent {
-      EditProfileScreen(mockNavigationActions, userViewModel, profilePictureTaker)
+      EditProfileScreen(mockNavigationActions, userViewModel, profilePictureTaker, fileViewModel)
     }
 
     composeTestRule.onNodeWithTag("saveButton").assertIsEnabled()
