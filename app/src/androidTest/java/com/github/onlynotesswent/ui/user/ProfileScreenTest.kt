@@ -28,6 +28,7 @@ import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
+import org.mockito.kotlin.doNothing
 
 class ProfileScreenTest {
   @Mock private lateinit var mockUserRepository: UserRepository
@@ -136,6 +137,17 @@ class ProfileScreenTest {
     assert(userViewModel.currentUser.value?.lastName == "testLastName")
     composeTestRule.onNodeWithTag("saveButton").performClick()
     assert(userViewModel.currentUser.value?.lastName == "newLastName")
+  }
+
+  @Test
+  fun editProfilePicture() {
+    doNothing().`when`(profilePictureTaker).pickImage()
+    composeTestRule.setContent {
+      EditProfileScreen(mockNavigationActions, userViewModel, profilePictureTaker)
+    }
+    composeTestRule.onNodeWithTag("editProfilePicture").assertIsEnabled()
+    composeTestRule.onNodeWithTag("editProfilePicture").performClick()
+    verify(profilePictureTaker).pickImage()
   }
 
   @Test

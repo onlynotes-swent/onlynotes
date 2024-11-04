@@ -17,7 +17,7 @@ open class ProfilePictureTaker(
         onImageSelected(uri)
       }
 
-  fun pickImage() {
+  open fun pickImage() {
     ImagePicker.with(activity)
         .cropSquare() // Crop the image to a square shape
         .galleryOnly() // Use only gallery for selection
