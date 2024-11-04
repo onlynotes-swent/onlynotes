@@ -21,9 +21,11 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -34,7 +36,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.github.onlynotesswent.model.note.Note
@@ -81,13 +82,18 @@ fun AddNoteScreen(
       modifier = Modifier.testTag("addNoteScreen"),
       topBar = {
         TopAppBar(
-            colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFB3E5FC)),
+            colors =
+                TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface),
             title = {
               Row(
                   modifier = Modifier.fillMaxWidth(),
                   verticalAlignment = Alignment.CenterVertically) {
                     Spacer(modifier = Modifier.weight(1f))
-                    Text("Create a new note", Modifier.testTag("addNoteTitle"))
+                    Text(
+                        "Create a new note",
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.testTag("addNoteTitle"))
                     Spacer(modifier = Modifier.weight(2f))
                   }
             },
@@ -96,7 +102,8 @@ fun AddNoteScreen(
                   onClick = { navigationActions.goBack() }, Modifier.testTag("goBackButton")) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                        contentDescription = "Back")
+                        contentDescription = "Back",
+                        tint = MaterialTheme.colorScheme.onSurface)
                   }
             })
       },
@@ -111,13 +118,17 @@ fun AddNoteScreen(
                   value = title,
                   onValueChange = { title = it },
                   label = { Text("Title") },
-                  placeholder = { Text("Add a Note Title") },
+                  placeholder = { Text("Add a note title") },
                   modifier = Modifier.fillMaxWidth().testTag("inputNoteTitle"),
                   trailingIcon = {
                     IconButton(onClick = { title = "" }) {
                       Icon(Icons.Outlined.Clear, contentDescription = "Clear title")
                     }
-                  })
+                  },
+                  colors =
+                      TextFieldDefaults.outlinedTextFieldColors(
+                          focusedBorderColor = MaterialTheme.colorScheme.primary,
+                          unfocusedBorderColor = MaterialTheme.colorScheme.onBackground))
 
               Spacer(modifier = Modifier.height(10.dp))
 
@@ -136,8 +147,12 @@ fun AddNoteScreen(
                   value = className,
                   onValueChange = { className = it },
                   label = { Text("Class Name") },
-                  placeholder = { Text("Set the Class Name for the Note") },
-                  modifier = Modifier.fillMaxWidth().testTag("ClassNameTextField"))
+                  placeholder = { Text("Set the class name for the note") },
+                  modifier = Modifier.fillMaxWidth().testTag("ClassNameTextField"),
+                  colors =
+                      TextFieldDefaults.outlinedTextFieldColors(
+                          focusedBorderColor = MaterialTheme.colorScheme.primary,
+                          unfocusedBorderColor = MaterialTheme.colorScheme.onBackground))
 
               Spacer(modifier = Modifier.height(5.dp))
 
@@ -145,8 +160,12 @@ fun AddNoteScreen(
                   value = classCode,
                   onValueChange = { classCode = it },
                   label = { Text("Class Code") },
-                  placeholder = { Text("Set the Class Code for the Note") },
-                  modifier = Modifier.fillMaxWidth().testTag("ClassCodeTextField"))
+                  placeholder = { Text("Set the class code for the note") },
+                  modifier = Modifier.fillMaxWidth().testTag("ClassCodeTextField"),
+                  colors =
+                      TextFieldDefaults.outlinedTextFieldColors(
+                          focusedBorderColor = MaterialTheme.colorScheme.primary,
+                          unfocusedBorderColor = MaterialTheme.colorScheme.onBackground))
 
               Spacer(modifier = Modifier.height(5.dp))
 
@@ -154,7 +173,7 @@ fun AddNoteScreen(
                   value = classYear.toString(),
                   onValueChange = { classYear = it.toIntOrNull() ?: currentYear },
                   label = { Text("Class Year") },
-                  placeholder = { Text("Set the Class Year for the Note") },
+                  placeholder = { Text("Set the class year for the note") },
                   modifier = Modifier.fillMaxWidth().testTag("ClassYearTextField"))
 
               Spacer(modifier = Modifier.height(10.dp))
@@ -165,7 +184,7 @@ fun AddNoteScreen(
                   buttonTag = "templateButton",
                   menuTag = "templateMenu",
                   onExpandedChange = { expandedTemplate = it },
-                  items = listOf("Scan Note", "Create Note", "Upload Note"),
+                  items = listOf("Scan note", "Create note", "Upload note"),
                   onItemClick = { template = it })
 
               Spacer(modifier = Modifier.height(70.dp))
@@ -209,7 +228,10 @@ fun AddNoteScreen(
                       navigationActions.goBack()
                     }
                   },
-                  colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50)),
+                  colors =
+                      ButtonDefaults.buttonColors(
+                          containerColor = MaterialTheme.colorScheme.primary,
+                          contentColor = MaterialTheme.colorScheme.onPrimary),
                   enabled =
                       title.isNotEmpty() && visibility != null && template != "Choose An Option",
                   modifier = Modifier.fillMaxWidth().testTag("createNoteButton")) {

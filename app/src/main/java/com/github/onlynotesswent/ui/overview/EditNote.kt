@@ -1,6 +1,7 @@
 package com.github.onlynotesswent.ui.overview
 
 import android.graphics.Bitmap
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -16,9 +17,11 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -30,7 +33,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.github.onlynotesswent.model.note.Note
@@ -72,13 +74,18 @@ fun EditNoteScreen(
       modifier = Modifier.testTag("editNoteScreen"),
       topBar = {
         TopAppBar(
-            colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFB3E5FC)),
+            colors =
+                TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface),
             title = {
               Row(
                   modifier = Modifier.fillMaxWidth(),
                   verticalAlignment = Alignment.CenterVertically) {
                     Spacer(modifier = Modifier.weight(1.5f))
-                    Text("Edit note", Modifier.testTag("editNoteTitle"))
+                    Text(
+                        "Edit note",
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.testTag("editNoteTitle"))
                     Spacer(modifier = Modifier.weight(2f))
                   }
             },
@@ -87,7 +94,8 @@ fun EditNoteScreen(
                   onClick = { navigationActions.goBack() }, Modifier.testTag("goBackButton")) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                        contentDescription = "Back")
+                        contentDescription = "Back",
+                        tint = MaterialTheme.colorScheme.onSurface)
                   }
             })
       },
@@ -106,7 +114,11 @@ fun EditNoteScreen(
                     onValueChange = { updatedNoteTitle = it },
                     label = { Text("Note Title") },
                     placeholder = { Text("Enter the new title here") },
-                    modifier = Modifier.fillMaxWidth().testTag("EditTitle textField"))
+                    modifier = Modifier.fillMaxWidth().testTag("EditTitle textField"),
+                    colors =
+                        TextFieldDefaults.outlinedTextFieldColors(
+                            focusedBorderColor = MaterialTheme.colorScheme.primary,
+                            unfocusedBorderColor = MaterialTheme.colorScheme.onBackground))
               }
 
               item {
@@ -127,8 +139,12 @@ fun EditNoteScreen(
                     value = updatedClassName,
                     onValueChange = { updatedClassName = it },
                     label = { Text("Class Name") },
-                    placeholder = { Text("Set the Class Name for the Note") },
-                    modifier = Modifier.fillMaxWidth().testTag("EditClassName textField"))
+                    placeholder = { Text("Set the class name for the note") },
+                    modifier = Modifier.fillMaxWidth().testTag("EditClassName textField"),
+                    colors =
+                        TextFieldDefaults.outlinedTextFieldColors(
+                            focusedBorderColor = MaterialTheme.colorScheme.primary,
+                            unfocusedBorderColor = MaterialTheme.colorScheme.onBackground))
               }
 
               item {
@@ -136,8 +152,12 @@ fun EditNoteScreen(
                     value = updatedClassCode,
                     onValueChange = { updatedClassCode = it },
                     label = { Text("Class Code") },
-                    placeholder = { Text("Set the Class Code for the Note") },
-                    modifier = Modifier.fillMaxWidth().testTag("EditClassCode textField"))
+                    placeholder = { Text("Set the class code for the note") },
+                    modifier = Modifier.fillMaxWidth().testTag("EditClassCode textField"),
+                    colors =
+                        TextFieldDefaults.outlinedTextFieldColors(
+                            focusedBorderColor = MaterialTheme.colorScheme.primary,
+                            unfocusedBorderColor = MaterialTheme.colorScheme.onBackground))
               }
 
               item {
@@ -145,8 +165,12 @@ fun EditNoteScreen(
                     value = updatedClassYear.toString(),
                     onValueChange = { updatedClassYear = it.toIntOrNull() ?: currentYear },
                     label = { Text("Class Year") },
-                    placeholder = { Text("Set the Class Year for the Note") },
-                    modifier = Modifier.fillMaxWidth().testTag("EditClassYear textField"))
+                    placeholder = { Text("Set the class year for the note") },
+                    modifier = Modifier.fillMaxWidth().testTag("EditClassYear textField"),
+                    colors =
+                        TextFieldDefaults.outlinedTextFieldColors(
+                            focusedBorderColor = MaterialTheme.colorScheme.primary,
+                            unfocusedBorderColor = MaterialTheme.colorScheme.onBackground))
               }
 
               item {
@@ -157,7 +181,11 @@ fun EditNoteScreen(
                     onValueChange = {},
                     readOnly = true,
                     label = { Text("Note Type") },
-                    modifier = Modifier.fillMaxWidth().testTag("EditType textField"))
+                    modifier = Modifier.fillMaxWidth().testTag("EditType textField"),
+                    colors =
+                        TextFieldDefaults.outlinedTextFieldColors(
+                            focusedBorderColor = MaterialTheme.colorScheme.primary,
+                            unfocusedBorderColor = MaterialTheme.colorScheme.onBackground))
               }
               if (note?.type == Note.Type.NORMAL_TEXT) {
                 item {
@@ -167,7 +195,11 @@ fun EditNoteScreen(
                       label = { Text("Note Content") },
                       placeholder = { Text("Enter your note here...") },
                       modifier =
-                          Modifier.fillMaxWidth().height(400.dp).testTag("EditNote textField"))
+                          Modifier.fillMaxWidth().height(400.dp).testTag("EditNote textField"),
+                      colors =
+                          TextFieldDefaults.outlinedTextFieldColors(
+                              focusedBorderColor = MaterialTheme.colorScheme.primary,
+                              unfocusedBorderColor = MaterialTheme.colorScheme.onBackground))
                 }
               }
 
@@ -195,6 +227,10 @@ fun EditNoteScreen(
                           userViewModel.currentUser.value!!.uid)
                       navigationActions.navigateTo(Screen.OVERVIEW)
                     },
+                    colors =
+                        ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.onPrimary),
                     modifier = Modifier.testTag("Save button")) {
                       Text("Update note")
                     }
@@ -202,7 +238,11 @@ fun EditNoteScreen(
 
               item {
                 Button(
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF0000)),
+                    colors =
+                        ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.background,
+                            contentColor = MaterialTheme.colorScheme.error),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.error),
                     onClick = {
                       noteViewModel.deleteNoteById(
                           note?.id ?: "", note?.userId ?: userViewModel.currentUser.value!!.uid)

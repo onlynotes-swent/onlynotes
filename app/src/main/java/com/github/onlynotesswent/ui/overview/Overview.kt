@@ -16,6 +16,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedButton
@@ -28,7 +29,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -64,6 +64,8 @@ fun OverviewScreen(
       floatingActionButton = {
         FloatingActionButton(
             onClick = { navigationActions.navigateTo(Screen.ADD_NOTE) },
+            containerColor = MaterialTheme.colorScheme.surface,
+            contentColor = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.testTag("createNote")) {
               Icon(imageVector = Icons.Default.Add, contentDescription = "AddNote")
             }
@@ -96,8 +98,11 @@ fun OverviewScreen(
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-              Text(modifier = Modifier.testTag("emptyNotePrompt"), text = "You have no Notes yet.")
-              Spacer(modifier = Modifier.height(50.dp))
+              Text(
+                  modifier = Modifier.testTag("emptyNotePrompt"),
+                  text = "You have no notes yet.",
+                  color = MaterialTheme.colorScheme.onBackground)
+              Spacer(modifier = Modifier.height(20.dp))
               RefreshButton {
                 userViewModel.currentUser.value?.let { noteViewModel.getNotesFrom(it.uid) }
               }
@@ -115,10 +120,16 @@ fun OverviewScreen(
  */
 @Composable
 fun RefreshButton(onClick: () -> Unit) {
-  ElevatedButton(onClick = onClick, modifier = Modifier.testTag("refreshButton")) {
-    Text("Refresh")
-    Icon(imageVector = Icons.Default.Refresh, contentDescription = "Refresh")
-  }
+  ElevatedButton(
+      onClick = onClick,
+      colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surface),
+      modifier = Modifier.testTag("refreshButton")) {
+        Text("Refresh", color = MaterialTheme.colorScheme.onSurface)
+        Icon(
+            imageVector = Icons.Default.Refresh,
+            contentDescription = "Refresh",
+            tint = MaterialTheme.colorScheme.onSurface)
+      }
 }
 
 /**
@@ -137,7 +148,8 @@ fun NoteItem(note: Note, onClick: () -> Unit) {
               .fillMaxWidth()
               .padding(vertical = 4.dp)
               .clickable(onClick = onClick),
-      colors = CardDefaults.cardColors(containerColor = Color(0xFFB3E5FC))) {
+      colors =
+          CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)) {
         Column(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
           Row(
               modifier = Modifier.fillMaxWidth(),
@@ -146,12 +158,14 @@ fun NoteItem(note: Note, onClick: () -> Unit) {
                     text =
                         SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
                             .format(note.date.toDate()),
-                    style = MaterialTheme.typography.bodySmall)
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer)
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
                   Icon(
                       imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                      contentDescription = null)
+                      contentDescription = null,
+                      tint = MaterialTheme.colorScheme.onPrimaryContainer)
                 }
               }
 
@@ -159,8 +173,12 @@ fun NoteItem(note: Note, onClick: () -> Unit) {
           Text(
               text = note.title,
               style = MaterialTheme.typography.bodyMedium,
-              fontWeight = FontWeight.Bold)
-          Text(text = note.id, style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+              fontWeight = FontWeight.Bold,
+              color = MaterialTheme.colorScheme.onPrimaryContainer)
+          Text(
+              text = note.id,
+              style = MaterialTheme.typography.bodySmall,
+              color = MaterialTheme.colorScheme.onPrimary)
         }
       }
 }
