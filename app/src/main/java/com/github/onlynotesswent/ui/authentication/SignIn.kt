@@ -25,7 +25,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
@@ -78,7 +77,7 @@ fun SignInScreen(navigationActions: NavigationActions, userViewModel: UserViewMo
       // UI:
       WelcomeText()
       Logo()
-      Spacer(modifier = Modifier.height(80.dp))
+      Spacer(modifier = Modifier.height(120.dp))
       SignInButton(
           onClick = {
             val gso =
@@ -120,7 +119,7 @@ internal fun authSuccessHandler(
 internal fun Logo() {
   Image(
       modifier = Modifier.width(384.dp).height(144.dp).testTag("loginLogo"),
-      painter = painterResource(id = R.drawable.only_notes_logo2),
+      painter = painterResource(id = R.drawable.only_notes_logo),
       contentDescription = "image description",
       contentScale = ContentScale.FillBounds)
 }
@@ -135,7 +134,7 @@ internal fun WelcomeText() {
               fontSize = 57.sp,
               lineHeight = 64.sp,
               fontWeight = FontWeight(400),
-              color = Color(0xFF191C1E),
+              color = MaterialTheme.colorScheme.onBackground,
               textAlign = TextAlign.Center,
           ))
 }
@@ -161,8 +160,7 @@ internal fun SignInButton(onClick: () -> Unit) {
                 fontSize = 16.sp,
                 lineHeight = 24.sp,
                 fontWeight = FontWeight(400),
-                color = Color(0xFF191C1E),
-            ))
+                color = MaterialTheme.colorScheme.onSurface))
   }
 }
 
