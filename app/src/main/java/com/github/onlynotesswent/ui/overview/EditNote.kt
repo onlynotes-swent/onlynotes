@@ -245,7 +245,6 @@ fun EditNoteScreen(
                     }
               }
 
-
               items(updatedComments.commentsList.size) { index ->
                 val comment = updatedComments.commentsList[index]
                 val labelText = remember { mutableStateOf("Loading...") }
