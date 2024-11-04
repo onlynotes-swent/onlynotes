@@ -254,8 +254,7 @@ fun EditNoteScreen(
                                       comment.commentId, it, updatedComments)
                               updateOnlyNoteCommentAndDate()
                             },
-                            label = { // Text(labelText.value)
-                            },
+                            label = { Text(comment.userId) },
                             placeholder = { Text("Enter comment here") },
                             modifier = Modifier.weight(1f).testTag("EditCommentTextField"))
 
