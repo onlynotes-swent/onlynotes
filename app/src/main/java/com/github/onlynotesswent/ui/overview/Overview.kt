@@ -176,9 +176,9 @@ fun NoteItem(note: Note, onClick: () -> Unit) {
               fontWeight = FontWeight.Bold,
               color = MaterialTheme.colorScheme.onPrimaryContainer)
           Text(
-              text = note.id,
+              text = note.noteClass.classCode + " " + note.noteClass.className,
               style = MaterialTheme.typography.bodySmall,
-              color = MaterialTheme.colorScheme.onPrimary)
+              color = MaterialTheme.colorScheme.onPrimaryContainer)
         }
       }
 }
