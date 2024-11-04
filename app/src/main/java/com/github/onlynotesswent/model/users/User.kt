@@ -22,7 +22,7 @@ data class User(
     val dateOfJoining: Timestamp,
     val rating: Double = 0.0,
     val friends: Friends = Friends(),
-    val profilePicture: String = ""
+    val hasProfilePicture: Boolean = false,
 )
 
 /**

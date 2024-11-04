@@ -38,6 +38,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import coil.compose.rememberAsyncImagePainter
 import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.note.Note
@@ -68,9 +69,10 @@ fun EditProfileScreen(
   val newFirstName = remember { mutableStateOf(user.value?.firstName ?: "") }
   val newLastName = remember { mutableStateOf(user.value?.lastName ?: "") }
   val newUserName = remember { mutableStateOf(user.value?.userName ?: "") }
-  val newProfilePicture = remember { mutableStateOf(user.value?.profilePicture ?: "") }
+  val profilePicture = remember { mutableStateOf("") }
   val userNameError = remember { mutableStateOf(false) }
   val saveEnabled = remember { mutableStateOf(true) }
+  val isProfilePictureUpToDate = remember { mutableStateOf(false) }
   val context = LocalContext.current
 
   Scaffold(
@@ -86,7 +88,9 @@ fun EditProfileScreen(
             title = {},
             navigationIcon = {
               IconButton(
-                  onClick = { navigationActions.goBack() }, Modifier.testTag("goBackButton")) {
+                  onClick = {
+                      isProfilePictureUpToDate.value = false
+                      navigationActions.goBack() }, Modifier.testTag("goBackButton")) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
                         contentDescription = "Back")
@@ -98,7 +102,7 @@ fun EditProfileScreen(
             modifier = Modifier.fillMaxSize().padding(paddingValues),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally) {
-              ProfilePicture(newProfilePicture, userViewModel, profilePictureTaker,fileViewModel)
+              ProfilePicture(profilePictureTaker, userViewModel, profilePicture, fileViewModel, isProfilePictureUpToDate)
 
               // Text Fields for user information
               FirstNameTextField(newFirstName)
@@ -119,8 +123,8 @@ fun EditProfileScreen(
                               uid = it.uid,
                               dateOfJoining = it.dateOfJoining,
                               rating = it.rating,
-                              profilePicture = it.profilePicture,
-                          )
+                              hasProfilePicture = if(profilePicture.value.isNotBlank()) true else it.hasProfilePicture)
+
                         }
                     if (updatedUser == null) {
                       Toast.makeText(
@@ -132,7 +136,13 @@ fun EditProfileScreen(
                     } else {
                       userViewModel.updateUser(
                           user = updatedUser,
-                          onSuccess = { navigationActions.goBack() },
+                          onSuccess = {
+                              navigationActions.goBack()
+                              fileViewModel.uploadNoteFile(
+                                  userViewModel.currentUser.value!!.uid,
+                                  profilePicture.value.toUri(),
+                                  Note.Type.JPEG)
+                                      },
                           onFailure = { exception ->
                             Toast.makeText(
                                     context,
@@ -153,25 +163,31 @@ fun EditProfileScreen(
 @SuppressLint("StateFlowValueCalledInComposition")
 @Composable
 fun ProfilePicture(
-    newProfilePicture: MutableState<String>,
-    userViewModel: UserViewModel,
     profilePictureTaker: ProfilePictureTaker,
-    fileViewModel: FileViewModel
+    userViewModel: UserViewModel,
+    profilePicture: MutableState<String>,
+    fileViewModel: FileViewModel,
+    isProfilePictureUpToDate: MutableState<Boolean>
 ) {
 
   Box(modifier = Modifier.size(150.dp)) {
+       if (!isProfilePictureUpToDate.value && userViewModel.currentUser.value!!.hasProfilePicture) {
+           fileViewModel.downloadFile(
+               userViewModel.currentUser.value!!.uid,
+               Note.Type.JPEG,
+               context = LocalContext.current,
+               onSuccess = { file -> profilePicture.value = file.absolutePath },
+               onFailure = { e -> Log.e("ProfilePicture", "Error downloading profile picture", e) }
+           )
+
+           isProfilePictureUpToDate.value = true
+       }
+
     val painter =
-        if (newProfilePicture.value.isNotEmpty()) {
-          Log.e("ProfilePicture", "newProfilePicture.value: ${newProfilePicture.value}")
-          fileViewModel.downloadFile(
-              userViewModel.currentUser.value!!.uid,
-              Note.Type.JPEG,
-              context = LocalContext.current,
-                onSuccess = { file -> newProfilePicture.value = file.absolutePath },
-                onFailure = { e -> Log.e("ProfilePicture", "Error downloading profile picture", e) }
-              )
-          rememberAsyncImagePainter(newProfilePicture.value)
+        if (profilePicture.value.isNotBlank()) {
+            rememberAsyncImagePainter(profilePicture.value)
         } else {
+            Log.i("ProfilePicture", "No profile picture found, isProfilePictureUpToDate: $isProfilePictureUpToDate")
           rememberVectorPainter(Icons.Default.AccountCircle)
         }
 
@@ -198,32 +214,14 @@ fun ProfilePicture(
                 .background(Color.White) // Optional: background for contrast
                 .clickable {
                   // add  the image here
-                  editProfilePicture(profilePictureTaker, userViewModel, newProfilePicture,fileViewModel)
+                    profilePictureTaker.onImageSelected = { uri ->
+                        if (uri != null) {
+                            profilePicture.value = uri.toString()
+                        }
+                    }
+                    profilePictureTaker.pickImage()
                 }, // Trigger the onEditClick callback
         tint = Color.Gray // Icon color
         )
   }
-}
-
-fun editProfilePicture(
-    profilePictureTaker: ProfilePictureTaker,
-    userViewModel: UserViewModel,
-    profileImage: MutableState<String>,
-    fileViewModel: FileViewModel
-) {
-  profilePictureTaker.onImageSelected = { uri ->
-      if (uri != null) {
-          fileViewModel.uploadNoteFile(
-              userViewModel.currentUser.value!!.uid,
-              uri,
-              Note.Type.JPEG)
-      }
-
-    userViewModel.updateUser(
-        userViewModel.currentUser.value!!.copy(profilePicture = uri.toString()),
-        {},
-        { e -> println(e) })
-    profileImage.value = uri.toString()
-  }
-  profilePictureTaker.pickImage()
 }
