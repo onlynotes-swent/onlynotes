@@ -75,23 +75,6 @@ class EditNoteTest {
     org.mockito.kotlin.verify(navigationActions).goBack()
     org.mockito.kotlin.verify(navigationActions, never()).navigateTo(Screen.OVERVIEW)
   }
-  /*
-  @Test
-  fun clickAddCommentButton() {
-    composeTestRule.onNodeWithTag("Add Comment Button").performClick()
-    composeTestRule.onNodeWithTag("DeleteCommentButton_0").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("EditCommentTextField_0").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("EditCommentTextField_0").performTextInput("example Comment")
-  }*/
-  /*
-  @Test
-  fun clickAddCommentButtonAndDelete() {
-    composeTestRule.onNodeWithTag("Add Comment Button").performClick()
-    composeTestRule.onNodeWithTag("DeleteCommentButton_0").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("EditCommentTextField_0").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("DeleteCommentButton_0").performClick()
-    composeTestRule.onNodeWithTag("EditCommentTextField_0").assertIsNotDisplayed()
-  }*/
 
   @Test
   fun saveClickCallsNavActions() {
