@@ -1,8 +1,10 @@
 package com.github.onlynotesswent.ui.user
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
@@ -11,10 +13,17 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.Button
+import androidx.compose.material3.CardElevation
+import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedCard
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -25,20 +34,30 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.github.onlynotesswent.model.users.User
 import com.github.onlynotesswent.model.users.UserViewModel
 import com.github.onlynotesswent.ui.navigation.BottomNavigationMenu
 import com.github.onlynotesswent.ui.navigation.LIST_TOP_LEVEL_DESTINATION
 import com.github.onlynotesswent.ui.navigation.NavigationActions
+import com.github.onlynotesswent.ui.navigation.Screen
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 // User Profile Home screen:
 @Composable
 fun UserProfileScreen(navigationActions: NavigationActions, userViewModel: UserViewModel) {
   val user = userViewModel.currentUser.collectAsState()
   // Display the user's profile information
-  ProfileScaffold(navigationActions) { ProfileContent(user) }
+  ProfileScaffold(navigationActions) {
+      ProfileContent(user)
+      Button(onClick = {navigationActions.navigateTo(Screen.EDIT_PROFILE)}){
+          Text("Click to Edit Profile")
+      }
+  }
 }
 
 // Other users' Profile Home screen:
@@ -104,13 +123,36 @@ fun ProfileContent(user: State<User?>) {
     Text("User not found")
   } else {
     // ADD PROFILE PICTURE HERE
-    Text("First Name: ${user.value!!.firstName}")
-    Text("Last Name: ${user.value!!.lastName}")
-    Text("User Name: ${user.value!!.userName}")
-    Spacer(modifier = Modifier.height(8.dp))
-    Text("Member Since: ${user.value!!.dateOfJoining.toDate()}")
-    Text("Rating: ${user.value!!.rating}")
-    Spacer(modifier = Modifier.height(20.dp))
+      ElevatedCard(
+          // Aisel - change colors here
+          modifier = Modifier.padding(16.dp),
+      ) {
+          Spacer(modifier = Modifier.height(5.dp))
+          Row {
+              Text(
+                  "Name: ${user.value!!.firstName} ${user.value!!.lastName}",
+                  fontWeight = FontWeight(500)
+              )
+          }
+          Spacer(modifier = Modifier.height(10.dp))
+          Text(
+              "@${user.value!!.userName}",
+              fontWeight = FontWeight(300),
+              modifier = Modifier.alpha(0.7f)
+          )
+          Spacer(modifier = Modifier.height(10.dp))
+          Row {
+              Icon(Icons.Default.DateRange, "dateIcon")
+              Text("Member Since: ${SimpleDateFormat("d/M/yyyy", Locale.FRANCE).format(user.value!!.dateOfJoining.toDate())}")
+          }
+          Spacer(modifier = Modifier.height(10.dp))
+          Row {
+              Icon(Icons.Default.Star, "starIcon")
+              Text("Rating: ${user.value!!.rating}")
+          }
+          Spacer(modifier = Modifier.height(5.dp))
+      }
+    Spacer(modifier = Modifier.height(30.dp))
 
     // Display the user's friends
     Text("Following: ${user.value!!.friends.following.size}")
