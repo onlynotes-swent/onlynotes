@@ -106,9 +106,9 @@ data class Note(
       fun addComment(
           userId: String,
           content: String,
-          CommentCollection: CommentCollection
+          commentCollection: CommentCollection
       ): CommentCollection {
-        val mutableCommentsList = CommentCollection.commentsList.toMutableList()
+        val mutableCommentsList = commentCollection.commentsList.toMutableList()
         mutableCommentsList.add(0, Comment(generateId(userId, content), userId, content))
         return CommentCollection(mutableCommentsList.toList())
       }
@@ -117,15 +117,15 @@ data class Note(
        *
        * @param commentId The ID of the comment to be edited.
        * @param content The new content for the comment.
-       * @param CommentCollection The current collection of comments.
+       * @param commentCollection The current collection of comments.
        * @return An updated CommentCollection with the modified comment.
        */
       fun editComment(
           commentId: String,
           content: String,
-          CommentCollection: CommentCollection
+          commentCollection: CommentCollection
       ): CommentCollection {
-        val mutableCommentsList = CommentCollection.commentsList.toMutableList()
+        val mutableCommentsList = commentCollection.commentsList.toMutableList()
         return CommentCollection(
             mutableCommentsList.map {
               if (it.commentId == commentId)
@@ -137,15 +137,15 @@ data class Note(
        * Deletes a comment from the CommentCollection by its ID.
        *
        * @param commentId The ID of the comment to be deleted.
-       * @param CommentCollection The current collection of comments.
+       * @param commentCollection The current collection of comments.
        * @return An updated CommentCollection excluding the deleted comment.
        */
       fun deleteComment(
           commentId: String,
-          CommentCollection: CommentCollection
+          commentCollection: CommentCollection
       ): CommentCollection {
         return CommentCollection(
-            CommentCollection.commentsList.filter { it.commentId != commentId })
+            commentCollection.commentsList.filter { it.commentId != commentId })
       }
     }
   }
@@ -158,5 +158,8 @@ data class Note(
    * @property userId The unique identifier of the user who posted the comment.
    * @property content The text content of the comment.
    */
-  data class Comment(val commentId: String, val userId: String, val content: String)
+  data class Comment(
+      val commentId: String,
+      val userId: String,
+      val content: String)
 }

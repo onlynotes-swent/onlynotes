@@ -233,16 +233,6 @@ fun EditNoteScreen(
               } else {
 
                 updatedComments.commentsList.forEachIndexed { _, comment ->
-                  // val labelText = remember { mutableStateOf("Loading...") }
-                  /*
-                  LaunchedEffect(comment.userId) {
-                      userViewModel.getUserById(
-                          id = comment.userId,
-                          onSuccess = { user -> labelText.value = user.userName },
-                          onUserNotFound = { labelText.value = "User Not Found" },
-                          onFailure = { labelText.value = "Error Finding User" })
-                  }*/
-
                   Row(
                       modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
                       verticalAlignment = Alignment.CenterVertically) {
