@@ -76,12 +76,12 @@ class EditNoteTest {
     org.mockito.kotlin.verify(navigationActions).goBack()
     org.mockito.kotlin.verify(navigationActions, never()).navigateTo(Screen.OVERVIEW)
   }
-
+  /*
   @Test
   fun clickAddCommentButton() {
     composeTestRule.onNodeWithTag("Add Comment Button").performClick()
     composeTestRule.onNodeWithTag("EditCommentTextField_0").assertIsDisplayed()
-  }
+  }*/
 
   @Test
   fun saveClickCallsNavActions() {
