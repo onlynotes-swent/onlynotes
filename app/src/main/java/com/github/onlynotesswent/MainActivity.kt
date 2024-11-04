@@ -87,7 +87,7 @@ fun OnlyNotesApp(scanner: Scanner, profilePictureTaker: ProfilePictureTaker) {
         route = Route.PROFILE,
     ) {
       composable(Screen.PROFILE) {
-        EditProfileScreen(navigationActions, userViewModel, profilePictureTaker,fileViewModel )
+        EditProfileScreen(navigationActions, userViewModel, profilePictureTaker, fileViewModel)
       }
     }
   }

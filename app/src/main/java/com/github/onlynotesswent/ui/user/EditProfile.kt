@@ -89,8 +89,10 @@ fun EditProfileScreen(
             navigationIcon = {
               IconButton(
                   onClick = {
-                      isProfilePictureUpToDate.value = false
-                      navigationActions.goBack() }, Modifier.testTag("goBackButton")) {
+                    isProfilePictureUpToDate.value = false
+                    navigationActions.goBack()
+                  },
+                  Modifier.testTag("goBackButton")) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
                         contentDescription = "Back")
@@ -102,7 +104,12 @@ fun EditProfileScreen(
             modifier = Modifier.fillMaxSize().padding(paddingValues),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally) {
-              ProfilePicture(profilePictureTaker, userViewModel, profilePicture, fileViewModel, isProfilePictureUpToDate)
+              ProfilePicture(
+                  profilePictureTaker,
+                  userViewModel,
+                  profilePicture,
+                  fileViewModel,
+                  isProfilePictureUpToDate)
 
               // Text Fields for user information
               FirstNameTextField(newFirstName)
@@ -123,8 +130,9 @@ fun EditProfileScreen(
                               uid = it.uid,
                               dateOfJoining = it.dateOfJoining,
                               rating = it.rating,
-                              hasProfilePicture = if(profilePicture.value.isNotBlank()) true else it.hasProfilePicture)
-
+                              hasProfilePicture =
+                                  if (profilePicture.value.isNotBlank()) true
+                                  else it.hasProfilePicture)
                         }
                     if (updatedUser == null) {
                       Toast.makeText(
@@ -137,12 +145,12 @@ fun EditProfileScreen(
                       userViewModel.updateUser(
                           user = updatedUser,
                           onSuccess = {
-                              navigationActions.goBack()
-                              fileViewModel.uploadNoteFile(
-                                  userViewModel.currentUser.value!!.uid,
-                                  profilePicture.value.toUri(),
-                                  Note.Type.JPEG)
-                                      },
+                            navigationActions.goBack()
+                            fileViewModel.uploadNoteFile(
+                                userViewModel.currentUser.value!!.uid,
+                                profilePicture.value.toUri(),
+                                Note.Type.JPEG)
+                          },
                           onFailure = { exception ->
                             Toast.makeText(
                                     context,
@@ -171,23 +179,24 @@ fun ProfilePicture(
 ) {
 
   Box(modifier = Modifier.size(150.dp)) {
-       if (!isProfilePictureUpToDate.value && userViewModel.currentUser.value!!.hasProfilePicture) {
-           fileViewModel.downloadFile(
-               userViewModel.currentUser.value!!.uid,
-               Note.Type.JPEG,
-               context = LocalContext.current,
-               onSuccess = { file -> profilePicture.value = file.absolutePath },
-               onFailure = { e -> Log.e("ProfilePicture", "Error downloading profile picture", e) }
-           )
+    if (!isProfilePictureUpToDate.value && userViewModel.currentUser.value!!.hasProfilePicture) {
+      fileViewModel.downloadFile(
+          userViewModel.currentUser.value!!.uid,
+          Note.Type.JPEG,
+          context = LocalContext.current,
+          onSuccess = { file -> profilePicture.value = file.absolutePath },
+          onFailure = { e -> Log.e("ProfilePicture", "Error downloading profile picture", e) })
 
-           isProfilePictureUpToDate.value = true
-       }
+      isProfilePictureUpToDate.value = true
+    }
 
     val painter =
         if (profilePicture.value.isNotBlank()) {
-            rememberAsyncImagePainter(profilePicture.value)
+          rememberAsyncImagePainter(profilePicture.value)
         } else {
-            Log.i("ProfilePicture", "No profile picture found, isProfilePictureUpToDate: $isProfilePictureUpToDate")
+          Log.i(
+              "ProfilePicture",
+              "No profile picture found, isProfilePictureUpToDate: $isProfilePictureUpToDate")
           rememberVectorPainter(Icons.Default.AccountCircle)
         }
 
@@ -214,12 +223,12 @@ fun ProfilePicture(
                 .background(Color.White) // Optional: background for contrast
                 .clickable {
                   // add  the image here
-                    profilePictureTaker.onImageSelected = { uri ->
-                        if (uri != null) {
-                            profilePicture.value = uri.toString()
-                        }
+                  profilePictureTaker.onImageSelected = { uri ->
+                    if (uri != null) {
+                      profilePicture.value = uri.toString()
                     }
-                    profilePictureTaker.pickImage()
+                  }
+                  profilePictureTaker.pickImage()
                 }, // Trigger the onEditClick callback
         tint = Color.Gray // Icon color
         )
