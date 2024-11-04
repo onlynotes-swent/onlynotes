@@ -1,6 +1,8 @@
 package com.github.onlynotesswent.model.users
 
 import com.google.firebase.Timestamp
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 /**
  * Data class representing a user.
@@ -22,7 +24,15 @@ data class User(
     val dateOfJoining: Timestamp,
     val rating: Double = 0.0,
     val friends: Friends = Friends(),
-)
+    val bio: String = ""
+) {
+  fun userHandle() = "@${userName.ifEmpty { "unknown" }}"
+
+  fun fullName() = "$firstName $lastName"
+
+  fun dateToString(): String =
+      SimpleDateFormat("d/M/yyyy", Locale.FRANCE).format(dateOfJoining.toDate())
+}
 
 /**
  * Data class representing a user's friends (following and followers), represented by lists of UIDs.

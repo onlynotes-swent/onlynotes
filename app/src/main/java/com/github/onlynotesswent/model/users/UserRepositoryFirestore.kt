@@ -36,7 +36,8 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore) : UserRepositor
             Friends(
                 following = document.get("friends.following") as? List<String> ?: emptyList(),
                 followers = document.get("friends.followers") as? List<String> ?: emptyList(),
-            ))
+            ),
+        bio = document.getString("bio") ?: "")
   }
 
   override fun init(auth: FirebaseAuth, onSuccess: () -> Unit) {
@@ -174,6 +175,10 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore) : UserRepositor
       onSuccess: (List<User>) -> Unit,
       onFailure: (Exception) -> Unit
   ) {
+    if (userIDs.isEmpty()) {
+      onSuccess(emptyList())
+      return
+    }
     db.collection(collectionPath)
         .whereIn("uid", userIDs)
         .get()
