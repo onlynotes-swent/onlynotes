@@ -84,7 +84,6 @@ class EditNoteTest {
     composeTestRule.onNodeWithTag("DeleteCommentButton_0").assertIsDisplayed()
     composeTestRule.onNodeWithTag("EditCommentTextField_0").assertIsDisplayed()
     composeTestRule.onNodeWithTag("EditCommentTextField_0").performTextInput("example Comment")
-
   }
 
   @Test
