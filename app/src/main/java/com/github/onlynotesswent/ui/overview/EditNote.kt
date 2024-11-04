@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -23,7 +22,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -69,24 +67,7 @@ fun EditNoteScreen(
   var updatedClassYear by remember { mutableIntStateOf(note?.noteClass?.classYear ?: currentYear) }
   var visibility by remember { mutableStateOf(note?.visibility) }
   var expandedVisibility by remember { mutableStateOf(false) }
-  var updatedComments by remember { mutableStateOf(note?.comments ?: Note.CommentCollection()) }
-  fun updateOnlyNoteCommentAndDate() {
-    noteViewModel.updateNote(
-        Note(
-            id = note?.id ?: "1",
-            type = note?.type ?: Note.Type.NORMAL_TEXT,
-            title = note?.title ?: "",
-            content = note?.content ?: "",
-            date = Timestamp.now(), // Use current timestamp
-            visibility = note?.visibility ?: Note.Visibility.DEFAULT,
-            noteClass = note?.noteClass ?: Note.Class("", "", currentYear, ""),
-            userId = note?.userId ?: "",
-            image =
-                note?.image
-                    ?: Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888), // Placeholder Bitmap
-            comments = updatedComments),
-        userViewModel.currentUser.value!!.uid)
-  }
+
   Scaffold(
       modifier = Modifier.testTag("editNoteScreen"),
       topBar = {
@@ -229,59 +210,6 @@ fun EditNoteScreen(
                     },
                     modifier = Modifier.testTag("Delete button")) {
                       Text("Delete note")
-                    }
-              }
-
-              item {
-                Button(
-                    onClick = {
-                      updatedComments =
-                          Note.CommentCollection.addComment(
-                              userViewModel.currentUser.value?.uid ?: "1", "", updatedComments)
-                      updateOnlyNoteCommentAndDate()
-                    },
-                    modifier = Modifier.testTag("Add Comment Button")) {
-                      Text("Add Comment")
-                    }
-              }
-              items(updatedComments.commentsList.size) { index ->
-                val comment = updatedComments.commentsList[index]
-                val labelText = remember { mutableStateOf("Loading...") }
-                LaunchedEffect(comment.userId) {
-                  userViewModel.getUserById(
-                      id = comment.userId,
-                      onSuccess = { user -> labelText.value = user.userName },
-                      onUserNotFound = { labelText.value = "User Not Found" },
-                      onFailure = { labelText.value = "Error Finding User" })
-                }
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
-                    verticalAlignment = Alignment.CenterVertically) {
-                      OutlinedTextField(
-                          value = comment.content,
-                          onValueChange = {
-                            updatedComments =
-                                Note.CommentCollection.editComment(
-                                    comment.commentId, it, updatedComments)
-                            updateOnlyNoteCommentAndDate()
-                          },
-                          label = { Text(labelText.value) },
-                          placeholder = { Text("Enter comment here") },
-                          modifier = Modifier.weight(1f).testTag("EditCommentTextField_$index"))
-
-                      IconButton(
-                          onClick = {
-                            updatedComments =
-                                Note.CommentCollection.deleteComment(
-                                    comment.commentId, updatedComments)
-                            updateOnlyNoteCommentAndDate()
-                          },
-                          modifier = Modifier.testTag("DeleteCommentButton_$index")) {
-                            Icon(
-                                imageVector = Icons.Default.Delete,
-                                contentDescription = "Delete Comment",
-                                tint = Color.Red)
-                          }
                     }
               }
             }
