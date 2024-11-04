@@ -61,6 +61,8 @@ class EditNoteTest {
     composeTestRule.onNodeWithTag("goBackButton").assertIsDisplayed()
     composeTestRule.onNodeWithTag("Save button").assertIsDisplayed()
     composeTestRule.onNodeWithTag("Delete button").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("Add Comment Button").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("NoCommentsText").assertIsDisplayed()
     composeTestRule.onNodeWithTag("visibilityEditButton").assertIsDisplayed()
     composeTestRule.onNodeWithTag("visibilityEditMenu").assertIsNotDisplayed()
 
@@ -74,6 +76,14 @@ class EditNoteTest {
 
     org.mockito.kotlin.verify(navigationActions).goBack()
     org.mockito.kotlin.verify(navigationActions, never()).navigateTo(Screen.OVERVIEW)
+  }
+
+  @Test
+  fun addCommentAndDeleteComment() {
+    composeTestRule.onNodeWithTag("Add Comment Button").performClick()
+    composeTestRule.onNodeWithTag("EditCommentTextField").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("DeleteCommentButton").performClick()
+    composeTestRule.onNodeWithTag("EditCommentTextField").assertIsNotDisplayed()
   }
 
   @Test
