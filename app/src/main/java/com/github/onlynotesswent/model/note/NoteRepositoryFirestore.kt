@@ -8,8 +8,6 @@ import com.google.firebase.Timestamp
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
-import java.text.SimpleDateFormat
-import java.util.Locale
 
 class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepository {
   private val commentDelimiter: String = '\u001F'.toString()
@@ -29,6 +27,47 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
       val image: String,
       val commentsList: List<String>
   )
+    /**
+     * Converts a single Comment object into a formatted string for Firestore storage.
+     *
+     * @param comment The Comment object to convert.
+     * @return A string representing the Comment, formatted as
+     * "commentId<delimiter>userId<delimiter>userName<delimiter>content<delimiter>creationDate<delimiter>editedDate".
+     *
+     * Each field is separated by the `commentDelimiter` for easy parsing during retrieval.
+     */
+  private fun convertCommentToString(comment: Note.Comment): String {
+    return comment.commentId +
+        commentDelimiter +
+        comment.userId +
+        commentDelimiter +
+        comment.userName +
+        commentDelimiter +
+        comment.content +
+        commentDelimiter +
+        comment.creationDate.seconds.toString() +
+        commentDelimiter +
+        comment.editedDate.seconds.toString()
+  }
+    /**
+     * Converts a formatted string snapshot of a comment back into a Comment object.
+     *
+     * @param commentSnapshot The string representing the comment, formatted as
+     * "commentId<delimiter>userId<delimiter>userName<delimiter>content<delimiter>creationDate<delimiter>editedDate".
+     * @return A Comment object created from the parsed string values.
+     *
+     * @throws IndexOutOfBoundsException if the comment snapshot is improperly formatted and does not contain the expected number of fields.
+     */
+  private fun convertCommentStringToComment(commentSnapshot: String): Note.Comment {
+    val commentValues = commentSnapshot.split(commentDelimiter)
+    return Note.Comment(
+        commentValues[0],
+        userId = commentValues[1],
+        userName = commentValues[2],
+        content = commentValues[2],
+        creationDate = Timestamp(commentValues[3].toLong(), 0),
+        editedDate = Timestamp(commentValues[4].toLong(), 0))
+  }
   /**
    * Converts a list of Comment objects to a list of snapshot strings for Firestore storage.
    *
@@ -37,20 +76,7 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
    *   "commentId<delimiter>userId<delimiter>content".
    */
   private fun convertCommentsList(commentsList: List<Note.Comment>): List<String> {
-    return commentsList.map {
-      val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
-      it.commentId +
-          commentDelimiter +
-          it.userId +
-          commentDelimiter +
-          it.userName +
-          commentDelimiter +
-          it.content +
-          commentDelimiter +
-          it.creationDate.seconds.toString() +
-          commentDelimiter +
-          it.editedDate.seconds.toString()
-    }
+    return commentsList.map { convertCommentToString(it) }
   }
   /**
    * Converts a list of snapshot strings to a list of Comment objects.
@@ -60,16 +86,7 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
    * @return A list of Comment objects created from the parsed snapshot strings.
    */
   private fun commentStringToCommentClass(commentSnapshotList: List<String>): List<Note.Comment> {
-    return commentSnapshotList.map {
-      val commentValues = it.split(commentDelimiter)
-      Note.Comment(
-          commentValues[0],
-          userId = commentValues[1],
-          userName = commentValues[2],
-          content = commentValues[2],
-          creationDate = Timestamp(commentValues[3].toLong(), 0),
-          editedDate = Timestamp(commentValues[4].toLong(), 0))
-    }
+    return commentSnapshotList.map { convertCommentStringToComment(it) }
   }
 
   /**
