@@ -67,6 +67,24 @@ fun EditNoteScreen(
   var updatedClassYear by remember { mutableIntStateOf(note?.noteClass?.classYear ?: currentYear) }
   var visibility by remember { mutableStateOf(note?.visibility) }
   var expandedVisibility by remember { mutableStateOf(false) }
+    var updatedComments by remember { mutableStateOf(note?.comments ?: Note.CommentCollection()) }
+    fun updateOnlyNoteCommentAndDate() {
+        noteViewModel.updateNote(
+            Note(
+                id = note?.id ?: "1",
+                type = note?.type ?: Note.Type.NORMAL_TEXT,
+                title = note?.title ?: "",
+                content = note?.content ?: "",
+                date = Timestamp.now(), // Use current timestamp
+                visibility = note?.visibility ?: Note.Visibility.DEFAULT,
+                noteClass = note?.noteClass ?: Note.Class("", "", currentYear, ""),
+                userId = note?.userId ?: "",
+                image =
+                note?.image
+                    ?: Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888), // Placeholder Bitmap
+                comments = updatedComments),
+            userViewModel.currentUser.value!!.uid)
+    }
 
   Scaffold(
       modifier = Modifier.testTag("editNoteScreen"),
@@ -215,10 +233,10 @@ fun EditNoteScreen(
               item {
                 Button(
                     onClick = {
-                      /*updatedComments =
+                      updatedComments =
                           Note.CommentCollection.addComment(
                               userViewModel.currentUser.value?.uid ?: "1", "", updatedComments)
-                      updateOnlyNoteCommentAndDate()*/
+                      updateOnlyNoteCommentAndDate()
                     },
                     modifier = Modifier.testTag("Add Comment Button")) {
                       Text("Add Comment")
