@@ -203,7 +203,7 @@ class EndToEndTest {
     composeTestRule.onNodeWithTag("EditTitle textField").assertIsDisplayed()
     composeTestRule.onNodeWithTag("EditTitle textField").performTextInput("Updated Title")
 
-    val saveButtonIndex = 8
+    val saveButtonIndex = 7
     composeTestRule.onNodeWithTag("editNoteColumn").performScrollToIndex(saveButtonIndex)
     composeTestRule.onNodeWithTag("Save button").performClick()
 
