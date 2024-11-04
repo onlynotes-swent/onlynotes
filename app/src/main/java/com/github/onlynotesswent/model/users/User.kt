@@ -12,6 +12,8 @@ import com.google.firebase.Timestamp
  * @property uid The unique identifier of the user.
  * @property dateOfJoining The date when the user joined.
  * @property rating The rating of the user.
+ * @property friends The user's friends.
+ * @property hasProfilePicture A flag indicating if the user has a profile picture.
  */
 data class User(
     val firstName: String,
