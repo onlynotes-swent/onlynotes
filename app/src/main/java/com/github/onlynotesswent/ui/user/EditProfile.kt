@@ -113,8 +113,7 @@ fun EditProfileScreen(
                   fileViewModel,
                   isProfilePictureUpToDate,
                   hasProfilePictureBeenChanged,
-                  context
-              )
+                  context)
 
               // Text Fields for user information
               FirstNameTextField(newFirstName)
@@ -152,12 +151,12 @@ fun EditProfileScreen(
                           onSuccess = {
                             navigationActions.goBack()
                             // Upload the profile picture  if it has been changed
-                             if(hasProfilePictureBeenChanged.value) {
-                                fileViewModel.uploadNoteFile(
-                                    userViewModel.currentUser.value!!.uid,
-                                    profilePicture.value.toUri(),
-                                    Note.Type.JPEG)
-                             }
+                            if (hasProfilePictureBeenChanged.value) {
+                              fileViewModel.uploadNoteFile(
+                                  userViewModel.currentUser.value!!.uid,
+                                  profilePicture.value.toUri(),
+                                  Note.Type.JPEG)
+                            }
                           },
                           onFailure = { exception ->
                             Toast.makeText(
@@ -189,12 +188,12 @@ fun ProfilePicture(
 ) {
 
   Box(modifier = Modifier.size(150.dp)) {
-     // Download the profile picture from Firebase Storage if it hasn't been downloaded yet
+    // Download the profile picture from Firebase Storage if it hasn't been downloaded yet
     if (!isProfilePictureUpToDate.value && userViewModel.currentUser.value!!.hasProfilePicture) {
       fileViewModel.downloadFile(
           userViewModel.currentUser.value!!.uid,
           Note.Type.JPEG,
-          context =context,
+          context = context,
           onSuccess = { file -> profilePicture.value = file.absolutePath },
           onFailure = { e -> Log.e("ProfilePicture", "Error downloading profile picture", e) })
       isProfilePictureUpToDate.value = true
@@ -203,10 +202,10 @@ fun ProfilePicture(
     // Profile Picture Painter
     val painter =
         if (profilePicture.value.isNotBlank()) {
-            // Load the profile picture if it exists
+          // Load the profile picture if it exists
           rememberAsyncImagePainter(profilePicture.value)
         } else {
-            // Load the default profile picture if it doesn't exist
+          // Load the default profile picture if it doesn't exist
           rememberVectorPainter(Icons.Default.AccountCircle)
         }
 
@@ -228,16 +227,16 @@ fun ProfilePicture(
         modifier =
             Modifier.testTag("editProfilePicture")
                 .size(40.dp) // Size of the edit icon
-                .align(Alignment.BottomEnd)  // Position on the bottom-left corner
+                .align(Alignment.BottomEnd) // Position on the bottom-left corner
                 .offset(x = (-8).dp, y = (-8).dp)
                 .clip(CircleShape)
                 .background(Color.White) // Background color
                 .clickable {
-                 // Edit hte image and save the URI to the profilePicture state
+                  // Edit hte image and save the URI to the profilePicture state
                   profilePictureTaker.onImageSelected = { uri ->
                     if (uri != null) {
                       profilePicture.value = uri.toString()
-                        hasProfilePictureBeenChanged.value = true
+                      hasProfilePictureBeenChanged.value = true
                     }
                   }
                   profilePictureTaker.pickImage()
