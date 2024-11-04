@@ -41,8 +41,8 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import coil.compose.rememberAsyncImagePainter
+import com.github.onlynotesswent.model.file.FileType
 import com.github.onlynotesswent.model.file.FileViewModel
-import com.github.onlynotesswent.model.note.Note
 import com.github.onlynotesswent.model.users.User
 import com.github.onlynotesswent.model.users.UserRepositoryFirestore
 import com.github.onlynotesswent.model.users.UserViewModel
@@ -152,10 +152,11 @@ fun EditProfileScreen(
                             navigationActions.goBack()
                             // Upload the profile picture  if it has been changed
                             if (hasProfilePictureBeenChanged.value) {
-                              fileViewModel.uploadNoteFile(
+                              fileViewModel.uploadFile(
                                   userViewModel.currentUser.value!!.uid,
                                   profilePicture.value.toUri(),
-                                  Note.Type.JPEG)
+                                  FileType.PROFILE_PIC_JPEG,
+                              )
                             }
                           },
                           onFailure = { exception ->
@@ -192,7 +193,7 @@ fun ProfilePicture(
     if (!isProfilePictureUpToDate.value && userViewModel.currentUser.value!!.hasProfilePicture) {
       fileViewModel.downloadFile(
           userViewModel.currentUser.value!!.uid,
-          Note.Type.JPEG,
+          FileType.PROFILE_PIC_JPEG,
           context = context,
           onSuccess = { file -> profilePicture.value = file.absolutePath },
           onFailure = { e -> Log.e("ProfilePicture", "Error downloading profile picture", e) })
