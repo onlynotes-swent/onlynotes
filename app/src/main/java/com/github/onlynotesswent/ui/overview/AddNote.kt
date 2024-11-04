@@ -73,7 +73,7 @@ fun AddNoteScreen(
   var className by remember { mutableStateOf("") }
   var classCode by remember { mutableStateOf("") }
   var classYear by remember { mutableIntStateOf(currentYear) }
-  var template by remember { mutableStateOf("Choose An Option") }
+  var template by remember { mutableStateOf("Choose an option") }
   var visibility: Note.Visibility? by remember { mutableStateOf(null) }
   var expandedVisibility by remember { mutableStateOf(false) }
   var expandedTemplate by remember { mutableStateOf(false) }
@@ -233,7 +233,7 @@ fun AddNoteScreen(
                           containerColor = MaterialTheme.colorScheme.primary,
                           contentColor = MaterialTheme.colorScheme.onPrimary),
                   enabled =
-                      title.isNotEmpty() && visibility != null && template != "Choose An Option",
+                      title.isNotEmpty() && visibility != null && template != "Choose an option",
                   modifier = Modifier.fillMaxWidth().testTag("createNoteButton")) {
                     Text(text = template)
                   }
