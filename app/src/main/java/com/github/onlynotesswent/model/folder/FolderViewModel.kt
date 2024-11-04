@@ -21,6 +21,9 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
     private val _parentSubFolders = MutableStateFlow<List<Folder>>(emptyList())
     val parentSubFolders: StateFlow<List<Folder>> = _parentSubFolders.asStateFlow()
 
+    private val _parentFolderId = MutableStateFlow<String?>(null)
+    val parentFolderId: StateFlow<String?> = _parentFolderId.asStateFlow()
+
     private val _selectedFolder = MutableStateFlow<Folder?>(null)
     val selectedFolder: StateFlow<Folder?> = _selectedFolder.asStateFlow()
 
@@ -34,6 +37,20 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
         }
     }
 
+    /**
+     * Sets the parent folder ID.
+     *
+     * @param parentFolderId The parent folder ID.
+     */
+    fun selectedParentFolderId(parentFolderId: String?) {
+        _parentFolderId.value = parentFolderId
+    }
+
+    /**
+     * Sets the selected folder.
+     *
+     * @param folder The selected folder.
+     */
     fun selectedFolder(folder: Folder) {
         _selectedFolder.value = folder
     }
@@ -54,7 +71,11 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
      *
      */
     fun addFolder(folder: Folder, userId: String) {
-        repository.addFolder(folder, onSuccess = { getFoldersFrom(userId) }, onFailure = {})
+        repository.addFolder(folder, onSuccess = {
+            //getFoldersFrom(userId)
+            getFoldersByParentFolderId(folder.parentFolderId!!)
+                                                 }
+            , onFailure = {})
     }
 
     /**

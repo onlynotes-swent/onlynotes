@@ -27,6 +27,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -67,7 +68,9 @@ fun AddNoteScreen(
     userViewModel: UserViewModel
 ) {
 
+  val folderId = noteViewModel.folderId.collectAsState()
   val currentYear = Calendar.getInstance().get(Calendar.YEAR)
+
   var title by remember { mutableStateOf("") }
   var className by remember { mutableStateOf("") }
   var classCode by remember { mutableStateOf("") }
@@ -76,6 +79,7 @@ fun AddNoteScreen(
   var visibility: Note.Visibility? by remember { mutableStateOf(null) }
   var expandedVisibility by remember { mutableStateOf(false) }
   var expandedTemplate by remember { mutableStateOf(false) }
+
 
   Scaffold(
       modifier = Modifier.testTag("addNoteScreen"),
@@ -198,7 +202,9 @@ fun AddNoteScreen(
                             visibility = visibility!!,
                             noteClass = Note.Class(classCode, className, classYear, "path"),
                             userId = userViewModel.currentUser.value!!.uid,
-                            image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888))
+                            image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888),
+                            folderId = folderId.value
+                            )
                     // create the note and add it to database
                     noteViewModel.addNote(note, userViewModel.currentUser.value!!.uid)
 
@@ -206,7 +212,7 @@ fun AddNoteScreen(
                       noteViewModel.selectedNote(note)
                       navigationActions.navigateTo(Screen.EDIT_NOTE)
                     } else {
-                      navigationActions.goBack()
+                      navigationActions.goBack()  // if doesnt work try navigateTo(Screen.FOLDER_CONTENTS)
                     }
                   },
                   colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50)),

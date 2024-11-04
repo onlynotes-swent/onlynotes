@@ -23,6 +23,8 @@ object Screen {
   const val EDIT_NOTE = "Edit Note Screen"
   const val SEARCH_NOTE = "Search Note Screen"
   const val PROFILE = "Profile Screen"
+  const val ADD_FOLDER = "Add Folder Screen"
+  const val FOLDER_CONTENTS = "Folder Contents Screen"
 }
 
 data class TopLevelDestination(val route: String, val icon: ImageVector, val textId: String)

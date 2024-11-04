@@ -18,6 +18,15 @@ interface NoteRepository {
 
   fun deleteNoteById(id: String, onSuccess: () -> Unit, onFailure: (Exception) -> Unit)
 
+  /**
+   * Retrieves all notes from a folder.
+   *
+   * @param folderId The ID of the folder to retrieve notes for.
+   * @param onSuccess Callback to be invoked with the retrieved notes.
+   * @param onFailure Callback to be invoked if an error occurs.
+   */
+  fun getNotesFromFolder(folderId: String, onSuccess: (List<Note>) -> Unit, onFailure: (Exception) -> Unit)
+
   // later on we will have to add scanNote, convertNote, downloadNote, etc...
 
 }

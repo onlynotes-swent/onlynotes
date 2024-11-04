@@ -144,6 +144,27 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
         db.collection(collectionPath).document(id).delete(), onSuccess, onFailure)
   }
 
+  override fun getNotesFromFolder(
+      folderId: String,
+      onSuccess: (List<Note>) -> Unit,
+      onFailure: (Exception) -> Unit
+  ) {
+      db.collection(collectionPath).get().addOnCompleteListener { task ->
+          if (task.isSuccessful) {
+              val folderNotes =
+                  task.result.documents
+                      .mapNotNull { document -> documentSnapshotToNote(document) }
+                      .filter { it.folderId == folderId }
+              onSuccess(folderNotes)
+          } else {
+              task.exception?.let { e ->
+                  Log.e("NoteRepositoryFirestore", "Error getting user documents", e)
+                  onFailure(e)
+              }
+          }
+      }
+  }
+
   /**
    * Performs a Firestore operation and calls the appropriate callback based on the result.
    *

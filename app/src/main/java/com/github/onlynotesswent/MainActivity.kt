@@ -12,6 +12,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
+import com.github.onlynotesswent.model.folder.FolderViewModel
 import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.model.scanner.Scanner
 import com.github.onlynotesswent.model.users.UserViewModel
@@ -19,8 +20,10 @@ import com.github.onlynotesswent.ui.authentication.SignInScreen
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Route
 import com.github.onlynotesswent.ui.navigation.Screen
+import com.github.onlynotesswent.ui.overview.AddFolderScreen
 import com.github.onlynotesswent.ui.overview.AddNoteScreen
 import com.github.onlynotesswent.ui.overview.EditNoteScreen
+import com.github.onlynotesswent.ui.overview.FolderContentScreen
 import com.github.onlynotesswent.ui.overview.OverviewScreen
 import com.github.onlynotesswent.ui.search.SearchScreen
 import com.github.onlynotesswent.ui.theme.AppTheme
@@ -41,6 +44,7 @@ fun OnlyNotesApp(scanner: Scanner) {
   val navigationActions = NavigationActions(navController)
   val userViewModel: UserViewModel = viewModel(factory = UserViewModel.Factory)
   val noteViewModel: NoteViewModel = viewModel(factory = NoteViewModel.Factory)
+  val folderViewModel: FolderViewModel = viewModel(factory = FolderViewModel.Factory)
 
   NavHost(navController = navController, startDestination = Route.AUTH) {
     navigation(
@@ -56,13 +60,19 @@ fun OnlyNotesApp(scanner: Scanner) {
         route = Route.OVERVIEW,
     ) {
       composable(Screen.OVERVIEW) {
-        OverviewScreen(navigationActions, noteViewModel, userViewModel)
+        OverviewScreen(navigationActions, noteViewModel, userViewModel, folderViewModel)
       }
       composable(Screen.ADD_NOTE) {
         AddNoteScreen(navigationActions, scanner, noteViewModel, userViewModel)
       }
       composable(Screen.EDIT_NOTE) {
         EditNoteScreen(navigationActions, noteViewModel, userViewModel)
+      }
+      composable(Screen.ADD_FOLDER) {
+        AddFolderScreen(navigationActions, folderViewModel, userViewModel)
+      }
+      composable(Screen.FOLDER_CONTENTS) {
+        FolderContentScreen(navigationActions, folderViewModel, noteViewModel)
       }
     }
 

@@ -193,7 +193,11 @@ fun EditNoteScreen(
                                           1, 1, Bitmap.Config.ARGB_8888) // Placeholder Bitmap
                               ),
                           userViewModel.currentUser.value!!.uid)
-                      navigationActions.navigateTo(Screen.OVERVIEW)
+                      if (note?.folderId != null) {
+                          navigationActions.navigateTo(Screen.FOLDER_CONTENTS)
+                      } else {
+                          navigationActions.navigateTo(Screen.OVERVIEW)
+                      }
                     },
                     modifier = Modifier.testTag("Save button")) {
                       Text("Update note")
