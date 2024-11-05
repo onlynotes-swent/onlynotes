@@ -29,7 +29,7 @@ import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
 
-class ProfileScreenTest {
+class EditProfileScreenTest {
   @Mock private lateinit var mockUserRepository: UserRepository
   @Mock private lateinit var mockNavigationActions: NavigationActions
   @Mock private lateinit var mockNoteRepository: NoteRepository
@@ -58,7 +58,7 @@ class ProfileScreenTest {
     noteViewModel = NoteViewModel(mockNoteRepository)
 
     // Mock the current route to be the user create screen
-    `when`(mockNavigationActions.currentRoute()).thenReturn(Screen.USER_PROFILE)
+    `when`(mockNavigationActions.currentRoute()).thenReturn(Screen.EDIT_PROFILE)
 
     // Mock add user to initialize current user
     `when`(mockUserRepository.addUser(any(), any(), any())).thenAnswer {

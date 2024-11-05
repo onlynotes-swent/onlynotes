@@ -71,6 +71,7 @@ fun UserProfileScreen(navigationActions: NavigationActions, userViewModel: UserV
       topBarTitle = "    My Profile",
       floatingActionButton = {
         ExtendedFloatingActionButton(
+            modifier = Modifier.testTag("editProfileButton"),
             onClick = { navigationActions.navigateTo(Screen.EDIT_PROFILE) }) {
               Row {
                 Icon(Icons.Default.Create, contentDescription = "Edit Profile")
@@ -126,7 +127,7 @@ private fun ProfileScaffold(
     content: @Composable () -> Unit,
 ) {
   Scaffold(
-      modifier = Modifier.testTag("EditProfileScreen"),
+      modifier = Modifier.testTag("profileScaffold"),
       floatingActionButton = floatingActionButton,
       bottomBar = {
         BottomNavigationMenu(
@@ -162,7 +163,10 @@ fun TopProfileBar(
 fun ProfileColumn(paddingValues: PaddingValues, content: @Composable () -> Unit = {}) {
   Column(
       modifier =
-          Modifier.fillMaxSize().padding(paddingValues).verticalScroll(rememberScrollState()),
+          Modifier.fillMaxSize()
+              .padding(paddingValues)
+              .verticalScroll(rememberScrollState())
+              .testTag("profileScaffoldColumn"),
       verticalArrangement = Arrangement.Center,
       horizontalAlignment = Alignment.CenterHorizontally) {
         content()
@@ -182,16 +186,16 @@ fun ProfileContent(
 
   // Display the user's profile information:
   if (user.value == null) {
-    Text("User not found")
+    Text("User not found", modifier = Modifier.testTag("userNotFound"))
   } else {
     // ADD PROFILE PICTURE HERE
     ElevatedCard(
         // TODO: Aisel - change colors here
-        modifier = Modifier.fillMaxSize().padding(40.dp),
+        modifier = Modifier.fillMaxSize().padding(40.dp).testTag("profileCard"),
     ) {
       val borderPadding = 20.dp
       Column(
-          modifier = Modifier.padding(borderPadding).fillMaxWidth(),
+          modifier = Modifier.padding(borderPadding).fillMaxWidth().testTag("profileCardColumn"),
           verticalArrangement = Arrangement.Center,
           horizontalAlignment = Alignment.CenterHorizontally) {
 
@@ -199,31 +203,36 @@ fun ProfileContent(
             Image(
                 painter = rememberVectorPainter(Icons.Default.AccountCircle),
                 contentDescription = "Profile Picture",
-                modifier = Modifier.size(200.dp).padding(10.dp))
+                modifier = Modifier.size(200.dp).padding(10.dp).testTag("profilePicture"))
             Spacer(modifier = Modifier.height(20.dp))
 
             // Display the user's full name and handle (username)
             Row {
               Icon(Icons.Default.AccountCircle, "profileIcon")
-              Text(user.value!!.fullName(), fontWeight = FontWeight(500))
+              Text(
+                  user.value!!.fullName(),
+                  fontWeight = FontWeight(500),
+                  modifier = Modifier.testTag("userFullName"))
             }
             Spacer(modifier = Modifier.height(5.dp))
             Text(
                 user.value!!.userHandle(),
                 fontWeight = FontWeight(400),
                 fontStyle = FontStyle.Italic,
-                modifier = Modifier.alpha(0.7f))
+                modifier = Modifier.alpha(0.7f).testTag("userHandle"))
             Spacer(modifier = Modifier.height(10.dp))
 
             // Display the user's date of joining and rating
             Row {
               Icon(Icons.Default.Star, "starIcon")
-              Text("Rating: ${user.value!!.rating}")
+              Text("Rating: ${user.value!!.rating}", modifier = Modifier.testTag("userRating"))
             }
             Spacer(modifier = Modifier.height(10.dp))
             Row {
               Icon(Icons.Default.DateRange, "dateIcon")
-              Text("Member Since: ${user.value!!.dateToString()}")
+              Text(
+                  "Member Since: ${user.value!!.dateToString()}",
+                  modifier = Modifier.testTag("userDateOfJoining"))
             }
             Spacer(modifier = Modifier.height(10.dp))
 
@@ -236,6 +245,7 @@ fun ProfileContent(
             // Display the user's friends
             Row {
               OutlinedButton(
+                  modifier = Modifier.testTag("followingButton"),
                   onClick = {
                     userViewModel.getFollowingFrom(
                         user.value!!.uid,
@@ -245,10 +255,13 @@ fun ProfileContent(
                         },
                         { isFollowingMenuShown.value = false })
                   }) {
-                    Text("Following: ${user.value!!.friends.following.size}")
+                    Text(
+                        "Following: ${user.value!!.friends.following.size}",
+                        modifier = Modifier.testTag("followingText"))
                   }
               Spacer(modifier = Modifier.width(10.dp))
               OutlinedButton(
+                  modifier = Modifier.testTag("followersButton"),
                   onClick = {
                     userViewModel.getFollowersFrom(
                         user.value!!.uid,
@@ -258,7 +271,8 @@ fun ProfileContent(
                         },
                         { isFollowerMenuShown.value = false })
                   }) {
-                    Text("Followers: ${user.value!!.friends.followers.size}")
+                    Text("Followers: ${user.value!!.friends.followers.size}",
+                        modifier = Modifier.testTag("followersText"))
                   }
             }
 
@@ -272,6 +286,7 @@ fun ProfileContent(
 @Composable
 fun FollowUnfollowButton(userViewModel: UserViewModel, followButtonText: MutableState<String>) {
   OutlinedButton(
+      modifier = Modifier.testTag("followUnfollowButton"),
       onClick = {
         if (followButtonText.value == "Follow")
             userViewModel.followUser(
@@ -304,17 +319,20 @@ fun UserDropdownMenu(
   DropdownMenu(
       expanded = expanded.value,
       onDismissRequest = { expanded.value = false },
-      modifier = Modifier.fillMaxWidth(0.7f) // Set a fixed width for the dropdown menu
+      modifier =
+          Modifier.testTag("userDropdownMenu")
+              .fillMaxWidth(0.7f) // Set a fixed width for the dropdown menu
       ) {
         Column(modifier = Modifier.fillMaxWidth()) {
           if (users.value.isEmpty()) {
-            Text("No users to display", modifier = Modifier.padding(8.dp))
+            Text("No users to display", modifier = Modifier.padding(8.dp).testTag("noUsers"))
           }
           users.value.forEach { user ->
             Text(
                 "${user.fullName()} — @${user.userName}",
                 modifier =
-                    Modifier.clickable {
+                    Modifier.testTag("userItem")
+                        .clickable {
                           expanded.value = false
                           switchProfileTo(user, userViewModel, navigationActions)
                         }
@@ -338,7 +356,7 @@ fun DisplayBioCard(user: State<User?>) {
             append(user.value!!.bio)
           }
         },
-        modifier = Modifier.padding(10.dp))
+        modifier = Modifier.padding(10.dp).testTag("userBio"))
   }
 }
 
