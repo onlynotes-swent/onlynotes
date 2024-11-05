@@ -12,6 +12,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
+import androidx.test.espresso.intent.Intents.init
 import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.model.scanner.Scanner
@@ -33,7 +34,7 @@ class MainActivity : ComponentActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     val scanner = Scanner(this).apply { init() }
-    val profilePictureTaker = ProfilePictureTaker(this) { uri -> }
+    val profilePictureTaker = ProfilePictureTaker(this).apply { init() }
 
     setContent {
       AppTheme {

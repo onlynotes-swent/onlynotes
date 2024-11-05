@@ -197,7 +197,6 @@ dependencies {
 
     //Image Library
     implementation("io.coil-kt:coil-compose:2.1.0")
-    //implementation( "com.github.dhaval2404:imagepicker-support:1.7.1")
     implementation(libs.imagepicker)
 
 

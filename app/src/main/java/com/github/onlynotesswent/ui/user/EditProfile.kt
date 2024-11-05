@@ -70,7 +70,7 @@ fun EditProfileScreen(
   val newFirstName = remember { mutableStateOf(user.value?.firstName ?: "") }
   val newLastName = remember { mutableStateOf(user.value?.lastName ?: "") }
   val newUserName = remember { mutableStateOf(user.value?.userName ?: "") }
-  val profilePicture = remember { mutableStateOf("") }
+  val profilePictureUri = remember { mutableStateOf("") }
   val userNameError = remember { mutableStateOf(false) }
   val saveEnabled = remember { mutableStateOf(true) }
   val isProfilePictureUpToDate = remember { mutableStateOf(false) }
@@ -91,7 +91,10 @@ fun EditProfileScreen(
             navigationIcon = {
               IconButton(
                   onClick = {
-                    isProfilePictureUpToDate.value = false
+                    // when we go back we  we will need to fetch again the old profile picture if it
+                    // was changed
+                    // because going back don't save the changes
+                    isProfilePictureUpToDate.value = !hasProfilePictureBeenChanged.value
                     navigationActions.goBack()
                   },
                   Modifier.testTag("goBackButton")) {
@@ -109,7 +112,7 @@ fun EditProfileScreen(
               ProfilePicture(
                   profilePictureTaker,
                   userViewModel,
-                  profilePicture,
+                  profilePictureUri,
                   fileViewModel,
                   isProfilePictureUpToDate,
                   hasProfilePictureBeenChanged,
@@ -135,7 +138,7 @@ fun EditProfileScreen(
                               dateOfJoining = it.dateOfJoining,
                               rating = it.rating,
                               hasProfilePicture =
-                                  if (profilePicture.value.isNotBlank()) true
+                                  if (profilePictureUri.value.isNotBlank()) true
                                   else it.hasProfilePicture)
                         }
                     if (updatedUser == null) {
@@ -144,7 +147,7 @@ fun EditProfileScreen(
                               "Error while updating user: current user is null",
                               Toast.LENGTH_SHORT)
                           .show()
-                      Log.e("ProfileScreen", "Error while updating user: current user is null")
+                      Log.e("EditProfileScreen", "Error while updating user: current user is null")
                     } else {
                       userViewModel.updateUser(
                           user = updatedUser,
@@ -154,7 +157,7 @@ fun EditProfileScreen(
                             if (hasProfilePictureBeenChanged.value) {
                               fileViewModel.uploadFile(
                                   userViewModel.currentUser.value!!.uid,
-                                  profilePicture.value.toUri(),
+                                  profilePictureUri.value.toUri(),
                                   FileType.PROFILE_PIC_JPEG,
                               )
                             }
@@ -165,7 +168,7 @@ fun EditProfileScreen(
                                     "Error while updating user: ${exception.message}",
                                     Toast.LENGTH_SHORT)
                                 .show()
-                            Log.e("ProfileScreen", "Error while updating user ", exception)
+                            Log.e("EditProfileScreen", "Error while updating user ", exception)
                             userNameError.value =
                                 exception is UserRepositoryFirestore.UsernameTakenException
                           })
@@ -181,7 +184,7 @@ fun EditProfileScreen(
 fun ProfilePicture(
     profilePictureTaker: ProfilePictureTaker,
     userViewModel: UserViewModel,
-    profilePicture: MutableState<String>,
+    profilePictureUri: MutableState<String>,
     fileViewModel: FileViewModel,
     isProfilePictureUpToDate: MutableState<Boolean>,
     hasProfilePictureBeenChanged: MutableState<Boolean>,
@@ -195,16 +198,20 @@ fun ProfilePicture(
           userViewModel.currentUser.value!!.uid,
           FileType.PROFILE_PIC_JPEG,
           context = context,
-          onSuccess = { file -> profilePicture.value = file.absolutePath },
+          onSuccess = { file ->
+            profilePictureUri.value = file.absolutePath
+            isProfilePictureUpToDate.value = true
+            // we now the the current profile picture is the same as the one in the database
+            hasProfilePictureBeenChanged.value = false
+          },
           onFailure = { e -> Log.e("ProfilePicture", "Error downloading profile picture", e) })
-      isProfilePictureUpToDate.value = true
     }
 
     // Profile Picture Painter
     val painter =
-        if (profilePicture.value.isNotBlank()) {
+        if (profilePictureUri.value.isNotBlank()) {
           // Load the profile picture if it exists
-          rememberAsyncImagePainter(profilePicture.value)
+          rememberAsyncImagePainter(profilePictureUri.value)
         } else {
           // Load the default profile picture if it doesn't exist
           rememberVectorPainter(Icons.Default.AccountCircle)
@@ -233,10 +240,10 @@ fun ProfilePicture(
                 .clip(CircleShape)
                 .background(Color.White) // Background color
                 .clickable {
-                  // Edit hte image and save the URI to the profilePicture state
-                  profilePictureTaker.onImageSelected = { uri ->
+                  // Edit the image and save the URI to the profilePicture state
+                  profilePictureTaker.setOnImageSelected { uri ->
                     if (uri != null) {
-                      profilePicture.value = uri.toString()
+                      profilePictureUri.value = uri.toString()
                       hasProfilePictureBeenChanged.value = true
                     }
                   }
