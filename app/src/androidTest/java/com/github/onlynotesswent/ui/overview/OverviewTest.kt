@@ -34,12 +34,12 @@ class OverviewTest {
       listOf(
           Note(
               id = "1",
-              type = Note.Type.NORMAL_TEXT,
               title = "Sample Title",
               content = "This is a sample content.",
               date = Timestamp.now(), // Use current timestamp
               visibility = Note.Visibility.DEFAULT,
               userId = "1",
+              noteClass = Note.Class("CS-100", "Sample Class", 2024, "path"),
               image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888) // Placeholder Bitmap
               ))
 
