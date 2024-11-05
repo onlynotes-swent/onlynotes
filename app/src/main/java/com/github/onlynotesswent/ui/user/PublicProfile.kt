@@ -83,16 +83,16 @@ fun UserProfileScreen(navigationActions: NavigationActions, userViewModel: UserV
         ProfileContent(user, userViewModel, navigationActions)
 
         Button(onClick = { userViewModel.followUser("8I0wWmmzGk1H89gUwIOS", {}, {}) }) {
-          Text("Follow Roshan")
+          Text("[Debug] Follow Roshan")
         }
         Button(onClick = { userViewModel.unfollowUser("8I0wWmmzGk1H89gUwIOS", {}, {}) }) {
-          Text("Unfollow Roshan")
+          Text("[Debug] Unfollow Roshan")
         }
         Button(onClick = { userViewModel.followUser("BNTMNZjylKMVwYV7DuVi", {}, {}) }) {
-          Text("Follow matthieu")
+          Text("[Debug] Follow matthieu")
         }
         Button(onClick = { userViewModel.unfollowUser("BNTMNZjylKMVwYV7DuVi", {}, {}) }) {
-          Text("Unfollow matthieu")
+          Text("[Debug] Unfollow matthieu")
         }
       }
 }
@@ -102,17 +102,15 @@ fun UserProfileScreen(navigationActions: NavigationActions, userViewModel: UserV
 fun PublicProfileScreen(navigationActions: NavigationActions, userViewModel: UserViewModel) {
   val currentUser = userViewModel.currentUser.collectAsState()
   val profileUser = userViewModel.profileUser.collectAsState()
-  val followButtonText = remember {
-    mutableStateOf(
-        profileUser.value?.friends?.followers?.let {
-          if (it.contains(currentUser.value?.uid)) "Unfollow" else "Follow"
-        } ?: "Follow")
-  }
+  val followButtonText = remember { mutableStateOf("Follow") }
 
   // Display the user's profile information
   ProfileScaffold(navigationActions) {
     ProfileContent(profileUser, userViewModel, navigationActions)
     if (profileUser.value != null && currentUser.value != null) {
+      followButtonText.value =
+          if (profileUser.value!!.friends.followers.contains(currentUser.value!!.uid)) "Unfollow"
+          else "Follow"
       FollowUnfollowButton(userViewModel, followButtonText)
     }
   }
@@ -277,8 +275,10 @@ fun ProfileContent(
                   }
             }
 
-            UserDropdownMenu(isFollowingMenuShown, following, userViewModel, navigationActions)
-            UserDropdownMenu(isFollowerMenuShown, followers, userViewModel, navigationActions)
+            UserDropdownMenu(
+                isFollowingMenuShown, following, userViewModel, navigationActions, "following")
+            UserDropdownMenu(
+                isFollowerMenuShown, followers, userViewModel, navigationActions, "followers")
           }
     }
   }
@@ -292,21 +292,15 @@ fun FollowUnfollowButton(userViewModel: UserViewModel, followButtonText: Mutable
         if (followButtonText.value == "Follow")
             userViewModel.followUser(
                 userViewModel.profileUser.value!!.uid,
-                {
-                  userViewModel.refreshProfileUser(userViewModel.profileUser.value!!.uid)
-                  followButtonText.value = "Unfollow"
-                },
+                { userViewModel.refreshProfileUser(userViewModel.profileUser.value!!.uid) },
                 {})
         else
             userViewModel.unfollowUser(
                 userViewModel.profileUser.value!!.uid,
-                {
-                  userViewModel.refreshProfileUser(userViewModel.profileUser.value!!.uid)
-                  followButtonText.value = "Follow"
-                },
+                { userViewModel.refreshProfileUser(userViewModel.profileUser.value!!.uid) },
                 {})
       }) {
-        Text(followButtonText.value)
+        Text(followButtonText.value, modifier = Modifier.testTag("followUnfollowButtonText"))
       }
 }
 
@@ -315,24 +309,25 @@ fun UserDropdownMenu(
     expanded: MutableState<Boolean>,
     users: State<List<User>>,
     userViewModel: UserViewModel,
-    navigationActions: NavigationActions
+    navigationActions: NavigationActions,
+    tag: String = "user",
 ) {
   DropdownMenu(
       expanded = expanded.value,
       onDismissRequest = { expanded.value = false },
       modifier =
-          Modifier.testTag("userDropdownMenu")
+          Modifier.testTag("${tag}DropdownMenu")
               .fillMaxWidth(0.7f) // Set a fixed width for the dropdown menu
       ) {
         Column(modifier = Modifier.fillMaxWidth()) {
           if (users.value.isEmpty()) {
-            Text("No users to display", modifier = Modifier.padding(8.dp).testTag("noUsers"))
+            Text("No $tag to display", modifier = Modifier.padding(8.dp).testTag("${tag}Absent"))
           }
           users.value.forEach { user ->
             Text(
                 "${user.fullName()} — @${user.userName}",
                 modifier =
-                    Modifier.testTag("userItem")
+                    Modifier.testTag("item--${user.userName}")
                         .clickable {
                           expanded.value = false
                           switchProfileTo(user, userViewModel, navigationActions)
