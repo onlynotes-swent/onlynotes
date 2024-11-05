@@ -75,7 +75,7 @@ fun EditProfileScreen(
   val saveEnabled = remember { mutableStateOf(true) }
   val isProfilePictureUpToDate = remember { mutableStateOf(false) }
   val hasProfilePictureBeenChanged = remember { mutableStateOf(false) }
-  val context = LocalContext.current
+  val localContext = LocalContext.current
 
   Scaffold(
       modifier = Modifier.testTag("ProfileScreen"),
@@ -100,7 +100,7 @@ fun EditProfileScreen(
                   Modifier.testTag("goBackButton")) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                        contentDescription = "Back")
+                        contentDescription = "Back Button")
                   }
             })
       },
@@ -116,7 +116,7 @@ fun EditProfileScreen(
                   fileViewModel,
                   isProfilePictureUpToDate,
                   hasProfilePictureBeenChanged,
-                  context)
+                  localContext)
 
               // Text Fields for user information
               FirstNameTextField(newFirstName)
@@ -142,7 +142,7 @@ fun EditProfileScreen(
                         }
                     if (updatedUser == null) {
                       Toast.makeText(
-                              context,
+                          localContext,
                               "Error while updating user: current user is null",
                               Toast.LENGTH_SHORT)
                           .show()
@@ -163,7 +163,7 @@ fun EditProfileScreen(
                           },
                           onFailure = { exception ->
                             Toast.makeText(
-                                    context,
+                                localContext,
                                     "Error while updating user: ${exception.message}",
                                     Toast.LENGTH_SHORT)
                                 .show()
@@ -187,7 +187,7 @@ fun ProfilePicture(
     fileViewModel: FileViewModel,
     isProfilePictureUpToDate: MutableState<Boolean>,
     hasProfilePictureBeenChanged: MutableState<Boolean>,
-    context: Context
+    localContext: Context
 ) {
 
   Box(modifier = Modifier.size(150.dp)) {
@@ -196,7 +196,7 @@ fun ProfilePicture(
       fileViewModel.downloadFile(
           userViewModel.currentUser.value!!.uid,
           FileType.PROFILE_PIC_JPEG,
-          context = context,
+          context = localContext,
           onSuccess = { file ->
             profilePictureUri.value = file.absolutePath
             isProfilePictureUpToDate.value = true
