@@ -78,7 +78,7 @@ fun CreateUserScreen(navigationActions: NavigationActions, userViewModel: UserVi
               UserNameTextField(userName, userNameError)
 
               // Save Button
-            enableSaving.value = userName.value.isNotBlank()
+              enableSaving.value = userName.value.isNotBlank()
               SaveButton(
                   onClick = {
                     val user =

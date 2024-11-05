@@ -142,7 +142,7 @@ fun EditProfileScreen(
                         }
                     if (updatedUser == null) {
                       Toast.makeText(
-                          localContext,
+                              localContext,
                               "Error while updating user: current user is null",
                               Toast.LENGTH_SHORT)
                           .show()
@@ -163,7 +163,7 @@ fun EditProfileScreen(
                           },
                           onFailure = { exception ->
                             Toast.makeText(
-                                localContext,
+                                    localContext,
                                     "Error while updating user: ${exception.message}",
                                     Toast.LENGTH_SHORT)
                                 .show()
