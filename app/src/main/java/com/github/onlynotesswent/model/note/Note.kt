@@ -91,6 +91,7 @@ data class Note(
        * Adds a new comment to the CommentCollection with a unique ID.
        *
        * @param userId The ID of the user adding the comment.
+       * @param userName The username of the added comment user.
        * @param content The text content of the comment.
        * @param CommentCollection The current collection of comments.
        * @return An updated CommentCollection including the new comment.
@@ -173,7 +174,7 @@ data class Note(
       val creationDate: Timestamp,
       val editedDate: Timestamp
   ) {
-    // Method to check if creationDate is equal to editedDate
+    /** Method to check if creationDate is equal to editedDate */
     fun isUnedited(): Boolean {
       return creationDate == editedDate
     }

@@ -63,9 +63,9 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
         commentValues[0],
         userId = commentValues[1],
         userName = commentValues[2],
-        content = commentValues[2],
-        creationDate = Timestamp(commentValues[3].toLong(), 0),
-        editedDate = Timestamp(commentValues[4].toLong(), 0))
+        content = commentValues[3],
+        creationDate = Timestamp(commentValues[4].toLong(), 0),
+        editedDate = Timestamp(commentValues[5].toLong(), 0))
   }
   /**
    * Converts a list of Comment objects to a list of snapshot strings for Firestore storage.
