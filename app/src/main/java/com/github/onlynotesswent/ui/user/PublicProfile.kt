@@ -121,7 +121,7 @@ fun PublicProfileScreen(navigationActions: NavigationActions, userViewModel: Use
 private fun ProfileScaffold(
     navigationActions: NavigationActions,
     includeBackButton: Boolean = true,
-    topBarTitle : String = "Public Profile",
+    topBarTitle: String = "Public Profile",
     floatingActionButton: @Composable () -> Unit = {},
     content: @Composable () -> Unit,
 ) {
@@ -134,13 +134,19 @@ private fun ProfileScaffold(
             tabList = LIST_TOP_LEVEL_DESTINATION,
             selectedItem = navigationActions.currentRoute())
       },
-      topBar = { TopProfileBar(title = topBarTitle, navigationActions = navigationActions, includeBackButton) },
+      topBar = {
+        TopProfileBar(title = topBarTitle, navigationActions = navigationActions, includeBackButton)
+      },
       content = { paddingValues -> ProfileColumn(paddingValues) { content() } })
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TopProfileBar(title: String, navigationActions: NavigationActions, includeBackButton:Boolean = true) {
+fun TopProfileBar(
+    title: String,
+    navigationActions: NavigationActions,
+    includeBackButton: Boolean = true
+) {
   TopAppBar(
       title = { Text(title) },
       navigationIcon = {
@@ -223,8 +229,8 @@ fun ProfileContent(
 
             // Display the user's bio
             if (user.value!!.bio.isNotEmpty()) {
-                DisplayBioCard(user)
-                Spacer(modifier = Modifier.height(10.dp))
+              DisplayBioCard(user)
+              Spacer(modifier = Modifier.height(10.dp))
             }
 
             // Display the user's friends
@@ -320,31 +326,20 @@ fun UserDropdownMenu(
 }
 
 @Composable
-fun DisplayBioCard(user:State<User?>){
-    OutlinedCard {
-        Text(
-            buildAnnotatedString {
-                withStyle(
-                    style = SpanStyle(
-                        fontWeight = FontWeight(500),
-                        fontSize = 15.sp
-                    )
-                ) {
-                    append("Bio: ")
-                }
-                // Add the user's bio in italics
-                withStyle(
-                    style = SpanStyle(
-                        fontStyle = FontStyle.Italic,
-                        fontSize = 14.sp
-                    )
-                ) {
-                    append(user.value!!.bio)
-                }
-            },
-            modifier = Modifier.padding(10.dp)
-        )
-    }
+fun DisplayBioCard(user: State<User?>) {
+  OutlinedCard {
+    Text(
+        buildAnnotatedString {
+          withStyle(style = SpanStyle(fontWeight = FontWeight(500), fontSize = 15.sp)) {
+            append("Bio: ")
+          }
+          // Add the user's bio in italics
+          withStyle(style = SpanStyle(fontStyle = FontStyle.Italic, fontSize = 14.sp)) {
+            append(user.value!!.bio)
+          }
+        },
+        modifier = Modifier.padding(10.dp))
+  }
 }
 
 /**
