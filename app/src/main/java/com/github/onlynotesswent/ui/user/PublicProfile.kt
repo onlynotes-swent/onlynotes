@@ -4,7 +4,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -61,6 +60,12 @@ import com.github.onlynotesswent.ui.navigation.Screen
 import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
 
 // User Profile Home screen:
+/**
+ * A composable function that displays the user profile screen.
+ *
+ * @param navigationActions An instance of NavigationActions to handle navigation events.
+ * @param userViewModel An instance of UserViewModel to manage user data.
+ */
 @Composable
 fun UserProfileScreen(navigationActions: NavigationActions, userViewModel: UserViewModel) {
   val user = userViewModel.currentUser.collectAsState()
@@ -82,6 +87,7 @@ fun UserProfileScreen(navigationActions: NavigationActions, userViewModel: UserV
       }) {
         ProfileContent(user, userViewModel, navigationActions)
 
+        // Debug buttons to follow/unfollow specific users
         Button(onClick = { userViewModel.followUser("8I0wWmmzGk1H89gUwIOS", {}, {}) }) {
           Text("[Debug] Follow Roshan")
         }
@@ -97,7 +103,13 @@ fun UserProfileScreen(navigationActions: NavigationActions, userViewModel: UserV
       }
 }
 
-// Other users' Profile Home screen:
+// Public Profile screen:
+/**
+ * A composable function that displays the public profile screen.
+ *
+ * @param navigationActions An instance of NavigationActions to handle navigation events.
+ * @param userViewModel An instance of UserViewModel to manage user data.
+ */
 @Composable
 fun PublicProfileScreen(navigationActions: NavigationActions, userViewModel: UserViewModel) {
   val currentUser = userViewModel.currentUser.collectAsState()
@@ -116,6 +128,15 @@ fun PublicProfileScreen(navigationActions: NavigationActions, userViewModel: Use
   }
 }
 
+/**
+ * Displays the scaffold for the profile screen.
+ *
+ * @param navigationActions The navigation actions.
+ * @param includeBackButton Whether to include the back button in the app bar.
+ * @param topBarTitle The title to be displayed on the app bar.
+ * @param floatingActionButton The floating action button to be displayed on the screen.
+ * @param content The content to be displayed on the screen.
+ */
 @Composable
 private fun ProfileScaffold(
     navigationActions: NavigationActions,
@@ -136,41 +157,55 @@ private fun ProfileScaffold(
       topBar = {
         TopProfileBar(title = topBarTitle, navigationActions = navigationActions, includeBackButton)
       },
-      content = { paddingValues -> ProfileColumn(paddingValues) { content() } })
+      content = { paddingValues ->
+        Column(
+            modifier =
+                Modifier.fillMaxSize()
+                    .padding(paddingValues)
+                    .verticalScroll(rememberScrollState())
+                    .testTag("profileScaffoldColumn"),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally) {
+              content()
+            }
+      })
 }
 
+/**
+ * Displays the top app bar for the profile screen, can be used for Public, User or Edit profile
+ * screens.
+ *
+ * @param title The title to be displayed on the app bar.
+ * @param navigationActions The navigation actions.
+ * @param includeBackButton Whether to include the back button in the app bar.
+ * @param onBackButtonClick The action to be performed when the back button is clicked.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TopProfileBar(
     title: String,
     navigationActions: NavigationActions,
-    includeBackButton: Boolean = true
+    includeBackButton: Boolean = true,
+    onBackButtonClick: () -> Unit = { navigationActions.goBack() }
 ) {
   TopAppBar(
       title = { Text(title) },
       navigationIcon = {
         if (includeBackButton) {
-          IconButton(onClick = { navigationActions.goBack() }, Modifier.testTag("goBackButton")) {
+          IconButton(onClick = onBackButtonClick, Modifier.testTag("goBackButton")) {
             Icon(imageVector = Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "Back")
           }
         }
       })
 }
 
-@Composable
-fun ProfileColumn(paddingValues: PaddingValues, content: @Composable () -> Unit = {}) {
-  Column(
-      modifier =
-          Modifier.fillMaxSize()
-              .padding(paddingValues)
-              .verticalScroll(rememberScrollState())
-              .testTag("profileScaffoldColumn"),
-      verticalArrangement = Arrangement.Center,
-      horizontalAlignment = Alignment.CenterHorizontally) {
-        content()
-      }
-}
-
+/**
+ * Displays the user's profile information.
+ *
+ * @param user The user whose profile information is to be displayed.
+ * @param userViewModel The ViewModel for the user.
+ * @param navigationActions The navigation actions.
+ */
 @Composable
 fun ProfileContent(
     user: State<User?>,
@@ -240,7 +275,7 @@ fun ProfileContent(
               Spacer(modifier = Modifier.height(10.dp))
             }
 
-            // Display the user's friends
+            // Display the number of following and followers on clickable buttons
             Row {
               OutlinedButton(
                   modifier = Modifier.testTag("followingButton"),
@@ -274,7 +309,7 @@ fun ProfileContent(
                         modifier = Modifier.testTag("followersText"))
                   }
             }
-
+            // Display the dropdown menus for the user's following and followers
             UserDropdownMenu(
                 isFollowingMenuShown, following, userViewModel, navigationActions, "following")
             UserDropdownMenu(
@@ -284,6 +319,12 @@ fun ProfileContent(
   }
 }
 
+/**
+ * Displays a button that allows the user to follow or unfollow another user.
+ *
+ * @param userViewModel The ViewModel for the user.
+ * @param followButtonText The text to be displayed on the button.
+ */
 @Composable
 fun FollowUnfollowButton(userViewModel: UserViewModel, followButtonText: MutableState<String>) {
   OutlinedButton(
@@ -304,13 +345,22 @@ fun FollowUnfollowButton(userViewModel: UserViewModel, followButtonText: Mutable
       }
 }
 
+/**
+ * Displays a dropdown menu with the list of users.
+ *
+ * @param expanded The state of the dropdown menu.
+ * @param users The state of the list of users to be displayed in the dropdown menu.
+ * @param userViewModel The ViewModel for the user.
+ * @param navigationActions The navigation actions.
+ * @param tag The tag for the dropdown menu (either "following" or "followers"), used for testing.
+ */
 @Composable
 fun UserDropdownMenu(
     expanded: MutableState<Boolean>,
     users: State<List<User>>,
     userViewModel: UserViewModel,
     navigationActions: NavigationActions,
-    tag: String = "user",
+    tag: String = ""
 ) {
   DropdownMenu(
       expanded = expanded.value,
@@ -339,6 +389,11 @@ fun UserDropdownMenu(
       }
 }
 
+/**
+ * Displays the user's bio in an OutlinedCard.
+ *
+ * @param user The user whose bio is to be displayed.
+ */
 @Composable
 fun DisplayBioCard(user: State<User?>) {
   OutlinedCard {

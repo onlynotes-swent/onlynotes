@@ -17,13 +17,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
@@ -94,21 +93,15 @@ fun EditProfileScreen(
                 selectedItem = navigationActions.currentRoute())
           },
           topBar = {
-            TopAppBar(
-                title = {},
-                navigationIcon = {
-                  IconButton(
-                      onClick = {
-                        // When we go back we  we will need to fetch again the old profile picture
-                        // if it was changed, because going back doesn't save the changes
-                        isProfilePictureUpToDate.value = !hasProfilePictureBeenChanged.value
-                        navigationActions.goBack()
-                      },
-                      Modifier.testTag("goBackButton")) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                            contentDescription = "Back Button")
-                      }
+            TopProfileBar(
+                "Edit Profile",
+                navigationActions,
+                includeBackButton = true,
+                onBackButtonClick = {
+                  // When we go back we  we will need to fetch again the old profile picture if it
+                  // was changed, because going back doesn't save the changes
+                  isProfilePictureUpToDate.value = !hasProfilePictureBeenChanged.value
+                  navigationActions.goBack()
                 })
           },
           content = { paddingValues ->

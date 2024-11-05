@@ -28,6 +28,7 @@ import com.github.onlynotesswent.ui.theme.AppTheme
 import com.github.onlynotesswent.ui.user.CreateUserScreen
 import com.github.onlynotesswent.ui.user.EditProfileScreen
 import com.github.onlynotesswent.ui.user.PublicProfileScreen
+import com.github.onlynotesswent.ui.user.UserProfileScreen
 import com.github.onlynotesswent.utils.ProfilePictureTaker
 
 class MainActivity : ComponentActivity() {

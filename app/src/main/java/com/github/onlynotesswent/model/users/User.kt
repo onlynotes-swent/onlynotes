@@ -16,6 +16,7 @@ import java.util.Locale
  * @property rating The rating of the user.
  * @property friends The user's friends.
  * @property hasProfilePicture A flag indicating if the user has a profile picture.
+ * @property bio The user's biography.
  */
 data class User(
     val firstName: String,
@@ -29,12 +30,29 @@ data class User(
     val hasProfilePicture: Boolean = false,
     val bio: String = ""
 ) {
+  /**
+   * Returns the user's handle, which is the username prefixed with an '@' symbol.
+   *
+   * @return The user's handle.
+   */
   fun userHandle() = "@${userName.ifEmpty { "unknown" }}"
 
+  /**
+   * Returns the user's full name, which is the concatenation of the first and last names separated
+   * by a space.
+   *
+   * @return The user's full name.
+   */
   fun fullName() = "$firstName $lastName"
 
-  fun dateToString(): String =
-      SimpleDateFormat("d/M/yyyy", Locale.FRANCE).format(dateOfJoining.toDate())
+  /**
+   * Returns the user's date of joining as a formatted string.
+   *
+   * @param pattern The pattern to use for formatting the date. Defaults to "d/M/yyyy".
+   * @return The user's date of joining as a formatted string.
+   */
+  fun dateToString(pattern: String = "d/M/yyyy"): String =
+      SimpleDateFormat(pattern, Locale.FRANCE).format(dateOfJoining.toDate())
 }
 
 /**
