@@ -2,6 +2,7 @@ package com.github.onlynotesswent.ui.overview
 
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotDisplayed
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
@@ -86,6 +87,16 @@ class EditNoteTest {
     composeTestRule.onNodeWithTag("EditCommentTextField").performScrollTo().assertIsDisplayed()
     composeTestRule.onNodeWithTag("DeleteCommentButton").performClick()
     composeTestRule.onNodeWithTag("EditCommentTextField").assertIsNotDisplayed()
+  }
+
+  @Test
+  fun addComment() {
+    composeTestRule.onNodeWithTag("Add Comment Button").performClick()
+    composeTestRule.onNodeWithTag("EditCommentTextField").assertIsDisplayed()
+    val updatedCommentText = "Edited comment content"
+    composeTestRule.onNodeWithTag("EditCommentTextField").performTextInput(updatedCommentText)
+    val expectedLabelText = "edited: "
+    composeTestRule.onNode(hasText(expectedLabelText, substring = true)).assertIsDisplayed()
   }
 
   @Test
