@@ -64,7 +64,6 @@ android {
         jvmTarget = "11"
     }
 
-
     android {
         compileOptions {
             sourceCompatibility = JavaVersion.VERSION_11
@@ -133,7 +132,6 @@ dependencies {
         }
     }
 
-
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
@@ -146,11 +144,9 @@ dependencies {
     testImplementation(libs.junit)
     globalTestImplementation(libs.androidx.junit)
     globalTestImplementation(libs.androidx.espresso.core)
-
-
-
-
-
+    implementation(libs.androidx.credentials)
+    implementation(libs.androidx.credentials.play.services.auth)
+    implementation(libs.google.id)
 
     // -------------- Firebase ---------------------
     implementation(libs.firebase.database.ktx)
@@ -164,8 +160,6 @@ dependencies {
     // Add the dependency for the Cloud Storage library
     // When using the BoM, you don't specify versions in Firebase library dependencies
     implementation(libs.firebase.storage)
-
-
 
     // ------------- Jetpack Compose ------------------
     val composeBom = platform(libs.compose.bom)
@@ -194,11 +188,9 @@ dependencies {
     androidTestImplementation(libs.mockito.kotlin)
     androidTestImplementation("org.mockito:mockito-android:5.14.1")
 
-
     //Image Library
     implementation("io.coil-kt:coil-compose:2.1.0")
     implementation(libs.imagepicker)
-
 
     // --------- Kaspresso test framework ----------
     globalTestImplementation(libs.kaspresso)
@@ -219,7 +211,6 @@ tasks.withType<Test> {
         excludes = listOf("jdk.internal.*")
     }
 }
-
 
 tasks.register("jacocoTestReport", JacocoReport::class) {
     mustRunAfter("testDebugUnitTest", "connectedDebugAndroidTest")
