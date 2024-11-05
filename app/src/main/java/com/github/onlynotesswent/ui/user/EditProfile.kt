@@ -85,6 +85,7 @@ fun EditProfileScreen(
         horizontalAlignment = Alignment.CenterHorizontally) {
           Text("User  not found ...")
         }
+    Log.e("EditProfileScreen", "User not found")
   } else
       Scaffold(
           modifier = Modifier.testTag("ProfileScreen"),
