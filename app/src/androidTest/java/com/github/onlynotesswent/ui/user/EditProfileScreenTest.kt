@@ -45,14 +45,14 @@ class EditProfileScreenTest {
   private lateinit var fileViewModel: FileViewModel
   private val testUid = "testUid123"
   private val testUser =
-    User(
-      firstName = "testFirstName",
-      lastName = "testLastName",
-      userName = "testUserName",
-      email = "testEmail",
-      uid = testUid,
-      dateOfJoining = Timestamp.now(),
-      rating = 0.0)
+      User(
+          firstName = "testFirstName",
+          lastName = "testLastName",
+          userName = "testUserName",
+          email = "testEmail",
+          uid = testUid,
+          dateOfJoining = Timestamp.now(),
+          rating = 0.0)
   private val existingUserName = "alreadyTakenUsername"
 
   @get:Rule val composeTestRule = createComposeRule()
@@ -204,17 +204,17 @@ class EditProfileScreenTest {
   @Test
   fun downloadProfilePicture() {
     userViewModel.addUser(
-      User(
-        firstName = "testFirstName",
-        lastName = "testLastName",
-        userName = "testUserName",
-        email = "testEmail",
-        uid = testUid,
-        dateOfJoining = Timestamp.now(),
-        rating = 0.0,
-        hasProfilePicture = true),
-      {},
-      {})
+        User(
+            firstName = "testFirstName",
+            lastName = "testLastName",
+            userName = "testUserName",
+            email = "testEmail",
+            uid = testUid,
+            dateOfJoining = Timestamp.now(),
+            rating = 0.0,
+            hasProfilePicture = true),
+        {},
+        {})
 
     composeTestRule.setContent {
       EditProfileScreen(mockNavigationActions, userViewModel, profilePictureTaker, fileViewModel)
