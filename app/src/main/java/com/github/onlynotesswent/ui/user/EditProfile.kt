@@ -102,8 +102,7 @@ fun EditProfileScreen(
                       onClick = {
                         // when we go back we  we will need to fetch again the old profile picture
                         // if it
-                        // was changed
-                        // because going back don't save the changes
+                        // was changed because going back don't save the changes
                         isProfilePictureUpToDate.value = !hasProfilePictureBeenChanged.value
                         navigationActions.goBack()
                       },
