@@ -1,5 +1,6 @@
 package com.github.onlynotesswent.model.folder
 
+import android.util.Log
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.DocumentSnapshot
@@ -84,7 +85,27 @@ class FolderRepositoryFirestore(private val db: FirebaseFirestore) : FolderRepos
     }
   }
 
-  override fun updateFolder(folder: Folder, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) {
+    override fun getRootFoldersFrom(
+        userId: String,
+        onSuccess: (List<Folder>) -> Unit,
+        onFailure: (Exception) -> Unit
+    ) {
+        db.collection(collectionPath).get().addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                val rootFolders =
+                    task.result.documents
+                        .mapNotNull { document -> documentSnapshotToFolder(document) }
+                            //Log.d("Firestore", "Fetched folder: ${folder?.name}, parentFolderId: ${folder?.parentFolderId}")
+                        .filter { it.userId == userId && it.parentFolderId == null } // Only root folders
+                //Log.d("Firestore", "Filtered root folders: ${rootFolders.map { it.name }}")
+                onSuccess(rootFolders)
+            } else {
+                task.exception?.let { onFailure(it) }
+            }
+        }
+    }
+
+    override fun updateFolder(folder: Folder, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) {
     db.collection(collectionPath)
         .document(folder.id)
         .set(folder)
@@ -97,7 +118,7 @@ class FolderRepositoryFirestore(private val db: FirebaseFirestore) : FolderRepos
         }
   }
 
-    override fun getFoldersByParentFolderId(
+    override fun getSubFoldersOf(
         parentFolderId: String,
         onSuccess: (List<Folder>) -> Unit,
         onFailure: (Exception) -> Unit
@@ -125,7 +146,8 @@ class FolderRepositoryFirestore(private val db: FirebaseFirestore) : FolderRepos
     return Folder(
        id = document.id,
        name = document.getString("name") ?: return null,
-       userId = document.getString("userId") ?: return null
+       userId = document.getString("userId") ?: return null,
+       parentFolderId = document.getString("parentFolderId")
     )
   }
 }

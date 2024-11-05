@@ -53,6 +53,15 @@ interface FolderRepository {
    */
   fun getFoldersFrom(userId: String, onSuccess: (List<Folder>) -> Unit, onFailure: (Exception) -> Unit)
 
+  /**
+   * Retrieves all root folders owned by a user.
+   *
+   * @param userId The ID of the user to retrieve folders for.
+   * @param onSuccess Callback to be invoked with the retrieved folders.
+   * @param onFailure Callback to be invoked if an error occurs.
+   */
+  fun getRootFoldersFrom(userId: String, onSuccess: (List<Folder>) -> Unit, onFailure: (Exception) -> Unit)
+
   // to update the folder name for instance
   /**
    * Updates an existing folder.
@@ -70,7 +79,7 @@ interface FolderRepository {
    * @param onSuccess Callback to be invoked with the retrieved folders.
    * @param onFailure Callback to be invoked if an error occurs.
    */
-  fun getFoldersByParentFolderId(parentFolderId: String, onSuccess: (List<Folder>) -> Unit, onFailure: (Exception) -> Unit)
+  fun getSubFoldersOf(parentFolderId: String, onSuccess: (List<Folder>) -> Unit, onFailure: (Exception) -> Unit)
 
 
 }

@@ -62,7 +62,8 @@ fun AddFolderScreen(
                 title = {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically) {
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
                         Spacer(modifier = Modifier.weight(1f))
                         Text("Create a new folder", Modifier.testTag("addFolderTitle"))
                         Spacer(modifier = Modifier.weight(2f))
@@ -83,7 +84,10 @@ fun AddFolderScreen(
         },
         content = { paddingValues ->
             Column(
-                modifier = Modifier.fillMaxSize().padding(16.dp).padding(paddingValues),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp)
+                    .padding(paddingValues),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
@@ -92,7 +96,9 @@ fun AddFolderScreen(
                     onValueChange = { name = it },
                     label = { Text("Folder Name") },
                     placeholder = { Text("Enter the Folder Name") },
-                    modifier = Modifier.fillMaxWidth().testTag("inputFolderName"),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag("inputFolderName"),
                     trailingIcon = {
                         IconButton(onClick = { name = "" }) {
                             Icon(Icons.Outlined.Clear, contentDescription = "Clear title")
@@ -109,16 +115,20 @@ fun AddFolderScreen(
                                 name = name,
                                 userId = userViewModel.currentUser.value!!.uid,
                                 parentFolderId = parentFolderId.value
-                                ),
+                            ),
                             userViewModel.currentUser.value!!.uid
                         )
                         if (parentFolderId.value != null) {
-                            navigationActions.navigateTo(Screen.FOLDER_CONTENTS) // try go back if this does not work
+                            navigationActions.navigateTo(Screen.FOLDER_CONTENTS)
+                        } else {
+                            navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
                         }
-                        navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
                     },
                     enabled = name.isNotEmpty(),
-                    modifier = Modifier.fillMaxWidth().testTag("createFolderButton"))
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag("createFolderButton")
+                )
                 {
                     Text("Create Folder")
                 }

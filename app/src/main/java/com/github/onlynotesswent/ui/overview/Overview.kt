@@ -70,98 +70,108 @@ fun OverviewScreen(
     userViewModel: UserViewModel,
     folderViewModel: FolderViewModel
 ) {
-  val userNotes = noteViewModel.userNotes.collectAsState()
-  userViewModel.currentUser.collectAsState().value?.let { noteViewModel.getNotesFrom(it.uid) }
+    val userRootNotes = noteViewModel.userRootNotes.collectAsState()
+    userViewModel.currentUser.collectAsState().value?.let { noteViewModel.getRootNotesFrom(it.uid) }
 
-  val userFolders = folderViewModel.userFolders.collectAsState()
-  userViewModel.currentUser.collectAsState().value?.let { folderViewModel.getFoldersFrom(it.uid) }
+    val userRootFolders = folderViewModel.userRootFolders.collectAsState()
+    userViewModel.currentUser.collectAsState().value?.let { folderViewModel.getRootFoldersFrom(it.uid) }
 
-  var expanded by remember { mutableStateOf(false) }
+    var expanded by remember { mutableStateOf(false) }
 
-  Scaffold(
-      modifier = Modifier.testTag("overviewScreen"),
-      floatingActionButton = {
-          Box {
-              FloatingActionButton(
-                  onClick = { expanded = true },
-                  modifier = Modifier.testTag("createNoteOrFolder")
-              ) {
-                  Icon(imageVector = Icons.Default.Add, contentDescription = "AddNote")
-              }
-              DropdownMenu(
-                  expanded = expanded,
-                  onDismissRequest = { expanded = false}
-              ) {
-                  DropdownMenuItem(
-                      text = { Text("Create Note") },
-                      onClick = {
+    Scaffold(
+        modifier = Modifier.testTag("overviewScreen"),
+        floatingActionButton = {
+            Box {
+                FloatingActionButton(
+                    onClick = { expanded = true },
+                    modifier = Modifier.testTag("createNoteOrFolder")
+                ) {
+                    Icon(imageVector = Icons.Default.Add, contentDescription = "AddNote")
+                }
+                DropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false }
+                ) {
+                    DropdownMenuItem(
+                        text = { Text("Create Note") },
+                        onClick = {
                             expanded = false
                             navigationActions.navigateTo(Screen.ADD_NOTE)
                             noteViewModel.selectedFolderId(null)
-                      },
-                      modifier = Modifier.testTag("createNote")
+                        },
+                        modifier = Modifier.testTag("createNote")
 
-                  )
-                  DropdownMenuItem(
-                      text = { Text("Create Folder") },
-                      onClick = {
+                    )
+                    DropdownMenuItem(
+                        text = { Text("Create Folder") },
+                        onClick = {
                             expanded = false
                             navigationActions.navigateTo(Screen.ADD_FOLDER)
                             folderViewModel.selectedParentFolderId(null)
-                      },
-                      modifier = Modifier.testTag("createFolder")
-                  )
-              }
-          }
-      },
-      bottomBar = {
-        BottomNavigationMenu(
-            onTabSelect = { route -> navigationActions.navigateTo(route) },
-            tabList = LIST_TOP_LEVEL_DESTINATION,
-            selectedItem = navigationActions.currentRoute())
-      }) { pd ->
-        Box(modifier = Modifier.fillMaxSize().padding(pd)) {
-          if (userNotes.value.isNotEmpty() || userFolders.value.isNotEmpty()) {
-              LazyVerticalGrid(
-                  columns = GridCells.Adaptive(minSize = 100.dp),
-                  contentPadding = PaddingValues(vertical = 20.dp),
-                  horizontalArrangement = Arrangement.spacedBy(4.dp),
-                  modifier =
-                  Modifier.fillMaxWidth()
-                      .padding(horizontal = 16.dp)
-                      .padding(pd)
-                      .testTag("noteList")
-              ) {
-                  items(userFolders.value.size) { index ->
-                      FolderItem(folder = userFolders.value[index]) {
-                          folderViewModel.selectedFolder(userFolders.value[index])
-                          navigationActions.navigateTo(Screen.FOLDER_CONTENTS)
-                      }
-                  }
-
-                  items(userNotes.value.size) { index ->
-                      NoteItem(note = userNotes.value[index]) {
-                          noteViewModel.selectedNote(userNotes.value[index])
-                          navigationActions.navigateTo(Screen.EDIT_NOTE)
-                      }
-                  }
-              }
-          } else {
-            Column(
-                modifier = Modifier.fillMaxSize().padding(pd),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-              Text(modifier = Modifier.testTag("emptyNotePrompt"), text = "You have no Notes or Folders eyet.")
-              Spacer(modifier = Modifier.height(50.dp))
-              RefreshButton {
-                userViewModel.currentUser.value?.let { noteViewModel.getNotesFrom(it.uid) }
-              }
-              Spacer(modifier = Modifier.height(20.dp))
+                        },
+                        modifier = Modifier.testTag("createFolder")
+                    )
+                }
             }
-          }
+        },
+        bottomBar = {
+            BottomNavigationMenu(
+                onTabSelect = { route -> navigationActions.navigateTo(route) },
+                tabList = LIST_TOP_LEVEL_DESTINATION,
+                selectedItem = navigationActions.currentRoute()
+            )
+        }) { pd ->
+        Box(modifier = Modifier
+            .fillMaxSize()
+            .padding(pd)) {
+            if (userRootNotes.value.isNotEmpty() || userRootFolders.value.isNotEmpty()) {
+                LazyVerticalGrid(   // maybe modularize this?
+                    columns = GridCells.Adaptive(minSize = 100.dp),
+                    contentPadding = PaddingValues(vertical = 20.dp),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp)
+                        .padding(pd)
+                        .testTag("noteList")
+                ) {
+                    items(userRootFolders.value.size) { index ->
+                        FolderItem(folder = userRootFolders.value[index]) {
+                            folderViewModel.selectedFolder(userRootFolders.value[index])
+                            navigationActions.navigateTo(Screen.FOLDER_CONTENTS)
+                        }
+                    }
+
+                    items(userRootNotes.value.size) { index ->
+                        NoteItem(note = userRootNotes.value[index]) {
+                            noteViewModel.selectedNote(userRootNotes.value[index])
+                            navigationActions.navigateTo(Screen.EDIT_NOTE)
+                        }
+                    }
+                }
+            } else {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(pd),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    Text(
+                        modifier = Modifier.testTag("emptyNotePrompt"),
+                        text = "You have no Notes or Folders yet."
+                    )
+                    Spacer(modifier = Modifier.height(50.dp))
+                    RefreshButton {
+                        userViewModel.currentUser.value?.let { noteViewModel.getNotesFrom(it.uid) }
+                        userViewModel.currentUser.value?.let { folderViewModel.getRootFoldersFrom(it.uid) }
+                    }
+                    Spacer(modifier = Modifier.height(20.dp))
+                }
+            }
         }
-      }
+    }
 }
 
 /**
@@ -171,10 +181,10 @@ fun OverviewScreen(
  */
 @Composable
 fun RefreshButton(onClick: () -> Unit) {
-  ElevatedButton(onClick = onClick, modifier = Modifier.testTag("refreshButton")) {
-    Text("Refresh")
-    Icon(imageVector = Icons.Default.Refresh, contentDescription = "Refresh")
-  }
+    ElevatedButton(onClick = onClick, modifier = Modifier.testTag("refreshButton")) {
+        Text("Refresh")
+        Icon(imageVector = Icons.Default.Refresh, contentDescription = "Refresh")
+    }
 }
 
 /**
@@ -187,38 +197,46 @@ fun RefreshButton(onClick: () -> Unit) {
  */
 @Composable
 fun NoteItem(note: Note, onClick: () -> Unit) {
-  Card(
-      modifier =
-          Modifier.testTag("noteCard")
-              .fillMaxWidth()
-              .padding(vertical = 4.dp)
-              .clickable(onClick = onClick),
-      colors = CardDefaults.cardColors(containerColor = Color(0xFFB3E5FC))) {
-        Column(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
-          Row(
-              modifier = Modifier.fillMaxWidth(),
-              horizontalArrangement = Arrangement.SpaceBetween) {
+    Card(
+        modifier =
+        Modifier
+            .testTag("noteCard")
+            .fillMaxWidth()
+            .padding(vertical = 4.dp)
+            .clickable(onClick = onClick),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFFB3E5FC))
+    ) {
+        Column(modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
                 Text(
                     text =
-                        SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-                            .format(note.date.toDate()),
-                    style = MaterialTheme.typography.bodySmall)
+                    SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+                        .format(note.date.toDate()),
+                    style = MaterialTheme.typography.bodySmall
+                )
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                  Icon(
-                      imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                      contentDescription = null)
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                        contentDescription = null
+                    )
                 }
-              }
+            }
 
-          Spacer(modifier = Modifier.height(4.dp))
-          Text(
-              text = note.title,
-              style = MaterialTheme.typography.bodyMedium,
-              fontWeight = FontWeight.Bold)
-          Text(text = note.id, style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = note.title,
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Bold
+            )
+            Text(text = note.id, style = MaterialTheme.typography.bodySmall, color = Color.Gray)
         }
-      }
+    }
 }
 
 /**
@@ -232,24 +250,27 @@ fun NoteItem(note: Note, onClick: () -> Unit) {
 fun FolderItem(folder: Folder, onClick: () -> Unit) {
 
     Card(
-        modifier = Modifier.testTag("folderCard")
+        modifier = Modifier
+            .testTag("folderCard")
             .padding(vertical = 4.dp)
             .clickable(onClick = onClick),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.background)) {
-         Column(
-             modifier = Modifier.padding(8.dp),
-             horizontalAlignment = Alignment.CenterHorizontally
-         ) {
-             Image(
-                 painter = painterResource(id = R.drawable.folder_icon_big),
-                 contentDescription = "Folder Icon",
-                 modifier = Modifier.size(80.dp)
-             )
-             Spacer(modifier = Modifier.height(2.dp))
-             Text(
-                 text = folder.name,
-                 style = MaterialTheme.typography.bodyMedium,
-                 fontWeight = FontWeight.Bold)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.background)
+    ) {
+        Column(
+            modifier = Modifier.padding(8.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Image(
+                painter = painterResource(id = R.drawable.folder_icon_big),
+                contentDescription = "Folder Icon",
+                modifier = Modifier.size(80.dp)
+            )
+
+            Text(
+                text = folder.name,
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Bold
+            )
         }
     }
 }

@@ -18,8 +18,11 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
     private val _userFolders = MutableStateFlow<List<Folder>>(emptyList())
     val userFolders: StateFlow<List<Folder>> = _userFolders.asStateFlow()
 
-    private val _parentSubFolders = MutableStateFlow<List<Folder>>(emptyList())
-    val parentSubFolders: StateFlow<List<Folder>> = _parentSubFolders.asStateFlow()
+    private val _userRootFolders = MutableStateFlow<List<Folder>>(emptyList())
+    val userRootFolders: StateFlow<List<Folder>> = _userRootFolders.asStateFlow()
+
+    private val _userSubFolders = MutableStateFlow<List<Folder>>(emptyList())
+    val userSubFolders: StateFlow<List<Folder>> = _userSubFolders.asStateFlow()
 
     private val _parentFolderId = MutableStateFlow<String?>(null)
     val parentFolderId: StateFlow<String?> = _parentFolderId.asStateFlow()
@@ -71,11 +74,7 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
      *
      */
     fun addFolder(folder: Folder, userId: String) {
-        repository.addFolder(folder, onSuccess = {
-            //getFoldersFrom(userId)
-            getFoldersByParentFolderId(folder.parentFolderId!!)
-                                                 }
-            , onFailure = {})
+        repository.addFolder(folder, onSuccess = { getRootFoldersFrom(userId) }, onFailure = {})
     }
 
     /**
@@ -83,8 +82,11 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
      *
      * @param folderId The ID of the folder to delete.
      */
-    fun deleteFolderById(folderId: String ,userId: String) {
-        repository.deleteFolderById(folderId, onSuccess = { getFoldersFrom(userId) }, onFailure = {})
+    fun deleteFolderById(folderId: String, userId: String) {
+        repository.deleteFolderById(
+            folderId,
+            onSuccess = { getRootFoldersFrom(userId) },
+            onFailure = {})
     }
 
     /**
@@ -96,13 +98,23 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
         repository.getFoldersFrom(userId, onSuccess = { _userFolders.value = it }, onFailure = {})
     }
 
+    fun getRootFoldersFrom(userId: String) {
+        repository.getRootFoldersFrom(
+            userId,
+            onSuccess = { _userRootFolders.value = it },
+            onFailure = {})
+    }
+
     /**
      * Retrieves a folder by its ID.
      *
      * @param folderId The ID of the folder to retrieve.
      */
     fun getFolderById(folderId: String) {
-        repository.getFolderById(folderId, onSuccess = { _selectedFolder.value = it }, onFailure = {})
+        repository.getFolderById(
+            folderId,
+            onSuccess = { _selectedFolder.value = it },
+            onFailure = {})
     }
 
     /**
@@ -111,7 +123,7 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
      * @param folder The folder with updated information.
      */
     fun updateFolder(folder: Folder, userId: String) {
-        repository.updateFolder(folder, onSuccess = { getFoldersFrom(userId)}, onFailure = {})
+        repository.updateFolder(folder, onSuccess = { getRootFoldersFrom(userId) }, onFailure = {})
     }
 
     /**
@@ -119,7 +131,10 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
      *
      * @param parentId The ID of the parent folder.
      */
-    fun getFoldersByParentFolderId(parentId: String) {
-        repository.getFoldersByParentFolderId(parentId, onSuccess = { _parentSubFolders.value = it }, onFailure = {})
+    fun getSubFoldersOf(parentId: String) {
+        repository.getSubFoldersOf(
+            parentId,
+            onSuccess = { _userSubFolders.value = it },
+            onFailure = {})
     }
 }

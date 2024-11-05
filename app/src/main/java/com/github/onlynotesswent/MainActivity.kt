@@ -72,7 +72,7 @@ fun OnlyNotesApp(scanner: Scanner) {
         AddFolderScreen(navigationActions, folderViewModel, userViewModel)
       }
       composable(Screen.FOLDER_CONTENTS) {
-        FolderContentScreen(navigationActions, folderViewModel, noteViewModel)
+        FolderContentScreen(navigationActions, folderViewModel, noteViewModel, userViewModel)
       }
     }
 

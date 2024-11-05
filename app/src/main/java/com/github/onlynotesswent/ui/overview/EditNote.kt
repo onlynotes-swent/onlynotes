@@ -58,164 +58,200 @@ fun EditNoteScreen(
     noteViewModel: NoteViewModel,
     userViewModel: UserViewModel
 ) {
-  val note by noteViewModel.selectedNote.collectAsState()
-  val currentYear = Calendar.getInstance().get(Calendar.YEAR)
-  var updatedNoteText by remember { mutableStateOf(note?.content ?: "") }
-  var updatedNoteTitle by remember { mutableStateOf(note?.title ?: "") }
-  var updatedClassName by remember { mutableStateOf(note?.noteClass?.className ?: "") }
-  var updatedClassCode by remember { mutableStateOf(note?.noteClass?.classCode ?: "") }
-  var updatedClassYear by remember { mutableIntStateOf(note?.noteClass?.classYear ?: currentYear) }
-  var visibility by remember { mutableStateOf(note?.visibility) }
-  var expandedVisibility by remember { mutableStateOf(false) }
+    val note by noteViewModel.selectedNote.collectAsState()
+    val currentYear = Calendar.getInstance().get(Calendar.YEAR)
+    var updatedNoteText by remember { mutableStateOf(note?.content ?: "") }
+    var updatedNoteTitle by remember { mutableStateOf(note?.title ?: "") }
+    var updatedClassName by remember { mutableStateOf(note?.noteClass?.className ?: "") }
+    var updatedClassCode by remember { mutableStateOf(note?.noteClass?.classCode ?: "") }
+    var updatedClassYear by remember {
+        mutableIntStateOf(
+            note?.noteClass?.classYear ?: currentYear
+        )
+    }
+    var visibility by remember { mutableStateOf(note?.visibility) }
+    var expandedVisibility by remember { mutableStateOf(false) }
 
-  Scaffold(
-      modifier = Modifier.testTag("editNoteScreen"),
-      topBar = {
-        TopAppBar(
-            colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFB3E5FC)),
-            title = {
-              Row(
-                  modifier = Modifier.fillMaxWidth(),
-                  verticalAlignment = Alignment.CenterVertically) {
-                    Spacer(modifier = Modifier.weight(1.5f))
-                    Text("Edit note", Modifier.testTag("editNoteTitle"))
-                    Spacer(modifier = Modifier.weight(2f))
-                  }
-            },
-            navigationIcon = {
-              IconButton(
-                  onClick = { navigationActions.goBack() }, Modifier.testTag("goBackButton")) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                        contentDescription = "Back")
-                  }
-            })
-      },
-      content = { paddingValues ->
-        LazyColumn(
-            modifier =
-                Modifier.fillMaxSize()
+    Scaffold(
+        modifier = Modifier.testTag("editNoteScreen"),
+        topBar = {
+            TopAppBar(
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFB3E5FC)),
+                title = {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Spacer(modifier = Modifier.weight(1.5f))
+                        Text("Edit note", Modifier.testTag("editNoteTitle"))
+                        Spacer(modifier = Modifier.weight(2f))
+                    }
+                },
+                navigationIcon = {
+                    IconButton(
+                        onClick = { navigationActions.goBack() }, Modifier.testTag("goBackButton")
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
+                            contentDescription = "Back"
+                        )
+                    }
+                })
+        },
+        content = { paddingValues ->
+            LazyColumn(
+                modifier =
+                Modifier
+                    .fillMaxSize()
                     .padding(16.dp)
                     .padding(paddingValues)
                     .testTag("editNoteColumn"),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            horizontalAlignment = Alignment.CenterHorizontally) {
-              item {
-                OutlinedTextField(
-                    value = updatedNoteTitle,
-                    onValueChange = { updatedNoteTitle = it },
-                    label = { Text("Note Title") },
-                    placeholder = { Text("Enter the new title here") },
-                    modifier = Modifier.fillMaxWidth().testTag("EditTitle textField"))
-              }
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                item {
+                    OutlinedTextField(
+                        value = updatedNoteTitle,
+                        onValueChange = { updatedNoteTitle = it },
+                        label = { Text("Note Title") },
+                        placeholder = { Text("Enter the new title here") },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .testTag("EditTitle textField")
+                    )
+                }
 
-              item {
-                OptionDropDownMenu(
-                    value =
+                item {
+                    OptionDropDownMenu(
+                        value =
                         visibility?.toReadableString()
                             ?: Note.Visibility.DEFAULT.toReadableString(),
-                    expanded = expandedVisibility,
-                    buttonTag = "visibilityEditButton",
-                    menuTag = "visibilityEditMenu",
-                    onExpandedChange = { expandedVisibility = it },
-                    items = Note.Visibility.READABLE_STRINGS,
-                    onItemClick = { visibility = Note.Visibility.fromReadableString(it) })
-              }
+                        expanded = expandedVisibility,
+                        buttonTag = "visibilityEditButton",
+                        menuTag = "visibilityEditMenu",
+                        onExpandedChange = { expandedVisibility = it },
+                        items = Note.Visibility.READABLE_STRINGS,
+                        onItemClick = { visibility = Note.Visibility.fromReadableString(it) })
+                }
 
-              item {
-                OutlinedTextField(
-                    value = updatedClassName,
-                    onValueChange = { updatedClassName = it },
-                    label = { Text("Class Name") },
-                    placeholder = { Text("Set the Class Name for the Note") },
-                    modifier = Modifier.fillMaxWidth().testTag("EditClassName textField"))
-              }
+                item {
+                    OutlinedTextField(
+                        value = updatedClassName,
+                        onValueChange = { updatedClassName = it },
+                        label = { Text("Class Name") },
+                        placeholder = { Text("Set the Class Name for the Note") },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .testTag("EditClassName textField")
+                    )
+                }
 
-              item {
-                OutlinedTextField(
-                    value = updatedClassCode,
-                    onValueChange = { updatedClassCode = it },
-                    label = { Text("Class Code") },
-                    placeholder = { Text("Set the Class Code for the Note") },
-                    modifier = Modifier.fillMaxWidth().testTag("EditClassCode textField"))
-              }
+                item {
+                    OutlinedTextField(
+                        value = updatedClassCode,
+                        onValueChange = { updatedClassCode = it },
+                        label = { Text("Class Code") },
+                        placeholder = { Text("Set the Class Code for the Note") },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .testTag("EditClassCode textField")
+                    )
+                }
 
-              item {
-                OutlinedTextField(
-                    value = updatedClassYear.toString(),
-                    onValueChange = { updatedClassYear = it.toIntOrNull() ?: currentYear },
-                    label = { Text("Class Year") },
-                    placeholder = { Text("Set the Class Year for the Note") },
-                    modifier = Modifier.fillMaxWidth().testTag("EditClassYear textField"))
-              }
+                item {
+                    OutlinedTextField(
+                        value = updatedClassYear.toString(),
+                        onValueChange = { updatedClassYear = it.toIntOrNull() ?: currentYear },
+                        label = { Text("Class Year") },
+                        placeholder = { Text("Set the Class Year for the Note") },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .testTag("EditClassYear textField")
+                    )
+                }
 
-              item {
-                OutlinedTextField(
-                    value =
+                item {
+                    OutlinedTextField(
+                        value =
                         if (note?.type == Note.Type.NORMAL_TEXT) "Typed note"
                         else note?.type?.name ?: "Typed note",
-                    onValueChange = {},
-                    readOnly = true,
-                    label = { Text("Note Type") },
-                    modifier = Modifier.fillMaxWidth().testTag("EditType textField"))
-              }
-              if (note?.type == Note.Type.NORMAL_TEXT) {
-                item {
-                  OutlinedTextField(
-                      value = updatedNoteText,
-                      onValueChange = { updatedNoteText = it },
-                      label = { Text("Note Content") },
-                      placeholder = { Text("Enter your note here...") },
-                      modifier =
-                          Modifier.fillMaxWidth().height(400.dp).testTag("EditNote textField"))
+                        onValueChange = {},
+                        readOnly = true,
+                        label = { Text("Note Type") },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .testTag("EditType textField")
+                    )
                 }
-              }
-
-              item {
-                Button(
-                    enabled = updatedNoteTitle.isNotEmpty(),
-                    onClick = {
-                      noteViewModel.updateNote(
-                          Note(
-                              id = note?.id ?: "1",
-                              type = note?.type ?: Note.Type.NORMAL_TEXT,
-                              title = updatedNoteTitle,
-                              content = updatedNoteText,
-                              date = Timestamp.now(), // Use current timestamp
-                              visibility = visibility ?: Note.Visibility.DEFAULT,
-                              noteClass =
-                                  Note.Class(
-                                      updatedClassCode, updatedClassName, updatedClassYear, "path"),
-                              userId = note?.userId ?: userViewModel.currentUser.value!!.uid,
-                              image =
-                                  note?.image
-                                      ?: Bitmap.createBitmap(
-                                          1, 1, Bitmap.Config.ARGB_8888) // Placeholder Bitmap
-                              ),
-                          userViewModel.currentUser.value!!.uid)
-                      if (note?.folderId != null) {
-                          navigationActions.navigateTo(Screen.FOLDER_CONTENTS)
-                      } else {
-                          navigationActions.navigateTo(Screen.OVERVIEW)
-                      }
-                    },
-                    modifier = Modifier.testTag("Save button")) {
-                      Text("Update note")
+                if (note?.type == Note.Type.NORMAL_TEXT) {
+                    item {
+                        OutlinedTextField(
+                            value = updatedNoteText,
+                            onValueChange = { updatedNoteText = it },
+                            label = { Text("Note Content") },
+                            placeholder = { Text("Enter your note here...") },
+                            modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .height(400.dp)
+                                .testTag("EditNote textField")
+                        )
                     }
-              }
+                }
 
-              item {
-                Button(
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF0000)),
-                    onClick = {
-                      noteViewModel.deleteNoteById(
-                          note?.id ?: "", note?.userId ?: userViewModel.currentUser.value!!.uid)
-                      navigationActions.navigateTo(Screen.OVERVIEW)
-                    },
-                    modifier = Modifier.testTag("Delete button")) {
-                      Text("Delete note")
+                item {
+                    Button(
+                        enabled = updatedNoteTitle.isNotEmpty(),
+                        onClick = {
+                            noteViewModel.updateNote(
+                                Note(
+                                    id = note?.id ?: "1",
+                                    type = note?.type ?: Note.Type.NORMAL_TEXT,
+                                    title = updatedNoteTitle,
+                                    content = updatedNoteText,
+                                    date = Timestamp.now(), // Use current timestamp
+                                    visibility = visibility ?: Note.Visibility.DEFAULT,
+                                    noteClass =
+                                    Note.Class(
+                                        updatedClassCode, updatedClassName, updatedClassYear, "path"
+                                    ),
+                                    userId = note?.userId ?: userViewModel.currentUser.value!!.uid,
+                                    folderId = note?.folderId,
+                                    image =
+                                    note?.image
+                                        ?: Bitmap.createBitmap(
+                                            1, 1, Bitmap.Config.ARGB_8888
+                                        ) // Placeholder Bitmap
+                                ),
+                                userViewModel.currentUser.value!!.uid
+                            )
+                            if (note?.folderId != null) {
+                                navigationActions.navigateTo(Screen.FOLDER_CONTENTS)
+                            } else {
+                                navigationActions.navigateTo(Screen.OVERVIEW)
+                            }
+                        },
+                        modifier = Modifier.testTag("Save button")
+                    ) {
+                        Text("Update note")
                     }
-              }
+                }
+
+                item {
+                    Button(
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF0000)),
+                        onClick = {
+                            noteViewModel.deleteNoteById(
+                                note?.id ?: "",
+                                note?.userId ?: userViewModel.currentUser.value!!.uid
+                            )
+                            navigationActions.navigateTo(Screen.OVERVIEW)
+                        },
+                        modifier = Modifier.testTag("Delete button")
+                    ) {
+                        Text("Delete note")
+                    }
+                }
             }
-      })
+        })
 }
