@@ -67,6 +67,8 @@ fun UserProfileScreen(navigationActions: NavigationActions, userViewModel: UserV
   // Display the user's profile information
   ProfileScaffold(
       navigationActions,
+      includeBackButton = false,
+      topBarTitle = "    My Profile",
       floatingActionButton = {
         ExtendedFloatingActionButton(
             onClick = { navigationActions.navigateTo(Screen.EDIT_PROFILE) }) {
@@ -118,6 +120,8 @@ fun PublicProfileScreen(navigationActions: NavigationActions, userViewModel: Use
 @Composable
 private fun ProfileScaffold(
     navigationActions: NavigationActions,
+    includeBackButton: Boolean = true,
+    topBarTitle : String = "Public Profile",
     floatingActionButton: @Composable () -> Unit = {},
     content: @Composable () -> Unit,
 ) {
@@ -130,18 +134,20 @@ private fun ProfileScaffold(
             tabList = LIST_TOP_LEVEL_DESTINATION,
             selectedItem = navigationActions.currentRoute())
       },
-      topBar = { TopProfileBar(title = "Public Profile", navigationActions = navigationActions) },
+      topBar = { TopProfileBar(title = topBarTitle, navigationActions = navigationActions, includeBackButton) },
       content = { paddingValues -> ProfileColumn(paddingValues) { content() } })
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TopProfileBar(title: String, navigationActions: NavigationActions) {
+fun TopProfileBar(title: String, navigationActions: NavigationActions, includeBackButton:Boolean = true) {
   TopAppBar(
       title = { Text(title) },
       navigationIcon = {
-        IconButton(onClick = { navigationActions.goBack() }, Modifier.testTag("goBackButton")) {
-          Icon(imageVector = Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "Back")
+        if (includeBackButton) {
+          IconButton(onClick = { navigationActions.goBack() }, Modifier.testTag("goBackButton")) {
+            Icon(imageVector = Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "Back")
+          }
         }
       })
 }
@@ -182,12 +188,14 @@ fun ProfileContent(
           modifier = Modifier.padding(borderPadding).fillMaxWidth(),
           verticalArrangement = Arrangement.Center,
           horizontalAlignment = Alignment.CenterHorizontally) {
+
             // Profile picture (change later)
             Image(
                 painter = rememberVectorPainter(Icons.Default.AccountCircle),
                 contentDescription = "Profile Picture",
                 modifier = Modifier.size(200.dp).padding(10.dp))
             Spacer(modifier = Modifier.height(20.dp))
+
             // Display the user's full name and handle (username)
             Row {
               Icon(Icons.Default.AccountCircle, "profileIcon")
@@ -197,6 +205,7 @@ fun ProfileContent(
             Text(
                 user.value!!.userHandle(),
                 fontWeight = FontWeight(400),
+                fontStyle = FontStyle.Italic,
                 modifier = Modifier.alpha(0.7f))
             Spacer(modifier = Modifier.height(10.dp))
 
@@ -213,20 +222,10 @@ fun ProfileContent(
             Spacer(modifier = Modifier.height(10.dp))
 
             // Display the user's bio
-            OutlinedCard {
-              Text(
-                  buildAnnotatedString {
-                    withStyle(style = SpanStyle(fontWeight = FontWeight(500), fontSize = 15.sp)) {
-                      append("Bio: ")
-                    }
-                    // Add the user's bio in italics
-                    withStyle(style = SpanStyle(fontStyle = FontStyle.Italic, fontSize = 14.sp)) {
-                      append(user.value!!.bio)
-                    }
-                  },
-                  modifier = Modifier.padding(10.dp))
+            if (user.value!!.bio.isNotEmpty()) {
+                DisplayBioCard(user)
+                Spacer(modifier = Modifier.height(10.dp))
             }
-            Spacer(modifier = Modifier.height(10.dp))
 
             // Display the user's friends
             Row {
@@ -318,6 +317,34 @@ fun UserDropdownMenu(
           }
         }
       }
+}
+
+@Composable
+fun DisplayBioCard(user:State<User?>){
+    OutlinedCard {
+        Text(
+            buildAnnotatedString {
+                withStyle(
+                    style = SpanStyle(
+                        fontWeight = FontWeight(500),
+                        fontSize = 15.sp
+                    )
+                ) {
+                    append("Bio: ")
+                }
+                // Add the user's bio in italics
+                withStyle(
+                    style = SpanStyle(
+                        fontStyle = FontStyle.Italic,
+                        fontSize = 14.sp
+                    )
+                ) {
+                    append(user.value!!.bio)
+                }
+            },
+            modifier = Modifier.padding(10.dp)
+        )
+    }
 }
 
 /**
