@@ -6,6 +6,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContract
 import androidx.activity.result.contract.ActivityResultContracts
 import org.junit.Before
 import org.junit.Test
@@ -33,6 +34,15 @@ class ProfilePictureTakerTest {
     // Initialize ProfilePictureTaker with mocked components
     profilePictureTaker = ProfilePictureTaker(mockActivity).apply { init() }
     profilePictureTaker.setOnImageSelected { mockOnImageSelected }
+  }
+
+  @Test
+  fun initRegistersActivityResultLauncherTest() {
+    // Verify that the activity result launcher is registered
+    verify(mockActivity)
+        .registerForActivityResult(
+            any<ActivityResultContract<Intent, ActivityResult>>(),
+            any<ActivityResultCallback<ActivityResult>>())
   }
 
   @Test
