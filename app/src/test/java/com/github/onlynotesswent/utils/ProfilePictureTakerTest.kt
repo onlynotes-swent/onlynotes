@@ -31,7 +31,7 @@ class ProfilePictureTakerTest {
         .thenReturn(mockActivityResultLauncher)
 
     // Initialize ProfilePictureTaker with mocked components
-    profilePictureTaker = ProfilePictureTaker(mockActivity)
+    profilePictureTaker = ProfilePictureTaker(mockActivity).apply { init() }
     profilePictureTaker.setOnImageSelected { mockOnImageSelected }
   }
 
