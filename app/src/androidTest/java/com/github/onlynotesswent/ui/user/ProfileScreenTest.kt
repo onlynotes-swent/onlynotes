@@ -1,5 +1,6 @@
 package com.github.onlynotesswent.ui.user
 
+import android.net.Uri
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assert
@@ -10,6 +11,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextClearance
 import androidx.compose.ui.test.performTextInput
+import androidx.core.net.toUri
 import com.github.onlynotesswent.model.file.FileRepository
 import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.note.NoteRepository
@@ -222,6 +224,7 @@ class ProfileScreenTest {
     verify(mockFileRepository).downloadFile(any(), any(), any(), any(), any())
   }
 
+  @Test
   fun currentUserIsNull() {
     val userViewModel2 = UserViewModel(mockUserRepository)
     composeTestRule.setContent {
@@ -230,5 +233,21 @@ class ProfileScreenTest {
     composeTestRule.onNodeWithTag("saveButton").performClick()
     // verify that a toast is shown
     verify(mockNavigationActions, never()).goBack()
+  }
+
+  @Test
+  fun testUriHandling() {
+    doNothing().`when`(profilePictureTaker).pickImage()
+    `when`(profilePictureTaker.setOnImageSelected(any())).thenAnswer {
+      val onImageSelected = it.arguments[0] as (Uri?) -> Unit
+      onImageSelected("testUri".toUri())
+    }
+
+    composeTestRule.setContent {
+      EditProfileScreen(mockNavigationActions, userViewModel, profilePictureTaker, fileViewModel)
+    }
+
+    composeTestRule.onNodeWithTag("editProfilePicture").performClick()
+    verify(profilePictureTaker).pickImage()
   }
 }

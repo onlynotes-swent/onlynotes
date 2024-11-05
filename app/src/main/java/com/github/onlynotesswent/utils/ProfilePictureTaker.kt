@@ -22,7 +22,7 @@ open class ProfilePictureTaker(private val activity: ComponentActivity) {
    *
    * @param onImageSelected the lambda function to be called when an image is selected
    */
-  fun setOnImageSelected(onImageSelected: (Uri?) -> Unit) {
+  open fun setOnImageSelected(onImageSelected: (Uri?) -> Unit) {
     this.onImageSelected = onImageSelected
   }
 
