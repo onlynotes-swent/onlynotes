@@ -101,9 +101,8 @@ fun EditProfileScreen(
                 navigationIcon = {
                   IconButton(
                       onClick = {
-                        // when we go back we  we will need to fetch again the old profile picture
-                        // if it
-                        // was changed because going back don't save the changes
+                        // When we go back we  we will need to fetch again the old profile picture
+                        // if it was changed, because going back doesn't save the changes
                         isProfilePictureUpToDate.value = !hasProfilePictureBeenChanged.value
                         navigationActions.goBack()
                       },
@@ -201,7 +200,7 @@ fun ProfilePicture(
           onSuccess = { file ->
             profilePictureUri.value = file.absolutePath
             isProfilePictureUpToDate.value = true
-            // we now the the current profile picture is the same as the one in the database
+            // Now the current profile picture is the same as the one in the database
             hasProfilePictureBeenChanged.value = false
           },
           onFailure = { e -> Log.e("ProfilePicture", "Error downloading profile picture", e) })
