@@ -1,10 +1,10 @@
 package com.github.onlynotesswent.model.users
 
 import com.google.firebase.Timestamp
+import java.util.Date
 import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertNotSame
 import org.junit.Test
-import java.util.Date
 
 class UserTest {
 
@@ -89,55 +89,55 @@ class UserTest {
     assertEquals(emptyList<String>(), emptyFriends.followers)
   }
 
-    @Test
-    fun `test user handle`() {
-        var user = User(
+  @Test
+  fun `test user handle`() {
+    var user =
+        User(
             firstName = "User",
             lastName = "Name",
             userName = "username",
             email = "email",
             uid = "1",
             dateOfJoining = Timestamp.now(),
-            rating = 0.0
-        )
-        assertEquals("@username", user.userHandle())
-        user = User(
+            rating = 0.0)
+    assertEquals("@username", user.userHandle())
+    user =
+        User(
             firstName = "User",
             lastName = "Name",
             userName = "",
             email = "email",
             uid = "1",
             dateOfJoining = Timestamp.now(),
-            rating = 0.0
-        )
-        assertEquals("@unknown", user.userHandle())
-    }
+            rating = 0.0)
+    assertEquals("@unknown", user.userHandle())
+  }
 
-    @Test
-    fun `test user full name`() {
-        val user = User(
+  @Test
+  fun `test user full name`() {
+    val user =
+        User(
             firstName = "User",
             lastName = "Name",
             userName = "username",
             email = "email",
             uid = "1",
             dateOfJoining = Timestamp.now(),
-            rating = 0.0
-        )
-        assertEquals("User Name", user.fullName())
-    }
+            rating = 0.0)
+    assertEquals("User Name", user.fullName())
+  }
 
-    @Test
-    fun `test user date to string`() {
-        val user = User(
+  @Test
+  fun `test user date to string`() {
+    val user =
+        User(
             firstName = "User",
             lastName = "Name",
             userName = "username",
             email = "email",
             uid = "1",
             dateOfJoining = Timestamp(date = Date(0)),
-            rating = 0.0
-        )
-        assertEquals("1/1/1970", user.dateToString())
-    }
+            rating = 0.0)
+    assertEquals("1/1/1970", user.dateToString())
+  }
 }

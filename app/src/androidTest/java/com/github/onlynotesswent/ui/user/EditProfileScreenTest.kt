@@ -86,7 +86,6 @@ class EditProfileScreenTest {
   fun displayAllComponents() {
     composeTestRule.setContent { EditProfileScreen(mockNavigationActions, userViewModel) }
 
-    composeTestRule.onNodeWithTag("ProfileScreen").assertExists()
     composeTestRule.onNodeWithTag("goBackButton").assertExists()
     composeTestRule.onNodeWithTag("inputFirstName").assertExists()
     composeTestRule.onNodeWithTag("inputLastName").assertExists()

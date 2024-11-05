@@ -271,7 +271,8 @@ fun ProfileContent(
                         },
                         { isFollowerMenuShown.value = false })
                   }) {
-                    Text("Followers: ${user.value!!.friends.followers.size}",
+                    Text(
+                        "Followers: ${user.value!!.friends.followers.size}",
                         modifier = Modifier.testTag("followersText"))
                   }
             }

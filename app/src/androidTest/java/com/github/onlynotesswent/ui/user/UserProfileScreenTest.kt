@@ -30,28 +30,28 @@ class UserProfileScreenTest {
 
   // Following user
   private val testUser2 =
-    User(
-      firstName = "testFirstName2",
-      lastName = "testLastName2",
-      userName = "testUserName2",
-      email = "testEmail2",
-      uid = "testUid2",
-      dateOfJoining = Timestamp.now(),
-      rating = 0.0,
-      friends = Friends(listOf(), listOf(testUid)),
-      bio = "testBio2")
+      User(
+          firstName = "testFirstName2",
+          lastName = "testLastName2",
+          userName = "testUserName2",
+          email = "testEmail2",
+          uid = "testUid2",
+          dateOfJoining = Timestamp.now(),
+          rating = 0.0,
+          friends = Friends(listOf(), listOf(testUid)),
+          bio = "testBio2")
   // Follower user
   private val testUser3 =
-    User(
-      firstName = "testFirstName3",
-      lastName = "testLastNam3e",
-      userName = "testUserName3",
-      email = "testEmail3",
-      uid = "testUid3",
-      dateOfJoining = Timestamp.now(),
-      rating = 0.0,
-      friends = Friends(listOf(testUid), listOf()),
-      bio = "testBio3")
+      User(
+          firstName = "testFirstName3",
+          lastName = "testLastNam3e",
+          userName = "testUserName3",
+          email = "testEmail3",
+          uid = "testUid3",
+          dateOfJoining = Timestamp.now(),
+          rating = 0.0,
+          friends = Friends(listOf(testUid), listOf()),
+          bio = "testBio3")
 
   // current user
   private val testUser =
@@ -65,8 +65,6 @@ class UserProfileScreenTest {
           rating = 0.0,
           friends = Friends(listOf(testUser2.uid), listOf(testUser3.uid)),
           bio = "testBio")
-
-
 
   @get:Rule val composeTestRule = createComposeRule()
 
@@ -110,6 +108,4 @@ class UserProfileScreenTest {
     composeTestRule.onNodeWithTag("followersText", useUnmergedTree = true).assertExists()
     composeTestRule.onNodeWithTag("editProfileButton").assertExists()
   }
-
-
 }
