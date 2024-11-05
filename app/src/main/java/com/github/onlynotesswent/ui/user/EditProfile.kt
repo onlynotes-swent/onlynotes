@@ -192,7 +192,8 @@ fun ProfilePicture(
 
   Box(modifier = Modifier.size(150.dp)) {
     // Download the profile picture from Firebase Storage if it hasn't been downloaded yet
-    if (!isProfilePictureUpToDate.value && userViewModel.currentUser.value!!.hasProfilePicture) {
+    if (!isProfilePictureUpToDate.value &&
+        userViewModel.currentUser.value?.hasProfilePicture == true) {
       fileViewModel.downloadFile(
           userViewModel.currentUser.value!!.uid,
           FileType.PROFILE_PIC_JPEG,
