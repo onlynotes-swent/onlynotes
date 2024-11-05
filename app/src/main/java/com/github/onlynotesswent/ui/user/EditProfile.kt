@@ -77,104 +77,106 @@ fun EditProfileScreen(
   val isProfilePictureUpToDate = remember { mutableStateOf(false) }
   val hasProfilePictureBeenChanged = remember { mutableStateOf(false) }
   val localContext = LocalContext.current
-if(user.value == null) {
+  if (user.value == null) {
     // If the user is null, display an error message
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally) {
-            Text("User  not found ...")
+          Text("User  not found ...")
         }
-}else
-  Scaffold(
-      modifier = Modifier.testTag("ProfileScreen"),
-      bottomBar = {
-        BottomNavigationMenu(
-            onTabSelect = { route -> navigationActions.navigateTo(route) },
-            tabList = LIST_TOP_LEVEL_DESTINATION,
-            selectedItem = navigationActions.currentRoute())
-      },
-      topBar = {
-        TopAppBar(
-            title = {},
-            navigationIcon = {
-              IconButton(
-                  onClick = {
-                    // when we go back we  we will need to fetch again the old profile picture if it
-                    // was changed
-                    // because going back don't save the changes
-                    isProfilePictureUpToDate.value = !hasProfilePictureBeenChanged.value
-                    navigationActions.goBack()
-                  },
-                  Modifier.testTag("goBackButton")) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                        contentDescription = "Back Button")
-                  }
-            })
-      },
-      content = { paddingValues ->
-        Column(
-            modifier = Modifier.fillMaxSize().padding(paddingValues),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally) {
-              ProfilePicture(
-                  profilePictureTaker,
-                  userViewModel,
-                  profilePictureUri,
-                  fileViewModel,
-                  isProfilePictureUpToDate,
-                  hasProfilePictureBeenChanged,
-                  localContext)
+  } else
+      Scaffold(
+          modifier = Modifier.testTag("ProfileScreen"),
+          bottomBar = {
+            BottomNavigationMenu(
+                onTabSelect = { route -> navigationActions.navigateTo(route) },
+                tabList = LIST_TOP_LEVEL_DESTINATION,
+                selectedItem = navigationActions.currentRoute())
+          },
+          topBar = {
+            TopAppBar(
+                title = {},
+                navigationIcon = {
+                  IconButton(
+                      onClick = {
+                        // when we go back we  we will need to fetch again the old profile picture
+                        // if it
+                        // was changed
+                        // because going back don't save the changes
+                        isProfilePictureUpToDate.value = !hasProfilePictureBeenChanged.value
+                        navigationActions.goBack()
+                      },
+                      Modifier.testTag("goBackButton")) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
+                            contentDescription = "Back Button")
+                      }
+                })
+          },
+          content = { paddingValues ->
+            Column(
+                modifier = Modifier.fillMaxSize().padding(paddingValues),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally) {
+                  ProfilePicture(
+                      profilePictureTaker,
+                      userViewModel,
+                      profilePictureUri,
+                      fileViewModel,
+                      isProfilePictureUpToDate,
+                      hasProfilePictureBeenChanged,
+                      localContext)
 
-              // Text Fields for user information
-              FirstNameTextField(newFirstName)
-              LastNameTextField(newLastName)
-              UserNameTextField(newUserName, userNameError)
+                  // Text Fields for user information
+                  FirstNameTextField(newFirstName)
+                  LastNameTextField(newLastName)
+                  UserNameTextField(newUserName, userNameError)
 
-              // Save Button
-              saveEnabled.value = newUserName.value.isNotBlank()
-              SaveButton(
-                  onClick = {
-                    val updatedUser =
-                          User(
-                              firstName = newFirstName.value,
-                              lastName = newLastName.value,
-                              userName = newUserName.value,
-                              email = user.value!!.email,
-                              uid = user.value!!.uid,
-                              dateOfJoining = user.value!!.dateOfJoining,
-                              rating = user.value!!.rating,
-                              hasProfilePicture =
-                                  profilePictureUri.value.isNotBlank() || user.value!!.hasProfilePicture)
+                  // Save Button
+                  saveEnabled.value = newUserName.value.isNotBlank()
+                  SaveButton(
+                      onClick = {
+                        val updatedUser =
+                            User(
+                                firstName = newFirstName.value,
+                                lastName = newLastName.value,
+                                userName = newUserName.value,
+                                email = user.value!!.email,
+                                uid = user.value!!.uid,
+                                dateOfJoining = user.value!!.dateOfJoining,
+                                rating = user.value!!.rating,
+                                hasProfilePicture =
+                                    profilePictureUri.value.isNotBlank() ||
+                                        user.value!!.hasProfilePicture)
 
-                      userViewModel.updateUser(
-                          user = updatedUser,
-                          onSuccess = {
-                            navigationActions.goBack()
-                            // Upload the profile picture  if it has been changed
-                            if (hasProfilePictureBeenChanged.value) {
-                              fileViewModel.uploadFile(
-                                  userViewModel.currentUser.value!!.uid,
-                                  profilePictureUri.value.toUri(),
-                                  FileType.PROFILE_PIC_JPEG,
-                              )
-                            }
-                          },
-                          onFailure = { exception ->
-                            Toast.makeText(
-                                    localContext,
-                                    "Error while updating user: ${exception.message}",
-                                    Toast.LENGTH_SHORT)
-                                .show()
-                            Log.e("EditProfileScreen", "Error while updating user ", exception)
-                            userNameError.value =
-                                exception is UserRepositoryFirestore.UsernameTakenException
-                          })
-                  },
-                  enabled = saveEnabled)
-            }
-      })
+                        userViewModel.updateUser(
+                            user = updatedUser,
+                            onSuccess = {
+                              navigationActions.goBack()
+                              // Upload the profile picture  if it has been changed
+                              if (hasProfilePictureBeenChanged.value) {
+                                fileViewModel.uploadFile(
+                                    userViewModel.currentUser.value!!.uid,
+                                    profilePictureUri.value.toUri(),
+                                    FileType.PROFILE_PIC_JPEG,
+                                )
+                              }
+                            },
+                            onFailure = { exception ->
+                              Toast.makeText(
+                                      localContext,
+                                      "Error while updating user: ${exception.message}",
+                                      Toast.LENGTH_SHORT)
+                                  .show()
+                              Log.e("EditProfileScreen", "Error while updating user ", exception)
+                              userNameError.value =
+                                  exception is UserRepositoryFirestore.UsernameTakenException
+                            })
+                      },
+                      enabled = saveEnabled)
+                }
+          })
 }
 
 @SuppressLint("StateFlowValueCalledInComposition")
