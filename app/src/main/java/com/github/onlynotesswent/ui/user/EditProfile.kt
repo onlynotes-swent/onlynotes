@@ -138,8 +138,7 @@ fun EditProfileScreen(
                               dateOfJoining = it.dateOfJoining,
                               rating = it.rating,
                               hasProfilePicture =
-                                  if (profilePictureUri.value.isNotBlank()) true
-                                  else it.hasProfilePicture)
+                                  profilePictureUri.value.isNotBlank() || it.hasProfilePicture)
                         }
                     if (updatedUser == null) {
                       Toast.makeText(
