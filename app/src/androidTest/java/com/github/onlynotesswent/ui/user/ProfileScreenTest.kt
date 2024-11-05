@@ -26,12 +26,12 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.mockito.Mock
+import org.mockito.Mockito.never
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
 import org.mockito.kotlin.doNothing
-import org.mockito.Mockito.never
 
 class ProfileScreenTest {
   @Mock private lateinit var mockUserRepository: UserRepository
@@ -158,8 +158,6 @@ class ProfileScreenTest {
     verify(profilePictureTaker).pickImage()
   }
 
-
-
   @Test
   fun userNameFieldDisplaysError() {
     composeTestRule.setContent {
@@ -224,13 +222,13 @@ class ProfileScreenTest {
     verify(mockFileRepository).downloadFile(any(), any(), any(), any(), any())
   }
 
-  fun  currentUserIsNull() {
-    val userViewModel2=UserViewModel(mockUserRepository)
+  fun currentUserIsNull() {
+    val userViewModel2 = UserViewModel(mockUserRepository)
     composeTestRule.setContent {
       EditProfileScreen(mockNavigationActions, userViewModel2, profilePictureTaker, fileViewModel)
     }
     composeTestRule.onNodeWithTag("saveButton").performClick()
-    //verify that a toast is shown
+    // verify that a toast is shown
     verify(mockNavigationActions, never()).goBack()
   }
 }
