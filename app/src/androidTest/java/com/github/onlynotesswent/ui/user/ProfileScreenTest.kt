@@ -224,16 +224,6 @@ class ProfileScreenTest {
     verify(mockFileRepository).downloadFile(any(), any(), any(), any(), any())
   }
 
-  @Test
-  fun currentUserIsNull() {
-    val userViewModel2 = UserViewModel(mockUserRepository)
-    composeTestRule.setContent {
-      EditProfileScreen(mockNavigationActions, userViewModel2, profilePictureTaker, fileViewModel)
-    }
-    composeTestRule.onNodeWithTag("saveButton").performClick()
-    // verify that a toast is shown
-    verify(mockNavigationActions, never()).goBack()
-  }
 
   @Test
   fun testUriHandling() {

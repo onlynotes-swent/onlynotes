@@ -24,6 +24,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -76,7 +77,15 @@ fun EditProfileScreen(
   val isProfilePictureUpToDate = remember { mutableStateOf(false) }
   val hasProfilePictureBeenChanged = remember { mutableStateOf(false) }
   val localContext = LocalContext.current
-
+if(user.value == null) {
+    // If the user is null, display an error message
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally) {
+            Text("User  not found ...")
+        }
+}else
   Scaffold(
       modifier = Modifier.testTag("ProfileScreen"),
       bottomBar = {
@@ -128,26 +137,17 @@ fun EditProfileScreen(
               SaveButton(
                   onClick = {
                     val updatedUser =
-                        user.value?.let {
                           User(
                               firstName = newFirstName.value,
                               lastName = newLastName.value,
                               userName = newUserName.value,
-                              email = it.email,
-                              uid = it.uid,
-                              dateOfJoining = it.dateOfJoining,
-                              rating = it.rating,
+                              email = user.value!!.email,
+                              uid = user.value!!.uid,
+                              dateOfJoining = user.value!!.dateOfJoining,
+                              rating = user.value!!.rating,
                               hasProfilePicture =
-                                  profilePictureUri.value.isNotBlank() || it.hasProfilePicture)
-                        }
-                    if (updatedUser == null) {
-                      Toast.makeText(
-                              localContext,
-                              "Error while updating user: current user is null",
-                              Toast.LENGTH_SHORT)
-                          .show()
-                      Log.e("EditProfileScreen", "Error while updating user: current user is null")
-                    } else {
+                                  profilePictureUri.value.isNotBlank() || user.value!!.hasProfilePicture)
+
                       userViewModel.updateUser(
                           user = updatedUser,
                           onSuccess = {
@@ -171,7 +171,6 @@ fun EditProfileScreen(
                             userNameError.value =
                                 exception is UserRepositoryFirestore.UsernameTakenException
                           })
-                    }
                   },
                   enabled = saveEnabled)
             }
@@ -192,8 +191,7 @@ fun ProfilePicture(
 
   Box(modifier = Modifier.size(150.dp)) {
     // Download the profile picture from Firebase Storage if it hasn't been downloaded yet
-    if (!isProfilePictureUpToDate.value &&
-        userViewModel.currentUser.value?.hasProfilePicture == true) {
+    if (!isProfilePictureUpToDate.value && userViewModel.currentUser.value!!.hasProfilePicture) {
       fileViewModel.downloadFile(
           userViewModel.currentUser.value!!.uid,
           FileType.PROFILE_PIC_JPEG,
