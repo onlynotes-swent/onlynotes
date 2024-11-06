@@ -13,7 +13,7 @@ jacoco {
 
 android {
     namespace = "com.github.onlynotesswent"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.github.onlynotesswent"
