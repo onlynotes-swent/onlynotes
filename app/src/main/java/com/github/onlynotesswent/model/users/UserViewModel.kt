@@ -75,7 +75,7 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
    * user is not null, it retrieves the user by their UID and updates the current user state. If the
    * user is not found or an error occurs, the current user state is set to null.
    */
-  private fun refreshCurrentUser() {
+  fun refreshCurrentUser() {
     _currentUser.value?.let { user ->
       repository.getUserById(
           user.uid,

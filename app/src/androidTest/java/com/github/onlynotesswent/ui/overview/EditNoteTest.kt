@@ -91,8 +91,8 @@ class EditNoteTest {
 
   @Test
   fun addComment() {
-    composeTestRule.onNodeWithTag("Add Comment Button").performClick()
-    composeTestRule.onNodeWithTag("EditCommentTextField").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("Add Comment Button").performScrollTo().performClick()
+    composeTestRule.onNodeWithTag("EditCommentTextField").performScrollTo().assertIsDisplayed()
     val updatedCommentText = "Edited comment content"
     composeTestRule.onNodeWithTag("EditCommentTextField").performTextInput(updatedCommentText)
     val expectedLabelText = "edited: "

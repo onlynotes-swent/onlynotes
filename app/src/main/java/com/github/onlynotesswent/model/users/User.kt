@@ -52,7 +52,7 @@ data class User(
    * @return The user's date of joining as a formatted string.
    */
   fun dateToString(pattern: String = "d/M/yyyy"): String =
-      SimpleDateFormat(pattern, Locale.FRANCE).format(dateOfJoining.toDate())
+      SimpleDateFormat(pattern, Locale.getDefault()).format(dateOfJoining.toDate())
 }
 
 /**

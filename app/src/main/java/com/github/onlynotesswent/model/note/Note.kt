@@ -40,7 +40,6 @@ data class Note(
         PUBLIC -> "Public"
         FRIENDS -> "Friends Only"
         PRIVATE -> "Private"
-        else -> "$this (not implemented)" // keep for maintainability
       }
     }
   }
