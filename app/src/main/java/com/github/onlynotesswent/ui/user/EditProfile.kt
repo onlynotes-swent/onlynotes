@@ -39,7 +39,6 @@ import androidx.core.net.toUri
 import coil.compose.rememberAsyncImagePainter
 import com.github.onlynotesswent.model.file.FileType
 import com.github.onlynotesswent.model.file.FileViewModel
-import com.github.onlynotesswent.model.users.User
 import com.github.onlynotesswent.model.users.UserRepositoryFirestore
 import com.github.onlynotesswent.model.users.UserViewModel
 import com.github.onlynotesswent.ui.navigation.BottomNavigationMenu
@@ -126,23 +125,17 @@ fun EditProfileScreen(
                   SaveButton(
                       onClick = {
                         val updatedUser =
-                            User(
+                            user.value!!.copy(
                                 firstName = newFirstName.value,
                                 lastName = newLastName.value,
                                 userName = newUserName.value,
-                                email = user.value!!.email,
-                                uid = user.value!!.uid,
-                                dateOfJoining = user.value!!.dateOfJoining,
-                                rating = user.value!!.rating,
-                                hasProfilePicture =
-                                    profilePictureUri.value.isNotBlank() ||
-                                        user.value!!.hasProfilePicture)
+                                hasProfilePicture = profilePictureUri.value.isNotBlank())
 
                         userViewModel.updateUser(
                             user = updatedUser,
                             onSuccess = {
                               navigationActions.navigateTo(TopLevelDestinations.PROFILE)
-                              // Upload the profile picture  if it has been changed
+                              // Upload or delete the profile picture if it has been changed
                               if (hasProfilePictureBeenChanged.value) {
                                 if (profilePictureUri.value.isNotBlank()) {
                                   fileViewModel.uploadFile(

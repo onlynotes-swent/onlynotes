@@ -22,6 +22,7 @@ import com.github.onlynotesswent.model.users.UserRepositoryFirestore
 import com.github.onlynotesswent.model.users.UserViewModel
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
+import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
 import com.github.onlynotesswent.utils.ProfilePictureTaker
 import com.google.firebase.Timestamp
 import org.junit.Before
@@ -114,13 +115,13 @@ class EditProfileScreenTest {
   }
 
   @Test
-  fun submitNavigatesBack() {
+  fun submitNavigatesToHomeProfile() {
     composeTestRule.setContent {
       EditProfileScreen(mockNavigationActions, userViewModel, profilePictureTaker, fileViewModel)
     }
 
     composeTestRule.onNodeWithTag("saveButton").performClick()
-    verify(mockNavigationActions).goBack()
+    verify(mockNavigationActions).navigateTo(TopLevelDestinations.PROFILE)
   }
 
   @Test
