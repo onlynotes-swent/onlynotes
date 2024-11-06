@@ -176,6 +176,8 @@ class EndToEndTest {
     composeTestRule.onNodeWithTag("saveButton").performClick()
 
     // Interact with the note creation flow
+    composeTestRule.onNodeWithTag("createNoteOrFolder").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("createNoteOrFolder").performClick()
     composeTestRule.onNodeWithTag("createNote").assertIsDisplayed()
     composeTestRule.onNodeWithTag("createNote").performClick()
 
@@ -216,14 +218,15 @@ class EndToEndTest {
     composeTestRule.onNodeWithTag("Save button").performClick()
 
     // Mock retrieval of notes
-    `when`(noteRepository.getNotesFrom(eq(testUser.uid), any(), any())).thenAnswer { invocation ->
+    `when`(noteRepository.getRootNotesFrom(eq(testUser.uid), any(), any())).thenAnswer { invocation
+      ->
       val onSuccess = invocation.getArgument<(List<Note>) -> Unit>(1)
       onSuccess(listOf(testNote))
     }
 
     // Trigger note retrieval and verify the notes are displayed
-    noteViewModel.getNotesFrom(testUser.uid)
-    composeTestRule.onNodeWithTag("noteList").assertIsDisplayed()
+    noteViewModel.getRootNotesFrom(testUser.uid)
+    composeTestRule.onNodeWithTag("noteAndFolderList").assertIsDisplayed()
 
     // Verify that the note card is displayed
     composeTestRule.onNodeWithTag("noteCard").assertIsDisplayed()
