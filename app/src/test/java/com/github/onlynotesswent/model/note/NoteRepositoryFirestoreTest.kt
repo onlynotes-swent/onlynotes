@@ -117,7 +117,12 @@ class NoteRepositoryFirestoreTest {
 
     // Ensure the documents field is properly initialized
     `when`(mockQuerySnapshot.documents)
-        .thenReturn(listOf(mockDocumentSnapshot, mockDocumentSnapshot2, mockDocumentSnapshot3, mockDocumentSnapshot4))
+        .thenReturn(
+            listOf(
+                mockDocumentSnapshot,
+                mockDocumentSnapshot2,
+                mockDocumentSnapshot3,
+                mockDocumentSnapshot4))
 
     `when`(mockDocumentSnapshot.id).thenReturn(testNotePublic.id)
     `when`(mockDocumentSnapshot.getString("type")).thenReturn(testNotePublic.type.toString())

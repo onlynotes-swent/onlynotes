@@ -12,7 +12,7 @@ data class Note(
     val visibility: Visibility,
     val noteClass: Class,
     val userId: String,
-    val folderId: String? = null,   // if note not assigned to a folder, folderId is null
+    val folderId: String? = null, // if note not assigned to a folder, folderId is null
     val image: Bitmap
 ) {
   enum class Visibility {

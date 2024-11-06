@@ -51,14 +51,7 @@ class OverviewTest {
               ))
 
   private val folderList =
-    listOf(
-      Folder(
-        id = "1",
-        name = "name",
-        userId = "1",
-        parentFolderId = null
-      )
-    )
+      listOf(Folder(id = "1", name = "name", userId = "1", parentFolderId = null))
 
   @get:Rule val composeTestRule = createComposeRule()
 
@@ -92,12 +85,15 @@ class OverviewTest {
 
     // Mock the current route to be the user create screen
     `when`(navigationActions.currentRoute()).thenReturn(Screen.OVERVIEW)
-    composeTestRule.setContent { OverviewScreen(navigationActions, noteViewModel, userViewModel, folderViewModel) }
+    composeTestRule.setContent {
+      OverviewScreen(navigationActions, noteViewModel, userViewModel, folderViewModel)
+    }
   }
 
   @Test
   fun refreshButtonWorks() {
-    // Mock the repositories to return an empty list of notes and folders, for the refresh button to appear
+    // Mock the repositories to return an empty list of notes and folders, for the refresh button to
+    // appear
     `when`(noteRepository.getRootNotesFrom(eq("1"), any(), any())).then { invocation ->
       val onSuccess = invocation.getArgument<(List<Note>) -> Unit>(1)
       onSuccess(listOf())
@@ -120,7 +116,8 @@ class OverviewTest {
     }
     composeTestRule.onNodeWithTag("refreshButton").performClick()
 
-    // Verify that the repositories were called twice, once during the initial load and once during the
+    // Verify that the repositories were called twice, once during the initial load and once during
+    // the
     // refresh click
     verify(noteRepository, times(2)).getRootNotesFrom(eq("1"), any(), any())
     verify(folderRepository, times(2)).getRootFoldersFrom(eq("1"), any(), any())

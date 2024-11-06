@@ -91,9 +91,9 @@ class NoteViewModelTest {
     verify(noteRepository).deleteNoteById(eq("1"), any(), any())
   }
 
-    @Test
-    fun getNotesFromFolderCallsRepository() {
-        noteViewModel.getNotesFromFolder("1")
-        verify(noteRepository).getNotesFromFolder(eq("1"), any(), any())
-    }
+  @Test
+  fun getNotesFromFolderCallsRepository() {
+    noteViewModel.getNotesFromFolder("1")
+    verify(noteRepository).getNotesFromFolder(eq("1"), any(), any())
+  }
 }

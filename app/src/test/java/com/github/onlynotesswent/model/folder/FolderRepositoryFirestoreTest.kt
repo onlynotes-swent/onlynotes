@@ -24,168 +24,160 @@ import org.mockito.kotlin.verify
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows.shadowOf
 
-
 @RunWith(RobolectricTestRunner::class)
 class FolderRepositoryFirestoreTest {
 
-    @Mock private lateinit var mockFirestore: FirebaseFirestore
-    @Mock private lateinit var mockDocumentReference: DocumentReference
-    @Mock private lateinit var mockCollectionReference: CollectionReference
-    @Mock private lateinit var mockDocumentSnapshot: DocumentSnapshot
-    @Mock private lateinit var mockDocumentSnapshot2: DocumentSnapshot
-    @Mock private lateinit var mockQuerySnapshot: QuerySnapshot
-    @Mock private lateinit var mockQuerySnapshotTask: Task<QuerySnapshot>
+  @Mock private lateinit var mockFirestore: FirebaseFirestore
+  @Mock private lateinit var mockDocumentReference: DocumentReference
+  @Mock private lateinit var mockCollectionReference: CollectionReference
+  @Mock private lateinit var mockDocumentSnapshot: DocumentSnapshot
+  @Mock private lateinit var mockDocumentSnapshot2: DocumentSnapshot
+  @Mock private lateinit var mockQuerySnapshot: QuerySnapshot
+  @Mock private lateinit var mockQuerySnapshotTask: Task<QuerySnapshot>
 
-    private lateinit var folderRepositoryFirestore: FolderRepositoryFirestore
+  private lateinit var folderRepositoryFirestore: FolderRepositoryFirestore
 
-    private val testFolder =
-        Folder(
-            id = "1",
-            name = "name",
-            userId = "1",
-            parentFolderId = null
-        )
+  private val testFolder = Folder(id = "1", name = "name", userId = "1", parentFolderId = null)
 
-    private val testSubFolder =
-        Folder(
-            id = "2",
-            name = "subFolder",
-            userId = "1",
-            parentFolderId = "1"
-        )
+  private val testSubFolder =
+      Folder(id = "2", name = "subFolder", userId = "1", parentFolderId = "1")
 
-    @Before
-    fun setUp() {
-        MockitoAnnotations.openMocks(this)
+  @Before
+  fun setUp() {
+    MockitoAnnotations.openMocks(this)
 
-        if (FirebaseApp.getApps(ApplicationProvider.getApplicationContext()).isEmpty()) {
-            FirebaseApp.initializeApp(ApplicationProvider.getApplicationContext())
-        }
-
-
-        folderRepositoryFirestore = FolderRepositoryFirestore(mockFirestore)
-
-        `when`(mockFirestore.collection(any())).thenReturn(mockCollectionReference)
-        `when`(mockCollectionReference.document(any())).thenReturn(mockDocumentReference)
-        `when`(mockCollectionReference.document()).thenReturn(mockDocumentReference)
-
-        `when`(mockCollectionReference.get()).thenReturn(mockQuerySnapshotTask)
-        `when`(mockQuerySnapshotTask.result).thenReturn(mockQuerySnapshot)
-        `when`(mockQuerySnapshotTask.isSuccessful).thenReturn(true)
-        `when`(mockQuerySnapshotTask.addOnCompleteListener(any())).thenAnswer { invocation ->
-            val listener = invocation.getArgument<OnCompleteListener<QuerySnapshot>>(0)
-            // Simulate a result being passed to the listener
-            listener.onComplete(mockQuerySnapshotTask)
-            mockQuerySnapshotTask
-        }
-
-        `when`(mockQuerySnapshot.documents).thenReturn(listOf(mockDocumentSnapshot, mockDocumentSnapshot2))
-
-        `when`(mockDocumentSnapshot.id).thenReturn(testFolder.id)
-        `when`(mockDocumentSnapshot.getString("name")).thenReturn(testFolder.name)
-        `when`(mockDocumentSnapshot.getString("userId")).thenReturn(testFolder.userId)
-        `when`(mockDocumentSnapshot.getString("parentFolderId")).thenReturn(testFolder.parentFolderId)
-
-        `when`(mockDocumentSnapshot2.id).thenReturn(testSubFolder.id)
-        `when`(mockDocumentSnapshot2.getString("name")).thenReturn(testSubFolder.name)
-        `when`(mockDocumentSnapshot2.getString("userId")).thenReturn(testSubFolder.userId)
-        `when`(mockDocumentSnapshot2.getString("parentFolderId")).thenReturn(testSubFolder.parentFolderId)
-
+    if (FirebaseApp.getApps(ApplicationProvider.getApplicationContext()).isEmpty()) {
+      FirebaseApp.initializeApp(ApplicationProvider.getApplicationContext())
     }
 
-    private fun compareFolders(folder: Folder, folder2: Folder) {
-        assert(folder.id == folder2.id)
-        assert(folder.name == folder2.name)
-        assert(folder.userId == folder2.userId)
-        assert(folder.parentFolderId == folder2.parentFolderId)
+    folderRepositoryFirestore = FolderRepositoryFirestore(mockFirestore)
+
+    `when`(mockFirestore.collection(any())).thenReturn(mockCollectionReference)
+    `when`(mockCollectionReference.document(any())).thenReturn(mockDocumentReference)
+    `when`(mockCollectionReference.document()).thenReturn(mockDocumentReference)
+
+    `when`(mockCollectionReference.get()).thenReturn(mockQuerySnapshotTask)
+    `when`(mockQuerySnapshotTask.result).thenReturn(mockQuerySnapshot)
+    `when`(mockQuerySnapshotTask.isSuccessful).thenReturn(true)
+    `when`(mockQuerySnapshotTask.addOnCompleteListener(any())).thenAnswer { invocation ->
+      val listener = invocation.getArgument<OnCompleteListener<QuerySnapshot>>(0)
+      // Simulate a result being passed to the listener
+      listener.onComplete(mockQuerySnapshotTask)
+      mockQuerySnapshotTask
     }
 
-    @Test
-    fun getNewFolderId() {
-        `when`(mockDocumentReference.id).thenReturn("1")
-        val folderId = folderRepositoryFirestore.getNewFolderId()
-        assert(folderId == "1")
-    }
+    `when`(mockQuerySnapshot.documents)
+        .thenReturn(listOf(mockDocumentSnapshot, mockDocumentSnapshot2))
 
-    @Test
-    fun documentSnapshotToFolderConvertsSnapshotToFolder() {
-        val convertedFolder = folderRepositoryFirestore.documentSnapshotToFolder(mockDocumentSnapshot)
-        assertNotNull(convertedFolder)
-        compareFolders(convertedFolder!!, testFolder)
-    }
+    `when`(mockDocumentSnapshot.id).thenReturn(testFolder.id)
+    `when`(mockDocumentSnapshot.getString("name")).thenReturn(testFolder.name)
+    `when`(mockDocumentSnapshot.getString("userId")).thenReturn(testFolder.userId)
+    `when`(mockDocumentSnapshot.getString("parentFolderId")).thenReturn(testFolder.parentFolderId)
 
-    @Test
-    fun getFoldersFrom_callsDocuments() {
-        `when`(mockQuerySnapshot.documents).thenReturn(listOf(mockDocumentSnapshot, mockDocumentSnapshot2))
-        var receivedFolders: List<Folder>? = null
-        folderRepositoryFirestore.getFoldersFrom(testFolder.userId, onSuccess = { receivedFolders = it }, onFailure = {assert(false)})
-        assertNotNull(receivedFolders)
+    `when`(mockDocumentSnapshot2.id).thenReturn(testSubFolder.id)
+    `when`(mockDocumentSnapshot2.getString("name")).thenReturn(testSubFolder.name)
+    `when`(mockDocumentSnapshot2.getString("userId")).thenReturn(testSubFolder.userId)
+    `when`(mockDocumentSnapshot2.getString("parentFolderId"))
+        .thenReturn(testSubFolder.parentFolderId)
+  }
 
-        verify(timeout(100)) { (mockQuerySnapshot).documents }
-    }
+  private fun compareFolders(folder: Folder, folder2: Folder) {
+    assert(folder.id == folder2.id)
+    assert(folder.name == folder2.name)
+    assert(folder.userId == folder2.userId)
+    assert(folder.parentFolderId == folder2.parentFolderId)
+  }
 
-    @Test
-    fun getRootFoldersFrom_callsDocuments() {
-        `when`(mockQuerySnapshot.documents).thenReturn(listOf(mockDocumentSnapshot, mockDocumentSnapshot2))
-        var receivedFolders: List<Folder>? = null
-        folderRepositoryFirestore.getRootFoldersFrom(testFolder.userId, onSuccess = { receivedFolders = it }, onFailure = {assert(false)})
-        assertNotNull(receivedFolders)
+  @Test
+  fun getNewFolderId() {
+    `when`(mockDocumentReference.id).thenReturn("1")
+    val folderId = folderRepositoryFirestore.getNewFolderId()
+    assert(folderId == "1")
+  }
 
-        verify(timeout(100)) { (mockQuerySnapshot).documents }
-    }
+  @Test
+  fun documentSnapshotToFolderConvertsSnapshotToFolder() {
+    val convertedFolder = folderRepositoryFirestore.documentSnapshotToFolder(mockDocumentSnapshot)
+    assertNotNull(convertedFolder)
+    compareFolders(convertedFolder!!, testFolder)
+  }
 
-    @Test
-    fun getFolderById_callsDocument() {
-        `when`(mockDocumentReference.get()).thenReturn(Tasks.forResult(mockDocumentSnapshot))
+  @Test
+  fun getFoldersFrom_callsDocuments() {
+    `when`(mockQuerySnapshot.documents)
+        .thenReturn(listOf(mockDocumentSnapshot, mockDocumentSnapshot2))
+    var receivedFolders: List<Folder>? = null
+    folderRepositoryFirestore.getFoldersFrom(
+        testFolder.userId, onSuccess = { receivedFolders = it }, onFailure = { assert(false) })
+    assertNotNull(receivedFolders)
 
-        folderRepositoryFirestore.getFolderById("1", {}, {})
+    verify(timeout(100)) { (mockQuerySnapshot).documents }
+  }
 
-        shadowOf(Looper.getMainLooper()).idle()
+  @Test
+  fun getRootFoldersFrom_callsDocuments() {
+    `when`(mockQuerySnapshot.documents)
+        .thenReturn(listOf(mockDocumentSnapshot, mockDocumentSnapshot2))
+    var receivedFolders: List<Folder>? = null
+    folderRepositoryFirestore.getRootFoldersFrom(
+        testFolder.userId, onSuccess = { receivedFolders = it }, onFailure = { assert(false) })
+    assertNotNull(receivedFolders)
 
-        verify(timeout(100)) { mockDocumentSnapshot.id }
-    }
+    verify(timeout(100)) { (mockQuerySnapshot).documents }
+  }
 
-    @Test
-    fun addFolder_callsCollection() {
-        `when`(mockDocumentReference.set(any())).thenReturn(Tasks.forResult(null))
+  @Test
+  fun getFolderById_callsDocument() {
+    `when`(mockDocumentReference.get()).thenReturn(Tasks.forResult(mockDocumentSnapshot))
 
-        folderRepositoryFirestore.addFolder(testFolder, onSuccess = {}, onFailure = {})
+    folderRepositoryFirestore.getFolderById("1", {}, {})
 
-        shadowOf(Looper.getMainLooper()).idle()
+    shadowOf(Looper.getMainLooper()).idle()
 
-        verify(mockDocumentReference).set(any())
-    }
+    verify(timeout(100)) { mockDocumentSnapshot.id }
+  }
 
-    @Test
-    fun deleteFolderById_callsDocument() {
-        `when`(mockDocumentReference.delete()).thenReturn(Tasks.forResult(null))
+  @Test
+  fun addFolder_callsCollection() {
+    `when`(mockDocumentReference.set(any())).thenReturn(Tasks.forResult(null))
 
-        folderRepositoryFirestore.deleteFolderById("1", onSuccess = {}, onFailure = {})
+    folderRepositoryFirestore.addFolder(testFolder, onSuccess = {}, onFailure = {})
 
-        shadowOf(Looper.getMainLooper()).idle()
+    shadowOf(Looper.getMainLooper()).idle()
 
-        verify(mockDocumentReference).delete()
-    }
+    verify(mockDocumentReference).set(any())
+  }
 
-    @Test
-    fun updateFolder_callsCollection() {
-        `when`(mockDocumentReference.set(any())).thenReturn(Tasks.forResult(null))
+  @Test
+  fun deleteFolderById_callsDocument() {
+    `when`(mockDocumentReference.delete()).thenReturn(Tasks.forResult(null))
 
-        folderRepositoryFirestore.updateFolder(testFolder, onSuccess = {}, onFailure = {})
+    folderRepositoryFirestore.deleteFolderById("1", onSuccess = {}, onFailure = {})
 
-        shadowOf(Looper.getMainLooper()).idle()
+    shadowOf(Looper.getMainLooper()).idle()
 
-        verify(mockDocumentReference).set(any())
-    }
+    verify(mockDocumentReference).delete()
+  }
 
-    @Test
-    fun getSubFoldersOf_callsCollection() {
-        `when`(mockDocumentReference.get()).thenReturn(Tasks.forResult(mockDocumentSnapshot2))
+  @Test
+  fun updateFolder_callsCollection() {
+    `when`(mockDocumentReference.set(any())).thenReturn(Tasks.forResult(null))
 
-        folderRepositoryFirestore.getSubFoldersOf("1", {}, {})
+    folderRepositoryFirestore.updateFolder(testFolder, onSuccess = {}, onFailure = {})
 
-        shadowOf(Looper.getMainLooper()).idle()
+    shadowOf(Looper.getMainLooper()).idle()
 
-        verify(timeout(100)) { mockDocumentSnapshot2.id }
-    }
+    verify(mockDocumentReference).set(any())
+  }
+
+  @Test
+  fun getSubFoldersOf_callsCollection() {
+    `when`(mockDocumentReference.get()).thenReturn(Tasks.forResult(mockDocumentSnapshot2))
+
+    folderRepositoryFirestore.getSubFoldersOf("1", {}, {})
+
+    shadowOf(Looper.getMainLooper()).idle()
+
+    verify(timeout(100)) { mockDocumentSnapshot2.id }
+  }
 }

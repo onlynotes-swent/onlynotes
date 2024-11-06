@@ -1,4 +1,3 @@
 package com.github.onlynotesswent.ui.overview
 
-class FolderContentTest {
-}
+class FolderContentTest {}

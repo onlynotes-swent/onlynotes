@@ -68,184 +68,159 @@ fun AddNoteScreen(
     userViewModel: UserViewModel
 ) {
 
-    val folderId = noteViewModel.folderId.collectAsState()
-    val currentYear = Calendar.getInstance().get(Calendar.YEAR)
+  val folderId = noteViewModel.folderId.collectAsState()
+  val currentYear = Calendar.getInstance().get(Calendar.YEAR)
 
-    var title by remember { mutableStateOf("") }
-    var className by remember { mutableStateOf("") }
-    var classCode by remember { mutableStateOf("") }
-    var classYear by remember { mutableIntStateOf(currentYear) }
-    var template by remember { mutableStateOf("Choose An Option") }
-    var visibility: Note.Visibility? by remember { mutableStateOf(null) }
-    var expandedVisibility by remember { mutableStateOf(false) }
-    var expandedTemplate by remember { mutableStateOf(false) }
+  var title by remember { mutableStateOf("") }
+  var className by remember { mutableStateOf("") }
+  var classCode by remember { mutableStateOf("") }
+  var classYear by remember { mutableIntStateOf(currentYear) }
+  var template by remember { mutableStateOf("Choose An Option") }
+  var visibility: Note.Visibility? by remember { mutableStateOf(null) }
+  var expandedVisibility by remember { mutableStateOf(false) }
+  var expandedTemplate by remember { mutableStateOf(false) }
 
+  Scaffold(
+      modifier = Modifier.testTag("addNoteScreen"),
+      topBar = {
+        TopAppBar(
+            colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFB3E5FC)),
+            title = {
+              Row(
+                  modifier = Modifier.fillMaxWidth(),
+                  verticalAlignment = Alignment.CenterVertically) {
+                    Spacer(modifier = Modifier.weight(1f))
+                    Text("Create a new note", Modifier.testTag("addNoteTitle"))
+                    Spacer(modifier = Modifier.weight(2f))
+                  }
+            },
+            navigationIcon = {
+              IconButton(
+                  onClick = { navigationActions.goBack() }, Modifier.testTag("goBackButton")) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
+                        contentDescription = "Back")
+                  }
+            })
+      },
+      content = { paddingValues ->
+        Column(
+            modifier = Modifier.fillMaxSize().padding(16.dp).padding(paddingValues),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(8.dp)) {
+              Spacer(modifier = Modifier.height(30.dp))
 
-    Scaffold(
-        modifier = Modifier.testTag("addNoteScreen"),
-        topBar = {
-            TopAppBar(
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFB3E5FC)),
-                title = {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Spacer(modifier = Modifier.weight(1f))
-                        Text("Create a new note", Modifier.testTag("addNoteTitle"))
-                        Spacer(modifier = Modifier.weight(2f))
+              OutlinedTextField(
+                  value = title,
+                  onValueChange = { title = it },
+                  label = { Text("Title") },
+                  placeholder = { Text("Add a Note Title") },
+                  modifier = Modifier.fillMaxWidth().testTag("inputNoteTitle"),
+                  trailingIcon = {
+                    IconButton(onClick = { title = "" }) {
+                      Icon(Icons.Outlined.Clear, contentDescription = "Clear title")
                     }
-                },
-                navigationIcon = {
-                    IconButton(
-                        onClick = { navigationActions.goBack() }, Modifier.testTag("goBackButton")
-                    ) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                            contentDescription = "Back"
-                        )
+                  })
+
+              Spacer(modifier = Modifier.height(10.dp))
+
+              OptionDropDownMenu(
+                  value = visibility?.toReadableString() ?: "Choose an option",
+                  expanded = expandedVisibility,
+                  buttonTag = "visibilityButton",
+                  menuTag = "visibilityMenu",
+                  onExpandedChange = { expandedVisibility = it },
+                  items = Note.Visibility.READABLE_STRINGS,
+                  onItemClick = { visibility = Note.Visibility.fromReadableString(it) })
+
+              Spacer(modifier = Modifier.height(10.dp))
+
+              OutlinedTextField(
+                  value = className,
+                  onValueChange = { className = it },
+                  label = { Text("Class Name") },
+                  placeholder = { Text("Set the Class Name for the Note") },
+                  modifier = Modifier.fillMaxWidth().testTag("ClassNameTextField"))
+
+              Spacer(modifier = Modifier.height(5.dp))
+
+              OutlinedTextField(
+                  value = classCode,
+                  onValueChange = { classCode = it },
+                  label = { Text("Class Code") },
+                  placeholder = { Text("Set the Class Code for the Note") },
+                  modifier = Modifier.fillMaxWidth().testTag("ClassCodeTextField"))
+
+              Spacer(modifier = Modifier.height(5.dp))
+
+              OutlinedTextField(
+                  value = classYear.toString(),
+                  onValueChange = { classYear = it.toIntOrNull() ?: currentYear },
+                  label = { Text("Class Year") },
+                  placeholder = { Text("Set the Class Year for the Note") },
+                  modifier = Modifier.fillMaxWidth().testTag("ClassYearTextField"))
+
+              Spacer(modifier = Modifier.height(10.dp))
+
+              OptionDropDownMenu(
+                  value = template,
+                  expanded = expandedTemplate,
+                  buttonTag = "templateButton",
+                  menuTag = "templateMenu",
+                  onExpandedChange = { expandedTemplate = it },
+                  items = listOf("Scan Note", "Create Note", "Upload Note"),
+                  onItemClick = { template = it })
+
+              Spacer(modifier = Modifier.height(70.dp))
+
+              Button(
+                  onClick = {
+                    var type = Note.Type.NORMAL_TEXT
+                    when (template) {
+                      "Scan Note" -> {
+                        // call scan image API or functions. Once scanned, add the note to database
+                        scanner.scan()
+                        type = Note.Type.PDF
+                      }
+                      "Create Note" -> {
+                        type = Note.Type.NORMAL_TEXT
+                      }
+                      "Upload Note" -> {
+                        // upload image implementation here
+                        type = Note.Type.JPEG
+                      }
                     }
-                })
-        },
-        content = { paddingValues ->
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp)
-                    .padding(paddingValues),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Spacer(modifier = Modifier.height(30.dp))
+                    // provisional note, we will have to change this later
+                    val note =
+                        Note(
+                            id = noteViewModel.getNewUid(),
+                            type = type,
+                            title = title,
+                            content = "",
+                            date = Timestamp.now(),
+                            visibility = visibility!!,
+                            noteClass = Note.Class(classCode, className, classYear, "path"),
+                            userId = userViewModel.currentUser.value!!.uid,
+                            image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888),
+                            folderId = folderId.value)
+                    // create the note and add it to database
+                    noteViewModel.addNote(note, userViewModel.currentUser.value!!.uid)
 
-                OutlinedTextField(
-                    value = title,
-                    onValueChange = { title = it },
-                    label = { Text("Title") },
-                    placeholder = { Text("Add a Note Title") },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .testTag("inputNoteTitle"),
-                    trailingIcon = {
-                        IconButton(onClick = { title = "" }) {
-                            Icon(Icons.Outlined.Clear, contentDescription = "Clear title")
-                        }
-                    })
-
-                Spacer(modifier = Modifier.height(10.dp))
-
-                OptionDropDownMenu(
-                    value = visibility?.toReadableString() ?: "Choose an option",
-                    expanded = expandedVisibility,
-                    buttonTag = "visibilityButton",
-                    menuTag = "visibilityMenu",
-                    onExpandedChange = { expandedVisibility = it },
-                    items = Note.Visibility.READABLE_STRINGS,
-                    onItemClick = { visibility = Note.Visibility.fromReadableString(it) })
-
-                Spacer(modifier = Modifier.height(10.dp))
-
-                OutlinedTextField(
-                    value = className,
-                    onValueChange = { className = it },
-                    label = { Text("Class Name") },
-                    placeholder = { Text("Set the Class Name for the Note") },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .testTag("ClassNameTextField")
-                )
-
-                Spacer(modifier = Modifier.height(5.dp))
-
-                OutlinedTextField(
-                    value = classCode,
-                    onValueChange = { classCode = it },
-                    label = { Text("Class Code") },
-                    placeholder = { Text("Set the Class Code for the Note") },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .testTag("ClassCodeTextField")
-                )
-
-                Spacer(modifier = Modifier.height(5.dp))
-
-                OutlinedTextField(
-                    value = classYear.toString(),
-                    onValueChange = { classYear = it.toIntOrNull() ?: currentYear },
-                    label = { Text("Class Year") },
-                    placeholder = { Text("Set the Class Year for the Note") },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .testTag("ClassYearTextField")
-                )
-
-                Spacer(modifier = Modifier.height(10.dp))
-
-                OptionDropDownMenu(
-                    value = template,
-                    expanded = expandedTemplate,
-                    buttonTag = "templateButton",
-                    menuTag = "templateMenu",
-                    onExpandedChange = { expandedTemplate = it },
-                    items = listOf("Scan Note", "Create Note", "Upload Note"),
-                    onItemClick = { template = it })
-
-                Spacer(modifier = Modifier.height(70.dp))
-
-                Button(
-                    onClick = {
-                        var type = Note.Type.NORMAL_TEXT
-                        when (template) {
-                            "Scan Note" -> {
-                                // call scan image API or functions. Once scanned, add the note to database
-                                scanner.scan()
-                                type = Note.Type.PDF
-                            }
-
-                            "Create Note" -> {
-                                type = Note.Type.NORMAL_TEXT
-                            }
-
-                            "Upload Note" -> {
-                                // upload image implementation here
-                                type = Note.Type.JPEG
-                            }
-                        }
-                        // provisional note, we will have to change this later
-                        val note =
-                            Note(
-                                id = noteViewModel.getNewUid(),
-                                type = type,
-                                title = title,
-                                content = "",
-                                date = Timestamp.now(),
-                                visibility = visibility!!,
-                                noteClass = Note.Class(classCode, className, classYear, "path"),
-                                userId = userViewModel.currentUser.value!!.uid,
-                                image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888),
-                                folderId = folderId.value
-                            )
-                        // create the note and add it to database
-                        noteViewModel.addNote(note, userViewModel.currentUser.value!!.uid)
-
-                        if (type == Note.Type.NORMAL_TEXT) {
-                            noteViewModel.selectedNote(note)
-                            navigationActions.navigateTo(Screen.EDIT_NOTE)
-                        } else {
-                            navigationActions.goBack()
-                        }
-                    },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50)),
-                    enabled =
-                    title.isNotEmpty() && visibility != null && template != "Choose An Option",
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .testTag("createNoteButton")
-                ) {
+                    if (type == Note.Type.NORMAL_TEXT) {
+                      noteViewModel.selectedNote(note)
+                      navigationActions.navigateTo(Screen.EDIT_NOTE)
+                    } else {
+                      navigationActions.goBack()
+                    }
+                  },
+                  colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50)),
+                  enabled =
+                      title.isNotEmpty() && visibility != null && template != "Choose An Option",
+                  modifier = Modifier.fillMaxWidth().testTag("createNoteButton")) {
                     Text(text = template)
-                }
+                  }
             }
-        })
+      })
 }
 
 /**
@@ -270,32 +245,26 @@ fun OptionDropDownMenu(
     onItemClick: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Box(modifier = Modifier.fillMaxWidth()) {
-        Button(
-            onClick = { onExpandedChange(!expanded) },
-            modifier = Modifier
-                .fillMaxWidth()
-                .testTag(buttonTag)
-        ) {
-            Text(text = value)
-            Icon(Icons.Outlined.ArrowDropDown, "Dropdown icon")
+  Box(modifier = Modifier.fillMaxWidth()) {
+    Button(
+        onClick = { onExpandedChange(!expanded) },
+        modifier = Modifier.fillMaxWidth().testTag(buttonTag)) {
+          Text(text = value)
+          Icon(Icons.Outlined.ArrowDropDown, "Dropdown icon")
         }
 
-        DropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { onExpandedChange(false) },
-            modifier = modifier
-                .fillMaxWidth()
-                .testTag(menuTag)
-        ) {
-            items.forEach { item ->
-                DropdownMenuItem(
-                    text = { Text(item) },
-                    onClick = {
-                        onItemClick(item)
-                        onExpandedChange(false)
-                    })
-            }
+    DropdownMenu(
+        expanded = expanded,
+        onDismissRequest = { onExpandedChange(false) },
+        modifier = modifier.fillMaxWidth().testTag(menuTag)) {
+          items.forEach { item ->
+            DropdownMenuItem(
+                text = { Text(item) },
+                onClick = {
+                  onItemClick(item)
+                  onExpandedChange(false)
+                })
+          }
         }
-    }
+  }
 }

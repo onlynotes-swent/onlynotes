@@ -22,29 +22,27 @@ class FolderRepositoryFirestore(private val db: FirebaseFirestore) : FolderRepos
   }
 
   override fun addFolder(folder: Folder, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) {
-    db.collection(collectionPath)
-        .document(folder.id)
-        .set(folder)
-        .addOnCompleteListener { result ->
-          if(result.isSuccessful) {
-            onSuccess()
-          } else {
-            result.exception?.let { onFailure(it) }
-          }
-        }
+    db.collection(collectionPath).document(folder.id).set(folder).addOnCompleteListener { result ->
+      if (result.isSuccessful) {
+        onSuccess()
+      } else {
+        result.exception?.let { onFailure(it) }
+      }
+    }
   }
 
-  override fun deleteFolderById(folderId: String, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) {
-    db.collection(collectionPath)
-        .document(folderId)
-        .delete()
-        .addOnCompleteListener { result ->
-          if(result.isSuccessful) {
-            onSuccess()
-          } else {
-            result.exception?.let { onFailure(it) }
-          }
-        }
+  override fun deleteFolderById(
+      folderId: String,
+      onSuccess: () -> Unit,
+      onFailure: (Exception) -> Unit
+  ) {
+    db.collection(collectionPath).document(folderId).delete().addOnCompleteListener { result ->
+      if (result.isSuccessful) {
+        onSuccess()
+      } else {
+        result.exception?.let { onFailure(it) }
+      }
+    }
   }
 
   override fun getFolderById(
@@ -67,9 +65,9 @@ class FolderRepositoryFirestore(private val db: FirebaseFirestore) : FolderRepos
   }
 
   override fun getFoldersFrom(
-    userId: String,
-    onSuccess: (List<Folder>) -> Unit,
-    onFailure: (Exception) -> Unit
+      userId: String,
+      onSuccess: (List<Folder>) -> Unit,
+      onFailure: (Exception) -> Unit
   ) {
     db.collection(collectionPath).get().addOnCompleteListener { task ->
       if (task.isSuccessful) {
@@ -84,58 +82,56 @@ class FolderRepositoryFirestore(private val db: FirebaseFirestore) : FolderRepos
     }
   }
 
-    override fun getRootFoldersFrom(
-        userId: String,
-        onSuccess: (List<Folder>) -> Unit,
-        onFailure: (Exception) -> Unit
-    ) {
-        db.collection(collectionPath).get().addOnCompleteListener { task ->
-            if (task.isSuccessful) {
-                val rootFolders =
-                    task.result.documents
-                        .mapNotNull { document -> documentSnapshotToFolder(document) }
-                            //Log.d("Firestore", "Fetched folder: ${folder?.name}, parentFolderId: ${folder?.parentFolderId}")
-                        .filter { it.userId == userId && it.parentFolderId == null } // Only root folders
-                //Log.d("Firestore", "Filtered root folders: ${rootFolders.map { it.name }}")
-                onSuccess(rootFolders)
-            } else {
-                task.exception?.let { onFailure(it) }
-            }
-        }
+  override fun getRootFoldersFrom(
+      userId: String,
+      onSuccess: (List<Folder>) -> Unit,
+      onFailure: (Exception) -> Unit
+  ) {
+    db.collection(collectionPath).get().addOnCompleteListener { task ->
+      if (task.isSuccessful) {
+        val rootFolders =
+            task.result.documents
+                .mapNotNull { document -> documentSnapshotToFolder(document) }
+                // Log.d("Firestore", "Fetched folder: ${folder?.name}, parentFolderId:
+                // ${folder?.parentFolderId}")
+                .filter { it.userId == userId && it.parentFolderId == null } // Only root folders
+        // Log.d("Firestore", "Filtered root folders: ${rootFolders.map { it.name }}")
+        onSuccess(rootFolders)
+      } else {
+        task.exception?.let { onFailure(it) }
+      }
     }
-
-    override fun updateFolder(folder: Folder, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) {
-    db.collection(collectionPath)
-        .document(folder.id)
-        .set(folder)
-        .addOnCompleteListener { result ->
-          if(result.isSuccessful) {
-            onSuccess()
-          } else {
-            result.exception?.let { onFailure(it) }
-          }
-        }
   }
 
-    override fun getSubFoldersOf(
-        parentFolderId: String,
-        onSuccess: (List<Folder>) -> Unit,
-        onFailure: (Exception) -> Unit
-    ) {
-        db.collection(collectionPath).get().addOnCompleteListener { task ->
-            if (task.isSuccessful) {
-                val userFolders =
-                    task.result.documents
-                        .mapNotNull { document -> documentSnapshotToFolder(document) }
-                        .filter { it.parentFolderId == parentFolderId }
-                onSuccess(userFolders)
-            } else {
-                task.exception?.let { onFailure(it) }
-            }
-        }
+  override fun updateFolder(folder: Folder, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) {
+    db.collection(collectionPath).document(folder.id).set(folder).addOnCompleteListener { result ->
+      if (result.isSuccessful) {
+        onSuccess()
+      } else {
+        result.exception?.let { onFailure(it) }
+      }
     }
+  }
 
-    /**
+  override fun getSubFoldersOf(
+      parentFolderId: String,
+      onSuccess: (List<Folder>) -> Unit,
+      onFailure: (Exception) -> Unit
+  ) {
+    db.collection(collectionPath).get().addOnCompleteListener { task ->
+      if (task.isSuccessful) {
+        val userFolders =
+            task.result.documents
+                .mapNotNull { document -> documentSnapshotToFolder(document) }
+                .filter { it.parentFolderId == parentFolderId }
+        onSuccess(userFolders)
+      } else {
+        task.exception?.let { onFailure(it) }
+      }
+    }
+  }
+
+  /**
    * Converts a DocumentSnapshot to a Folder object.
    *
    * @param document The DocumentSnapshot to convert.
@@ -143,10 +139,9 @@ class FolderRepositoryFirestore(private val db: FirebaseFirestore) : FolderRepos
    */
   fun documentSnapshotToFolder(document: DocumentSnapshot): Folder? {
     return Folder(
-       id = document.id,
-       name = document.getString("name") ?: return null,
-       userId = document.getString("userId") ?: return null,
-       parentFolderId = document.getString("parentFolderId")
-    )
+        id = document.id,
+        name = document.getString("name") ?: return null,
+        userId = document.getString("userId") ?: return null,
+        parentFolderId = document.getString("parentFolderId"))
   }
 }
