@@ -1,8 +1,11 @@
 package com.github.onlynotesswent.ui.user
 
+import android.util.Log
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -13,6 +16,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
@@ -42,7 +46,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -51,6 +59,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.rememberAsyncImagePainter
+import com.github.onlynotesswent.model.file.FileType
+import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.users.User
 import com.github.onlynotesswent.model.users.UserViewModel
 import com.github.onlynotesswent.ui.navigation.BottomNavigationMenu
@@ -65,9 +76,14 @@ import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
  *
  * @param navigationActions An instance of NavigationActions to handle navigation events.
  * @param userViewModel An instance of UserViewModel to manage user data.
+ * @param fileViewModel An instance of FileViewModel to manage file data.
  */
 @Composable
-fun UserProfileScreen(navigationActions: NavigationActions, userViewModel: UserViewModel) {
+fun UserProfileScreen(
+    navigationActions: NavigationActions,
+    userViewModel: UserViewModel,
+    fileViewModel: FileViewModel
+) {
   val user = userViewModel.currentUser.collectAsState()
   // Display the user's profile information
   ProfileScaffold(
@@ -85,7 +101,7 @@ fun UserProfileScreen(navigationActions: NavigationActions, userViewModel: UserV
               }
             }
       }) {
-        ProfileContent(user, userViewModel, navigationActions)
+        ProfileContent(user, navigationActions, userViewModel, fileViewModel)
 
         // Debug buttons to follow/unfollow specific users
         Button(onClick = { userViewModel.followUser("8I0wWmmzGk1H89gUwIOS", {}, {}) }) {
@@ -109,16 +125,21 @@ fun UserProfileScreen(navigationActions: NavigationActions, userViewModel: UserV
  *
  * @param navigationActions An instance of NavigationActions to handle navigation events.
  * @param userViewModel An instance of UserViewModel to manage user data.
+ * @param fileViewModel An instance of FileViewModel to manage file data.
  */
 @Composable
-fun PublicProfileScreen(navigationActions: NavigationActions, userViewModel: UserViewModel) {
+fun PublicProfileScreen(
+    navigationActions: NavigationActions,
+    userViewModel: UserViewModel,
+    fileViewModel: FileViewModel
+) {
   val currentUser = userViewModel.currentUser.collectAsState()
   val profileUser = userViewModel.profileUser.collectAsState()
   val followButtonText = remember { mutableStateOf("Follow") }
 
   // Display the user's profile information
   ProfileScaffold(navigationActions) {
-    ProfileContent(profileUser, userViewModel, navigationActions)
+    ProfileContent(profileUser, navigationActions, userViewModel, fileViewModel)
     if (profileUser.value != null && currentUser.value != null) {
       followButtonText.value =
           if (profileUser.value!!.friends.followers.contains(currentUser.value!!.uid)) "Unfollow"
@@ -209,13 +230,15 @@ fun TopProfileBar(
 @Composable
 fun ProfileContent(
     user: State<User?>,
+    navigationActions: NavigationActions,
     userViewModel: UserViewModel,
-    navigationActions: NavigationActions
+    fileViewModel: FileViewModel
 ) {
   val isFollowingMenuShown = remember { mutableStateOf(false) }
   val isFollowerMenuShown = remember { mutableStateOf(false) }
   val following: MutableState<List<User>> = remember { mutableStateOf(listOf()) }
   val followers: MutableState<List<User>> = remember { mutableStateOf(listOf()) }
+  val profilePictureUri = remember { mutableStateOf("") }
 
   // Display the user's profile information:
   if (user.value == null) {
@@ -233,10 +256,8 @@ fun ProfileContent(
           horizontalAlignment = Alignment.CenterHorizontally) {
 
             // Profile picture (change later)
-            Image(
-                painter = rememberVectorPainter(Icons.Default.AccountCircle),
-                contentDescription = "Profile Picture",
-                modifier = Modifier.size(200.dp).padding(10.dp).testTag("profilePicture"))
+            NonModifiableProfilePicture(user, profilePictureUri, fileViewModel)
+
             Spacer(modifier = Modifier.height(20.dp))
 
             // Display the user's full name and handle (username)
@@ -390,6 +411,23 @@ fun UserDropdownMenu(
 }
 
 /**
+ * Switches the profile to the specified user. If the user is the current user, navigates to the
+ * user's profile. Otherwise, sets the profile user and navigates to the public profile.
+ */
+fun switchProfileTo(
+    user: User,
+    userViewModel: UserViewModel,
+    navigationActions: NavigationActions
+) {
+  if (user.uid == userViewModel.currentUser.value?.uid) {
+    navigationActions.navigateTo(TopLevelDestinations.PROFILE) // clears backstack
+  } else {
+    userViewModel.setProfileUser(user)
+    navigationActions.navigateTo(Screen.PUBLIC_PROFILE)
+  }
+}
+
+/**
  * Displays the user's bio in an OutlinedCard.
  *
  * @param user The user whose bio is to be displayed.
@@ -411,19 +449,42 @@ fun DisplayBioCard(user: State<User?>) {
   }
 }
 
-/**
- * Switches the profile to the specified user. If the user is the current user, navigates to the
- * user's profile. Otherwise, sets the profile user and navigates to the public profile.
- */
-fun switchProfileTo(
-    user: User,
-    userViewModel: UserViewModel,
-    navigationActions: NavigationActions
+@Composable
+fun NonModifiableProfilePicture(
+    user: State<User?>,
+    profilePictureUri: MutableState<String>,
+    fileViewModel: FileViewModel
 ) {
-  if (user.uid == userViewModel.currentUser.value?.uid) {
-    navigationActions.navigateTo(TopLevelDestinations.PROFILE) // clears backstack
-  } else {
-    userViewModel.setProfileUser(user)
-    navigationActions.navigateTo(Screen.PUBLIC_PROFILE)
+  Box(modifier = Modifier.size(150.dp)) {
+    // Download the profile picture from Firebase Storage if it hasn't been downloaded yet
+    if (user.value!!.hasProfilePicture && profilePictureUri.value.isBlank()) {
+      fileViewModel.downloadFile(
+          user.value!!.uid,
+          FileType.PROFILE_PIC_JPEG,
+          context = LocalContext.current,
+          onSuccess = { file -> profilePictureUri.value = file.absolutePath },
+          onFailure = { e -> Log.e("ProfilePicture", "Error downloading profile picture", e) })
+    }
+
+    // Profile Picture Painter
+    val painter =
+        if (profilePictureUri.value.isNotBlank()) {
+          // Load the profile picture if it exists
+          rememberAsyncImagePainter(profilePictureUri.value)
+        } else {
+          // Load the default profile picture if it doesn't exist
+          rememberVectorPainter(Icons.Default.AccountCircle)
+        }
+
+    // Profile Picture
+    Image(
+        painter = painter,
+        contentDescription = "Profile Picture",
+        modifier =
+            Modifier.testTag("profilePicture")
+                .size(150.dp)
+                .clip(CircleShape)
+                .border(2.dp, Color.Gray, CircleShape),
+        contentScale = ContentScale.Crop)
   }
 }

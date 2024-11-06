@@ -6,6 +6,8 @@ import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
+import com.github.onlynotesswent.model.file.FileRepository
+import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.note.NoteRepository
 import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.model.users.Friends
@@ -30,8 +32,10 @@ class ProfileScreenTest {
   @Mock private lateinit var mockUserRepository: UserRepository
   @Mock private lateinit var mockNavigationActions: NavigationActions
   @Mock private lateinit var mockNoteRepository: NoteRepository
+  @Mock private lateinit var mockFileRepository: FileRepository
   private lateinit var noteViewModel: NoteViewModel
   private lateinit var userViewModel: UserViewModel
+  private lateinit var fileViewModel: FileViewModel
 
   private val testUid = "testUid"
 
@@ -91,6 +95,7 @@ class ProfileScreenTest {
     MockitoAnnotations.openMocks(this)
     userViewModel = UserViewModel(mockUserRepository)
     noteViewModel = NoteViewModel(mockNoteRepository)
+    fileViewModel = FileViewModel(mockFileRepository)
 
     // Mock the current route to be the user create screen
     `when`(mockNavigationActions.currentRoute()).thenReturn(Screen.USER_PROFILE)
@@ -123,7 +128,9 @@ class ProfileScreenTest {
 
   @Test
   fun displayAllComponents() {
-    composeTestRule.setContent { UserProfileScreen(mockNavigationActions, userViewModel) }
+    composeTestRule.setContent {
+      UserProfileScreen(mockNavigationActions, userViewModel, fileViewModel)
+    }
 
     composeTestRule.onNodeWithTag("profileScaffold").assertExists()
     composeTestRule.onNodeWithTag("editProfileButton").assertExists()
@@ -145,7 +152,9 @@ class ProfileScreenTest {
 
   @Test
   fun displayFollowingAndFollowers() {
-    composeTestRule.setContent { UserProfileScreen(mockNavigationActions, userViewModel) }
+    composeTestRule.setContent {
+      UserProfileScreen(mockNavigationActions, userViewModel, fileViewModel)
+    }
 
     composeTestRule.onNodeWithTag("followingButton").assertIsDisplayed().performClick()
 
@@ -169,7 +178,9 @@ class ProfileScreenTest {
 
   @Test
   fun navigateToFollowersAndFollowing() {
-    composeTestRule.setContent { UserProfileScreen(mockNavigationActions, userViewModel) }
+    composeTestRule.setContent {
+      UserProfileScreen(mockNavigationActions, userViewModel, fileViewModel)
+    }
 
     composeTestRule.onNodeWithTag("followingButton").assertIsDisplayed().performClick()
     composeTestRule.onNodeWithTag("item--${testUser2.userName}").assertIsDisplayed().performClick()
@@ -184,7 +195,9 @@ class ProfileScreenTest {
 
   @Test
   fun editProfileButtonNavigatesCorrectly() {
-    composeTestRule.setContent { UserProfileScreen(mockNavigationActions, userViewModel) }
+    composeTestRule.setContent {
+      UserProfileScreen(mockNavigationActions, userViewModel, fileViewModel)
+    }
 
     composeTestRule.onNodeWithTag("editProfileButton").assertIsDisplayed().performClick()
     verify(mockNavigationActions).navigateTo(Screen.EDIT_PROFILE)
@@ -224,7 +237,9 @@ class ProfileScreenTest {
       onSuccess()
     }
 
-    composeTestRule.setContent { PublicProfileScreen(mockNavigationActions, userViewModel) }
+    composeTestRule.setContent {
+      PublicProfileScreen(mockNavigationActions, userViewModel, fileViewModel)
+    }
 
     composeTestRule.onNodeWithTag("userNotFound").assertIsDisplayed()
 
@@ -246,12 +261,24 @@ class ProfileScreenTest {
 
   @Test
   fun profileLinkRedirectsToUserProfile() {
-    composeTestRule.setContent { PublicProfileScreen(mockNavigationActions, userViewModel) }
+    composeTestRule.setContent {
+      PublicProfileScreen(mockNavigationActions, userViewModel, fileViewModel)
+    }
 
     userViewModel.setProfileUser(testUser2)
     composeTestRule.onNodeWithTag("followersButton").assertIsDisplayed().performClick()
     composeTestRule.onNodeWithTag("item--${testUser.userName}").assertIsDisplayed().performClick()
 
     verify(mockNavigationActions).navigateTo(TopLevelDestinations.PROFILE)
+  }
+
+  @Test
+  fun goBackButtonNavigatesCorrectly() {
+    composeTestRule.setContent {
+      PublicProfileScreen(mockNavigationActions, userViewModel, fileViewModel)
+    }
+
+    composeTestRule.onNodeWithTag("goBackButton").assertIsDisplayed().performClick()
+    verify(mockNavigationActions).goBack()
   }
 }

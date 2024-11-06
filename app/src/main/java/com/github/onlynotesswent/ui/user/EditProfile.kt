@@ -19,7 +19,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -55,7 +54,6 @@ import com.github.onlynotesswent.utils.ProfilePictureTaker
  * @param navigationActions An instance of NavigationActions to handle navigation events.
  * @param userViewModel An instance of UserViewModel to manage user data.
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditProfileScreen(
     navigationActions: NavigationActions,
@@ -109,7 +107,7 @@ fun EditProfileScreen(
                 modifier = Modifier.fillMaxSize().padding(paddingValues),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally) {
-                  ProfilePicture(
+                  EditableProfilePicture(
                       profilePictureTaker,
                       userViewModel,
                       profilePictureUri,
@@ -171,7 +169,7 @@ fun EditProfileScreen(
 
 @SuppressLint("StateFlowValueCalledInComposition")
 @Composable
-fun ProfilePicture(
+fun EditableProfilePicture(
     profilePictureTaker: ProfilePictureTaker,
     userViewModel: UserViewModel,
     profilePictureUri: MutableState<String>,

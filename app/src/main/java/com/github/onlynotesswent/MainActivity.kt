@@ -88,8 +88,12 @@ fun OnlyNotesApp(scanner: Scanner, profilePictureTaker: ProfilePictureTaker) {
         startDestination = Screen.USER_PROFILE,
         route = Route.PROFILE,
     ) {
-      composable(Screen.USER_PROFILE) { UserProfileScreen(navigationActions, userViewModel) }
-      composable(Screen.PUBLIC_PROFILE) { PublicProfileScreen(navigationActions, userViewModel) }
+      composable(Screen.USER_PROFILE) {
+        UserProfileScreen(navigationActions, userViewModel, fileViewModel)
+      }
+      composable(Screen.PUBLIC_PROFILE) {
+        PublicProfileScreen(navigationActions, userViewModel, fileViewModel)
+      }
       composable(Screen.EDIT_PROFILE) {
         EditProfileScreen(navigationActions, userViewModel, profilePictureTaker, fileViewModel)
       }
