@@ -182,14 +182,14 @@ dependencies {
     debugImplementation(libs.compose.test.manifest)
 
     // Mockito
-    testImplementation("org.mockito:mockito-core:5.13.0")
-    testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
-    testImplementation("org.mockito:mockito-inline:4.0.0")
+    testImplementation(libs.mockito.core)
+    testImplementation(libs.mockito.kotlin)
+    testImplementation(libs.mockito.inline)
     androidTestImplementation(libs.mockito.kotlin)
-    androidTestImplementation("org.mockito:mockito-android:5.14.1")
+    androidTestImplementation(libs.mockito.android)
 
     //Image Library
-    implementation("io.coil-kt:coil-compose:2.1.0")
+    implementation(libs.coil.compose)
     implementation(libs.imagepicker)
 
     // --------- Kaspresso test framework ----------
