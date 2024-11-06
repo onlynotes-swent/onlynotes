@@ -1,13 +1,10 @@
 package com.github.onlynotesswent.ui.user
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,8 +15,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -46,6 +45,7 @@ import com.github.onlynotesswent.model.users.UserViewModel
 import com.github.onlynotesswent.ui.navigation.BottomNavigationMenu
 import com.github.onlynotesswent.ui.navigation.LIST_TOP_LEVEL_DESTINATION
 import com.github.onlynotesswent.ui.navigation.NavigationActions
+import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
 import com.github.onlynotesswent.utils.ProfilePictureTaker
 
 /**
@@ -141,14 +141,21 @@ fun EditProfileScreen(
                         userViewModel.updateUser(
                             user = updatedUser,
                             onSuccess = {
-                              navigationActions.goBack()
+                              navigationActions.navigateTo(TopLevelDestinations.PROFILE)
                               // Upload the profile picture  if it has been changed
                               if (hasProfilePictureBeenChanged.value) {
-                                fileViewModel.uploadFile(
-                                    userViewModel.currentUser.value!!.uid,
-                                    profilePictureUri.value.toUri(),
-                                    FileType.PROFILE_PIC_JPEG,
-                                )
+                                if (profilePictureUri.value.isNotBlank()) {
+                                  fileViewModel.uploadFile(
+                                      userViewModel.currentUser.value!!.uid,
+                                      profilePictureUri.value.toUri(),
+                                      FileType.PROFILE_PIC_JPEG,
+                                  )
+                                } else {
+                                  fileViewModel.deleteFile(
+                                      userViewModel.currentUser.value!!.uid,
+                                      FileType.PROFILE_PIC_JPEG,
+                                  )
+                                }
                               }
                             },
                             onFailure = { exception ->
@@ -167,7 +174,6 @@ fun EditProfileScreen(
           })
 }
 
-@SuppressLint("StateFlowValueCalledInComposition")
 @Composable
 fun EditableProfilePicture(
     profilePictureTaker: ProfilePictureTaker,
@@ -178,12 +184,13 @@ fun EditableProfilePicture(
     hasProfilePictureBeenChanged: MutableState<Boolean>,
     localContext: Context
 ) {
+  val user = userViewModel.currentUser.collectAsState()
 
   Box(modifier = Modifier.size(150.dp)) {
     // Download the profile picture from Firebase Storage if it hasn't been downloaded yet
-    if (!isProfilePictureUpToDate.value && userViewModel.currentUser.value!!.hasProfilePicture) {
+    if (!isProfilePictureUpToDate.value && user.value!!.hasProfilePicture) {
       fileViewModel.downloadFile(
-          userViewModel.currentUser.value!!.uid,
+          user.value!!.uid,
           FileType.PROFILE_PIC_JPEG,
           context = localContext,
           onSuccess = { file ->
@@ -217,27 +224,47 @@ fun EditableProfilePicture(
         contentScale = ContentScale.Crop)
 
     // Edit Icon Overlay
-    Icon(
-        imageVector = Icons.Default.Edit,
-        contentDescription = "Edit Profile Picture",
+    IconButton(
+        onClick = { // Edit the image and save the URI to the profilePicture state
+          profilePictureTaker.setOnImageSelected { uri ->
+            if (uri != null) {
+              profilePictureUri.value = uri.toString()
+              hasProfilePictureBeenChanged.value = true
+            }
+          }
+          profilePictureTaker.pickImage()
+        },
         modifier =
             Modifier.testTag("editProfilePicture")
-                .size(40.dp) // Size of the edit icon
-                .align(Alignment.BottomEnd) // Position on the bottom-left corner
-                .offset(x = (-8).dp, y = (-8).dp)
-                .clip(CircleShape)
-                .background(Color.White) // Background color
-                .clickable {
-                  // Edit the image and save the URI to the profilePicture state
-                  profilePictureTaker.setOnImageSelected { uri ->
-                    if (uri != null) {
-                      profilePictureUri.value = uri.toString()
-                      hasProfilePictureBeenChanged.value = true
-                    }
-                  }
-                  profilePictureTaker.pickImage()
-                },
-        tint = Color.Gray // Icon color
-        )
+                .align(Alignment.CenterEnd) // Position on the bottom-right corner
+                .offset(x = 42.dp, y = 15.dp)
+                .clip(CircleShape)) {
+          Icon(
+              imageVector = Icons.Default.Edit,
+              contentDescription = "Edit Profile Picture",
+              modifier = Modifier.testTag("editProfilePicture").size(40.dp) // Size of the edit icon
+              ,
+              tint = Color.Blue // Icon color
+              )
+        }
+
+    // Delete Image Icon
+    IconButton(
+        onClick = { // Delete the image and clear the uri
+          profilePictureUri.value = ""
+          hasProfilePictureBeenChanged.value = true
+        },
+        modifier =
+            Modifier.align(Alignment.CenterEnd) // Position on the bottom-left corner
+                .offset(x = 42.dp, y = (-25).dp)
+                .clip(CircleShape)) {
+          Icon(
+              imageVector = Icons.Default.Delete,
+              contentDescription = "Delete Profile Picture",
+              modifier =
+                  Modifier.testTag("deleteProfilePicture").size(40.dp), // Size of the edit icon
+              tint = Color.Red // Icon color
+              )
+        }
   }
 }
