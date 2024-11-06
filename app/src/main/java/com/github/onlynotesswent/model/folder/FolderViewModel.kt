@@ -12,18 +12,23 @@ import kotlinx.coroutines.flow.asStateFlow
 
 class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
 
+    // Left here for possible future use cases
     private val _publicFolders = MutableStateFlow<List<Folder>>(emptyList())
     val publicFolders: StateFlow<List<Folder>> = _publicFolders.asStateFlow()
 
+    // Left here for possible future use cases
     private val _userFolders = MutableStateFlow<List<Folder>>(emptyList())
     val userFolders: StateFlow<List<Folder>> = _userFolders.asStateFlow()
 
+    // Root folders from a user
     private val _userRootFolders = MutableStateFlow<List<Folder>>(emptyList())
     val userRootFolders: StateFlow<List<Folder>> = _userRootFolders.asStateFlow()
 
+    // Sub folders from a user
     private val _userSubFolders = MutableStateFlow<List<Folder>>(emptyList())
     val userSubFolders: StateFlow<List<Folder>> = _userSubFolders.asStateFlow()
 
+    // Parent folder Id
     private val _parentFolderId = MutableStateFlow<String?>(null)
     val parentFolderId: StateFlow<String?> = _parentFolderId.asStateFlow()
 

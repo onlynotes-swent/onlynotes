@@ -15,11 +15,11 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
     private val _publicNotes = MutableStateFlow<List<Note>>(emptyList())
     val publicNotes: StateFlow<List<Note>> = _publicNotes.asStateFlow()
 
-    // All notes from a user
+    // All notes from a user left here for possible future use cases
     private val _userNotes = MutableStateFlow<List<Note>>(emptyList())
     val userNotes: StateFlow<List<Note>> = _userNotes.asStateFlow()
 
-    // root notes displayed on overview Screen
+    // root notes from a user displayed on overview Screen
     private val _userRootNotes = MutableStateFlow<List<Note>>(emptyList())
     val userRootNotes: StateFlow<List<Note>> = _userRootNotes.asStateFlow()
 

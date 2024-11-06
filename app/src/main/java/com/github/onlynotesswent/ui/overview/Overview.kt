@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -19,6 +20,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
@@ -27,9 +30,11 @@ import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -52,6 +57,7 @@ import com.github.onlynotesswent.ui.navigation.BottomNavigationMenu
 import com.github.onlynotesswent.ui.navigation.LIST_TOP_LEVEL_DESTINATION
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
+import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -76,42 +82,57 @@ fun OverviewScreen(
     val userRootFolders = folderViewModel.userRootFolders.collectAsState()
     userViewModel.currentUser.collectAsState().value?.let { folderViewModel.getRootFoldersFrom(it.uid) }
 
+    val parentFolderId = folderViewModel.parentFolderId.collectAsState()
+
     var expanded by remember { mutableStateOf(false) }
+    var showCreateDialog by remember { mutableStateOf(false) }
 
     Scaffold(
         modifier = Modifier.testTag("overviewScreen"),
         floatingActionButton = {
-            Box {
-                FloatingActionButton(
-                    onClick = { expanded = true },
-                    modifier = Modifier.testTag("createNoteOrFolder")
-                ) {
-                    Icon(imageVector = Icons.Default.Add, contentDescription = "AddNote")
+            CustomDropDownMenu(
+                modifier = Modifier.testTag("createNoteOrFolder"),
+                modifierItem1 = Modifier.testTag("createNote"),
+                modifierItem2 = Modifier.testTag("createFolder"),
+                fabIcon = { Icon(imageVector = Icons.Default.Add, contentDescription = "AddNote") },
+                expanded = expanded,
+                onFabClick = { expanded = true },
+                onDismissRequest = { expanded = false },
+                textItem1 = { Text("Create Note") },
+                textItem2 = { Text("Create Folder") },
+                onClickItem1 = {
+                    expanded = false
+                    navigationActions.navigateTo(Screen.ADD_NOTE)
+                    noteViewModel.selectedFolderId(null)
+                },
+                onClickItem2 = {
+                    expanded = false
+                    showCreateDialog = true
+                    folderViewModel.selectedParentFolderId(null)
                 }
-                DropdownMenu(
-                    expanded = expanded,
-                    onDismissRequest = { expanded = false }
-                ) {
-                    DropdownMenuItem(
-                        text = { Text("Create Note") },
-                        onClick = {
-                            expanded = false
-                            navigationActions.navigateTo(Screen.ADD_NOTE)
-                            noteViewModel.selectedFolderId(null)
-                        },
-                        modifier = Modifier.testTag("createNote")
-
-                    )
-                    DropdownMenuItem(
-                        text = { Text("Create Folder") },
-                        onClick = {
-                            expanded = false
-                            navigationActions.navigateTo(Screen.ADD_FOLDER)
-                            folderViewModel.selectedParentFolderId(null)
-                        },
-                        modifier = Modifier.testTag("createFolder")
-                    )
-                }
+            )
+            // Logic to show the dialog to create a folder
+            if (showCreateDialog) {
+                CreateFolderDialog(
+                    onDismiss = { showCreateDialog = false },
+                    onConfirm = { newName ->
+                        folderViewModel.addFolder(
+                            Folder(
+                                id = folderViewModel.getNewFolderId(),
+                                name = newName,
+                                userId = userViewModel.currentUser.value!!.uid,
+                                parentFolderId = parentFolderId.value
+                            ),
+                            userViewModel.currentUser.value!!.uid
+                        )
+                        showCreateDialog = false
+                        if (parentFolderId.value != null) {
+                            navigationActions.navigateTo(Screen.FOLDER_CONTENTS)
+                        } else {
+                            navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
+                        }
+                    }
+                )
             }
         },
         bottomBar = {
@@ -120,57 +141,35 @@ fun OverviewScreen(
                 tabList = LIST_TOP_LEVEL_DESTINATION,
                 selectedItem = navigationActions.currentRoute()
             )
-        }) { pd ->
-        Box(modifier = Modifier
-            .fillMaxSize()
-            .padding(pd)) {
-            if (userRootNotes.value.isNotEmpty() || userRootFolders.value.isNotEmpty()) {
-                LazyVerticalGrid(   // maybe modularize this?
-                    columns = GridCells.Adaptive(minSize = 100.dp),
-                    contentPadding = PaddingValues(vertical = 20.dp),
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                    modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp)
-                        .padding(pd)
-                        .testTag("noteList")
-                ) {
-                    items(userRootFolders.value.size) { index ->
-                        FolderItem(folder = userRootFolders.value[index]) {
-                            folderViewModel.selectedFolder(userRootFolders.value[index])
-                            navigationActions.navigateTo(Screen.FOLDER_CONTENTS)
-                        }
-                    }
-
-                    items(userRootNotes.value.size) { index ->
-                        NoteItem(note = userRootNotes.value[index]) {
-                            noteViewModel.selectedNote(userRootNotes.value[index])
-                            navigationActions.navigateTo(Screen.EDIT_NOTE)
-                        }
-                    }
+        }) { paddingValues ->
+        CustomLazyGrid(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues),
+            notes = userRootNotes,
+            folders = userRootFolders,
+            gridModifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp)
+                .padding(paddingValues)
+                .testTag("noteAndFolderList"),
+            folderViewModel = folderViewModel,
+            noteViewModel = noteViewModel,
+            navigationActions = navigationActions,
+            paddingValues = paddingValues,
+            columnContent = {
+                Text(
+                    modifier = Modifier.testTag("emptyNoteAndFolderPrompt"),
+                    text = "You have no Notes or Folders yet."
+                )
+                Spacer(modifier = Modifier.height(50.dp))
+                RefreshButton {
+                    userViewModel.currentUser.value?.let { noteViewModel.getRootNotesFrom(it.uid) }
+                    userViewModel.currentUser.value?.let { folderViewModel.getRootFoldersFrom(it.uid) }
                 }
-            } else {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(pd),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
-                    Text(
-                        modifier = Modifier.testTag("emptyNotePrompt"),
-                        text = "You have no Notes or Folders yet."
-                    )
-                    Spacer(modifier = Modifier.height(50.dp))
-                    RefreshButton {
-                        userViewModel.currentUser.value?.let { noteViewModel.getNotesFrom(it.uid) }
-                        userViewModel.currentUser.value?.let { folderViewModel.getRootFoldersFrom(it.uid) }
-                    }
-                    Spacer(modifier = Modifier.height(20.dp))
-                }
+                Spacer(modifier = Modifier.height(20.dp))
             }
-        }
+        )
     }
 }
 
@@ -206,9 +205,11 @@ fun NoteItem(note: Note, onClick: () -> Unit) {
             .clickable(onClick = onClick),
         colors = CardDefaults.cardColors(containerColor = Color(0xFFB3E5FC))
     ) {
-        Column(modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp)) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp)
+        ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
@@ -271,6 +272,159 @@ fun FolderItem(folder: Folder, onClick: () -> Unit) {
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Bold
             )
+        }
+    }
+}
+
+/**
+ * Dialog that allows the user to create a folder.
+ *
+ * @param onDismiss callback to be invoked when the dialog is dismissed
+ * @param onConfirm callback to be invoked when the user confirms the new name
+ */
+@Composable
+fun CreateFolderDialog(onDismiss: () -> Unit, onConfirm: (String) -> Unit) {
+
+    var name by remember { mutableStateOf("") }
+
+    AlertDialog(
+        modifier = Modifier.testTag("createFolderDialog"),
+        onDismissRequest = onDismiss,
+        title = { Text("Create Folder") },
+        text = {
+            OutlinedTextField(
+                value = name,
+                onValueChange = { name = it },
+                label = { Text("Folder Name") }
+            )
+        },
+        confirmButton = {
+            Button(onClick = { onConfirm(name) }) {
+                Text("Confirm")
+            }
+        },
+        dismissButton = {
+            Button(onClick = onDismiss) {
+                Text("Cancel")
+            }
+        })
+}
+
+/**
+ * Custom dropdown menu that displays a floating action button with a dropdown menu. The dropdown
+ * menu contains two items, each with its own text and onClick action.
+ *
+ * @param modifier The modifier for the floating action button.
+ * @param modifierItem1 The modifier for the first dropdown menu item.
+ * @param modifierItem2 The modifier for the second dropdown menu item.
+ * @param fabIcon The icon to be displayed on the floating action button.
+ * @param expanded The state of the dropdown menu.
+ * @param onFabClick The action to be invoked when the floating action button is clicked.
+ * @param onDismissRequest The action to be invoked when the dropdown menu is dismissed.
+ * @param textItem1 The text to be displayed on the first dropdown menu item.
+ * @param textItem2 The text to be displayed on the second dropdown menu item.
+ * @param onClickItem1 The action to be invoked when the first dropdown menu item is clicked.
+ * @param onClickItem2 The action to be invoked when the second dropdown menu item is clicked.
+ */
+@Composable
+fun CustomDropDownMenu(
+    modifier: Modifier,
+    modifierItem1: Modifier,
+    modifierItem2: Modifier,
+    fabIcon: @Composable () -> Unit,
+    expanded: Boolean,
+    onFabClick: () -> Unit,
+    onDismissRequest: () -> Unit,
+    textItem1: @Composable () -> Unit,
+    textItem2: @Composable () -> Unit,
+    onClickItem1: () -> Unit,
+    onClickItem2: () -> Unit,
+) {
+    Box {
+        FloatingActionButton(
+            onClick = onFabClick,
+            modifier = modifier
+        ) {
+            fabIcon()
+        }
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = onDismissRequest
+        ) {
+            DropdownMenuItem(
+                text = textItem1,
+                onClick = onClickItem1,
+                modifier = modifierItem1
+
+            )
+            DropdownMenuItem(
+                text = textItem2,
+                onClick = onClickItem2,
+                modifier = modifierItem2
+            )
+        }
+    }
+}
+
+/**
+ * Custom lazy grid that displays a list of notes and folders. If there are no notes or folders, it
+ * displays a message to the user. The grid is scrollable.
+ *
+ * @param modifier The modifier for the grid.
+ * @param notes The list of notes to be displayed.
+ * @param folders The list of folders to be displayed.
+ * @param gridModifier The modifier for the grid.
+ * @param folderViewModel The ViewModel that provides the list of folders to display.
+ * @param noteViewModel The ViewModel that provides the list of notes to display.
+ * @param navigationActions The navigation view model used to transition between different screens.
+ * @param paddingValues The padding values for the grid.
+ * @param columnContent The content to be displayed in the column when there are no notes or folders.
+ */
+@Composable
+fun CustomLazyGrid(
+    modifier: Modifier,
+    notes: State<List<Note>>,
+    folders: State<List<Folder>>,
+    gridModifier: Modifier,
+    folderViewModel: FolderViewModel,
+    noteViewModel: NoteViewModel,
+    navigationActions: NavigationActions,
+    paddingValues: PaddingValues,
+    columnContent: @Composable (ColumnScope.() -> Unit)
+) {
+    Box(
+        modifier = modifier
+    ) {
+        if (notes.value.isNotEmpty() || folders.value.isNotEmpty()) {
+            LazyVerticalGrid(
+                columns = GridCells.Adaptive(minSize = 100.dp),
+                contentPadding = PaddingValues(vertical = 20.dp),
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                modifier = gridModifier
+            ) {
+                items(folders.value.size) { index ->
+                    FolderItem(folder = folders.value[index]) {
+                        folderViewModel.selectedFolder(folders.value[index])
+                        navigationActions.navigateTo(Screen.FOLDER_CONTENTS)
+                    }
+                }
+                items(notes.value.size) { index ->
+                    NoteItem(note = notes.value[index]) {
+                        noteViewModel.selectedNote(notes.value[index])
+                        navigationActions.navigateTo(Screen.EDIT_NOTE)
+                    }
+                }
+            }
+        } else {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                columnContent()
+            }
         }
     }
 }
