@@ -24,7 +24,7 @@ class FolderViewModelTest {
             id = "1",
             name = "name",
             userId = "1",
-            parentFolderId = null
+            parentFolderId = "pid"
         )
 
     @Before
@@ -35,8 +35,8 @@ class FolderViewModelTest {
 
     @Test
     fun getNewFolderId() {
-        `when`(folderRepository.getNewFolderId()).thenReturn("fid")
-        assertThat(folderViewModel.getNewFolderId(), `is`("fid"))
+        `when`(folderRepository.getNewFolderId()).thenReturn("1")
+        assertThat(folderViewModel.getNewFolderId(), `is`("1"))
     }
 
     @Test
@@ -48,6 +48,12 @@ class FolderViewModelTest {
     fun getFoldersFromCallsRepository() {
         folderViewModel.getFoldersFrom("1")
         verify(folderRepository).getFoldersFrom(eq("1"), any(), any())
+    }
+
+    @Test
+    fun getRootFoldersFromCallsRepository() {
+        folderViewModel.getRootFoldersFrom("1")
+        verify(folderRepository).getRootFoldersFrom(eq("1"), any(), any( ))
     }
 
     @Test
@@ -75,8 +81,8 @@ class FolderViewModelTest {
     }
 
     @Test
-    fun getFoldersByParentFolderIdCallsRepository() {
-        folderViewModel.getFoldersByParentFolderId("pid")
-        verify(folderRepository).getFoldersByParentFolderId(eq("pid"), any(), any())
+    fun getSubFoldersOfCallsRepository() {
+        folderViewModel.getSubFoldersOf("pid")
+        verify(folderRepository).getSubFoldersOf(eq("pid"), any(), any())
     }
 }

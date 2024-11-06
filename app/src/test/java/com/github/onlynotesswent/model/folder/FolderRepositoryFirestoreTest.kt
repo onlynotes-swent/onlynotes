@@ -51,7 +51,7 @@ class FolderRepositoryFirestoreTest {
             id = "2",
             name = "subFolder",
             userId = "1",
-            parentFolderId = "pid"
+            parentFolderId = "1"
         )
 
     @Before
@@ -97,6 +97,7 @@ class FolderRepositoryFirestoreTest {
         assert(folder.id == folder2.id)
         assert(folder.name == folder2.name)
         assert(folder.userId == folder2.userId)
+        assert(folder.parentFolderId == folder2.parentFolderId)
     }
 
     @Test
@@ -115,9 +116,19 @@ class FolderRepositoryFirestoreTest {
 
     @Test
     fun getFoldersFrom_callsDocuments() {
-        `when`(mockQuerySnapshot.documents).thenReturn(listOf(mockDocumentSnapshot))
+        `when`(mockQuerySnapshot.documents).thenReturn(listOf(mockDocumentSnapshot, mockDocumentSnapshot2))
         var receivedFolders: List<Folder>? = null
         folderRepositoryFirestore.getFoldersFrom(testFolder.userId, onSuccess = { receivedFolders = it }, onFailure = {assert(false)})
+        assertNotNull(receivedFolders)
+
+        verify(timeout(100)) { (mockQuerySnapshot).documents }
+    }
+
+    @Test
+    fun getRootFoldersFrom_callsDocuments() {
+        `when`(mockQuerySnapshot.documents).thenReturn(listOf(mockDocumentSnapshot, mockDocumentSnapshot2))
+        var receivedFolders: List<Folder>? = null
+        folderRepositoryFirestore.getRootFoldersFrom(testFolder.userId, onSuccess = { receivedFolders = it }, onFailure = {assert(false)})
         assertNotNull(receivedFolders)
 
         verify(timeout(100)) { (mockQuerySnapshot).documents }
@@ -168,10 +179,10 @@ class FolderRepositoryFirestoreTest {
     }
 
     @Test
-    fun getFoldersByParentFolderId_callsCollection() {
+    fun getSubFoldersOf_callsCollection() {
         `when`(mockDocumentReference.get()).thenReturn(Tasks.forResult(mockDocumentSnapshot2))
 
-        folderRepositoryFirestore.getFoldersByParentFolderId("pid", {}, {})
+        folderRepositoryFirestore.getSubFoldersOf("1", {}, {})
 
         shadowOf(Looper.getMainLooper()).idle()
 
