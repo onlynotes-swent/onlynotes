@@ -34,7 +34,7 @@ interface FolderRepository {
    */
   fun deleteFolderById(folderId: String, onSuccess: () -> Unit, onFailure: (Exception) -> Unit)
 
-  // not sure if I need this
+  // TODO not sure if this is needed
   /**
    * Retrieves a folder by its ID.
    *
@@ -51,7 +51,7 @@ interface FolderRepository {
    * @param onSuccess Callback to be invoked with the retrieved folders.
    * @param onFailure Callback to be invoked if an error occurs.
    */
-  fun getFoldersFrom(
+  fun getFoldersFromUid(
       userId: String,
       onSuccess: (List<Folder>) -> Unit,
       onFailure: (Exception) -> Unit
@@ -64,13 +64,12 @@ interface FolderRepository {
    * @param onSuccess Callback to be invoked with the retrieved folders.
    * @param onFailure Callback to be invoked if an error occurs.
    */
-  fun getRootFoldersFrom(
+  fun getRootFoldersFromUid(
       userId: String,
       onSuccess: (List<Folder>) -> Unit,
       onFailure: (Exception) -> Unit
   )
 
-  // to update the folder name for instance
   /**
    * Updates an existing folder.
    *

@@ -22,21 +22,22 @@ import com.google.firebase.Timestamp
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.mockito.Mockito.mock
+import org.mockito.Mock
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
+import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
 
 class FolderContentTest {
 
-  private lateinit var userRepository: UserRepository
+  @Mock private lateinit var mockUserRepository: UserRepository
+  @Mock private lateinit var mockNavigationActions: NavigationActions
+  @Mock private lateinit var mockNoteRepository: NoteRepository
+  @Mock private lateinit var mockFolderRepository: FolderRepository
   private lateinit var userViewModel: UserViewModel
-  private lateinit var navigationActions: NavigationActions
   private lateinit var noteViewModel: NoteViewModel
-  private lateinit var noteRepository: NoteRepository
   private lateinit var folderViewModel: FolderViewModel
-  private lateinit var folderRepository: FolderRepository
 
   private val noteList =
       listOf(
@@ -57,17 +58,13 @@ class FolderContentTest {
 
   @Before
   fun setUp() {
-
-    userRepository = mock(UserRepository::class.java)
-    navigationActions = mock(NavigationActions::class.java)
-    userViewModel = UserViewModel(userRepository)
-    noteRepository = mock(NoteRepository::class.java)
-    noteViewModel = NoteViewModel(noteRepository)
-    folderRepository = mock(FolderRepository::class.java)
-    folderViewModel = FolderViewModel(folderRepository)
+    MockitoAnnotations.openMocks(this)
+    userViewModel = UserViewModel(mockUserRepository)
+    noteViewModel = NoteViewModel(mockNoteRepository)
+    folderViewModel = FolderViewModel(mockFolderRepository)
 
     // Mock the addUser method to call the onSuccess callback
-    `when`(userRepository.addUser(any(), any(), any())).thenAnswer { invocation ->
+    `when`(mockUserRepository.addUser(any(), any(), any())).thenAnswer { invocation ->
       val onSuccess = invocation.getArgument<() -> Unit>(1)
       onSuccess()
     }
@@ -85,24 +82,24 @@ class FolderContentTest {
     userViewModel.addUser(testUser, {}, {})
 
     // Mock the current route to be the user create screen
-    `when`(navigationActions.currentRoute()).thenReturn(Screen.FOLDER_CONTENTS)
-    `when`(noteRepository.getRootNotesFrom(eq("1"), any(), any())).then { invocation ->
+    `when`(mockNavigationActions.currentRoute()).thenReturn(Screen.FOLDER_CONTENTS)
+    `when`(mockNoteRepository.getRootNotesFrom(eq("1"), any(), any())).then { invocation ->
       val onSuccess = invocation.getArgument<(List<Note>) -> Unit>(1)
       onSuccess(noteList)
     }
-    `when`(folderRepository.getRootFoldersFrom(eq("1"), any(), any())).then { invocation ->
+    `when`(mockFolderRepository.getRootFoldersFromUid(eq("1"), any(), any())).then { invocation ->
       val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(1)
       onSuccess(folderList)
     }
-    `when`(folderRepository.getNewFolderId()).thenAnswer { _ -> "mockFolderId" }
+    `when`(mockFolderRepository.getNewFolderId()).thenAnswer { _ -> "mockFolderId" }
 
     noteViewModel.getRootNotesFrom("1")
-    folderViewModel.getRootFoldersFrom("1")
+    folderViewModel.getRootFoldersFromUid("1")
     val folder = Folder("1", "1", "1")
     folderViewModel.addFolder(folder, "1")
     folderViewModel.selectedFolder(folder)
     composeTestRule.setContent {
-      FolderContentScreen(navigationActions, folderViewModel, noteViewModel, userViewModel)
+      FolderContentScreen(mockNavigationActions, folderViewModel, noteViewModel, userViewModel)
     }
   }
 
@@ -149,7 +146,7 @@ class FolderContentTest {
     composeTestRule.onNodeWithTag("renameFolderButton").assertIsDisplayed()
     composeTestRule.onNodeWithTag("deleteFolderButton").assertIsDisplayed()
     composeTestRule.onNodeWithTag("deleteFolderButton").performClick()
-    verify(navigationActions).navigateTo(TopLevelDestinations.OVERVIEW)
+    verify(mockNavigationActions).navigateTo(TopLevelDestinations.OVERVIEW)
   }
 
   @Test
@@ -158,6 +155,6 @@ class FolderContentTest {
     composeTestRule.onNodeWithTag("createSubNoteOrSubFolder").performClick()
     composeTestRule.onNodeWithTag("createNote").assertIsDisplayed()
     composeTestRule.onNodeWithTag("createNote").performClick()
-    verify(navigationActions).navigateTo(Screen.ADD_NOTE)
+    verify(mockNavigationActions).navigateTo(Screen.ADD_NOTE)
   }
 }

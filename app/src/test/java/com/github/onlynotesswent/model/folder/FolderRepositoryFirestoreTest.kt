@@ -99,15 +99,15 @@ class FolderRepositoryFirestoreTest {
   fun documentSnapshotToFolderConvertsSnapshotToFolder() {
     val convertedFolder = folderRepositoryFirestore.documentSnapshotToFolder(mockDocumentSnapshot)
     assertNotNull(convertedFolder)
-    compareFolders(convertedFolder!!, testFolder)
+    compareFolders(convertedFolder, testFolder)
   }
 
   @Test
-  fun getFoldersFrom_callsDocuments() {
+  fun getFoldersFromUid_callsDocuments() {
     `when`(mockQuerySnapshot.documents)
         .thenReturn(listOf(mockDocumentSnapshot, mockDocumentSnapshot2))
     var receivedFolders: List<Folder>? = null
-    folderRepositoryFirestore.getFoldersFrom(
+    folderRepositoryFirestore.getFoldersFromUid(
         testFolder.userId, onSuccess = { receivedFolders = it }, onFailure = { assert(false) })
     assertNotNull(receivedFolders)
 
@@ -115,11 +115,11 @@ class FolderRepositoryFirestoreTest {
   }
 
   @Test
-  fun getRootFoldersFrom_callsDocuments() {
+  fun getRootFoldersFromUid_callsDocuments() {
     `when`(mockQuerySnapshot.documents)
         .thenReturn(listOf(mockDocumentSnapshot, mockDocumentSnapshot2))
     var receivedFolders: List<Folder>? = null
-    folderRepositoryFirestore.getRootFoldersFrom(
+    folderRepositoryFirestore.getRootFoldersFromUid(
         testFolder.userId, onSuccess = { receivedFolders = it }, onFailure = { assert(false) })
     assertNotNull(receivedFolders)
 

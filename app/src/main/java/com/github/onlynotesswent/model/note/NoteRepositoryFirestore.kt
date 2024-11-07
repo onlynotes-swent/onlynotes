@@ -143,7 +143,7 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
         onSuccess(publicNotes)
       } else {
         task.exception?.let { e ->
-          Log.e("NoteRepositoryFirestore", "Error getting visibility documents", e)
+          Log.e(TAG, "Error getting visibility documents", e)
           onFailure(e)
         }
       }
@@ -164,7 +164,7 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
         onSuccess(userNotes)
       } else {
         task.exception?.let { e ->
-          Log.e("NoteRepositoryFirestore", "Error getting user documents", e)
+          Log.e(TAG, "Error getting user documents", e)
           onFailure(e)
         }
       }
@@ -187,7 +187,7 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
         onSuccess(userRootNotes)
       } else {
         task.exception?.let { e ->
-          Log.e("NoteRepositoryFirestore", "Error getting user documents", e)
+          Log.e(TAG, "Error getting user documents", e)
           onFailure(e)
         }
       }
@@ -205,7 +205,7 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
         }
       } else {
         task.exception?.let { e ->
-          Log.e("NoteRepositoryFirestore", "Error getting document", e)
+          Log.e(TAG, "Error getting document", e)
           onFailure(e)
         }
       }
@@ -245,7 +245,7 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
         onSuccess(folderNotes)
       } else {
         task.exception?.let { e ->
-          Log.e("NoteRepositoryFirestore", "Error getting user documents", e)
+          Log.e(TAG, "Error getting user documents", e)
           onFailure(e)
         }
       }
@@ -269,7 +269,7 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
         onSuccess()
       } else {
         result.exception?.let { e ->
-          Log.e("NoteRepositoryFirestore", "Error performing Firestore operation", e)
+          Log.e(TAG, "Error performing Firestore operation", e)
           onFailure(e)
         }
       }
@@ -315,8 +315,12 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
           image = image,
           comments = Note.CommentCollection(comments))
     } catch (e: Exception) {
-      Log.e("NoteRepositoryFirestore", "Error converting document to Note", e)
+      Log.e(TAG, "Error converting document to Note", e)
       null
     }
+  }
+
+  companion object {
+    const val TAG = "NoteRepositoryFirestore"
   }
 }

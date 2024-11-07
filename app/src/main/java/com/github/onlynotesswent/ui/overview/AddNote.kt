@@ -68,7 +68,7 @@ fun AddNoteScreen(
     userViewModel: UserViewModel
 ) {
 
-  val folderId = noteViewModel.folderId.collectAsState()
+  val folderId = noteViewModel.currentFolderId.collectAsState()
   val currentYear = Calendar.getInstance().get(Calendar.YEAR)
 
   var title by remember { mutableStateOf("") }

@@ -97,7 +97,7 @@ class OverviewTest {
       val onSuccess = invocation.getArgument<(List<Note>) -> Unit>(1)
       onSuccess(listOf())
     }
-    `when`(folderRepository.getRootFoldersFrom(eq("1"), any(), any())).then { invocation ->
+    `when`(folderRepository.getRootFoldersFromUid(eq("1"), any(), any())).then { invocation ->
       val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(1)
       onSuccess(listOf())
     }
@@ -109,7 +109,7 @@ class OverviewTest {
       val onSuccess = invocation.getArgument<(List<Note>) -> Unit>(1)
       onSuccess(noteList)
     }
-    `when`(folderRepository.getRootFoldersFrom(eq("1"), any(), any())).then { invocation ->
+    `when`(folderRepository.getRootFoldersFromUid(eq("1"), any(), any())).then { invocation ->
       val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(1)
       onSuccess(folderList)
     }
@@ -119,7 +119,7 @@ class OverviewTest {
     // the
     // refresh click
     verify(noteRepository, times(2)).getRootNotesFrom(eq("1"), any(), any())
-    verify(folderRepository, times(2)).getRootFoldersFrom(eq("1"), any(), any())
+    verify(folderRepository, times(2)).getRootFoldersFromUid(eq("1"), any(), any())
     composeTestRule.onNodeWithTag("noteAndFolderList").assertIsDisplayed()
   }
 
@@ -129,12 +129,12 @@ class OverviewTest {
       val onSuccess = invocation.getArgument<(List<Note>) -> Unit>(1)
       onSuccess(noteList)
     }
-    `when`(folderRepository.getRootFoldersFrom(eq("1"), any(), any())).then { invocation ->
+    `when`(folderRepository.getRootFoldersFromUid(eq("1"), any(), any())).then { invocation ->
       val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(1)
       onSuccess(folderList)
     }
     noteViewModel.getRootNotesFrom("1")
-    folderViewModel.getRootFoldersFrom("1")
+    folderViewModel.getRootFoldersFromUid("1")
     composeTestRule.onNodeWithTag("noteAndFolderList").assertIsDisplayed()
   }
 
@@ -172,11 +172,11 @@ class OverviewTest {
 
   @Test
   fun selectFolderCallsNavActions() {
-    `when`(folderRepository.getRootFoldersFrom(eq("1"), any(), any())).then { invocation ->
+    `when`(folderRepository.getRootFoldersFromUid(eq("1"), any(), any())).then { invocation ->
       val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(1)
       onSuccess(folderList)
     }
-    folderViewModel.getRootFoldersFrom("1")
+    folderViewModel.getRootFoldersFromUid("1")
     composeTestRule.onNodeWithTag("folderCard").assertIsDisplayed()
     composeTestRule.onNodeWithTag("folderCard").performClick()
     verify(navigationActions).navigateTo(screen = Screen.FOLDER_CONTENTS)

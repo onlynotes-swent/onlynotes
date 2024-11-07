@@ -15,7 +15,7 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
   private val _publicNotes = MutableStateFlow<List<Note>>(emptyList())
   val publicNotes: StateFlow<List<Note>> = _publicNotes.asStateFlow()
 
-  // All notes from a user left here for possible future use cases
+  // TODO All notes from a user left here for possible future use cases
   private val _userNotes = MutableStateFlow<List<Note>>(emptyList())
   val userNotes: StateFlow<List<Note>> = _userNotes.asStateFlow()
 
@@ -28,8 +28,8 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
   val folderNotes: StateFlow<List<Note>> = _folderNotes.asStateFlow()
 
   // folderId state to store the current folder ID
-  private val _folderId = MutableStateFlow<String?>(null)
-  val folderId: StateFlow<String?> = _folderId.asStateFlow()
+  private val _currentFolderId = MutableStateFlow<String?>(null)
+  val currentFolderId: StateFlow<String?> = _currentFolderId.asStateFlow()
 
   private val _selectedNote = MutableStateFlow<Note?>(null)
   val selectedNote: StateFlow<Note?> = _selectedNote.asStateFlow()
@@ -50,7 +50,7 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
    * @param folderId The folder ID.
    */
   fun selectedFolderId(folderId: String?) {
-    _folderId.value = folderId
+    _currentFolderId.value = folderId
   }
 
   /**

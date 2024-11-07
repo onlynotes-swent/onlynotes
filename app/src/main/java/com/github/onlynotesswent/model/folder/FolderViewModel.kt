@@ -78,7 +78,7 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
    * @param folder The folder to add.
    */
   fun addFolder(folder: Folder, userId: String) {
-    repository.addFolder(folder, onSuccess = { getRootFoldersFrom(userId) }, onFailure = {})
+    repository.addFolder(folder, onSuccess = { getRootFoldersFromUid(userId) }, onFailure = {})
   }
 
   /**
@@ -88,7 +88,7 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
    */
   fun deleteFolderById(folderId: String, userId: String) {
     repository.deleteFolderById(
-        folderId, onSuccess = { getRootFoldersFrom(userId) }, onFailure = {})
+        folderId, onSuccess = { getRootFoldersFromUid(userId) }, onFailure = {})
   }
 
   /**
@@ -96,12 +96,17 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
    *
    * @param userId The ID of the user to retrieve folders for.
    */
-  fun getFoldersFrom(userId: String) {
-    repository.getFoldersFrom(userId, onSuccess = { _userFolders.value = it }, onFailure = {})
+  fun getFoldersFromUid(userId: String) {
+    repository.getFoldersFromUid(userId, onSuccess = { _userFolders.value = it }, onFailure = {})
   }
 
-  fun getRootFoldersFrom(userId: String) {
-    repository.getRootFoldersFrom(
+  /**
+   * Retrieves all root folders owned by a user.
+   *
+   * @param userId The ID of the user to retrieve root folders for.
+   */
+  fun getRootFoldersFromUid(userId: String) {
+    repository.getRootFoldersFromUid(
         userId, onSuccess = { _userRootFolders.value = it }, onFailure = {})
   }
 
@@ -120,7 +125,7 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
    * @param folder The folder with updated information.
    */
   fun updateFolder(folder: Folder, userId: String) {
-    repository.updateFolder(folder, onSuccess = { getRootFoldersFrom(userId) }, onFailure = {})
+    repository.updateFolder(folder, onSuccess = { getRootFoldersFromUid(userId) }, onFailure = {})
   }
 
   /**

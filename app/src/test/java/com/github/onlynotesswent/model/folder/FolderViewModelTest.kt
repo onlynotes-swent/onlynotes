@@ -39,14 +39,14 @@ class FolderViewModelTest {
 
   @Test
   fun getFoldersFromCallsRepository() {
-    folderViewModel.getFoldersFrom("1")
-    verify(folderRepository).getFoldersFrom(eq("1"), any(), any())
+    folderViewModel.getFoldersFromUid("1")
+    verify(folderRepository).getFoldersFromUid(eq("1"), any(), any())
   }
 
   @Test
   fun getRootFoldersFromCallsRepository() {
-    folderViewModel.getRootFoldersFrom("1")
-    verify(folderRepository).getRootFoldersFrom(eq("1"), any(), any())
+    folderViewModel.getRootFoldersFromUid("1")
+    verify(folderRepository).getRootFoldersFromUid(eq("1"), any(), any())
   }
 
   @Test

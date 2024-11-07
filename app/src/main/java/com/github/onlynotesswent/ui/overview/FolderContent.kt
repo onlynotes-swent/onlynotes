@@ -116,7 +116,7 @@ fun FolderContentScreen(
                   onClickItem2 = {
                     expanded = false
                     folderViewModel.deleteFolderById(folder.value!!.id, folder.value!!.userId)
-                    // for now we just delete the folder directly
+                    // TODO for now we just delete the folder directly
                     // later on we need to figure out how to recursively delete all elements of a
                     // folder(folders and notes)
                     navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
@@ -164,8 +164,7 @@ fun FolderContentScreen(
                 }
               })
         }
-      },
-      content = { paddingValues ->
+      }) { paddingValues ->
         CustomLazyGrid(
             modifier = Modifier.fillMaxSize().padding(paddingValues),
             notes = userFolderNotes,
@@ -199,7 +198,7 @@ fun FolderContentScreen(
                 showRenameDialog = false
               })
         }
-      })
+      }
 }
 
 /**
