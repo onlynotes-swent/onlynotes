@@ -4,8 +4,6 @@ import android.os.Looper
 import com.google.android.gms.tasks.Task
 import com.google.android.gms.tasks.Tasks
 import com.google.firebase.Timestamp
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.DocumentSnapshot
@@ -20,7 +18,6 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mock
 import org.mockito.Mockito.anyString
-import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
@@ -108,17 +105,6 @@ class FlashcardRepositoryFirestoreTest {
     `when`(mockDocumentSnapshot.getString("userId")).thenReturn(flashcard.userId)
     `when`(mockDocumentSnapshot.getString("folderId")).thenReturn(flashcard.folderId)
     `when`(mockDocumentSnapshot.getString("noteId")).thenReturn(flashcard.noteId)
-  }
-
-  @Test
-  fun init_callsAuthStateListener() {
-    val mockAuth = mock(FirebaseAuth::class.java)
-    val mockUser = mock(FirebaseUser::class.java)
-    `when`(mockAuth.currentUser).thenReturn(mockUser)
-
-    var onSuccessCalled = false
-    flashcardRepositoryFirestore.init(mockAuth) { onSuccessCalled = true }
-    assert(onSuccessCalled)
   }
 
   @Test

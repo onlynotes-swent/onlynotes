@@ -43,7 +43,7 @@ class FlashcardViewModelTest {
 
   @Test
   fun initCallsRepository() {
-    verify(flashcardRepository, timeout(1000)).init(any(), any())
+    verify(flashcardRepository, timeout(1000)).init(any())
   }
 
   @Test

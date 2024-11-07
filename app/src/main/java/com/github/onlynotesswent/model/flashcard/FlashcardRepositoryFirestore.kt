@@ -1,8 +1,9 @@
 package com.github.onlynotesswent.model.flashcard
 
 import android.util.Log
+import com.google.firebase.Firebase
 import com.google.firebase.Timestamp
-import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.auth
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 
@@ -37,9 +38,11 @@ class FlashcardRepositoryFirestore(private val db: FirebaseFirestore) : Flashcar
     return db.collection(collectionPath).document().id
   }
 
-  override fun init(auth: FirebaseAuth, onSuccess: () -> Unit) {
-    if (auth.currentUser != null) {
-      onSuccess()
+  override fun init(onSuccess: () -> Unit) {
+    Firebase.auth.addAuthStateListener {
+      if (it.currentUser != null) {
+        onSuccess()
+      }
     }
   }
 
