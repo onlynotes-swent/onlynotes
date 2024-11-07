@@ -95,30 +95,6 @@ class NoteRepositoryFirestoreTest {
               Note.CommentCollection(
                   listOf(Note.Comment("1", "1", "bob", "1", Timestamp.now(), Timestamp.now()))))
 
-  private val testSubNotePublic =
-      Note(
-          id = "1",
-          title = "title",
-          content = "content",
-          date = Timestamp.now(),
-          visibility = Note.Visibility.PUBLIC,
-          userId = "1",
-          folderId = "1",
-          noteClass = Note.Class("CS-100", "Sample Class", 2024, "path"),
-          image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888))
-
-  private val testSubNotePrivate =
-      Note(
-          id = "1",
-          title = "title",
-          content = "content",
-          date = Timestamp.now(),
-          visibility = Note.Visibility.PRIVATE,
-          userId = "1",
-          folderId = "1",
-          noteClass = Note.Class("CS-100", "Sample Class", 2024, "path"),
-          image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888))
-
   @Before
   fun setUp() {
     MockitoAnnotations.openMocks(this)
@@ -188,7 +164,6 @@ class NoteRepositoryFirestoreTest {
     `when`(mockDocumentSnapshot2.get("commentsList")).thenReturn(testNotePrivate.comments)
 
     `when`(mockDocumentSnapshot3.id).thenReturn(testSubNotePublic.id)
-    `when`(mockDocumentSnapshot3.getString("type")).thenReturn(testSubNotePublic.type.toString())
     `when`(mockDocumentSnapshot3.getString("title")).thenReturn(testSubNotePublic.title)
     `when`(mockDocumentSnapshot3.getString("content")).thenReturn(testSubNotePublic.content)
     `when`(mockDocumentSnapshot3.getTimestamp("date")).thenReturn(testSubNotePublic.date)
@@ -207,7 +182,6 @@ class NoteRepositoryFirestoreTest {
     `when`(mockDocumentSnapshot3.get("image")).thenReturn(testSubNotePublic.image)
 
     `when`(mockDocumentSnapshot4.id).thenReturn(testSubNotePrivate.id)
-    `when`(mockDocumentSnapshot4.getString("type")).thenReturn(testSubNotePrivate.type.toString())
     `when`(mockDocumentSnapshot4.getString("title")).thenReturn(testSubNotePrivate.title)
     `when`(mockDocumentSnapshot4.getString("content")).thenReturn(testSubNotePrivate.content)
     `when`(mockDocumentSnapshot4.getTimestamp("date")).thenReturn(testSubNotePrivate.date)

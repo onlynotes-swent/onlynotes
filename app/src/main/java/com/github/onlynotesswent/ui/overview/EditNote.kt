@@ -169,10 +169,10 @@ fun EditNoteScreen(
                   placeholder = { Text("Enter your note here...") },
                   modifier = Modifier.fillMaxWidth().height(400.dp).testTag("EditNote textField"))
 
-              item {
-                Button(
-                    enabled = updatedNoteTitle.isNotEmpty(),
-                    onClick = {
+
+              Button(
+                  enabled = updatedNoteTitle.isNotEmpty(),
+                  onClick = {
                       noteViewModel.updateNote(
                           Note(
                               id = note?.id ?: "1",
@@ -199,7 +199,6 @@ fun EditNoteScreen(
                     },
                     modifier = Modifier.testTag("Save button")) {
                       Text("Update note")
-                    }
               }
 
               Button(
