@@ -99,8 +99,8 @@ fun FolderContentScreen(
             actions = {
               CustomDropDownMenu(
                   modifier = Modifier.testTag("folderSettingsButton"),
-                  modifierItem1 = Modifier.testTag("renameFolder"),
-                  modifierItem2 = Modifier.testTag("deleteFolder"),
+                  modifierItem1 = Modifier.testTag("renameFolderButton"),
+                  modifierItem2 = Modifier.testTag("deleteFolderButton"),
                   fabIcon = {
                     Icon(imageVector = Icons.Default.MoreVert, contentDescription = "settings")
                   },
@@ -215,12 +215,13 @@ fun RenameFolderDialog(currentName: String, onDismiss: () -> Unit, onConfirm: (S
   var newName by remember { mutableStateOf(currentName) }
 
   AlertDialog(
+      modifier = Modifier.testTag("renameFolderDialog"),
       onDismissRequest = onDismiss,
       title = { Text("Rename Folder") },
       text = {
         OutlinedTextField(
             value = newName, onValueChange = { newName = it }, label = { Text("New Folder Name") })
       },
-      confirmButton = { Button(onClick = { onConfirm(newName) }) { Text("Confirm") } },
-      dismissButton = { Button(onClick = onDismiss) { Text("Cancel") } })
+      confirmButton = { Button(onClick = { onConfirm(newName) }, modifier = Modifier.testTag("confirmRenameButton")) { Text("Confirm") } },
+      dismissButton = { Button(onClick = onDismiss, modifier = Modifier.testTag("dismissRenameButton")) { Text("Cancel") } })
 }
