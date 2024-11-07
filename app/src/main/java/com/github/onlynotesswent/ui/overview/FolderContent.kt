@@ -102,7 +102,7 @@ fun FolderContentScreen(
                     onClick = {
                       navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
                     }, // For now we always return to overview screen, go back does not work
-                       // properly
+                    // properly
                     modifier = Modifier.testTag("clearButton")) {
                       Icon(imageVector = Icons.Default.Clear, contentDescription = "Clear")
                     }
