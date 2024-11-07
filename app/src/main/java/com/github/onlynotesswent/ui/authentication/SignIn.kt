@@ -26,7 +26,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -49,7 +48,12 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 
 @Composable
-fun SignInScreen(navigationActions: NavigationActions, userViewModel: UserViewModel) {
+fun SignInScreen(
+    navigationActions: NavigationActions,
+    userViewModel: UserViewModel,
+    serverClientId: String
+) {
+
   // AUTHENTICATION:
   val context = LocalContext.current as? AppCompatActivity
   if (context == null) {
@@ -58,7 +62,6 @@ fun SignInScreen(navigationActions: NavigationActions, userViewModel: UserViewMo
     return
   }
 
-  val serverClientId = stringResource(R.string.default_web_client_id)
   val googleSignIn = GoogleCredSignIn(context, serverClientId)
 
   // UI:
