@@ -169,37 +169,36 @@ fun EditNoteScreen(
                   placeholder = { Text("Enter your note here...") },
                   modifier = Modifier.fillMaxWidth().height(400.dp).testTag("EditNote textField"))
 
-
               Button(
                   enabled = updatedNoteTitle.isNotEmpty(),
                   onClick = {
-                      noteViewModel.updateNote(
-                          Note(
-                              id = note?.id ?: "1",
-                              title = updatedNoteTitle,
-                              content = updatedNoteText,
-                              date = Timestamp.now(), // Use current timestamp
-                              visibility = visibility ?: Note.Visibility.DEFAULT,
-                              noteClass =
-                                  Note.Class(
-                                      updatedClassCode, updatedClassName, updatedClassYear, "path"),
-                              userId = note?.userId ?: userViewModel.currentUser.value!!.uid,
-                              folderId = note?.folderId,
-                              image =
-                                  note?.image
-                                      ?: Bitmap.createBitmap(
-                                          1, 1, Bitmap.Config.ARGB_8888) // Placeholder Bitmap
-                              ),
-                          userViewModel.currentUser.value!!.uid)
-                      if (note?.folderId != null) {
-                        navigationActions.navigateTo(Screen.FOLDER_CONTENTS)
-                      } else {
-                        navigationActions.navigateTo(Screen.OVERVIEW)
-                      }
-                    },
-                    modifier = Modifier.testTag("Save button")) {
-                      Text("Update note")
-              }
+                    noteViewModel.updateNote(
+                        Note(
+                            id = note?.id ?: "1",
+                            title = updatedNoteTitle,
+                            content = updatedNoteText,
+                            date = Timestamp.now(), // Use current timestamp
+                            visibility = visibility ?: Note.Visibility.DEFAULT,
+                            noteClass =
+                                Note.Class(
+                                    updatedClassCode, updatedClassName, updatedClassYear, "path"),
+                            userId = note?.userId ?: userViewModel.currentUser.value!!.uid,
+                            folderId = note?.folderId,
+                            image =
+                                note?.image
+                                    ?: Bitmap.createBitmap(
+                                        1, 1, Bitmap.Config.ARGB_8888) // Placeholder Bitmap
+                            ),
+                        userViewModel.currentUser.value!!.uid)
+                    if (note?.folderId != null) {
+                      navigationActions.navigateTo(Screen.FOLDER_CONTENTS)
+                    } else {
+                      navigationActions.navigateTo(Screen.OVERVIEW)
+                    }
+                  },
+                  modifier = Modifier.testTag("Save button")) {
+                    Text("Update note")
+                  }
 
               Button(
                   colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF0000)),
