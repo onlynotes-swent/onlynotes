@@ -270,10 +270,22 @@ fun CreateFolderDialog(onDismiss: () -> Unit, onConfirm: (String) -> Unit) {
       title = { Text("Create Folder") },
       text = {
         OutlinedTextField(
-            value = name, onValueChange = { name = it }, label = { Text("Folder Name") }, modifier = Modifier.testTag("inputFolderName"))
+            value = name,
+            onValueChange = { name = it },
+            label = { Text("Folder Name") },
+            modifier = Modifier.testTag("inputFolderName"))
       },
-      confirmButton = { Button(onClick = { onConfirm(name)}, modifier = Modifier.testTag("confirmFolderCreation")) { Text("Confirm") } },
-      dismissButton = { Button(onClick = onDismiss, modifier = Modifier.testTag("dismissFolderCreation")) { Text("Cancel") } })
+      confirmButton = {
+        Button(
+            onClick = { onConfirm(name) }, modifier = Modifier.testTag("confirmFolderCreation")) {
+              Text("Confirm")
+            }
+      },
+      dismissButton = {
+        Button(onClick = onDismiss, modifier = Modifier.testTag("dismissFolderCreation")) {
+          Text("Cancel")
+        }
+      })
 }
 
 /**

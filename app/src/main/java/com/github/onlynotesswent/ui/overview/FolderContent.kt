@@ -222,6 +222,15 @@ fun RenameFolderDialog(currentName: String, onDismiss: () -> Unit, onConfirm: (S
         OutlinedTextField(
             value = newName, onValueChange = { newName = it }, label = { Text("New Folder Name") })
       },
-      confirmButton = { Button(onClick = { onConfirm(newName) }, modifier = Modifier.testTag("confirmRenameButton")) { Text("Confirm") } },
-      dismissButton = { Button(onClick = onDismiss, modifier = Modifier.testTag("dismissRenameButton")) { Text("Cancel") } })
+      confirmButton = {
+        Button(
+            onClick = { onConfirm(newName) }, modifier = Modifier.testTag("confirmRenameButton")) {
+              Text("Confirm")
+            }
+      },
+      dismissButton = {
+        Button(onClick = onDismiss, modifier = Modifier.testTag("dismissRenameButton")) {
+          Text("Cancel")
+        }
+      })
 }
