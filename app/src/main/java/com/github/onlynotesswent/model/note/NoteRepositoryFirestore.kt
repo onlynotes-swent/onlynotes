@@ -81,8 +81,8 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
   /**
    * Converts a list of snapshot strings to a list of Comment objects.
    *
-   * @param snapshotList The list of snapshot strings, where each string represents a Comment in the
-   *   format "commentId<delimiter>userId<delimiter>content".
+   * @param commentSnapshotList The list of snapshot strings, where each string represents a Comment
+   *   in the format "commentId<delimiter>userId<delimiter>content".
    * @return A list of Comment objects created from the parsed snapshot strings.
    */
   private fun commentStringToCommentClass(commentSnapshotList: List<String>): List<Note.Comment> {
