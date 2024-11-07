@@ -12,6 +12,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
+import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.model.scanner.Scanner
 import com.github.onlynotesswent.model.users.UserViewModel
@@ -25,22 +26,30 @@ import com.github.onlynotesswent.ui.overview.OverviewScreen
 import com.github.onlynotesswent.ui.search.SearchScreen
 import com.github.onlynotesswent.ui.theme.AppTheme
 import com.github.onlynotesswent.ui.user.CreateUserScreen
-import com.github.onlynotesswent.ui.user.ProfileScreen
+import com.github.onlynotesswent.ui.user.EditProfileScreen
+import com.github.onlynotesswent.utils.ProfilePictureTaker
 
 class MainActivity : ComponentActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     val scanner = Scanner(this).apply { init() }
-    setContent { AppTheme { Surface(modifier = Modifier.fillMaxSize()) { OnlyNotesApp(scanner) } } }
+    val profilePictureTaker = ProfilePictureTaker(this).apply { init() }
+
+    setContent {
+      AppTheme {
+        Surface(modifier = Modifier.fillMaxSize()) { OnlyNotesApp(scanner, profilePictureTaker) }
+      }
+    }
   }
 }
 
 @Composable
-fun OnlyNotesApp(scanner: Scanner) {
+fun OnlyNotesApp(scanner: Scanner, profilePictureTaker: ProfilePictureTaker) {
   val navController = rememberNavController()
   val navigationActions = NavigationActions(navController)
   val userViewModel: UserViewModel = viewModel(factory = UserViewModel.Factory)
   val noteViewModel: NoteViewModel = viewModel(factory = NoteViewModel.Factory)
+  val fileViewModel: FileViewModel = viewModel(factory = FileViewModel.Factory)
 
   NavHost(navController = navController, startDestination = Route.AUTH) {
     navigation(
@@ -77,7 +86,9 @@ fun OnlyNotesApp(scanner: Scanner) {
         startDestination = Screen.PROFILE,
         route = Route.PROFILE,
     ) {
-      composable(Screen.PROFILE) { ProfileScreen(navigationActions, userViewModel) }
+      composable(Screen.PROFILE) {
+        EditProfileScreen(navigationActions, userViewModel, profilePictureTaker, fileViewModel)
+      }
     }
   }
 }
