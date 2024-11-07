@@ -24,6 +24,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navigation
 import androidx.test.espresso.intent.Intents
+import com.github.onlynotesswent.model.folder.FolderRepository
+import com.github.onlynotesswent.model.folder.FolderViewModel
 import com.github.onlynotesswent.model.note.Note
 import com.github.onlynotesswent.model.note.NoteRepository
 import com.github.onlynotesswent.model.note.NoteViewModel
@@ -52,12 +54,15 @@ import org.mockito.kotlin.eq
 class EndToEndTest {
 
   // Mock repositories, view models, and other dependencies
-  private lateinit var userRepository: UserRepository
-  private lateinit var userViewModel: UserViewModel
   private lateinit var navController: NavHostController
   private lateinit var navigationActions: NavigationActions
-  private lateinit var noteViewModel: NoteViewModel
+  private lateinit var userRepository: UserRepository
+  private lateinit var userViewModel: UserViewModel
   private lateinit var noteRepository: NoteRepository
+  private lateinit var noteViewModel: NoteViewModel
+  private lateinit var folderRepository: FolderRepository
+  private lateinit var folderViewModel: FolderViewModel
+
   private lateinit var context: Context
   private lateinit var scanner: Scanner
 
@@ -94,6 +99,8 @@ class EndToEndTest {
     userViewModel = UserViewModel(userRepository)
     noteRepository = mock(NoteRepository::class.java)
     noteViewModel = NoteViewModel(noteRepository)
+    folderRepository = mock(FolderRepository::class.java)
+    folderViewModel = FolderViewModel(folderRepository)
     context = mock(Context::class.java)
     scanner = mock(Scanner::class.java)
 
@@ -135,7 +142,7 @@ class EndToEndTest {
                     route = Route.OVERVIEW,
                 ) {
                   composable(Screen.OVERVIEW) {
-                    OverviewScreen(navigationActions, noteViewModel, userViewModel)
+                    OverviewScreen(navigationActions, noteViewModel, userViewModel, folderViewModel)
                   }
                   composable(Screen.ADD_NOTE) {
                     AddNoteScreen(navigationActions, scanner, noteViewModel, userViewModel)
@@ -169,6 +176,8 @@ class EndToEndTest {
     composeTestRule.onNodeWithTag("saveButton").performClick()
 
     // Interact with the note creation flow
+    composeTestRule.onNodeWithTag("createNoteOrFolder").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("createNoteOrFolder").performClick()
     composeTestRule.onNodeWithTag("createNote").assertIsDisplayed()
     composeTestRule.onNodeWithTag("createNote").performClick()
 
@@ -208,14 +217,15 @@ class EndToEndTest {
     composeTestRule.onNodeWithTag("Save button").performClick()
 
     // Mock retrieval of notes
-    `when`(noteRepository.getNotesFrom(eq(testUser.uid), any(), any())).thenAnswer { invocation ->
+    `when`(noteRepository.getRootNotesFrom(eq(testUser.uid), any(), any())).thenAnswer { invocation
+      ->
       val onSuccess = invocation.getArgument<(List<Note>) -> Unit>(1)
       onSuccess(listOf(testNote))
     }
 
     // Trigger note retrieval and verify the notes are displayed
-    noteViewModel.getNotesFrom(testUser.uid)
-    composeTestRule.onNodeWithTag("noteList").assertIsDisplayed()
+    noteViewModel.getRootNotesFrom(testUser.uid)
+    composeTestRule.onNodeWithTag("noteAndFolderList").assertIsDisplayed()
 
     // Verify that the note card is displayed
     composeTestRule.onNodeWithTag("noteCard").assertIsDisplayed()

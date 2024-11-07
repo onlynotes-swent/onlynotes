@@ -5,6 +5,9 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
+import com.github.onlynotesswent.model.folder.Folder
+import com.github.onlynotesswent.model.folder.FolderRepository
+import com.github.onlynotesswent.model.folder.FolderViewModel
 import com.github.onlynotesswent.model.note.Note
 import com.github.onlynotesswent.model.note.NoteRepository
 import com.github.onlynotesswent.model.note.NoteViewModel
@@ -30,6 +33,9 @@ class OverviewTest {
   private lateinit var navigationActions: NavigationActions
   private lateinit var noteViewModel: NoteViewModel
   private lateinit var noteRepository: NoteRepository
+  private lateinit var folderViewModel: FolderViewModel
+  private lateinit var folderRepository: FolderRepository
+
   private val noteList =
       listOf(
           Note(
@@ -43,6 +49,9 @@ class OverviewTest {
               image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888) // Placeholder Bitmap
               ))
 
+  private val folderList =
+      listOf(Folder(id = "1", name = "name", userId = "1", parentFolderId = null))
+
   @get:Rule val composeTestRule = createComposeRule()
 
   @Before
@@ -53,6 +62,8 @@ class OverviewTest {
     userViewModel = UserViewModel(userRepository)
     noteRepository = mock(NoteRepository::class.java)
     noteViewModel = NoteViewModel(noteRepository)
+    folderRepository = mock(FolderRepository::class.java)
+    folderViewModel = FolderViewModel(folderRepository)
 
     // Mock the addUser method to call the onSuccess callback
     `when`(userRepository.addUser(any(), any(), any())).thenAnswer { invocation ->
@@ -73,50 +84,67 @@ class OverviewTest {
 
     // Mock the current route to be the user create screen
     `when`(navigationActions.currentRoute()).thenReturn(Screen.OVERVIEW)
-    composeTestRule.setContent { OverviewScreen(navigationActions, noteViewModel, userViewModel) }
+    composeTestRule.setContent {
+      OverviewScreen(navigationActions, noteViewModel, userViewModel, folderViewModel)
+    }
   }
 
   @Test
   fun refreshButtonWorks() {
-    // Mock the repository to return an empty list of notes, for the refresh button to appear
-    `when`(noteRepository.getNotesFrom(eq("1"), any(), any())).then { invocation ->
+    // Mock the repositories to return an empty list of notes and folders, for the refresh button to
+    // appear
+    `when`(noteRepository.getRootNotesFrom(eq("1"), any(), any())).then { invocation ->
       val onSuccess = invocation.getArgument<(List<Note>) -> Unit>(1)
       onSuccess(listOf())
     }
-    composeTestRule.onNodeWithTag("emptyNotePrompt").assertIsDisplayed()
+    `when`(folderRepository.getRootFoldersFromUid(eq("1"), any(), any())).then { invocation ->
+      val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(1)
+      onSuccess(listOf())
+    }
+    composeTestRule.onNodeWithTag("emptyNoteAndFolderPrompt").assertIsDisplayed()
     composeTestRule.onNodeWithTag("refreshButton").assertIsDisplayed()
 
-    // Mock the repository to return a list of notes
-    `when`(noteRepository.getNotesFrom(eq("1"), any(), any())).then { invocation ->
+    // Mock the repositories to return a list of notes and folders
+    `when`(noteRepository.getRootNotesFrom(eq("1"), any(), any())).then { invocation ->
       val onSuccess = invocation.getArgument<(List<Note>) -> Unit>(1)
       onSuccess(noteList)
+    }
+    `when`(folderRepository.getRootFoldersFromUid(eq("1"), any(), any())).then { invocation ->
+      val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(1)
+      onSuccess(folderList)
     }
     composeTestRule.onNodeWithTag("refreshButton").performClick()
 
-    // Verify that the repository was called twice, once during the initial load and once during the
+    // Verify that the repositories were called twice, once during the initial load and once during
+    // the
     // refresh click
-    verify(noteRepository, times(2)).getNotesFrom(eq("1"), any(), any())
-    composeTestRule.onNodeWithTag("noteList").assertIsDisplayed()
+    verify(noteRepository, times(2)).getRootNotesFrom(eq("1"), any(), any())
+    verify(folderRepository, times(2)).getRootFoldersFromUid(eq("1"), any(), any())
+    composeTestRule.onNodeWithTag("noteAndFolderList").assertIsDisplayed()
   }
 
   @Test
-  fun noteListIsDisplayed() {
-
-    `when`(noteRepository.getNotesFrom(eq("1"), any(), any())).then { invocation ->
+  fun noteAndFolderListIsDisplayed() {
+    `when`(noteRepository.getRootNotesFrom(eq("1"), any(), any())).then { invocation ->
       val onSuccess = invocation.getArgument<(List<Note>) -> Unit>(1)
       onSuccess(noteList)
     }
-    noteViewModel.getNotesFrom("1")
-    composeTestRule.onNodeWithTag("noteList").assertIsDisplayed()
+    `when`(folderRepository.getRootFoldersFromUid(eq("1"), any(), any())).then { invocation ->
+      val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(1)
+      onSuccess(folderList)
+    }
+    noteViewModel.getRootNotesFrom("1")
+    folderViewModel.getRootFoldersFromUid("1")
+    composeTestRule.onNodeWithTag("noteAndFolderList").assertIsDisplayed()
   }
 
   @Test
   fun editNoteClickCallsNavActions() {
-    `when`(noteRepository.getNotesFrom(eq("1"), any(), any())).then { invocation ->
+    `when`(noteRepository.getRootNotesFrom(eq("1"), any(), any())).then { invocation ->
       val onSuccess = invocation.getArgument<(List<Note>) -> Unit>(1)
       onSuccess(noteList)
     }
-    noteViewModel.getNotesFrom("1")
+    noteViewModel.getRootNotesFrom("1")
     composeTestRule.onNodeWithTag("noteCard").assertIsDisplayed()
     composeTestRule.onNodeWithTag("noteCard").performClick()
     verify(navigationActions).navigateTo(screen = Screen.EDIT_NOTE)
@@ -124,36 +152,64 @@ class OverviewTest {
 
   @Test
   fun displayTextWhenEmpty() {
-    `when`(noteRepository.getNotesFrom(eq("1"), any(), any())).then { invocation ->
+    `when`(noteRepository.getRootNotesFrom(eq("1"), any(), any())).then { invocation ->
       val onSuccess = invocation.getArgument<(List<Note>) -> Unit>(1)
       onSuccess(listOf())
     }
-    noteViewModel.getNotesFrom("1")
-    composeTestRule.onNodeWithTag("emptyNotePrompt").assertIsDisplayed()
+    noteViewModel.getRootNotesFrom("1")
+    composeTestRule.onNodeWithTag("emptyNoteAndFolderPrompt").assertIsDisplayed()
   }
 
   @Test
   fun displayTextWhenUserHasNoNotes() {
-    `when`(noteRepository.getNotesFrom(eq("1"), any(), any())).then { invocation ->
+    `when`(noteRepository.getRootNotesFrom(eq("1"), any(), any())).then { invocation ->
       val onSuccess = invocation.getArgument<(List<Note>) -> Unit>(1)
       onSuccess(noteList)
     }
-    noteViewModel.getNotesFrom("2") // User 2 has no publicNotes
-    composeTestRule.onNodeWithTag("emptyNotePrompt").assertIsDisplayed()
+    noteViewModel.getRootNotesFrom("2") // User 2 has no publicNotes
+    composeTestRule.onNodeWithTag("emptyNoteAndFolderPrompt").assertIsDisplayed()
+  }
+
+  @Test
+  fun selectFolderCallsNavActions() {
+    `when`(folderRepository.getRootFoldersFromUid(eq("1"), any(), any())).then { invocation ->
+      val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(1)
+      onSuccess(folderList)
+    }
+    folderViewModel.getRootFoldersFromUid("1")
+    composeTestRule.onNodeWithTag("folderCard").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("folderCard").performClick()
+    verify(navigationActions).navigateTo(screen = Screen.FOLDER_CONTENTS)
   }
 
   @Test
   fun displayBaseComponents() {
-    composeTestRule.onNodeWithTag("createNote").assertExists()
-    composeTestRule.onNodeWithTag("emptyNotePrompt").assertExists()
+    composeTestRule.onNodeWithTag("createNoteOrFolder").assertExists()
+    composeTestRule.onNodeWithTag("emptyNoteAndFolderPrompt").assertExists()
     composeTestRule.onNodeWithTag("overviewScreen").assertExists()
+
+    composeTestRule.onNodeWithTag("createNoteOrFolder").performClick()
+    composeTestRule.onNodeWithTag("createNote").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("createFolder").assertIsDisplayed()
   }
 
   @Test
   fun createNoteButtonCallsNavActions() {
     composeTestRule.onNodeWithTag("overviewScreen").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("createNoteOrFolder").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("createNoteOrFolder").performClick()
     composeTestRule.onNodeWithTag("createNote").assertIsDisplayed()
     composeTestRule.onNodeWithTag("createNote").performClick()
     verify(navigationActions).navigateTo(screen = Screen.ADD_NOTE)
+  }
+
+  @Test
+  fun createFolderButtonShowsDialog() {
+    composeTestRule.onNodeWithTag("overviewScreen").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("createNoteOrFolder").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("createNoteOrFolder").performClick()
+    composeTestRule.onNodeWithTag("createFolder").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("createFolder").performClick()
+    composeTestRule.onNodeWithTag("createFolderDialog").assertIsDisplayed()
   }
 }

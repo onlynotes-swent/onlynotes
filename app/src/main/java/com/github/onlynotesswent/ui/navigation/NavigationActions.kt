@@ -25,12 +25,12 @@ object Screen {
   const val USER_PROFILE = "User Profile Screen"
   const val PUBLIC_PROFILE = "Public Profile Screen"
   const val EDIT_PROFILE = "Edit Profile Screen"
+  const val FOLDER_CONTENTS = "Folder Contents Screen"
 }
 
 data class TopLevelDestination(val route: String, val icon: ImageVector, val textId: String)
 
 object TopLevelDestinations {
-  // In the overview screen we will display the user notes
   val OVERVIEW =
       TopLevelDestination(route = Route.OVERVIEW, icon = Icons.Outlined.Home, textId = "My Notes")
   val SEARCH =
