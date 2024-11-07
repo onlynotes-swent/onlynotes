@@ -94,24 +94,28 @@ fun OverviewScreen(
       floatingActionButton = {
         CustomDropDownMenu(
             modifier = Modifier.testTag("createNoteOrFolder"),
-            modifierItem1 = Modifier.testTag("createNote"),
-            modifierItem2 = Modifier.testTag("createFolder"),
+            menuItems =
+                listOf(
+                    CustomDropDownMenuItem(
+                        text = { Text("Create Note") },
+                        onClick = {
+                          expanded = false
+                          navigationActions.navigateTo(Screen.ADD_NOTE)
+                          noteViewModel.selectedFolderId(null)
+                        },
+                        modifier = Modifier.testTag("createNote")),
+                    CustomDropDownMenuItem(
+                        text = { Text("Create Folder") },
+                        onClick = {
+                          expanded = false
+                          showCreateDialog = true
+                          folderViewModel.selectedParentFolderId(null)
+                        },
+                        modifier = Modifier.testTag("createFolder"))),
             fabIcon = { Icon(imageVector = Icons.Default.Add, contentDescription = "AddNote") },
             expanded = expanded,
             onFabClick = { expanded = true },
-            onDismissRequest = { expanded = false },
-            textItem1 = { Text("Create Note") },
-            textItem2 = { Text("Create Folder") },
-            onClickItem1 = {
-              expanded = false
-              navigationActions.navigateTo(Screen.ADD_NOTE)
-              noteViewModel.selectedFolderId(null)
-            },
-            onClickItem2 = {
-              expanded = false
-              showCreateDialog = true
-              folderViewModel.selectedParentFolderId(null)
-            })
+            onDismissRequest = { expanded = false })
         // Logic to show the dialog to create a folder
         if (showCreateDialog) {
           CreateFolderDialog(
@@ -279,8 +283,10 @@ fun CreateFolderDialog(onDismiss: () -> Unit, onConfirm: (String) -> Unit) {
       },
       confirmButton = {
         Button(
-            onClick = { onConfirm(name) }, modifier = Modifier.testTag("confirmFolderCreation")) {
-              Text("Confirm")
+            enabled = name.isNotEmpty(),
+            onClick = { onConfirm(name) },
+            modifier = Modifier.testTag("confirmFolderCreation")) {
+              Text("Create")
             }
       },
       dismissButton = {
@@ -295,37 +301,27 @@ fun CreateFolderDialog(onDismiss: () -> Unit, onConfirm: (String) -> Unit) {
  * menu contains two items, each with its own text and onClick action.
  *
  * @param modifier The modifier for the floating action button.
- * @param modifierItem1 The modifier for the first dropdown menu item.
- * @param modifierItem2 The modifier for the second dropdown menu item.
  * @param fabIcon The icon to be displayed on the floating action button.
+ * @param menuItems The list of dropdown menu items to be displayed in the dropdown menu.
  * @param expanded The state of the dropdown menu.
  * @param onFabClick The action to be invoked when the floating action button is clicked.
  * @param onDismissRequest The action to be invoked when the dropdown menu is dismissed.
- * @param textItem1 The text to be displayed on the first dropdown menu item.
- * @param textItem2 The text to be displayed on the second dropdown menu item.
- * @param onClickItem1 The action to be invoked when the first dropdown menu item is clicked.
- * @param onClickItem2 The action to be invoked when the second dropdown menu item is clicked.
  */
 @Composable
 fun CustomDropDownMenu(
     modifier: Modifier,
-    modifierItem1: Modifier,
-    modifierItem2: Modifier,
+    menuItems: List<CustomDropDownMenuItem>,
     fabIcon: @Composable () -> Unit,
     expanded: Boolean,
     onFabClick: () -> Unit,
     onDismissRequest: () -> Unit,
-    textItem1: @Composable () -> Unit,
-    textItem2: @Composable () -> Unit,
-    onClickItem1: () -> Unit,
-    onClickItem2: () -> Unit,
 ) {
   Box {
     FloatingActionButton(onClick = onFabClick, modifier = modifier) { fabIcon() }
     DropdownMenu(expanded = expanded, onDismissRequest = onDismissRequest) {
-      DropdownMenuItem(text = textItem1, onClick = onClickItem1, modifier = modifierItem1)
-
-      DropdownMenuItem(text = textItem2, onClick = onClickItem2, modifier = modifierItem2)
+      menuItems.forEach { item ->
+        DropdownMenuItem(text = item.text, onClick = item.onClick, modifier = item.modifier)
+      }
     }
   }
 }
@@ -387,3 +383,9 @@ fun CustomLazyGrid(
     }
   }
 }
+
+data class CustomDropDownMenuItem(
+    val text: @Composable () -> Unit,
+    val onClick: () -> Unit,
+    val modifier: Modifier = Modifier
+)

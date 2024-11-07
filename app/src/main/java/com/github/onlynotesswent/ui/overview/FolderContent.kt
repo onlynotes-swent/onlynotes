@@ -1,5 +1,8 @@
 package com.github.onlynotesswent.ui.overview
 
+import android.util.Log
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -54,16 +57,13 @@ fun FolderContentScreen(
     userViewModel: UserViewModel
 ) {
   val folder = folderViewModel.selectedFolder.collectAsState()
+  val currentUser = userViewModel.currentUser.collectAsState()
 
   val userFolderNotes = noteViewModel.folderNotes.collectAsState()
-  userViewModel.currentUser.collectAsState().value?.let {
-    noteViewModel.getNotesFromFolder(folder.value?.id!!)
-  }
+  currentUser.let { noteViewModel.getNotesFromFolder(folder.value?.id ?: "") }
 
   val userFolderSubFolders = folderViewModel.userSubFolders.collectAsState()
-  userViewModel.currentUser.collectAsState().value?.let {
-    folderViewModel.getSubFoldersOf(folder.value?.id!!)
-  }
+  currentUser.let { folderViewModel.getSubFoldersOf(folder.value?.id ?: "") }
 
   val parentFolderId = folderViewModel.parentFolderId.collectAsState()
 
@@ -73,132 +73,156 @@ fun FolderContentScreen(
   var updatedName by remember { mutableStateOf(folder.value!!.name) }
   var expandedFolder by remember { mutableStateOf(false) }
 
-  Scaffold(
-      modifier = Modifier.testTag("folderContentScreen"),
-      topBar = {
-        TopAppBar(
-            colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFB3E5FC)),
-            title = {
-              Row(
-                  modifier = Modifier.fillMaxWidth(),
-                  verticalAlignment = Alignment.CenterVertically) {
-                    Spacer(modifier = Modifier.weight(2f))
-                    Text(updatedName, Modifier.testTag("folderContentTitle"))
-                    Spacer(modifier = Modifier.weight(2f))
-                  }
-            },
-            navigationIcon = {
-              IconButton(
-                  onClick = {
-                    navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
-                  }, // For now we always return to overview screen, go back does not work properly
-                  modifier = Modifier.testTag("clearButton")) {
-                    Icon(imageVector = Icons.Default.Clear, contentDescription = "Clear")
-                  }
-            },
-            actions = {
-              CustomDropDownMenu(
-                  modifier = Modifier.testTag("folderSettingsButton"),
-                  modifierItem1 = Modifier.testTag("renameFolderButton"),
-                  modifierItem2 = Modifier.testTag("deleteFolderButton"),
-                  fabIcon = {
-                    Icon(imageVector = Icons.Default.MoreVert, contentDescription = "settings")
-                  },
-                  expanded = expanded,
-                  onFabClick = { expanded = true },
-                  onDismissRequest = { expanded = false },
-                  textItem1 = { Text("Rename Folder") },
-                  textItem2 = { Text("Delete Folder") },
-                  onClickItem1 = {
-                    expanded = false
-                    showRenameDialog = true
-                  },
-                  onClickItem2 = {
-                    expanded = false
-                    folderViewModel.deleteFolderById(folder.value!!.id, folder.value!!.userId)
-                    // TODO for now we just delete the folder directly
-                    // later on we need to figure out how to recursively delete all elements of a
-                    // folder(folders and notes)
-                    navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
-                  })
-            })
-      },
-      floatingActionButton = {
-        CustomDropDownMenu(
-            modifier = Modifier.testTag("createSubNoteOrSubFolder"),
-            modifierItem1 = Modifier.testTag("createNote"),
-            modifierItem2 = Modifier.testTag("createFolder"),
-            fabIcon = { Icon(imageVector = Icons.Default.Add, contentDescription = "AddNote") },
-            expanded = expandedFolder,
-            onFabClick = { expandedFolder = true },
-            onDismissRequest = { expandedFolder = false },
-            textItem1 = { Text("Create Note") },
-            textItem2 = { Text("Create Folder") },
-            onClickItem1 = {
-              expandedFolder = false
-              noteViewModel.selectedFolderId(folder.value!!.id)
-              navigationActions.navigateTo(Screen.ADD_NOTE)
-            },
-            onClickItem2 = {
-              expandedFolder = false
-              showCreateDialog = true
-              folderViewModel.selectedParentFolderId(folder.value!!.id)
-            })
-        // Logic to show the dialog to create a folder
-        if (showCreateDialog) {
-          CreateFolderDialog(
-              onDismiss = { showCreateDialog = false },
-              onConfirm = { name ->
-                folderViewModel.addFolder(
-                    Folder(
-                        id = folderViewModel.getNewFolderId(),
-                        name = name,
-                        userId = userViewModel.currentUser.value!!.uid,
-                        parentFolderId = parentFolderId.value),
-                    userViewModel.currentUser.value!!.uid)
-                showCreateDialog = false
-                if (parentFolderId.value != null) {
-                  navigationActions.navigateTo(Screen.FOLDER_CONTENTS)
-                } else {
-                  navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
-                }
-              })
+  if (currentUser.value == null) {
+    // If the user is null, display an error message
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally) {
+          Text("User  not found ...")
         }
-      }) { paddingValues ->
-        CustomLazyGrid(
-            modifier = Modifier.fillMaxSize().padding(paddingValues),
-            notes = userFolderNotes,
-            folders = userFolderSubFolders,
-            gridModifier =
-                Modifier.fillMaxWidth()
-                    .padding(horizontal = 16.dp)
-                    .padding(paddingValues)
-                    .testTag("noteAndFolderList"),
-            folderViewModel = folderViewModel,
-            noteViewModel = noteViewModel,
-            navigationActions = navigationActions,
-            paddingValues = paddingValues,
-            columnContent = {
-              Text(modifier = Modifier.testTag("emptyFolderPrompt"), text = "This folder is empty.")
-            })
-        // Logic to show the dialog to rename a folder
-        if (showRenameDialog) {
-          RenameFolderDialog(
-              currentName = updatedName,
-              onDismiss = { showRenameDialog = false },
-              onConfirm = { newName ->
-                folderViewModel.updateFolder(
-                    Folder(
-                        id = folder.value!!.id,
-                        name = newName,
-                        userId = folder.value!!.userId,
-                        parentFolderId = folder.value!!.parentFolderId),
-                    folder.value!!.userId)
-                updatedName = newName
-                showRenameDialog = false
+    Log.e("FolderContentScreen", "User not found")
+  } else {
+    Scaffold(
+        modifier = Modifier.testTag("folderContentScreen"),
+        topBar = {
+          TopAppBar(
+              colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFB3E5FC)),
+              title = {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically) {
+                      Spacer(modifier = Modifier.weight(2f))
+                      Text(updatedName, Modifier.testTag("folderContentTitle"))
+                      Spacer(modifier = Modifier.weight(2f))
+                    }
+              },
+              navigationIcon = {
+                IconButton(
+                    onClick = {
+                      navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
+                    }, // For now we always return to overview screen, go back does not work
+                       // properly
+                    modifier = Modifier.testTag("clearButton")) {
+                      Icon(imageVector = Icons.Default.Clear, contentDescription = "Clear")
+                    }
+              },
+              actions = {
+                CustomDropDownMenu(
+                    modifier = Modifier.testTag("folderSettingsButton"),
+                    menuItems =
+                        listOf(
+                            CustomDropDownMenuItem(
+                                text = { Text("Rename Folder") },
+                                onClick = {
+                                  expanded = false
+                                  showRenameDialog = true
+                                },
+                                modifier = Modifier.testTag("renameFolderButton")),
+                            CustomDropDownMenuItem(
+                                text = { Text("Delete Folder") },
+                                onClick = {
+                                  expanded = false
+                                  folderViewModel.deleteFolderById(
+                                      folder.value!!.id, folder.value!!.userId)
+                                  // TODO for now we just delete the folder directly
+                                  // later on we need to figure out how to recursively delete all
+                                  // elements of a
+                                  // folder(folders and notes)
+                                  navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
+                                },
+                                modifier = Modifier.testTag("deleteFolderButton"))),
+                    fabIcon = {
+                      Icon(imageVector = Icons.Default.MoreVert, contentDescription = "settings")
+                    },
+                    expanded = expanded,
+                    onFabClick = { expanded = true },
+                    onDismissRequest = { expanded = false })
               })
+        },
+        floatingActionButton = {
+          CustomDropDownMenu(
+              modifier = Modifier.testTag("createSubNoteOrSubFolder"),
+              menuItems =
+                  listOf(
+                      CustomDropDownMenuItem(
+                          text = { Text("Create Note") },
+                          onClick = {
+                            expandedFolder = false
+                            noteViewModel.selectedFolderId(folder.value!!.id)
+                            navigationActions.navigateTo(Screen.ADD_NOTE)
+                          },
+                          modifier = Modifier.testTag("createNote")),
+                      CustomDropDownMenuItem(
+                          text = { Text("Create Folder") },
+                          onClick = {
+                            expandedFolder = false
+                            showCreateDialog = true
+                            folderViewModel.selectedParentFolderId(folder.value!!.id)
+                          },
+                          modifier = Modifier.testTag("createFolder"))),
+              fabIcon = { Icon(imageVector = Icons.Default.Add, contentDescription = "AddNote") },
+              expanded = expandedFolder,
+              onFabClick = { expandedFolder = true },
+              onDismissRequest = { expandedFolder = false })
+          // Logic to show the dialog to create a folder
+          if (showCreateDialog) {
+            CreateFolderDialog(
+                onDismiss = { showCreateDialog = false },
+                onConfirm = { name ->
+                  folderViewModel.addFolder(
+                      Folder(
+                          id = folderViewModel.getNewFolderId(),
+                          name = name,
+                          userId = currentUser.value!!.uid,
+                          parentFolderId = parentFolderId.value),
+                      userViewModel.currentUser.value!!.uid)
+                  showCreateDialog = false
+                  if (parentFolderId.value != null) {
+                    navigationActions.navigateTo(Screen.FOLDER_CONTENTS)
+                  } else {
+                    navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
+                  }
+                })
+          }
+        }) { paddingValues ->
+          CustomLazyGrid(
+              modifier = Modifier.fillMaxSize().padding(paddingValues),
+              notes = userFolderNotes,
+              folders = userFolderSubFolders,
+              gridModifier =
+                  Modifier.fillMaxWidth()
+                      .padding(horizontal = 16.dp)
+                      .padding(paddingValues)
+                      .testTag("noteAndFolderList"),
+              folderViewModel = folderViewModel,
+              noteViewModel = noteViewModel,
+              navigationActions = navigationActions,
+              paddingValues = paddingValues,
+              columnContent = {
+                Text(
+                    modifier = Modifier.testTag("emptyFolderPrompt"),
+                    text = "This folder is empty.")
+              })
+          // Logic to show the dialog to rename a folder
+          if (showRenameDialog) {
+            RenameFolderDialog(
+                currentName = updatedName,
+                onDismiss = { showRenameDialog = false },
+                onConfirm = { newName ->
+                  folderViewModel.updateFolder(
+                      Folder(
+                          id = folder.value!!.id,
+                          name = newName,
+                          userId = folder.value!!.userId,
+                          parentFolderId = folder.value!!.parentFolderId),
+                      folder.value!!.userId)
+                  updatedName = newName
+                  showRenameDialog = false
+                })
+          }
         }
-      }
+  }
 }
 
 /**
@@ -223,7 +247,9 @@ fun RenameFolderDialog(currentName: String, onDismiss: () -> Unit, onConfirm: (S
       },
       confirmButton = {
         Button(
-            onClick = { onConfirm(newName) }, modifier = Modifier.testTag("confirmRenameButton")) {
+            enabled = newName.isNotEmpty(),
+            onClick = { onConfirm(newName) },
+            modifier = Modifier.testTag("confirmRenameButton")) {
               Text("Confirm")
             }
       },
