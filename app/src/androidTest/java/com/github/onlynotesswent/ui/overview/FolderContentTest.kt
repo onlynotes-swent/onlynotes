@@ -23,13 +23,13 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.mockito.Mockito.mock
-import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
 
 class FolderContentTest {
+
   private lateinit var userRepository: UserRepository
   private lateinit var userViewModel: UserViewModel
   private lateinit var navigationActions: NavigationActions
@@ -45,12 +45,11 @@ class FolderContentTest {
               type = Note.Type.NORMAL_TEXT,
               title = "Sample Title",
               content = "This is a sample content.",
-              date = Timestamp.now(), // Use current timestamp
+              date = Timestamp.now(),
               visibility = Note.Visibility.DEFAULT,
               userId = "1",
               noteClass = Note.Class("CS-100", "Sample Class", 2024, "path"),
-              image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888) // Placeholder Bitmap
-              ))
+              image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)))
 
   private val folderList =
       listOf(Folder(id = "1", name = "name", userId = "1", parentFolderId = null))
@@ -60,7 +59,6 @@ class FolderContentTest {
   @Before
   fun setUp() {
 
-    // Mock is a way to create a fake object that can be used in place of a real object
     userRepository = mock(UserRepository::class.java)
     navigationActions = mock(NavigationActions::class.java)
     userViewModel = UserViewModel(userRepository)
@@ -153,5 +151,14 @@ class FolderContentTest {
     composeTestRule.onNodeWithTag("deleteFolderButton").assertIsDisplayed()
     composeTestRule.onNodeWithTag("deleteFolderButton").performClick()
     verify(navigationActions).navigateTo(TopLevelDestinations.OVERVIEW)
+  }
+
+  @Test
+  fun createNoteButtonCallsNavActions() {
+    composeTestRule.onNodeWithTag("createSubNoteOrSubFolder").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("createSubNoteOrSubFolder").performClick()
+    composeTestRule.onNodeWithTag("createNote").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("createNote").performClick()
+    verify(navigationActions).navigateTo(Screen.ADD_NOTE)
   }
 }
