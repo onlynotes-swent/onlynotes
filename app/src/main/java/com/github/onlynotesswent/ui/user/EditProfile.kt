@@ -6,6 +6,7 @@ import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -33,11 +34,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -47,11 +46,11 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 import coil.compose.rememberAsyncImagePainter
 import com.github.onlynotesswent.model.file.FileType
 import com.github.onlynotesswent.model.file.FileViewModel
-import com.github.onlynotesswent.model.users.User
 import com.github.onlynotesswent.model.users.UserRepositoryFirestore
 import com.github.onlynotesswent.model.users.UserViewModel
 import com.github.onlynotesswent.ui.navigation.BottomNavigationMenu
@@ -88,8 +87,7 @@ fun EditProfileScreen(
   val sheetState = rememberModalBottomSheetState()
   val showSheet = remember { mutableStateOf(false) }
 
-
-    if (user.value == null) {
+  if (user.value == null) {
     // If the user is null, display an error message
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -134,7 +132,7 @@ fun EditProfileScreen(
                       localContext,
                       showSheet,
                       sheetState,
-                      )
+                  )
 
                   // Text Fields for user information
                   FirstNameTextField(newFirstName)
@@ -240,158 +238,113 @@ fun EditableProfilePicture(
                 .border(2.dp, Color.Gray, CircleShape),
         contentScale = ContentScale.Crop)
 
+    // Edit Icon Overlay
 
-      // Edit Icon Overlay
+    IconButton(
+        onClick = { showSheet.value = true },
+        modifier =
+            Modifier.testTag("displayBottomSheet") // Size of the edit icon
+                .align(Alignment.BottomEnd) // Position on the bottom-left corner
+                .offset(x = (0).dp, y = (-5).dp)
+                .clip(CircleShape)
+                .size(40.dp)
+                .background(
+                    androidx.compose.material3.ButtonDefaults.buttonColors()
+                        .containerColor) // Background color
+        ,
+        content = {
+          Icon(
+              imageVector = Icons.Default.Edit,
+              contentDescription = "Edit Profile Picture",
+              modifier = Modifier.size(30.dp),
+              tint =
+                  androidx.compose.material3.ButtonDefaults.buttonColors()
+                      .contentColor
+                      .copy(alpha = 0.8f))
+        })
 
-      IconButton(onClick = {
-            showSheet.value = true
-      },
-          modifier = Modifier.testTag("displayBottomSheet") // Size of the edit icon
-              .align(Alignment.BottomEnd) // Position on the bottom-left corner
-              .offset(x = (0).dp, y = (-5).dp)
-              .clip(CircleShape)
-          .size(40.dp)
-              .background(androidx.compose.material3.ButtonDefaults.buttonColors().containerColor)// Background color
-          ,
-          content = {
-              Icon(
-                  imageVector = Icons.Default.Edit,
-                  contentDescription = "Edit Profile Picture",
-                  modifier =
-                  Modifier
-                      .size(30.dp),
-                  tint = androidx.compose.material3.ButtonDefaults.buttonColors().contentColor.copy(alpha = 0.8f)
-              )}
-      )
-
-      if (showSheet.value) {
-          ModalBottomSheet(
-              onDismissRequest = { showSheet.value = false },
-              sheetState = sheetState
-          ) {
-              BottomSheetContent(
-                  onClose = { showSheet.value = false },
-                  profilePictureTaker,
-                  profilePictureUri,
-                  hasProfilePictureBeenChanged,
-                  user
-              )
-
-              }
-          }
+    if (showSheet.value) {
+      ModalBottomSheet(onDismissRequest = { showSheet.value = false }, sheetState = sheetState) {
+        BottomSheetContent(
+            onClose = { showSheet.value = false },
+            profilePictureTaker,
+            profilePictureUri,
+            hasProfilePictureBeenChanged)
       }
-
-
-
-      // Edit the image and save the URI to the profilePicture state
-      //  profilePictureTaker.setOnImageSelected { uri ->
-      //              if (uri != null) {
-      //                  profilePictureUri.value = uri.toString()
-      //                  hasProfilePictureBeenChanged.value = true
-      //              }
-      //          }
-      //          profilePictureTaker.pickImage()
-
+    }
   }
+}
 
 @Composable
 fun BottomSheetContent(
     onClose: () -> Unit,
     profilePictureTaker: ProfilePictureTaker,
     profilePictureUri: MutableState<String>,
-    hasProfilePictureBeenChanged: MutableState<Boolean>,
-    user: State<User?>
+    hasProfilePictureBeenChanged: MutableState<Boolean>
 ) {
-
-    if(user.value!!.hasProfilePicture){
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Column {
-            Row {
-                Text("Edit Profile Picture")
-
-            IconButton (onClick ={
-            profilePictureTaker.setOnImageSelected { uri ->
-                if (uri != null) {
-                    profilePictureUri.value = uri.toString()
-                    hasProfilePictureBeenChanged.value = true
+  Column(
+      modifier = Modifier.fillMaxWidth().padding(30.dp)
+      // .padding(start = 80.dp)
+      ,
+      horizontalAlignment = Alignment.CenterHorizontally,
+      verticalArrangement = Arrangement.Center) {
+        if (profilePictureUri.value.isNotBlank()) {
+          Column(horizontalAlignment = Alignment.Start) {
+            Row(
+                modifier =
+                    Modifier.testTag("editProfilePicture").clickable {
+                      profilePictureTaker.setOnImageSelected { uri ->
+                        if (uri != null) {
+                          profilePictureUri.value = uri.toString()
+                          hasProfilePictureBeenChanged.value = true
+                        }
+                      }
+                      profilePictureTaker.pickImage()
+                      onClose()
+                    }) {
+                  Icon(
+                      imageVector = Icons.Default.Edit,
+                      contentDescription = "Edit Profile Picture",
+                      modifier = Modifier.size(30.dp).offset(x = (-20).dp, y = (-4).dp),
+                      tint = Color.LightGray)
+                  Text("Edit Profile Picture", fontSize = 18.sp)
                 }
-            }
-                    profilePictureTaker.pickImage()
-                onClose()
-            },
-                modifier =   Modifier.size(30.dp).offset(x = (20).dp, y = (-7).dp).testTag("editProfilePicture"),
-                content = {
-                    Icon(
-                        imageVector = Icons.Default.Edit,
-                        contentDescription = "Edit Profile Picture",
-                        modifier =
-                        Modifier
-                            .size(30.dp),
-                        tint = Color.LightGray
-                    )}
-
-            )
-            }
             Spacer(modifier = Modifier.height(16.dp))
-            Row {
-                Text("Remove Profile Picture")
-                IconButton (onClick ={
-                    profilePictureUri.value = ""
-                    hasProfilePictureBeenChanged.value = true
-                    onClose()
-                },
-                    modifier =   Modifier.size(30.dp).offset(x = (20).dp, y = (-7).dp).testTag("removeProfilePicture"),
-                    content = {
-                        Icon(
-                            imageVector = Icons.Default.Delete,
-                            contentDescription = "Edit Profile Picture",
-                            modifier =
-                            Modifier.size(30.dp),
-                            tint = Color.Red
-                        )}
-
-                )
-
-            }
-        }
-    }
-
-    }
-    else{
-        Column{
-            Spacer(modifier = Modifier.height(16.dp))
-
-        Row {
-            Text("add a profile picture")
-
-            IconButton (onClick ={
-                profilePictureTaker.setOnImageSelected { uri ->
-                    if (uri != null) {
+            Row(
+                modifier =
+                    Modifier.testTag("removeProfilePicture").clickable {
+                      profilePictureUri.value = ""
+                      hasProfilePictureBeenChanged.value = true
+                      onClose()
+                    }) {
+                  Icon(
+                      imageVector = Icons.Default.Delete,
+                      contentDescription = "Edit Profile Picture",
+                      modifier = Modifier.size(30.dp).offset(x = (-20).dp, y = (-4).dp),
+                      tint = Color.Red)
+                  Text("Remove Profile Picture", fontSize = 18.sp)
+                }
+          }
+        } else {
+          Row(
+              modifier =
+                  Modifier.testTag("addProfilePicture").clickable {
+                    profilePictureTaker.setOnImageSelected { uri ->
+                      if (uri != null) {
                         profilePictureUri.value = uri.toString()
                         hasProfilePictureBeenChanged.value = true
+                      }
                     }
-                }
-                profilePictureTaker.pickImage()
-                onClose()
-            },
-                modifier =   Modifier.size(30.dp).offset(x = (20).dp, y = (-7).dp).testTag("addProfilePicture"),
-                content = {
-                    Icon(
-                        imageVector = Icons.Default.Add,
-                        contentDescription = "add Profile Picture",
-                        modifier =
-                        Modifier
-                            .size(30.dp),
-                        tint = Color.LightGray
-                    )}
-
-            )
+                    profilePictureTaker.pickImage()
+                    onClose()
+                  }) {
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = "add Profile Picture",
+                    modifier = Modifier.size(30.dp).offset(x = (-20).dp, y = (-3).dp),
+                    tint = Color.LightGray)
+                Text("Add a profile picture", fontSize = 18.sp)
+              }
         }
-    }
-    }
+      }
 }
