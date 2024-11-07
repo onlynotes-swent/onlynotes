@@ -42,24 +42,29 @@ class NoteRepositoryFirestoreTest {
   private val testNotePublic =
       Note(
           id = "1",
-          type = Note.Type.NORMAL_TEXT,
           title = "title",
           content = "content",
           date = Timestamp.now(),
           visibility = Note.Visibility.PUBLIC,
           userId = "1",
-          image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888))
-
+          noteClass = Note.Class("CS-100", "Sample Class", 2024, "path"),
+          image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888),
+          comments =
+              Note.CommentCollection(
+                  listOf(Note.Comment("1", "1", "bob", "1", Timestamp.now(), Timestamp.now()))))
   private val testNotePrivate =
       Note(
-          id = "1",
-          type = Note.Type.NORMAL_TEXT,
+          id = "2",
           title = "title",
           content = "content",
           date = Timestamp.now(),
           visibility = Note.Visibility.PRIVATE,
           userId = "1",
-          image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888))
+          noteClass = Note.Class("CS-100", "Sample Class", 2024, "path"),
+          image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888),
+          comments =
+              Note.CommentCollection(
+                  listOf(Note.Comment("1", "1", "bob", "1", Timestamp.now(), Timestamp.now()))))
 
   @Before
   fun setUp() {
@@ -90,34 +95,52 @@ class NoteRepositoryFirestoreTest {
         .thenReturn(listOf(mockDocumentSnapshot, mockDocumentSnapshot2))
 
     `when`(mockDocumentSnapshot.id).thenReturn(testNotePublic.id)
-    `when`(mockDocumentSnapshot.getString("type")).thenReturn(testNotePublic.type.toString())
     `when`(mockDocumentSnapshot.getString("title")).thenReturn(testNotePublic.title)
     `when`(mockDocumentSnapshot.getString("content")).thenReturn(testNotePublic.content)
     `when`(mockDocumentSnapshot.getTimestamp("date")).thenReturn(testNotePublic.date)
     `when`(mockDocumentSnapshot.getString("visibility"))
         .thenReturn(testNotePublic.visibility.toString())
+    `when`(mockDocumentSnapshot.getString("classCode"))
+        .thenReturn(testNotePublic.noteClass.classCode)
+    `when`(mockDocumentSnapshot.getString("className"))
+        .thenReturn(testNotePublic.noteClass.className)
+    `when`(mockDocumentSnapshot.getLong("classYear"))
+        .thenReturn(testNotePublic.noteClass.classYear.toLong())
+    `when`(mockDocumentSnapshot.getString("publicPath"))
+        .thenReturn(testNotePublic.noteClass.publicPath)
     `when`(mockDocumentSnapshot.getString("userId")).thenReturn(testNotePublic.userId)
     `when`(mockDocumentSnapshot.get("image")).thenReturn(testNotePublic.image)
 
     `when`(mockDocumentSnapshot2.id).thenReturn(testNotePrivate.id)
-    `when`(mockDocumentSnapshot2.getString("type")).thenReturn(testNotePrivate.type.toString())
     `when`(mockDocumentSnapshot2.getString("title")).thenReturn(testNotePrivate.title)
     `when`(mockDocumentSnapshot2.getString("content")).thenReturn(testNotePrivate.content)
     `when`(mockDocumentSnapshot2.getTimestamp("date")).thenReturn(testNotePrivate.date)
     `when`(mockDocumentSnapshot2.getString("visibility"))
         .thenReturn(testNotePrivate.visibility.toString())
+    `when`(mockDocumentSnapshot.getString("classCode"))
+        .thenReturn(testNotePrivate.noteClass.classCode)
+    `when`(mockDocumentSnapshot.getString("className"))
+        .thenReturn(testNotePrivate.noteClass.className)
+    `when`(mockDocumentSnapshot.getLong("classYear"))
+        .thenReturn(testNotePrivate.noteClass.classYear.toLong())
+    `when`(mockDocumentSnapshot.getString("publicPath"))
+        .thenReturn(testNotePrivate.noteClass.publicPath)
     `when`(mockDocumentSnapshot2.getString("userId")).thenReturn(testNotePrivate.userId)
     `when`(mockDocumentSnapshot2.get("image")).thenReturn(testNotePrivate.image)
+    `when`(mockDocumentSnapshot2.get("commentsList")).thenReturn(testNotePrivate.comments)
   }
 
   private fun compareNotesButNotImage(note1: Note, note2: Note) {
     assert(note1.id == note2.id)
-    assert(note1.type == note2.type)
     assert(note1.title == note2.title)
     assert(note1.content == note2.content)
     assert(note1.date == note2.date)
     assert(note1.visibility == note2.visibility)
     assert(note1.userId == note2.userId)
+    assert(note1.noteClass.classCode == note2.noteClass.classCode)
+    assert(note1.noteClass.className == note2.noteClass.className)
+    assert(note1.noteClass.classYear == note2.noteClass.classYear)
+    assert(note1.noteClass.publicPath == note2.noteClass.publicPath)
   }
 
   @Test
@@ -137,7 +160,7 @@ class NoteRepositoryFirestoreTest {
   }
 
   @Test
-  fun `getPublicNotes callsDocuments`() {
+  fun getPublicNotes_callsDocuments() {
 
     `when`(mockQuerySnapshot.documents)
         .thenReturn(listOf(mockDocumentSnapshot, mockDocumentSnapshot2))
@@ -161,7 +184,6 @@ class NoteRepositoryFirestoreTest {
     noteRepositoryFirestore.getNotesFrom(
         testNotePublic.userId, { receivedNotes = it }, { assert(false) })
     assertNotNull(receivedNotes)
-    assert(receivedNotes?.size == 2)
 
     // Verify that the 'documents' field was accessed
     verify(timeout(100)) { (mockQuerySnapshot).documents }

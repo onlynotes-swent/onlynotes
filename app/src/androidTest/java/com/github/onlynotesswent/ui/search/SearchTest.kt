@@ -27,22 +27,22 @@ class SearchScreenTest {
   private val testNote1 =
       Note(
           id = "",
-          type = Note.Type.NORMAL_TEXT,
           title = "Note 1",
           content = "",
           date = Timestamp.now(),
           visibility = Note.Visibility.PUBLIC,
           userId = "test",
+          noteClass = Note.Class("CS-100", "Sample Class 1", 2024, "path"),
           image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888))
   private val testNote2 =
       Note(
           id = "1",
-          type = Note.Type.NORMAL_TEXT,
           title = "Note 2",
           content = "",
           date = Timestamp.now(),
           visibility = Note.Visibility.PUBLIC,
           userId = "test",
+          noteClass = Note.Class("CS-200", "Sample Class 2", 2024, "path"),
           image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888))
 
   private val mockNotes = listOf(testNote1, testNote2)
