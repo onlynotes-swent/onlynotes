@@ -133,7 +133,7 @@ class UserViewModelTest {
 
   @Test
   fun `refreshUser refreshes user`() {
-    userViewModel.refreshUser()
+    userViewModel.refreshCurrentUser()
     assertNull(userViewModel.currentUser.value) // no current user is set, cannot refresh
 
     userViewModel.addUser(user, {}, {}) // set current user
@@ -144,7 +144,7 @@ class UserViewModelTest {
       val onSuccess = it.arguments[1] as (User) -> Unit
       onSuccess(otherUser)
     }
-    userViewModel.refreshUser()
+    userViewModel.refreshCurrentUser()
     assert(userViewModel.currentUser.value == otherUser) // user was correctly refreshed
   }
 

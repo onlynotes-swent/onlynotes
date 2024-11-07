@@ -1,50 +1,71 @@
 package com.github.onlynotesswent.ui.user
 
-import android.net.Uri
-import androidx.compose.ui.semantics.SemanticsProperties
-import androidx.compose.ui.test.SemanticsMatcher
-import androidx.compose.ui.test.assert
-import androidx.compose.ui.test.assertIsEnabled
-import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsNotDisplayed
+import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.performTextClearance
-import androidx.compose.ui.test.performTextInput
-import androidx.core.net.toUri
 import com.github.onlynotesswent.model.file.FileRepository
 import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.note.NoteRepository
 import com.github.onlynotesswent.model.note.NoteViewModel
+import com.github.onlynotesswent.model.users.Friends
 import com.github.onlynotesswent.model.users.User
 import com.github.onlynotesswent.model.users.UserRepository
-import com.github.onlynotesswent.model.users.UserRepositoryFirestore
 import com.github.onlynotesswent.model.users.UserViewModel
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
-import com.github.onlynotesswent.utils.ProfilePictureTaker
+import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
 import com.google.firebase.Timestamp
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.mockito.Mock
-import org.mockito.Mockito.verify
+import org.mockito.Mockito.times
 import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
-import org.mockito.kotlin.doNothing
+import org.mockito.kotlin.verify
 
 class ProfileScreenTest {
   @Mock private lateinit var mockUserRepository: UserRepository
   @Mock private lateinit var mockNavigationActions: NavigationActions
-  @Mock private lateinit var profilePictureTaker: ProfilePictureTaker
   @Mock private lateinit var mockNoteRepository: NoteRepository
   @Mock private lateinit var mockFileRepository: FileRepository
   private lateinit var noteViewModel: NoteViewModel
   private lateinit var userViewModel: UserViewModel
   private lateinit var fileViewModel: FileViewModel
-  private val testUid = "testUid123"
-  private val testUser =
+
+  private val testUid = "testUid"
+
+  // Following user
+  private var testUser2 =
+      User(
+          firstName = "testFirstName2",
+          lastName = "testLastName2",
+          userName = "testUserName2",
+          email = "testEmail2",
+          uid = "testUid2",
+          dateOfJoining = Timestamp.now(),
+          rating = 0.0,
+          friends = Friends(listOf(), listOf(testUid)),
+          bio = "testBio2")
+  // Follower user
+  private var testUser3 =
+      User(
+          firstName = "testFirstName3",
+          lastName = "testLastNam3e",
+          userName = "testUserName3",
+          email = "testEmail3",
+          uid = "testUid3",
+          dateOfJoining = Timestamp.now(),
+          rating = 0.0,
+          friends = Friends(listOf(testUid), listOf()),
+          bio = "testBio3")
+
+  // current user
+  private var testUser =
       User(
           firstName = "testFirstName",
           lastName = "testLastName",
@@ -52,8 +73,18 @@ class ProfileScreenTest {
           email = "testEmail",
           uid = testUid,
           dateOfJoining = Timestamp.now(),
-          rating = 0.0)
-  private val existingUserName = "alreadyTakenUsername"
+          rating = 0.0,
+          friends = Friends(following = listOf(testUser2.uid), followers = listOf(testUser3.uid)),
+          bio = "testBio")
+
+  private val uidToUser = { s: String ->
+    when (s) {
+      testUser.uid -> testUser
+      testUser2.uid -> testUser2
+      testUser3.uid -> testUser3
+      else -> null
+    }
+  }
 
   @get:Rule val composeTestRule = createComposeRule()
 
@@ -67,7 +98,24 @@ class ProfileScreenTest {
     fileViewModel = FileViewModel(mockFileRepository)
 
     // Mock the current route to be the user create screen
-    `when`(mockNavigationActions.currentRoute()).thenReturn(Screen.PROFILE)
+    `when`(mockNavigationActions.currentRoute()).thenReturn(Screen.USER_PROFILE)
+
+    // Mock the user repository to return the specified user
+    `when`(mockUserRepository.getUserById(any(), any(), any(), any())).thenAnswer {
+      val onSuccess = it.arguments[1] as (User) -> Unit
+      val onNotFound = it.arguments[2] as () -> Unit
+      val uid = it.arguments[0] as String
+
+      uidToUser(uid)?.let { it1 -> onSuccess(it1) } ?: onNotFound()
+    }
+
+    // Mock the user repository to return the specified users
+    `when`(mockUserRepository.getUsersById(any(), any(), any())).thenAnswer {
+      val onSuccess = it.arguments[1] as (List<User>) -> Unit
+      val userIds = it.arguments[0] as List<String>
+
+      onSuccess(userIds.mapNotNull(uidToUser))
+    }
 
     // Mock add user to initialize current user
     `when`(mockUserRepository.addUser(any(), any(), any())).thenAnswer {
@@ -76,166 +124,161 @@ class ProfileScreenTest {
     }
     // Initialize current user
     userViewModel.addUser(testUser, {}, {})
-
-    // Mock update user to throw error when applicable, or update user
-    `when`(mockUserRepository.updateUser(any(), any(), any())).thenAnswer {
-      val user = it.arguments[0] as User
-      val onSuccess = it.arguments[1] as () -> Unit
-      val onFailure = it.arguments[2] as (Exception) -> Unit
-
-      if (user.userName == existingUserName) {
-        onFailure(UserRepositoryFirestore.UsernameTakenException())
-      } else {
-        onSuccess()
-      }
-    }
-
-    `when`(mockFileRepository.downloadFile(any(), any(), any(), any(), any())).thenAnswer {}
   }
 
   @Test
   fun displayAllComponents() {
     composeTestRule.setContent {
-      EditProfileScreen(mockNavigationActions, userViewModel, profilePictureTaker, fileViewModel)
+      UserProfileScreen(mockNavigationActions, userViewModel, fileViewModel)
     }
 
-    composeTestRule.onNodeWithTag("ProfileScreen").assertExists()
-    composeTestRule.onNodeWithTag("goBackButton").assertExists()
-    composeTestRule.onNodeWithTag("inputFirstName").assertExists()
-    composeTestRule.onNodeWithTag("inputLastName").assertExists()
-    composeTestRule.onNodeWithTag("inputUserName").assertExists()
-    composeTestRule.onNodeWithTag("saveButton").assertExists()
+    composeTestRule.onNodeWithTag("profileScaffold").assertExists()
+    composeTestRule.onNodeWithTag("editProfileButton").assertExists()
+    composeTestRule.onNodeWithTag("profileScaffoldColumn").assertExists()
+    composeTestRule.onNodeWithTag("profileCard").assertExists()
+    composeTestRule.onNodeWithTag("profileCardColumn").assertExists()
     composeTestRule.onNodeWithTag("profilePicture").assertExists()
-    composeTestRule.onNodeWithTag("editProfilePicture").assertExists()
-  }
-
-  private fun hasError(): SemanticsMatcher {
-    return SemanticsMatcher.expectValue(SemanticsProperties.Error, "Invalid input")
+    composeTestRule.onNodeWithTag("userFullName").assertExists()
+    composeTestRule.onNodeWithTag("userHandle").assertExists()
+    composeTestRule.onNodeWithTag("userRating").assertExists()
+    composeTestRule.onNodeWithTag("userDateOfJoining").assertExists()
+    composeTestRule.onNodeWithTag("userBio").assertExists()
+    composeTestRule.onNodeWithTag("followingButton").assertExists()
+    composeTestRule.onNodeWithTag("followersButton").assertExists()
+    composeTestRule.onNodeWithTag("followingText", useUnmergedTree = true).assertExists()
+    composeTestRule.onNodeWithTag("followersText", useUnmergedTree = true).assertExists()
+    composeTestRule.onNodeWithTag("editProfileButton").assertExists()
   }
 
   @Test
-  fun submitNavigatesBack() {
+  fun displayFollowingAndFollowers() {
     composeTestRule.setContent {
-      EditProfileScreen(mockNavigationActions, userViewModel, profilePictureTaker, fileViewModel)
+      UserProfileScreen(mockNavigationActions, userViewModel, fileViewModel)
     }
 
-    composeTestRule.onNodeWithTag("saveButton").performClick()
+    composeTestRule.onNodeWithTag("followingButton").assertIsDisplayed().performClick()
+
+    composeTestRule.onNodeWithTag("followingDropdownMenu").assertIsDisplayed()
+    composeTestRule
+        .onNodeWithTag("item--${testUser2.userName}")
+        .assertIsDisplayed()
+        .assertTextContains(
+            "${testUser2.fullName()} — @${testUser2.userName}",
+        )
+
+    composeTestRule.onNodeWithTag("followersButton").performClick()
+    composeTestRule.onNodeWithTag("followersDropdownMenu").assertIsDisplayed()
+    composeTestRule
+        .onNodeWithTag("item--${testUser3.userName}")
+        .assertIsDisplayed()
+        .assertTextContains(
+            "${testUser3.fullName()} — @${testUser3.userName}",
+        )
+  }
+
+  @Test
+  fun navigateToFollowersAndFollowing() {
+    composeTestRule.setContent {
+      UserProfileScreen(mockNavigationActions, userViewModel, fileViewModel)
+    }
+
+    composeTestRule.onNodeWithTag("followingButton").assertIsDisplayed().performClick()
+    composeTestRule.onNodeWithTag("item--${testUser2.userName}").assertIsDisplayed().performClick()
+    composeTestRule.onNodeWithTag("followingDropdownMenu").assertIsNotDisplayed()
+
+    composeTestRule.onNodeWithTag("followersButton").assertIsDisplayed().performClick()
+    composeTestRule.onNodeWithTag("item--${testUser3.userName}").assertIsDisplayed().performClick()
+    composeTestRule.onNodeWithTag("followersDropdownMenu").assertIsNotDisplayed()
+
+    verify(mockNavigationActions, times(2)).navigateTo(Screen.PUBLIC_PROFILE)
+  }
+
+  @Test
+  fun editProfileButtonNavigatesCorrectly() {
+    composeTestRule.setContent {
+      UserProfileScreen(mockNavigationActions, userViewModel, fileViewModel)
+    }
+
+    composeTestRule.onNodeWithTag("editProfileButton").assertIsDisplayed().performClick()
+    verify(mockNavigationActions).navigateTo(Screen.EDIT_PROFILE)
+  }
+
+  @Test
+  fun followUnfollowButtonWorksOnPublicProfile() {
+    `when`(mockUserRepository.addFollowerTo(any(), any(), any(), any())).thenAnswer {
+      val onSuccess = it.arguments[2] as () -> Unit
+      val userId = it.arguments[0] as String // testUser2
+      val followerId = it.arguments[1] as String // testUser
+      testUser2 =
+          testUser2.copy(
+              friends =
+                  Friends(
+                      testUser2.friends.following, testUser2.friends.followers.plus(followerId)))
+      testUser =
+          testUser.copy(
+              friends =
+                  Friends(testUser.friends.following.plus(userId), testUser.friends.followers))
+      onSuccess()
+    }
+
+    `when`(mockUserRepository.removeFollowerFrom(any(), any(), any(), any())).thenAnswer {
+      val onSuccess = it.arguments[2] as () -> Unit
+      val userId = it.arguments[0] as String // testUser2
+      val followerId = it.arguments[1] as String // testUser
+      testUser2 =
+          testUser2.copy(
+              friends =
+                  Friends(
+                      testUser2.friends.following, testUser2.friends.followers.minus(followerId)))
+      testUser =
+          testUser.copy(
+              friends =
+                  Friends(testUser.friends.following.minus(userId), testUser.friends.followers))
+      onSuccess()
+    }
+
+    composeTestRule.setContent {
+      PublicProfileScreen(mockNavigationActions, userViewModel, fileViewModel)
+    }
+
+    composeTestRule.onNodeWithTag("userNotFound").assertIsDisplayed()
+
+    userViewModel.setProfileUser(testUser2)
+    composeTestRule.onNodeWithTag("followUnfollowButton").assertIsDisplayed()
+    composeTestRule
+        .onNodeWithTag("followUnfollowButtonText", useUnmergedTree = true)
+        .assertIsDisplayed()
+        .assertTextContains("Unfollow")
+        .performClick()
+        .assertTextContains("Follow")
+        .performClick()
+        .assertTextContains("Unfollow")
+
+    verify(mockUserRepository, times(4)).getUserById(any(), any(), any(), any())
+    verify(mockUserRepository).addFollowerTo(any(), any(), any(), any())
+    verify(mockUserRepository).removeFollowerFrom(any(), any(), any(), any())
+  }
+
+  @Test
+  fun profileLinkRedirectsToUserProfile() {
+    composeTestRule.setContent {
+      PublicProfileScreen(mockNavigationActions, userViewModel, fileViewModel)
+    }
+
+    userViewModel.setProfileUser(testUser2)
+    composeTestRule.onNodeWithTag("followersButton").assertIsDisplayed().performClick()
+    composeTestRule.onNodeWithTag("item--${testUser.userName}").assertIsDisplayed().performClick()
+
+    verify(mockNavigationActions).navigateTo(TopLevelDestinations.PROFILE)
+  }
+
+  @Test
+  fun goBackButtonNavigatesCorrectly() {
+    composeTestRule.setContent {
+      PublicProfileScreen(mockNavigationActions, userViewModel, fileViewModel)
+    }
+
+    composeTestRule.onNodeWithTag("goBackButton").assertIsDisplayed().performClick()
     verify(mockNavigationActions).goBack()
-  }
-
-  @Test
-  fun modifyProfile() {
-    composeTestRule.setContent {
-      EditProfileScreen(mockNavigationActions, userViewModel, profilePictureTaker, fileViewModel)
-    }
-
-    composeTestRule.onNodeWithTag("inputUserName").performTextClearance()
-    composeTestRule.onNodeWithTag("inputUserName").performTextInput("newUserName")
-    assert(userViewModel.currentUser.value?.userName == "testUserName")
-    composeTestRule.onNodeWithTag("saveButton").performClick()
-    assert(userViewModel.currentUser.value?.userName == "newUserName")
-
-    composeTestRule.onNodeWithTag("inputFirstName").performTextClearance()
-    composeTestRule.onNodeWithTag("inputFirstName").performTextInput("newFirstName")
-    assert(userViewModel.currentUser.value?.firstName == "testFirstName")
-    composeTestRule.onNodeWithTag("saveButton").performClick()
-    assert(userViewModel.currentUser.value?.firstName == "newFirstName")
-
-    composeTestRule.onNodeWithTag("inputLastName").performTextClearance()
-    composeTestRule.onNodeWithTag("inputLastName").performTextInput("newLastName")
-    assert(userViewModel.currentUser.value?.lastName == "testLastName")
-    composeTestRule.onNodeWithTag("saveButton").performClick()
-    assert(userViewModel.currentUser.value?.lastName == "newLastName")
-  }
-
-  @Test
-  fun editProfilePicture() {
-    doNothing().`when`(profilePictureTaker).pickImage()
-    composeTestRule.setContent {
-      EditProfileScreen(mockNavigationActions, userViewModel, profilePictureTaker, fileViewModel)
-    }
-    composeTestRule.onNodeWithTag("editProfilePicture").assertIsEnabled()
-    composeTestRule.onNodeWithTag("editProfilePicture").performClick()
-    verify(profilePictureTaker).pickImage()
-  }
-
-  @Test
-  fun userNameFieldDisplaysError() {
-    composeTestRule.setContent {
-      EditProfileScreen(mockNavigationActions, userViewModel, profilePictureTaker, fileViewModel)
-    }
-
-    composeTestRule.onNodeWithTag("inputFirstName").performTextClearance()
-    composeTestRule.onNodeWithTag("inputFirstName").performTextInput("newFirstName")
-
-    composeTestRule.onNodeWithTag("inputUserName").performTextClearance()
-    composeTestRule.onNodeWithTag("inputUserName").performTextInput(existingUserName)
-
-    composeTestRule.onNodeWithTag("saveButton").performClick() // error occurs
-    composeTestRule.onNodeWithTag("inputUserName").assert(hasError()) // error shown
-
-    assert(userViewModel.currentUser.value?.userName == "testUserName") // did not change
-    assert(userViewModel.currentUser.value?.firstName == "testFirstName") // did not change
-  }
-
-  @Test
-  fun saveButtonDisabledWhenUserNameIsEmpty() {
-    composeTestRule.setContent {
-      EditProfileScreen(mockNavigationActions, userViewModel, profilePictureTaker, fileViewModel)
-    }
-
-    composeTestRule.onNodeWithTag("saveButton").assertIsEnabled()
-    composeTestRule.onNodeWithTag("inputUserName").performTextClearance()
-    composeTestRule.onNodeWithTag("saveButton").assertIsNotEnabled()
-    composeTestRule.onNodeWithTag("inputUserName").performTextInput("test")
-    composeTestRule.onNodeWithTag("saveButton").assertIsEnabled()
-  }
-
-  @Test
-  fun goBackButtonWork() {
-    composeTestRule.setContent {
-      EditProfileScreen(mockNavigationActions, userViewModel, profilePictureTaker, fileViewModel)
-    }
-
-    composeTestRule.onNodeWithTag("goBackButton").performClick()
-    verify(mockNavigationActions).goBack()
-  }
-
-  @Test
-  fun downloadProfilePicture() {
-    userViewModel.addUser(
-        User(
-            firstName = "testFirstName",
-            lastName = "testLastName",
-            userName = "testUserName",
-            email = "testEmail",
-            uid = testUid,
-            dateOfJoining = Timestamp.now(),
-            rating = 0.0,
-            hasProfilePicture = true),
-        {},
-        {})
-
-    composeTestRule.setContent {
-      EditProfileScreen(mockNavigationActions, userViewModel, profilePictureTaker, fileViewModel)
-    }
-    composeTestRule.onNodeWithTag("profilePicture").performClick()
-    verify(mockFileRepository).downloadFile(any(), any(), any(), any(), any())
-  }
-
-  @Test
-  fun testUriHandling() {
-    doNothing().`when`(profilePictureTaker).pickImage()
-    `when`(profilePictureTaker.setOnImageSelected(any())).thenAnswer {
-      val onImageSelected = it.arguments[0] as (Uri?) -> Unit
-      onImageSelected("testUri".toUri())
-    }
-
-    composeTestRule.setContent {
-      EditProfileScreen(mockNavigationActions, userViewModel, profilePictureTaker, fileViewModel)
-    }
-
-    composeTestRule.onNodeWithTag("editProfilePicture").performClick()
-    verify(profilePictureTaker).pickImage()
   }
 }
