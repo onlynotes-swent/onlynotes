@@ -1,4 +1,4 @@
-package com.github.onlynotesswent.model.ocr
+package com.github.onlynotesswent.utils
 
 import android.content.ActivityNotFoundException
 import android.content.Context
@@ -11,7 +11,6 @@ import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContract
 import androidx.activity.result.contract.ActivityResultContracts
-import com.github.onlynotesswent.utils.CustomTextRecognizer
 import com.google.android.gms.tasks.OnFailureListener
 import com.google.android.gms.tasks.OnSuccessListener
 import com.google.android.gms.tasks.Task
