@@ -24,7 +24,6 @@ import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Star
-import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -102,20 +101,6 @@ fun UserProfileScreen(
             }
       }) {
         ProfileContent(user, navigationActions, userViewModel, fileViewModel)
-
-        // Debug buttons to follow/unfollow specific users
-        Button(onClick = { userViewModel.followUser("8I0wWmmzGk1H89gUwIOS", {}, {}) }) {
-          Text("[Debug] Follow Roshan")
-        }
-        Button(onClick = { userViewModel.unfollowUser("8I0wWmmzGk1H89gUwIOS", {}, {}) }) {
-          Text("[Debug] Unfollow Roshan")
-        }
-        Button(onClick = { userViewModel.followUser("BNTMNZjylKMVwYV7DuVi", {}, {}) }) {
-          Text("[Debug] Follow matthieu")
-        }
-        Button(onClick = { userViewModel.unfollowUser("BNTMNZjylKMVwYV7DuVi", {}, {}) }) {
-          Text("[Debug] Unfollow matthieu")
-        }
       }
 }
 
