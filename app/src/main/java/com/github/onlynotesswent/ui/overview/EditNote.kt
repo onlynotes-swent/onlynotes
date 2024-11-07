@@ -244,9 +244,9 @@ fun EditNoteScreen(
                               val formatedDate = formatter.format(comment.editedDate.toDate())
                               val displayedText =
                                   if (comment.isUnedited()) {
-                                    "${comment.userName} : ${formatedDate} "
+                                    "${comment.userName} : $formatedDate"
                                   } else {
-                                    "${comment.userName} edited: ${formatedDate}"
+                                    "${comment.userName} edited: $formatedDate"
                                   }
                               Text(displayedText)
                             },

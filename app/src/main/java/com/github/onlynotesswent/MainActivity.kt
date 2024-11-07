@@ -27,6 +27,8 @@ import com.github.onlynotesswent.ui.search.SearchScreen
 import com.github.onlynotesswent.ui.theme.AppTheme
 import com.github.onlynotesswent.ui.user.CreateUserScreen
 import com.github.onlynotesswent.ui.user.EditProfileScreen
+import com.github.onlynotesswent.ui.user.PublicProfileScreen
+import com.github.onlynotesswent.ui.user.UserProfileScreen
 import com.github.onlynotesswent.utils.ProfilePictureTaker
 
 class MainActivity : ComponentActivity() {
@@ -83,10 +85,16 @@ fun OnlyNotesApp(scanner: Scanner, profilePictureTaker: ProfilePictureTaker) {
     }
 
     navigation(
-        startDestination = Screen.PROFILE,
+        startDestination = Screen.USER_PROFILE,
         route = Route.PROFILE,
     ) {
-      composable(Screen.PROFILE) {
+      composable(Screen.USER_PROFILE) {
+        UserProfileScreen(navigationActions, userViewModel, fileViewModel)
+      }
+      composable(Screen.PUBLIC_PROFILE) {
+        PublicProfileScreen(navigationActions, userViewModel, fileViewModel)
+      }
+      composable(Screen.EDIT_PROFILE) {
         EditProfileScreen(navigationActions, userViewModel, profilePictureTaker, fileViewModel)
       }
     }

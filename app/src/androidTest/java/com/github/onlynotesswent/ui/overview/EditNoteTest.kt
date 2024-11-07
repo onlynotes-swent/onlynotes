@@ -6,6 +6,7 @@ import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
 import com.github.onlynotesswent.model.note.NoteRepository
 import com.github.onlynotesswent.model.note.NoteViewModel
@@ -61,10 +62,10 @@ class EditNoteTest {
     composeTestRule.onNodeWithTag("editNoteTitle").assertIsDisplayed()
     composeTestRule.onNodeWithTag("goBackButton").assertIsDisplayed()
     composeTestRule.onNodeWithTag("Save button").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("Delete button").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("Add Comment Button").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("NoCommentsText").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("visibilityEditButton").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("Delete button").performScrollTo().assertIsDisplayed()
+    composeTestRule.onNodeWithTag("Add Comment Button").performScrollTo().assertIsDisplayed()
+    composeTestRule.onNodeWithTag("NoCommentsText").performScrollTo().assertIsDisplayed()
+    composeTestRule.onNodeWithTag("visibilityEditButton").performScrollTo().assertIsDisplayed()
     composeTestRule.onNodeWithTag("visibilityEditMenu").assertIsNotDisplayed()
 
     composeTestRule.onNodeWithTag("visibilityEditButton").performClick()
@@ -81,16 +82,17 @@ class EditNoteTest {
 
   @Test
   fun addCommentAndDeleteComment() {
+    composeTestRule.onNodeWithTag("Add Comment Button").performScrollTo().assertIsDisplayed()
     composeTestRule.onNodeWithTag("Add Comment Button").performClick()
-    composeTestRule.onNodeWithTag("EditCommentTextField").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("EditCommentTextField").performScrollTo().assertIsDisplayed()
     composeTestRule.onNodeWithTag("DeleteCommentButton").performClick()
     composeTestRule.onNodeWithTag("EditCommentTextField").assertIsNotDisplayed()
   }
 
   @Test
   fun addComment() {
-    composeTestRule.onNodeWithTag("Add Comment Button").performClick()
-    composeTestRule.onNodeWithTag("EditCommentTextField").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("Add Comment Button").performScrollTo().performClick()
+    composeTestRule.onNodeWithTag("EditCommentTextField").performScrollTo().assertIsDisplayed()
     val updatedCommentText = "Edited comment content"
     composeTestRule.onNodeWithTag("EditCommentTextField").performTextInput(updatedCommentText)
     val expectedLabelText = "edited: "
@@ -108,7 +110,7 @@ class EditNoteTest {
 
   @Test
   fun deleteClickCallsNavActions() {
-    composeTestRule.onNodeWithTag("Delete button").performClick()
+    composeTestRule.onNodeWithTag("Delete button").performScrollTo().performClick()
     verify(navigationActions).navigateTo(Screen.OVERVIEW)
   }
 }
