@@ -10,10 +10,10 @@ import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 
 class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepository {
+  private val commentDelimiter: String = '\u001F'.toString()
 
   private data class FirebaseNote(
       val id: String,
-      val type: Note.Type,
       val title: String,
       val content: String,
       val date: Timestamp,
@@ -24,8 +24,70 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
       val classYear: Int,
       val publicPath: String,
       val folderId: String?,
-      val image: String
+      val image: String,
+      val commentsList: List<String>
   )
+  /**
+   * Converts a single Comment object into a formatted string for Firestore storage.
+   *
+   * @param comment The Comment object to convert.
+   * @return A string representing the Comment, formatted as
+   *   "commentId<delimiter>userId<delimiter>userName<delimiter>content<delimiter>creationDate<delimiter>editedDate".
+   *
+   * Each field is separated by the `commentDelimiter` for easy parsing during retrieval.
+   */
+  private fun convertCommentToString(comment: Note.Comment): String {
+    return comment.commentId +
+        commentDelimiter +
+        comment.userId +
+        commentDelimiter +
+        comment.userName +
+        commentDelimiter +
+        comment.content +
+        commentDelimiter +
+        comment.creationDate.seconds.toString() +
+        commentDelimiter +
+        comment.editedDate.seconds.toString()
+  }
+  /**
+   * Converts a formatted string snapshot of a comment back into a Comment object.
+   *
+   * @param commentSnapshot The string representing the comment, formatted as
+   *   "commentId<delimiter>userId<delimiter>userName<delimiter>content<delimiter>creationDate<delimiter>editedDate".
+   * @return A Comment object created from the parsed string values.
+   * @throws IndexOutOfBoundsException if the comment snapshot is improperly formatted and does not
+   *   contain the expected number of fields.
+   */
+  private fun convertCommentStringToComment(commentSnapshot: String): Note.Comment {
+    val commentValues = commentSnapshot.split(commentDelimiter)
+    return Note.Comment(
+        commentValues[0],
+        userId = commentValues[1],
+        userName = commentValues[2],
+        content = commentValues[3],
+        creationDate = Timestamp(commentValues[4].toLong(), 0),
+        editedDate = Timestamp(commentValues[5].toLong(), 0))
+  }
+  /**
+   * Converts a list of Comment objects to a list of snapshot strings for Firestore storage.
+   *
+   * @param commentsList The list of Comment objects to be converted.
+   * @return A list of snapshot strings where each string represents a Comment, formatted as
+   *   "commentId<delimiter>userId<delimiter>content".
+   */
+  private fun convertCommentsList(commentsList: List<Note.Comment>): List<String> {
+    return commentsList.map { convertCommentToString(it) }
+  }
+  /**
+   * Converts a list of snapshot strings to a list of Comment objects.
+   *
+   * @param snapshotList The list of snapshot strings, where each string represents a Comment in the
+   *   format "commentId<delimiter>userId<delimiter>content".
+   * @return A list of Comment objects created from the parsed snapshot strings.
+   */
+  private fun commentStringToCommentClass(commentSnapshotList: List<String>): List<Note.Comment> {
+    return commentSnapshotList.map { convertCommentStringToComment(it) }
+  }
 
   /**
    * Converts a note into a FirebaseNote (a note that is compatible with Firebase).
@@ -36,7 +98,6 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
   private fun convertNotes(note: Note): FirebaseNote {
     return FirebaseNote(
         note.id,
-        note.type,
         note.title,
         note.content,
         note.date,
@@ -47,7 +108,8 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
         note.noteClass.classYear,
         note.noteClass.publicPath,
         note.folderId,
-        "null")
+        "null",
+        convertCommentsList(note.comments.commentsList))
   }
 
   private val collectionPath = "notes"
@@ -223,7 +285,6 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
   fun documentSnapshotToNote(document: DocumentSnapshot): Note? {
     return try {
       val id = document.id
-      val type = Note.Type.valueOf(document.getString("type") ?: return null)
       val title = document.getString("title") ?: return null
       val content = document.getString("content") ?: return null
       val date = document.getTimestamp("date") ?: return null
@@ -237,12 +298,13 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
       val classPath = document.getString("publicPath") ?: return null
       val folderId = document.getString("folderId")
       val image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)
+      val comments =
+          commentStringToCommentClass(document.get("commentsList") as? List<String> ?: emptyList())
       // Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888) is the default bitMap, to be changed
       // when we implement images by URL
 
       Note(
           id = id,
-          type = type,
           title = title,
           content = content,
           date = date,
@@ -250,7 +312,8 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
           userId = userId,
           noteClass = Note.Class(classCode, className, classYear, classPath),
           folderId = folderId,
-          image = image)
+          image = image,
+          comments = Note.CommentCollection(comments))
     } catch (e: Exception) {
       Log.e("NoteRepositoryFirestore", "Error converting document to Note", e)
       null

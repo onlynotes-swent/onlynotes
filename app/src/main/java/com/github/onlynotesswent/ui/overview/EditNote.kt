@@ -2,15 +2,18 @@ package com.github.onlynotesswent.ui.overview
 
 import android.graphics.Bitmap
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -39,7 +42,9 @@ import com.github.onlynotesswent.model.users.UserViewModel
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
 import com.google.firebase.Timestamp
+import java.text.SimpleDateFormat
 import java.util.Calendar
+import java.util.Locale
 
 /**
  * Displays the edit note screen, where users can update the title and content of an existing note.
@@ -67,6 +72,24 @@ fun EditNoteScreen(
   var updatedClassYear by remember { mutableIntStateOf(note?.noteClass?.classYear ?: currentYear) }
   var visibility by remember { mutableStateOf(note?.visibility) }
   var expandedVisibility by remember { mutableStateOf(false) }
+  var updatedComments by remember { mutableStateOf(note?.comments ?: Note.CommentCollection()) }
+
+  fun updateOnlyNoteCommentAndDate() {
+    noteViewModel.updateNote(
+        Note(
+            id = note?.id ?: "1",
+            title = note?.title ?: "",
+            content = note?.content ?: "",
+            date = Timestamp.now(), // Use current timestamp
+            visibility = note?.visibility ?: Note.Visibility.DEFAULT,
+            noteClass = note?.noteClass ?: Note.Class("", "", currentYear, ""),
+            userId = note?.userId ?: "",
+            image =
+                note?.image
+                    ?: Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888), // Placeholder Bitmap
+            comments = updatedComments),
+        userViewModel.currentUser.value!!.uid)
+  }
 
   Scaffold(
       modifier = Modifier.testTag("editNoteScreen"),
@@ -92,84 +115,59 @@ fun EditNoteScreen(
             })
       },
       content = { paddingValues ->
-        LazyColumn(
+        Column(
             modifier =
                 Modifier.fillMaxSize()
                     .padding(16.dp)
                     .padding(paddingValues)
-                    .testTag("editNoteColumn"),
+                    .testTag("editNoteColumn")
+                    .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(8.dp),
             horizontalAlignment = Alignment.CenterHorizontally) {
-              item {
-                OutlinedTextField(
-                    value = updatedNoteTitle,
-                    onValueChange = { updatedNoteTitle = it },
-                    label = { Text("Note Title") },
-                    placeholder = { Text("Enter the new title here") },
-                    modifier = Modifier.fillMaxWidth().testTag("EditTitle textField"))
-              }
+              OutlinedTextField(
+                  value = updatedNoteTitle,
+                  onValueChange = { updatedNoteTitle = it },
+                  label = { Text("Note Title") },
+                  placeholder = { Text("Enter the new title here") },
+                  modifier = Modifier.fillMaxWidth().testTag("EditTitle textField"))
 
-              item {
-                OptionDropDownMenu(
-                    value =
-                        visibility?.toReadableString()
-                            ?: Note.Visibility.DEFAULT.toReadableString(),
-                    expanded = expandedVisibility,
-                    buttonTag = "visibilityEditButton",
-                    menuTag = "visibilityEditMenu",
-                    onExpandedChange = { expandedVisibility = it },
-                    items = Note.Visibility.READABLE_STRINGS,
-                    onItemClick = { visibility = Note.Visibility.fromReadableString(it) })
-              }
+              OptionDropDownMenu(
+                  value =
+                      visibility?.toReadableString() ?: Note.Visibility.DEFAULT.toReadableString(),
+                  expanded = expandedVisibility,
+                  buttonTag = "visibilityEditButton",
+                  menuTag = "visibilityEditMenu",
+                  onExpandedChange = { expandedVisibility = it },
+                  items = Note.Visibility.READABLE_STRINGS,
+                  onItemClick = { visibility = Note.Visibility.fromReadableString(it) })
 
-              item {
-                OutlinedTextField(
-                    value = updatedClassName,
-                    onValueChange = { updatedClassName = it },
-                    label = { Text("Class Name") },
-                    placeholder = { Text("Set the Class Name for the Note") },
-                    modifier = Modifier.fillMaxWidth().testTag("EditClassName textField"))
-              }
+              OutlinedTextField(
+                  value = updatedClassName,
+                  onValueChange = { updatedClassName = it },
+                  label = { Text("Class Name") },
+                  placeholder = { Text("Set the Class Name for the Note") },
+                  modifier = Modifier.fillMaxWidth().testTag("EditClassName textField"))
 
-              item {
-                OutlinedTextField(
-                    value = updatedClassCode,
-                    onValueChange = { updatedClassCode = it },
-                    label = { Text("Class Code") },
-                    placeholder = { Text("Set the Class Code for the Note") },
-                    modifier = Modifier.fillMaxWidth().testTag("EditClassCode textField"))
-              }
+              OutlinedTextField(
+                  value = updatedClassCode,
+                  onValueChange = { updatedClassCode = it },
+                  label = { Text("Class Code") },
+                  placeholder = { Text("Set the Class Code for the Note") },
+                  modifier = Modifier.fillMaxWidth().testTag("EditClassCode textField"))
 
-              item {
-                OutlinedTextField(
-                    value = updatedClassYear.toString(),
-                    onValueChange = { updatedClassYear = it.toIntOrNull() ?: currentYear },
-                    label = { Text("Class Year") },
-                    placeholder = { Text("Set the Class Year for the Note") },
-                    modifier = Modifier.fillMaxWidth().testTag("EditClassYear textField"))
-              }
+              OutlinedTextField(
+                  value = updatedClassYear.toString(),
+                  onValueChange = { updatedClassYear = it.toIntOrNull() ?: currentYear },
+                  label = { Text("Class Year") },
+                  placeholder = { Text("Set the Class Year for the Note") },
+                  modifier = Modifier.fillMaxWidth().testTag("EditClassYear textField"))
 
-              item {
-                OutlinedTextField(
-                    value =
-                        if (note?.type == Note.Type.NORMAL_TEXT) "Typed note"
-                        else note?.type?.name ?: "Typed note",
-                    onValueChange = {},
-                    readOnly = true,
-                    label = { Text("Note Type") },
-                    modifier = Modifier.fillMaxWidth().testTag("EditType textField"))
-              }
-              if (note?.type == Note.Type.NORMAL_TEXT) {
-                item {
-                  OutlinedTextField(
-                      value = updatedNoteText,
-                      onValueChange = { updatedNoteText = it },
-                      label = { Text("Note Content") },
-                      placeholder = { Text("Enter your note here...") },
-                      modifier =
-                          Modifier.fillMaxWidth().height(400.dp).testTag("EditNote textField"))
-                }
-              }
+              OutlinedTextField(
+                  value = updatedNoteText,
+                  onValueChange = { updatedNoteText = it },
+                  label = { Text("Note Content") },
+                  placeholder = { Text("Enter your note here...") },
+                  modifier = Modifier.fillMaxWidth().height(400.dp).testTag("EditNote textField"))
 
               item {
                 Button(
@@ -178,7 +176,6 @@ fun EditNoteScreen(
                       noteViewModel.updateNote(
                           Note(
                               id = note?.id ?: "1",
-                              type = note?.type ?: Note.Type.NORMAL_TEXT,
                               title = updatedNoteTitle,
                               content = updatedNoteText,
                               date = Timestamp.now(), // Use current timestamp
@@ -205,17 +202,79 @@ fun EditNoteScreen(
                     }
               }
 
-              item {
-                Button(
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF0000)),
-                    onClick = {
-                      noteViewModel.deleteNoteById(
-                          note?.id ?: "", note?.userId ?: userViewModel.currentUser.value!!.uid)
-                      navigationActions.navigateTo(Screen.OVERVIEW)
-                    },
-                    modifier = Modifier.testTag("Delete button")) {
-                      Text("Delete note")
-                    }
+              Button(
+                  colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF0000)),
+                  onClick = {
+                    noteViewModel.deleteNoteById(
+                        note?.id ?: "", note?.userId ?: userViewModel.currentUser.value!!.uid)
+                    navigationActions.navigateTo(Screen.OVERVIEW)
+                  },
+                  modifier = Modifier.testTag("Delete button")) {
+                    Text("Delete note")
+                  }
+              Button(
+                  onClick = {
+                    updatedComments =
+                        Note.CommentCollection.addComment(
+                            userViewModel.currentUser.value?.uid ?: "1",
+                            userViewModel.currentUser.value?.userName ?: "Invalid username",
+                            "",
+                            updatedComments)
+                    updateOnlyNoteCommentAndDate()
+                  },
+                  modifier = Modifier.testTag("Add Comment Button")) {
+                    Text("Add Comment")
+                  }
+
+              if (updatedComments.commentsList.isEmpty()) {
+                Text(
+                    text = "No comments yet. Add a comment to start the discussion.",
+                    color = Color.Gray,
+                    modifier = Modifier.padding(8.dp).testTag("NoCommentsText"))
+              } else {
+
+                updatedComments.commentsList.forEachIndexed { _, comment ->
+                  Row(
+                      modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                      verticalAlignment = Alignment.CenterVertically) {
+                        OutlinedTextField(
+                            value = comment.content,
+                            onValueChange = {
+                              updatedComments =
+                                  Note.CommentCollection.editComment(
+                                      comment.commentId, it, updatedComments)
+                              updateOnlyNoteCommentAndDate()
+                            },
+                            label = {
+                              val formatter =
+                                  SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
+                              val formatedDate = formatter.format(comment.editedDate.toDate())
+                              val displayedText =
+                                  if (comment.isUnedited()) {
+                                    "${comment.userName} : $formatedDate"
+                                  } else {
+                                    "${comment.userName} edited: $formatedDate"
+                                  }
+                              Text(displayedText)
+                            },
+                            placeholder = { Text("Enter comment here") },
+                            modifier = Modifier.weight(1f).testTag("EditCommentTextField"))
+
+                        IconButton(
+                            onClick = {
+                              updatedComments =
+                                  Note.CommentCollection.deleteComment(
+                                      comment.commentId, updatedComments)
+                              updateOnlyNoteCommentAndDate()
+                            },
+                            modifier = Modifier.testTag("DeleteCommentButton")) {
+                              Icon(
+                                  imageVector = Icons.Default.Delete,
+                                  contentDescription = "Delete Comment",
+                                  tint = Color.Red)
+                            }
+                      }
+                }
               }
             }
       })

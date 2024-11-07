@@ -42,7 +42,6 @@ class FolderContentTest {
       listOf(
           Note(
               id = "1",
-              type = Note.Type.NORMAL_TEXT,
               title = "Sample Title",
               content = "This is a sample content.",
               date = Timestamp.now(),
