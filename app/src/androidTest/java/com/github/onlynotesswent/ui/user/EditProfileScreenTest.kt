@@ -247,7 +247,7 @@ class EditProfileScreenTest {
   }
 
   @Test
-  fun testChangingProfilePicture(){
+  fun testChangingProfilePicture() {
     doNothing().`when`(profilePictureTaker).pickImage()
     `when`(profilePictureTaker.setOnImageSelected(any())).thenAnswer {
       val onImageSelected = it.arguments[0] as (Uri?) -> Unit
@@ -272,11 +272,8 @@ class EditProfileScreenTest {
 
     composeTestRule.onNodeWithTag("removeProfilePicture").performClick()
 
-
     composeTestRule.onNodeWithTag("displayBottomSheet").performClick()
     composeTestRule.onNodeWithTag("addProfilePicture").performClick()
-
-
 
     composeTestRule.onNodeWithTag("displayBottomSheet").performClick()
 
@@ -285,11 +282,5 @@ class EditProfileScreenTest {
 
     composeTestRule.onNodeWithTag("editProfilePicture").performClick()
     composeTestRule.onNodeWithTag("profilePicture").assertIsDisplayed()
-
-
-
-
-
-
   }
 }

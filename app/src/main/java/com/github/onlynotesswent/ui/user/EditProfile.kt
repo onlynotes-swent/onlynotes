@@ -299,47 +299,49 @@ fun BottomSheetContent(
       verticalArrangement = Arrangement.Center) {
         if (profilePictureUri.value.isNotBlank()) {
           Column(horizontalAlignment = Alignment.Start) {
-
             BottomSheetRow(
                 {
-                    profilePictureTaker.setOnImageSelected { uri ->
-                        if (uri != null) {
-                            profilePictureUri.value = uri.toString()
-                            hasProfilePictureBeenChanged.value = true
-                        }
+                  profilePictureTaker.setOnImageSelected { uri ->
+                    if (uri != null) {
+                      profilePictureUri.value = uri.toString()
+                      hasProfilePictureBeenChanged.value = true
                     }
-                    profilePictureTaker.pickImage()
-                    onClose()
+                  }
+                  profilePictureTaker.pickImage()
+                  onClose()
                 },
                 "Edit Profile Picture",
                 Icons.Default.Edit,
                 Color.LightGray,
-                "editProfilePicture"
-            )
+                "editProfilePicture")
             Spacer(modifier = Modifier.height(16.dp))
-            BottomSheetRow({
-                profilePictureUri.value = ""
-                hasProfilePictureBeenChanged.value = true
-                onClose() },
+            BottomSheetRow(
+                {
+                  profilePictureUri.value = ""
+                  hasProfilePictureBeenChanged.value = true
+                  onClose()
+                },
                 "Remove Profile Picture",
                 Icons.Default.Delete,
                 Color.Red,
-                "removeProfilePicture"
-            )
+                "removeProfilePicture")
           }
         } else {
-            BottomSheetRow(
-                {profilePictureTaker.setOnImageSelected { uri ->
-                    if (uri != null) {
-                        profilePictureUri.value = uri.toString()
-                        hasProfilePictureBeenChanged.value = true
-                    }
+          BottomSheetRow(
+              {
+                profilePictureTaker.setOnImageSelected { uri ->
+                  if (uri != null) {
+                    profilePictureUri.value = uri.toString()
+                    hasProfilePictureBeenChanged.value = true
+                  }
                 }
-                        profilePictureTaker.pickImage()
-                        onClose()},
-                "Add a profile picture",
-                Icons.Default.Add, Color.LightGray,
-                "addProfilePicture")
+                profilePictureTaker.pickImage()
+                onClose()
+              },
+              "Add a profile picture",
+              Icons.Default.Add,
+              Color.LightGray,
+              "addProfilePicture")
         }
       }
 }
@@ -352,21 +354,12 @@ private fun BottomSheetRow(
     color: Color,
     testTag: String
 ) {
-    Row(
-        modifier =
-        Modifier
-            .testTag(testTag)
-            .clickable {
-                onClick()
-            }) {
-        Icon(
-            imageVector = icon,
-            contentDescription = description,
-            modifier = Modifier
-                .size(30.dp)
-                .offset(x = (-20).dp, y = (-3).dp),
-            tint = color
-        )
-        Text(description, fontSize = 18.sp)
-    }
+  Row(modifier = Modifier.testTag(testTag).clickable { onClick() }) {
+    Icon(
+        imageVector = icon,
+        contentDescription = description,
+        modifier = Modifier.size(30.dp).offset(x = (-20).dp, y = (-3).dp),
+        tint = color)
+    Text(description, fontSize = 18.sp)
+  }
 }
