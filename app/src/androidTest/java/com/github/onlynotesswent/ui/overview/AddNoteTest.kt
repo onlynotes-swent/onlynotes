@@ -137,7 +137,7 @@ class AddNoteTest {
     }
 
     // Initially, the button text should be "Create Note"
-    composeTestRule.onNodeWithTag("createNoteButton").assertTextEquals("Choose an option")
+    composeTestRule.onNodeWithTag("createNoteButton").assertTextEquals("Choose mode")
 
     // Set the template dropdown to "Scan Image"
     composeTestRule.onNodeWithTag("templateButton").performClick()
@@ -159,7 +159,7 @@ class AddNoteTest {
     }
 
     // Initially, the button text should be "Create Note"
-    composeTestRule.onNodeWithTag("createNoteButton").assertTextEquals("Choose an option")
+    composeTestRule.onNodeWithTag("createNoteButton").assertTextEquals("Choose mode")
 
     // Set the template dropdown to "Create Note From Scratch"
     composeTestRule.onNodeWithTag("templateButton").performClick()
