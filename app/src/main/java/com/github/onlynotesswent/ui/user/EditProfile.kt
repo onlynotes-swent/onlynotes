@@ -292,12 +292,11 @@ fun BottomSheetContent(
     hasProfilePictureBeenChanged: MutableState<Boolean>
 ) {
   Column(
-      modifier = Modifier.fillMaxWidth().padding(30.dp)
-      // .padding(start = 80.dp)
-      ,
+      modifier = Modifier.fillMaxWidth().padding(30.dp),
       horizontalAlignment = Alignment.CenterHorizontally,
       verticalArrangement = Arrangement.Center) {
         if (profilePictureUri.value.isNotBlank()) {
+          // If the user has a profile picture, display the edit and remove options
           Column(horizontalAlignment = Alignment.Start) {
             BottomSheetRow(
                 {
@@ -327,6 +326,7 @@ fun BottomSheetContent(
                 "removeProfilePicture")
           }
         } else {
+          // If the user doesn't have a profile picture, display the add option
           BottomSheetRow(
               {
                 profilePictureTaker.setOnImageSelected { uri ->
@@ -347,7 +347,7 @@ fun BottomSheetContent(
 }
 
 @Composable
-private fun BottomSheetRow(
+fun BottomSheetRow(
     onClick: () -> Unit,
     description: String,
     icon: ImageVector,
