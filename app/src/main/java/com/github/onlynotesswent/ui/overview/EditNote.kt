@@ -200,7 +200,8 @@ fun EditNoteScreen(
                               image =
                                   note?.image
                                       ?: Bitmap.createBitmap(
-                                          1, 1, Bitmap.Config.ARGB_8888) // Placeholder Bitmap
+                                          1, 1, Bitmap.Config.ARGB_8888), // Placeholder Bitmap
+                              comments = updatedComments
                               ),
                           currentUser!!.uid)
                       if (note?.folderId != null) {
