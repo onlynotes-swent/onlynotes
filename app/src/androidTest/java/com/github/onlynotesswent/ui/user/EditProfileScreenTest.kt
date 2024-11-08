@@ -199,6 +199,8 @@ class EditProfileScreenTest {
       EditProfileScreen(mockNavigationActions, userViewModel, profilePictureTaker, fileViewModel)
     }
     composeTestRule.onNodeWithTag("displayBottomSheet").assertIsEnabled()
+    composeTestRule.onNodeWithTag("displayBottomSheet").performClick()
+
     composeTestRule.onNodeWithTag("addProfilePicture").assertIsEnabled()
     composeTestRule.onNodeWithTag("addProfilePicture").performClick()
     verify(profilePictureTaker).pickImage()
@@ -239,6 +241,7 @@ class EditProfileScreenTest {
     }
 
     composeTestRule.onNodeWithTag("displayBottomSheet").assertIsEnabled()
+    composeTestRule.onNodeWithTag("displayBottomSheet").performClick()
     composeTestRule.onNodeWithTag("addProfilePicture").performClick()
     verify(profilePictureTaker).pickImage()
   }
