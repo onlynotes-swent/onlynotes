@@ -94,7 +94,7 @@ fun EditProfileScreen(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally) {
-          Text("User  not found ...")
+          Text("User not found ...")
         }
     Log.e("EditProfileScreen", "User not found")
   } else
@@ -112,8 +112,8 @@ fun EditProfileScreen(
                 navigationActions,
                 includeBackButton = true,
                 onBackButtonClick = {
-                  // When we go back we  we will need to fetch again the old profile picture if it
-                  // was changed, because going back doesn't save the changes
+                  // When we go back we will need to fetch again the old profile picture (if the
+                  // picture was changed), because going back doesn't save the changes
                   isProfilePictureUpToDate.value = !hasProfilePictureBeenChanged.value
                   navigationActions.goBack()
                 })
@@ -185,7 +185,7 @@ fun EditProfileScreen(
                                       "Error while updating user: ${exception.message}",
                                       Toast.LENGTH_SHORT)
                                   .show()
-                              Log.e("EditProfileScreen", "Error while updating user ", exception)
+                              Log.e("EditProfileScreen", "Error while updating user", exception)
                               userNameError.value =
                                   exception is UserRepositoryFirestore.UsernameTakenException
                             })
@@ -248,7 +248,6 @@ fun EditableProfilePicture(
         contentScale = ContentScale.Crop)
 
     // Edit Icon Overlay
-
     IconButton(
         onClick = { showSheet.value = true },
         modifier =
@@ -259,8 +258,7 @@ fun EditableProfilePicture(
                 .size(40.dp)
                 .background(
                     androidx.compose.material3.ButtonDefaults.buttonColors()
-                        .containerColor) // Background color
-        ,
+                        .containerColor), // Background color
         content = {
           Icon(
               imageVector = Icons.Default.Edit,
