@@ -4,6 +4,8 @@ import android.content.Context
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
 import com.google.firebase.Firebase
 import com.google.firebase.storage.storage
 import java.io.File
@@ -33,14 +35,13 @@ class FileViewModel(private val repository: FileRepository) : ViewModel() {
     repository.init {}
   }
 
+    /**
+     * Factory for creating a FileViewModel.
+     */
   companion object {
-    val Factory: ViewModelProvider.Factory =
-        object : ViewModelProvider.Factory {
-          @Suppress("UNCHECKED_CAST")
-          override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            return FileViewModel(FileRepositoryFirebaseStorage(Firebase.storage)) as T
-          }
-        }
+    val Factory: ViewModelProvider.Factory = viewModelFactory {
+        initializer { FileViewModel(FileRepositoryFirebaseStorage(Firebase.storage)) }
+    }
   }
 
   /**
