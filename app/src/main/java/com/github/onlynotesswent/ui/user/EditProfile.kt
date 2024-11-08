@@ -41,6 +41,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -298,61 +299,74 @@ fun BottomSheetContent(
       verticalArrangement = Arrangement.Center) {
         if (profilePictureUri.value.isNotBlank()) {
           Column(horizontalAlignment = Alignment.Start) {
-            Row(
-                modifier =
-                    Modifier.testTag("editProfilePicture").clickable {
-                      profilePictureTaker.setOnImageSelected { uri ->
-                        if (uri != null) {
-                          profilePictureUri.value = uri.toString()
-                          hasProfilePictureBeenChanged.value = true
-                        }
-                      }
-                      profilePictureTaker.pickImage()
-                      onClose()
-                    }) {
-                  Icon(
-                      imageVector = Icons.Default.Edit,
-                      contentDescription = "Edit Profile Picture",
-                      modifier = Modifier.size(30.dp).offset(x = (-20).dp, y = (-4).dp),
-                      tint = Color.LightGray)
-                  Text("Edit Profile Picture", fontSize = 18.sp)
-                }
-            Spacer(modifier = Modifier.height(16.dp))
-            Row(
-                modifier =
-                    Modifier.testTag("removeProfilePicture").clickable {
-                      profilePictureUri.value = ""
-                      hasProfilePictureBeenChanged.value = true
-                      onClose()
-                    }) {
-                  Icon(
-                      imageVector = Icons.Default.Delete,
-                      contentDescription = "Edit Profile Picture",
-                      modifier = Modifier.size(30.dp).offset(x = (-20).dp, y = (-4).dp),
-                      tint = Color.Red)
-                  Text("Remove Profile Picture", fontSize = 18.sp)
-                }
-          }
-        } else {
-          Row(
-              modifier =
-                  Modifier.testTag("addProfilePicture").clickable {
+
+            BottomSheetRow(
+                {
                     profilePictureTaker.setOnImageSelected { uri ->
-                      if (uri != null) {
-                        profilePictureUri.value = uri.toString()
-                        hasProfilePictureBeenChanged.value = true
-                      }
+                        if (uri != null) {
+                            profilePictureUri.value = uri.toString()
+                            hasProfilePictureBeenChanged.value = true
+                        }
                     }
                     profilePictureTaker.pickImage()
                     onClose()
-                  }) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = "add Profile Picture",
-                    modifier = Modifier.size(30.dp).offset(x = (-20).dp, y = (-3).dp),
-                    tint = Color.LightGray)
-                Text("Add a profile picture", fontSize = 18.sp)
-              }
+                },
+                "Edit Profile Picture",
+                Icons.Default.Edit,
+                Color.LightGray,
+                "editProfilePicture"
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            BottomSheetRow({
+                profilePictureUri.value = ""
+                hasProfilePictureBeenChanged.value = true
+                onClose() },
+                "Remove Profile Picture",
+                Icons.Default.Delete,
+                Color.Red,
+                "removeProfilePicture"
+            )
+          }
+        } else {
+            BottomSheetRow(
+                {profilePictureTaker.setOnImageSelected { uri ->
+                    if (uri != null) {
+                        profilePictureUri.value = uri.toString()
+                        hasProfilePictureBeenChanged.value = true
+                    }
+                }
+                        profilePictureTaker.pickImage()
+                        onClose()},
+                "Add a profile picture",
+                Icons.Default.Add, Color.LightGray,
+                "addProfilePicture")
         }
       }
+}
+
+@Composable
+private fun BottomSheetRow(
+    onClick: () -> Unit,
+    description: String,
+    icon: ImageVector,
+    color: Color,
+    testTag: String
+) {
+    Row(
+        modifier =
+        Modifier
+            .testTag(testTag)
+            .clickable {
+                onClick()
+            }) {
+        Icon(
+            imageVector = icon,
+            contentDescription = description,
+            modifier = Modifier
+                .size(30.dp)
+                .offset(x = (-20).dp, y = (-3).dp),
+            tint = color
+        )
+        Text(description, fontSize = 18.sp)
+    }
 }

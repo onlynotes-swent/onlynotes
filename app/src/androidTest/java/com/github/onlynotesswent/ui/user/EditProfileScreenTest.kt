@@ -245,4 +245,51 @@ class EditProfileScreenTest {
     composeTestRule.onNodeWithTag("addProfilePicture").performClick()
     verify(profilePictureTaker).pickImage()
   }
+
+  @Test
+  fun testChangingProfilePicture(){
+    doNothing().`when`(profilePictureTaker).pickImage()
+    `when`(profilePictureTaker.setOnImageSelected(any())).thenAnswer {
+      val onImageSelected = it.arguments[0] as (Uri?) -> Unit
+      onImageSelected("testUri".toUri())
+    }
+
+    composeTestRule.setContent {
+      EditProfileScreen(mockNavigationActions, userViewModel, profilePictureTaker, fileViewModel)
+    }
+
+    composeTestRule.onNodeWithTag("displayBottomSheet").assertIsEnabled()
+    composeTestRule.onNodeWithTag("displayBottomSheet").performClick()
+    composeTestRule.onNodeWithTag("addProfilePicture").performClick()
+    composeTestRule.onNodeWithTag("profilePicture").assertIsDisplayed()
+
+    composeTestRule.onNodeWithTag("displayBottomSheet").performClick()
+
+    composeTestRule.onNodeWithTag("removeProfilePicture").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("editProfilePicture").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("removeProfilePicture").assertIsEnabled()
+    composeTestRule.onNodeWithTag("editProfilePicture").assertIsEnabled()
+
+    composeTestRule.onNodeWithTag("removeProfilePicture").performClick()
+
+
+    composeTestRule.onNodeWithTag("displayBottomSheet").performClick()
+    composeTestRule.onNodeWithTag("addProfilePicture").performClick()
+
+
+
+    composeTestRule.onNodeWithTag("displayBottomSheet").performClick()
+
+    composeTestRule.onNodeWithTag("editProfilePicture").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("editProfilePicture").assertIsEnabled()
+
+    composeTestRule.onNodeWithTag("editProfilePicture").performClick()
+    composeTestRule.onNodeWithTag("profilePicture").assertIsDisplayed()
+
+
+
+
+
+
+  }
 }
