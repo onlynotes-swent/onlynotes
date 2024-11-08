@@ -157,11 +157,19 @@ fun EditProfileScreen(
                               // Upload or delete the profile picture if it has been changed
                               if (hasProfilePictureBeenChanged.value) {
                                 if (profilePictureUri.value.isNotBlank()) {
-                                  fileViewModel.uploadFile(
-                                      userViewModel.currentUser.value!!.uid,
-                                      profilePictureUri.value.toUri(),
-                                      FileType.PROFILE_PIC_JPEG,
-                                  )
+                                  if (user.value!!.hasProfilePicture) {
+                                    fileViewModel.updateFile(
+                                        userViewModel.currentUser.value!!.uid,
+                                        profilePictureUri.value.toUri(),
+                                        FileType.PROFILE_PIC_JPEG,
+                                    )
+                                  } else {
+                                    fileViewModel.uploadFile(
+                                        userViewModel.currentUser.value!!.uid,
+                                        profilePictureUri.value.toUri(),
+                                        FileType.PROFILE_PIC_JPEG,
+                                    )
+                                  }
                                 } else {
                                   fileViewModel.deleteFile(
                                       userViewModel.currentUser.value!!.uid,
@@ -255,7 +263,7 @@ fun EditableProfilePicture(
         content = {
           Icon(
               imageVector = Icons.Default.Edit,
-              contentDescription = "Edit Profile Picture",
+              contentDescription = "Display Bottom Sheet",
               modifier = Modifier.size(30.dp),
               tint =
                   androidx.compose.material3.ButtonDefaults.buttonColors()

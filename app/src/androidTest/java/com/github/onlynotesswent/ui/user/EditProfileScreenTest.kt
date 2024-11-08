@@ -4,6 +4,7 @@ import android.net.Uri
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assert
+import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.junit4.createComposeRule
@@ -107,7 +108,7 @@ class EditProfileScreenTest {
     composeTestRule.onNodeWithTag("inputUserName").assertExists()
     composeTestRule.onNodeWithTag("saveButton").assertExists()
     composeTestRule.onNodeWithTag("profilePicture").assertExists()
-    composeTestRule.onNodeWithTag("editProfilePicture").assertExists()
+    composeTestRule.onNodeWithTag("displayBottomSheet").assertExists()
   }
 
   private fun hasError(): SemanticsMatcher {
@@ -147,17 +148,6 @@ class EditProfileScreenTest {
     assert(userViewModel.currentUser.value?.lastName == "testLastName")
     composeTestRule.onNodeWithTag("saveButton").performClick()
     assert(userViewModel.currentUser.value?.lastName == "newLastName")
-  }
-
-  @Test
-  fun editProfilePicture() {
-    doNothing().`when`(profilePictureTaker).pickImage()
-    composeTestRule.setContent {
-      EditProfileScreen(mockNavigationActions, userViewModel, profilePictureTaker, fileViewModel)
-    }
-    composeTestRule.onNodeWithTag("editProfilePicture").assertIsEnabled()
-    composeTestRule.onNodeWithTag("editProfilePicture").performClick()
-    verify(profilePictureTaker).pickImage()
   }
 
   @Test
@@ -203,6 +193,18 @@ class EditProfileScreenTest {
   }
 
   @Test
+  fun addProfilePicture() {
+    doNothing().`when`(profilePictureTaker).pickImage()
+    composeTestRule.setContent {
+      EditProfileScreen(mockNavigationActions, userViewModel, profilePictureTaker, fileViewModel)
+    }
+    composeTestRule.onNodeWithTag("displayBottomSheet").assertIsEnabled()
+    composeTestRule.onNodeWithTag("addProfilePicture").assertIsEnabled()
+    composeTestRule.onNodeWithTag("addProfilePicture").performClick()
+    verify(profilePictureTaker).pickImage()
+  }
+
+  @Test
   fun downloadProfilePicture() {
     userViewModel.addUser(
         User(
@@ -220,7 +222,7 @@ class EditProfileScreenTest {
     composeTestRule.setContent {
       EditProfileScreen(mockNavigationActions, userViewModel, profilePictureTaker, fileViewModel)
     }
-    composeTestRule.onNodeWithTag("profilePicture").performClick()
+    composeTestRule.onNodeWithTag("profilePicture").assertIsDisplayed()
     verify(mockFileRepository).downloadFile(any(), any(), any(), any(), any())
   }
 
@@ -236,7 +238,8 @@ class EditProfileScreenTest {
       EditProfileScreen(mockNavigationActions, userViewModel, profilePictureTaker, fileViewModel)
     }
 
-    composeTestRule.onNodeWithTag("editProfilePicture").performClick()
+    composeTestRule.onNodeWithTag("displayBottomSheet").assertIsEnabled()
+    composeTestRule.onNodeWithTag("addProfilePicture").performClick()
     verify(profilePictureTaker).pickImage()
   }
 }
