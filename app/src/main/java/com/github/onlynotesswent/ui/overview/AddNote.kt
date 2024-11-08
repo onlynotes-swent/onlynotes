@@ -86,7 +86,14 @@ fun AddNoteScreen(
         ScreenTopBar(
             title = "Create a new note",
             titleTestTag = "addNoteTitle",
-            onBackClick = { navigationActions.goBack() })
+            onBackClick = { navigationActions.goBack() },
+            icon = {
+              Icon(
+                  imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
+                  contentDescription = "Back",
+                  tint = MaterialTheme.colorScheme.onSurface)
+            },
+            iconTestTag = "goBackButton")
       },
       content = { paddingValues ->
         Column(
@@ -283,16 +290,24 @@ fun NoteDataTextField(
 }
 
 /**
- * A composable function that displays the top app bar for the screen. It is composed of a back
+ * A composable function that displays the top app bar for the screen. It is composed of an icon
  * button and a title.
  *
  * @param title The title to be displayed in the top app bar.
  * @param titleTestTag The test tag for the title.
  * @param onBackClick The callback to be invoked when the back button is clicked.
+ * @param icon The icon to be displayed in the top app bar.
+ * @param iconTestTag The test tag for the icon.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ScreenTopBar(title: String, titleTestTag: String, onBackClick: () -> Unit) {
+fun ScreenTopBar(
+    title: String,
+    titleTestTag: String,
+    onBackClick: () -> Unit,
+    icon: @Composable () -> Unit,
+    iconTestTag: String
+) {
   TopAppBar(
       colors =
           TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface),
@@ -307,11 +322,6 @@ fun ScreenTopBar(title: String, titleTestTag: String, onBackClick: () -> Unit) {
         }
       },
       navigationIcon = {
-        IconButton(onClick = onBackClick, Modifier.testTag("goBackButton")) {
-          Icon(
-              imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-              contentDescription = "Back",
-              tint = MaterialTheme.colorScheme.onSurface)
-        }
+        IconButton(onClick = onBackClick, Modifier.testTag(iconTestTag), content = icon)
       })
 }

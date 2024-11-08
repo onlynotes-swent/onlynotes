@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.outlined.Clear
 import androidx.compose.material3.Button
@@ -106,7 +107,14 @@ fun EditNoteScreen(
           ScreenTopBar(
               title = "Edit note",
               titleTestTag = "editNoteTitle",
-              onBackClick = { navigationActions.goBack() })
+              onBackClick = { navigationActions.goBack() },
+              icon = {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
+                    contentDescription = "Back",
+                    tint = MaterialTheme.colorScheme.onSurface)
+              },
+              iconTestTag = "goBackButton")
         },
         content = { paddingValues ->
           Column(
