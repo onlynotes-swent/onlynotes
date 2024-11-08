@@ -122,7 +122,7 @@ class AddNoteTest {
     composeTestRule
         .onNodeWithTag("templateMenu")
         .onChildren()
-        .filter(hasText("Scan Note"))
+        .filter(hasText("Scan note"))
         .onFirst()
         .performClick()
 
@@ -137,19 +137,19 @@ class AddNoteTest {
     }
 
     // Initially, the button text should be "Create Note"
-    composeTestRule.onNodeWithTag("createNoteButton").assertTextEquals("Choose An Option")
+    composeTestRule.onNodeWithTag("createNoteButton").assertTextEquals("Choose an option")
 
     // Set the template dropdown to "Scan Image"
     composeTestRule.onNodeWithTag("templateButton").performClick()
     composeTestRule
         .onNodeWithTag("templateMenu")
         .onChildren()
-        .filter(hasText("Scan Note"))
+        .filter(hasText("Scan note"))
         .onFirst()
         .performClick()
 
     // Now the button text should be "Take Picture"
-    composeTestRule.onNodeWithTag("createNoteButton").assertTextEquals("Scan Note")
+    composeTestRule.onNodeWithTag("createNoteButton").assertTextEquals("Scan note")
   }
 
   @Test
@@ -159,19 +159,19 @@ class AddNoteTest {
     }
 
     // Initially, the button text should be "Create Note"
-    composeTestRule.onNodeWithTag("createNoteButton").assertTextEquals("Choose An Option")
+    composeTestRule.onNodeWithTag("createNoteButton").assertTextEquals("Choose an option")
 
     // Set the template dropdown to "Create Note From Scratch"
     composeTestRule.onNodeWithTag("templateButton").performClick()
     composeTestRule
         .onNodeWithTag("templateMenu")
         .onChildren()
-        .filter(hasText("Create Note"))
+        .filter(hasText("Create note"))
         .onFirst()
         .performClick()
 
     // Now the button text should be "Create Note"
-    composeTestRule.onNodeWithTag("createNoteButton").assertTextEquals("Create Note")
+    composeTestRule.onNodeWithTag("createNoteButton").assertTextEquals("Create note")
   }
 
   @Test
@@ -196,12 +196,12 @@ class AddNoteTest {
     composeTestRule
         .onNodeWithTag("templateMenu")
         .onChildren()
-        .filter(hasText("Create Note"))
+        .filter(hasText("Create note"))
         .onFirst()
         .performClick()
 
     // Now the button text should be "Create Note"
-    composeTestRule.onNodeWithTag("createNoteButton").assertTextEquals("Create Note")
+    composeTestRule.onNodeWithTag("createNoteButton").assertTextEquals("Create note")
 
     `when`(mockNoteRepository.getNewUid()).thenReturn("1")
     val testUser = User("", "", "username", "", "userID", Timestamp.now(), 0.0)
