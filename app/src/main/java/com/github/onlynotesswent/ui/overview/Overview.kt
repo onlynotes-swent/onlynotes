@@ -105,7 +105,7 @@ fun OverviewScreen(
                         },
                         modifier = Modifier.testTag("createNote")),
                     CustomDropDownMenuItem(
-                        text = { Text("Create Folder") },
+                        text = { Text("Create folder") },
                         onClick = {
                           expanded = false
                           showCreateDialog = true
@@ -236,7 +236,7 @@ fun NoteItem(note: Note, onClick: () -> Unit) {
               fontWeight = FontWeight.Bold,
               color = MaterialTheme.colorScheme.onPrimaryContainer)
           Text(
-              text = note.noteClass.classCode + " " + note.noteClass.className,
+              text = note.noteClass.classCode,
               style = MaterialTheme.typography.bodySmall,
               color = MaterialTheme.colorScheme.onPrimaryContainer)
         }
@@ -268,7 +268,8 @@ fun FolderItem(folder: Folder, onClick: () -> Unit) {
               Text(
                   text = folder.name,
                   style = MaterialTheme.typography.bodyMedium,
-                  fontWeight = FontWeight.Bold)
+                  fontWeight = FontWeight.Bold,
+                  color = MaterialTheme.colorScheme.onBackground)
             }
       }
 }
