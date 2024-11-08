@@ -88,14 +88,15 @@ fun FolderContentScreen(
         topBar = {
           TopAppBar(
               colors =
-              TopAppBarDefaults.topAppBarColors(
-                  containerColor = MaterialTheme.colorScheme.surface),
+                  TopAppBarDefaults.topAppBarColors(
+                      containerColor = MaterialTheme.colorScheme.surface),
               title = {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically) {
                       Spacer(modifier = Modifier.weight(2f))
-                      Text(updatedName,
+                      Text(
+                          updatedName,
                           color = MaterialTheme.colorScheme.onSurface,
                           modifier = Modifier.testTag("folderContentTitle"))
                       Spacer(modifier = Modifier.weight(2f))
