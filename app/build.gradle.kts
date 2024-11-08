@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsKotlinAndroid)
@@ -25,6 +27,17 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
+        }
+
+        val keystoreFile = project.rootProject.file("local.properties")
+        val properties = Properties()
+        properties.load(keystoreFile.inputStream())
+        val openAiApiKey = properties.getProperty("OPEN_AI_API_KEY")
+
+        buildConfigField("String", "OPEN_AI_API_KEY", "\"$openAiApiKey\"")
+
+        buildFeatures {
+            buildConfig = true
         }
     }
 

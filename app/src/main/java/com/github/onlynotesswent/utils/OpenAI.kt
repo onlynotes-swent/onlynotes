@@ -1,5 +1,6 @@
 package com.github.onlynotesswent.utils
 
+import com.github.onlynotesswent.BuildConfig
 import com.google.gson.JsonParser
 import java.io.BufferedReader
 import java.io.InputStreamReader
@@ -8,8 +9,7 @@ import java.net.URL
 
 /** A class that sends requests to the OpenAI API to generate text based on a given prompt. */
 class OpenAI {
-  private val apiKey: String =
-      System.getenv("OPEN_AI_API_KEY") ?: throw IllegalStateException("API Key is missing")
+  private val apiKey: String = BuildConfig.OPEN_AI_API_KEY
 
   /**
    * Sends a POST request to the OpenAI API to generate text based on the given prompt.
