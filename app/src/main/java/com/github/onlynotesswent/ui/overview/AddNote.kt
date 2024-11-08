@@ -68,6 +68,7 @@ fun AddNoteScreen(
     noteViewModel: NoteViewModel,
     userViewModel: UserViewModel
 ) {
+  val templateInitialText = "Choose mode"
 
   val folderId = noteViewModel.currentFolderId.collectAsState()
   val currentYear = Calendar.getInstance().get(Calendar.YEAR)
@@ -75,7 +76,7 @@ fun AddNoteScreen(
   var className by remember { mutableStateOf("") }
   var classCode by remember { mutableStateOf("") }
   var classYear by remember { mutableIntStateOf(currentYear) }
-  var template by remember { mutableStateOf("Choose an option") }
+  var template by remember { mutableStateOf(templateInitialText) }
   var visibility: Note.Visibility? by remember { mutableStateOf(null) }
   var expandedVisibility by remember { mutableStateOf(false) }
   var expandedTemplate by remember { mutableStateOf(false) }
@@ -131,7 +132,7 @@ fun AddNoteScreen(
               Spacer(modifier = Modifier.height(10.dp))
 
               OptionDropDownMenu(
-                  value = visibility?.toReadableString() ?: "Choose an option",
+                  value = visibility?.toReadableString() ?: "Choose visibility",
                   expanded = expandedVisibility,
                   buttonTag = "visibilityButton",
                   menuTag = "visibilityMenu",
@@ -214,7 +215,7 @@ fun AddNoteScreen(
                           containerColor = MaterialTheme.colorScheme.primary,
                           contentColor = MaterialTheme.colorScheme.onPrimary),
                   enabled =
-                      title.isNotEmpty() && visibility != null && template != "Choose an option",
+                      title.isNotEmpty() && visibility != null && template != templateInitialText,
                   modifier = Modifier.fillMaxWidth().testTag("createNoteButton")) {
                     Text(text = template)
                   }
