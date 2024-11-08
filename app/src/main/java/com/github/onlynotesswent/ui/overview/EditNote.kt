@@ -16,6 +16,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.outlined.Clear
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -25,7 +26,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -145,16 +145,17 @@ fun EditNoteScreen(
                       .verticalScroll(rememberScrollState()),
               verticalArrangement = Arrangement.spacedBy(8.dp),
               horizontalAlignment = Alignment.CenterHorizontally) {
-                OutlinedTextField(
+                NoteDataTextField(
                     value = updatedNoteTitle,
                     onValueChange = { updatedNoteTitle = it },
-                    label = { Text("Note Title") },
-                    placeholder = { Text("Enter the new title here") },
+                    label = "Note Title",
+                    placeholder = "Enter the new title here",
                     modifier = Modifier.fillMaxWidth().testTag("EditTitle textField"),
-                    colors =
-                        TextFieldDefaults.outlinedTextFieldColors(
-                            focusedBorderColor = MaterialTheme.colorScheme.primary,
-                            unfocusedBorderColor = MaterialTheme.colorScheme.onBackground))
+                    trailingIcon = {
+                      IconButton(onClick = { updatedNoteTitle = "" }) {
+                        Icon(Icons.Outlined.Clear, contentDescription = "Clear Title")
+                      }
+                    })
 
                 OptionDropDownMenu(
                     value =
@@ -167,49 +168,33 @@ fun EditNoteScreen(
                     items = Note.Visibility.READABLE_STRINGS,
                     onItemClick = { visibility = Note.Visibility.fromReadableString(it) })
 
-                OutlinedTextField(
+                NoteDataTextField(
                     value = updatedClassName,
                     onValueChange = { updatedClassName = it },
-                    label = { Text("Class Name") },
-                    placeholder = { Text("Set the class name for the note") },
-                    modifier = Modifier.fillMaxWidth().testTag("EditClassName textField"),
-                    colors =
-                        TextFieldDefaults.outlinedTextFieldColors(
-                            focusedBorderColor = MaterialTheme.colorScheme.primary,
-                            unfocusedBorderColor = MaterialTheme.colorScheme.onBackground))
+                    label = "Class Name",
+                    placeholder = "Set the class name for the note",
+                    modifier = Modifier.fillMaxWidth().testTag("EditClassName textField"))
 
-                OutlinedTextField(
+                NoteDataTextField(
                     value = updatedClassCode,
                     onValueChange = { updatedClassCode = it },
-                    label = { Text("Class Code") },
-                    placeholder = { Text("Set the class code for the note") },
-                    modifier = Modifier.fillMaxWidth().testTag("EditClassCode textField"),
-                    colors =
-                        TextFieldDefaults.outlinedTextFieldColors(
-                            focusedBorderColor = MaterialTheme.colorScheme.primary,
-                            unfocusedBorderColor = MaterialTheme.colorScheme.onBackground))
+                    label = "Class Code",
+                    placeholder = "Set the class code for the note",
+                    modifier = Modifier.fillMaxWidth().testTag("EditClassCode textField"))
 
-                OutlinedTextField(
+                NoteDataTextField(
                     value = updatedClassYear.toString(),
                     onValueChange = { updatedClassYear = it.toIntOrNull() ?: currentYear },
-                    label = { Text("Class Year") },
-                    placeholder = { Text("Set the class year for the note") },
-                    modifier = Modifier.fillMaxWidth().testTag("EditClassYear textField"),
-                    colors =
-                        TextFieldDefaults.outlinedTextFieldColors(
-                            focusedBorderColor = MaterialTheme.colorScheme.primary,
-                            unfocusedBorderColor = MaterialTheme.colorScheme.onBackground))
+                    label = "Class Year",
+                    placeholder = "Set the class year for the note",
+                    modifier = Modifier.fillMaxWidth().testTag("EditClassYear textField"))
 
-                OutlinedTextField(
+                NoteDataTextField(
                     value = updatedNoteText,
                     onValueChange = { updatedNoteText = it },
-                    label = { Text("Note Content") },
-                    placeholder = { Text("Enter your note here...") },
-                    modifier = Modifier.fillMaxWidth().height(400.dp).testTag("EditNote textField"),
-                    colors =
-                        TextFieldDefaults.outlinedTextFieldColors(
-                            focusedBorderColor = MaterialTheme.colorScheme.primary,
-                            unfocusedBorderColor = MaterialTheme.colorScheme.onBackground))
+                    label = "Note Content",
+                    placeholder = "Enter your note here...",
+                    modifier = Modifier.fillMaxWidth().height(400.dp).testTag("EditNote textField"))
 
                 Button(
                     enabled = updatedNoteTitle.isNotEmpty(),
@@ -262,6 +247,10 @@ fun EditNoteScreen(
                     }
 
                 Button(
+                    colors =
+                        ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.onPrimary),
                     onClick = {
                       updatedComments =
                           Note.CommentCollection.addComment(

@@ -116,21 +116,17 @@ fun AddNoteScreen(
             verticalArrangement = Arrangement.spacedBy(8.dp)) {
               Spacer(modifier = Modifier.height(30.dp))
 
-              OutlinedTextField(
+              NoteDataTextField(
                   value = title,
                   onValueChange = { title = it },
-                  label = { Text("Title") },
-                  placeholder = { Text("Add a note title") },
+                  label = "Title",
+                  placeholder = "Add a note title",
                   modifier = Modifier.fillMaxWidth().testTag("inputNoteTitle"),
                   trailingIcon = {
                     IconButton(onClick = { title = "" }) {
                       Icon(Icons.Outlined.Clear, contentDescription = "Clear title")
                     }
-                  },
-                  colors =
-                      TextFieldDefaults.outlinedTextFieldColors(
-                          focusedBorderColor = MaterialTheme.colorScheme.primary,
-                          unfocusedBorderColor = MaterialTheme.colorScheme.onBackground))
+                  })
 
               Spacer(modifier = Modifier.height(10.dp))
 
@@ -145,37 +141,29 @@ fun AddNoteScreen(
 
               Spacer(modifier = Modifier.height(10.dp))
 
-              OutlinedTextField(
+              NoteDataTextField(
                   value = className,
                   onValueChange = { className = it },
-                  label = { Text("Class Name") },
-                  placeholder = { Text("Set the class name for the note") },
-                  modifier = Modifier.fillMaxWidth().testTag("ClassNameTextField"),
-                  colors =
-                      TextFieldDefaults.outlinedTextFieldColors(
-                          focusedBorderColor = MaterialTheme.colorScheme.primary,
-                          unfocusedBorderColor = MaterialTheme.colorScheme.onBackground))
+                  label = "Class Name",
+                  placeholder = "Set the class name for the note",
+                  modifier = Modifier.fillMaxWidth().testTag("ClassNameTextField"))
 
               Spacer(modifier = Modifier.height(5.dp))
 
-              OutlinedTextField(
+              NoteDataTextField(
                   value = classCode,
                   onValueChange = { classCode = it },
-                  label = { Text("Class Code") },
-                  placeholder = { Text("Set the class code for the note") },
-                  modifier = Modifier.fillMaxWidth().testTag("ClassCodeTextField"),
-                  colors =
-                      TextFieldDefaults.outlinedTextFieldColors(
-                          focusedBorderColor = MaterialTheme.colorScheme.primary,
-                          unfocusedBorderColor = MaterialTheme.colorScheme.onBackground))
+                  label = "Class Code",
+                  placeholder = "Set the class code for the note",
+                  modifier = Modifier.fillMaxWidth().testTag("ClassCodeTextField"))
 
               Spacer(modifier = Modifier.height(5.dp))
 
-              OutlinedTextField(
+              NoteDataTextField(
                   value = classYear.toString(),
                   onValueChange = { classYear = it.toIntOrNull() ?: currentYear },
-                  label = { Text("Class Year") },
-                  placeholder = { Text("Set the class year for the note") },
+                  label = "Class Year",
+                  placeholder = "Set the class year for the note",
                   modifier = Modifier.fillMaxWidth().testTag("ClassYearTextField"))
 
               Spacer(modifier = Modifier.height(10.dp))
@@ -278,4 +266,39 @@ fun OptionDropDownMenu(
           }
         }
   }
+}
+
+/**
+ * A composable function that displays an `OutlinedTextField` with an optional trailing icon.
+ *
+ * @param value The current value of the text field.
+ * @param onValueChange The callback that is triggered when the value changes.
+ * @param label The label to be displayed inside the text field container.
+ * @param placeholder The placeholder to be displayed when the text field is in focus and the input
+ *   text is empty.
+ * @param modifier The modifier to be applied to the `OutlinedTextField`.
+ * @param trailingIcon An optional trailing icon displayed at the end of the text field container.
+ */
+@Composable
+fun NoteDataTextField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    label: String,
+    placeholder: String,
+    modifier: Modifier = Modifier,
+    trailingIcon: @Composable (() -> Unit)? = null
+) {
+  OutlinedTextField(
+      value = value,
+      onValueChange = onValueChange,
+      label = { Text(label) },
+      placeholder = { Text(placeholder) },
+      modifier = modifier,
+      trailingIcon = trailingIcon,
+      colors =
+          TextFieldDefaults.colors(
+              focusedIndicatorColor = MaterialTheme.colorScheme.primary,
+              unfocusedIndicatorColor = MaterialTheme.colorScheme.onBackground,
+              focusedContainerColor = MaterialTheme.colorScheme.background,
+              unfocusedContainerColor = MaterialTheme.colorScheme.background))
 }
