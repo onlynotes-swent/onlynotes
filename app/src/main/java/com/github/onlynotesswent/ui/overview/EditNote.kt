@@ -210,119 +210,122 @@ fun EditNoteScreen(
                         TextFieldDefaults.outlinedTextFieldColors(
                             focusedBorderColor = MaterialTheme.colorScheme.primary,
                             unfocusedBorderColor = MaterialTheme.colorScheme.onBackground))
-              }
 
-          Button(
-              enabled = updatedNoteTitle.isNotEmpty(),
-              onClick = {
-                noteViewModel.updateNote(
-                    Note(
-                        id = note?.id ?: "1",
-                        title = updatedNoteTitle,
-                        content = updatedNoteText,
-                        date = Timestamp.now(), // Use current timestamp
-                        visibility = visibility ?: Note.Visibility.DEFAULT,
-                        noteClass =
-                            Note.Class(
-                                updatedClassCode, updatedClassName, updatedClassYear, "path"),
-                        userId = note?.userId ?: currentUser!!.uid,
-                        folderId = note?.folderId,
-                        image =
-                            note?.image
-                                ?: Bitmap.createBitmap(
-                                    1, 1, Bitmap.Config.ARGB_8888), // Placeholder Bitmap
-                        comments = updatedComments),
-                    currentUser!!.uid)
-                if (note?.folderId != null) {
-                  navigationActions.navigateTo(Screen.FOLDER_CONTENTS)
+                Button(
+                    enabled = updatedNoteTitle.isNotEmpty(),
+                    onClick = {
+                      noteViewModel.updateNote(
+                          Note(
+                              id = note?.id ?: "1",
+                              title = updatedNoteTitle,
+                              content = updatedNoteText,
+                              date = Timestamp.now(), // Use current timestamp
+                              visibility = visibility ?: Note.Visibility.DEFAULT,
+                              noteClass =
+                                  Note.Class(
+                                      updatedClassCode, updatedClassName, updatedClassYear, "path"),
+                              userId = note?.userId ?: currentUser!!.uid,
+                              folderId = note?.folderId,
+                              image =
+                                  note?.image
+                                      ?: Bitmap.createBitmap(
+                                          1, 1, Bitmap.Config.ARGB_8888), // Placeholder Bitmap
+                              comments = updatedComments),
+                          currentUser!!.uid)
+                      if (note?.folderId != null) {
+                        navigationActions.navigateTo(Screen.FOLDER_CONTENTS)
+                      } else {
+                        navigationActions.navigateTo(Screen.OVERVIEW)
+                      }
+                    },
+                    colors =
+                        ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.onPrimary),
+                    modifier = Modifier.testTag("Save button")) {
+                      Text("Update note")
+                    }
+
+                Button(
+                    colors =
+                        ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.background,
+                            contentColor = MaterialTheme.colorScheme.error),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.error),
+                    onClick = {
+                      noteViewModel.deleteNoteById(
+                          note?.id ?: "", note?.userId ?: currentUser!!.uid)
+                      navigationActions.navigateTo(Screen.OVERVIEW)
+                    },
+                    modifier = Modifier.testTag("Delete button")) {
+                      Text("Delete note")
+                    }
+
+                Button(
+                    onClick = {
+                      updatedComments =
+                          Note.CommentCollection.addComment(
+                              currentUser?.uid ?: "1",
+                              currentUser?.userName ?: "Invalid username",
+                              "",
+                              updatedComments)
+                      updateOnlyNoteCommentAndDate()
+                    },
+                    modifier = Modifier.testTag("Add Comment Button")) {
+                      Text("Add Comment")
+                    }
+
+                if (updatedComments.commentsList.isEmpty()) {
+                  Text(
+                      text = "No comments yet. Add a comment to start the discussion.",
+                      color = Color.Gray,
+                      modifier = Modifier.padding(8.dp).testTag("NoCommentsText"))
                 } else {
-                  navigationActions.navigateTo(Screen.OVERVIEW)
-                }
-              },
-              colors =
-                  ButtonDefaults.buttonColors(
-                      containerColor = MaterialTheme.colorScheme.primary,
-                      contentColor = MaterialTheme.colorScheme.onPrimary),
-              modifier = Modifier.testTag("Save button")) {
-                Text("Update note")
-              }
 
-          Button(
-              colors =
-                  ButtonDefaults.buttonColors(
-                      containerColor = MaterialTheme.colorScheme.background,
-                      contentColor = MaterialTheme.colorScheme.error),
-              border = BorderStroke(1.dp, MaterialTheme.colorScheme.error),
-              onClick = {
-                noteViewModel.deleteNoteById(note?.id ?: "", note?.userId ?: currentUser!!.uid)
-                navigationActions.navigateTo(Screen.OVERVIEW)
-              },
-              modifier = Modifier.testTag("Delete button")) {
-                Text("Delete note")
-              }
-          Button(
-              onClick = {
-                updatedComments =
-                    Note.CommentCollection.addComment(
-                        currentUser?.uid ?: "1",
-                        currentUser?.userName ?: "Invalid username",
-                        "",
-                        updatedComments)
-                updateOnlyNoteCommentAndDate()
-              },
-              modifier = Modifier.testTag("Add Comment Button")) {
-                Text("Add Comment")
-              }
+                  updatedComments.commentsList.forEachIndexed { _, comment ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically) {
+                          OutlinedTextField(
+                              value = comment.content,
+                              onValueChange = {
+                                updatedComments =
+                                    Note.CommentCollection.editComment(
+                                        comment.commentId, it, updatedComments)
+                                updateOnlyNoteCommentAndDate()
+                              },
+                              label = {
+                                val formatter =
+                                    SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
+                                val formatedDate = formatter.format(comment.editedDate.toDate())
+                                val displayedText =
+                                    if (comment.isUnedited()) {
+                                      "${comment.userName} : $formatedDate"
+                                    } else {
+                                      "${comment.userName} edited: $formatedDate"
+                                    }
+                                Text(displayedText)
+                              },
+                              placeholder = { Text("Enter comment here") },
+                              modifier = Modifier.weight(1f).testTag("EditCommentTextField"))
 
-          if (updatedComments.commentsList.isEmpty()) {
-            Text(
-                text = "No comments yet. Add a comment to start the discussion.",
-                color = Color.Gray,
-                modifier = Modifier.padding(8.dp).testTag("NoCommentsText"))
-          } else {
-
-            updatedComments.commentsList.forEachIndexed { _, comment ->
-              Row(
-                  modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
-                  verticalAlignment = Alignment.CenterVertically) {
-                    OutlinedTextField(
-                        value = comment.content,
-                        onValueChange = {
-                          updatedComments =
-                              Note.CommentCollection.editComment(
-                                  comment.commentId, it, updatedComments)
-                          updateOnlyNoteCommentAndDate()
-                        },
-                        label = {
-                          val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
-                          val formatedDate = formatter.format(comment.editedDate.toDate())
-                          val displayedText =
-                              if (comment.isUnedited()) {
-                                "${comment.userName} : $formatedDate"
-                              } else {
-                                "${comment.userName} edited: $formatedDate"
+                          IconButton(
+                              onClick = {
+                                updatedComments =
+                                    Note.CommentCollection.deleteComment(
+                                        comment.commentId, updatedComments)
+                                updateOnlyNoteCommentAndDate()
+                              },
+                              modifier = Modifier.testTag("DeleteCommentButton")) {
+                                Icon(
+                                    imageVector = Icons.Default.Delete,
+                                    contentDescription = "Delete Comment",
+                                    tint = Color.Red)
                               }
-                          Text(displayedText)
-                        },
-                        placeholder = { Text("Enter comment here") },
-                        modifier = Modifier.weight(1f).testTag("EditCommentTextField"))
-
-                    IconButton(
-                        onClick = {
-                          updatedComments =
-                              Note.CommentCollection.deleteComment(
-                                  comment.commentId, updatedComments)
-                          updateOnlyNoteCommentAndDate()
-                        },
-                        modifier = Modifier.testTag("DeleteCommentButton")) {
-                          Icon(
-                              imageVector = Icons.Default.Delete,
-                              contentDescription = "Delete Comment",
-                              tint = Color.Red)
                         }
                   }
-            }
-          }
+                }
+              }
         })
   }
 }
