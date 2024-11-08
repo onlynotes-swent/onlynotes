@@ -60,7 +60,6 @@ import java.util.Calendar
  * @param noteViewModel The ViewModel that provides the current note to be edited and handles note
  *   updates.
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddNoteScreen(
     navigationActions: NavigationActions,
@@ -84,31 +83,10 @@ fun AddNoteScreen(
   Scaffold(
       modifier = Modifier.testTag("addNoteScreen"),
       topBar = {
-        TopAppBar(
-            colors =
-                TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface),
-            title = {
-              Row(
-                  modifier = Modifier.fillMaxWidth(),
-                  verticalAlignment = Alignment.CenterVertically) {
-                    Spacer(modifier = Modifier.weight(1f))
-                    Text(
-                        "Create a new note",
-                        color = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.testTag("addNoteTitle"))
-                    Spacer(modifier = Modifier.weight(2f))
-                  }
-            },
-            navigationIcon = {
-              IconButton(
-                  onClick = { navigationActions.goBack() }, Modifier.testTag("goBackButton")) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                        contentDescription = "Back",
-                        tint = MaterialTheme.colorScheme.onSurface)
-                  }
-            })
+        ScreenTopBar(
+            title = "Create a new note",
+            titleTestTag = "addNoteTitle",
+            onBackClick = { navigationActions.goBack() })
       },
       content = { paddingValues ->
         Column(
@@ -302,4 +280,38 @@ fun NoteDataTextField(
               unfocusedIndicatorColor = MaterialTheme.colorScheme.onBackground,
               focusedContainerColor = MaterialTheme.colorScheme.background,
               unfocusedContainerColor = MaterialTheme.colorScheme.background))
+}
+
+/**
+ * A composable function that displays the top app bar for the screen. It is composed of a back
+ * button and a title.
+ *
+ * @param title The title to be displayed in the top app bar.
+ * @param titleTestTag The test tag for the title.
+ * @param onBackClick The callback to be invoked when the back button is clicked.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ScreenTopBar(title: String, titleTestTag: String, onBackClick: () -> Unit) {
+  TopAppBar(
+      colors =
+          TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface),
+      title = {
+        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+          Spacer(modifier = Modifier.weight(1f))
+          Text(
+              title,
+              color = MaterialTheme.colorScheme.onSurface,
+              modifier = Modifier.testTag(titleTestTag))
+          Spacer(modifier = Modifier.weight(2f))
+        }
+      },
+      navigationIcon = {
+        IconButton(onClick = onBackClick, Modifier.testTag("goBackButton")) {
+          Icon(
+              imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
+              contentDescription = "Back",
+              tint = MaterialTheme.colorScheme.onSurface)
+        }
+      })
 }
