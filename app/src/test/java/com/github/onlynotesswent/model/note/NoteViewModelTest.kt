@@ -22,12 +22,12 @@ class NoteViewModelTest {
   private val testNote =
       Note(
           id = "1",
-          type = Note.Type.NORMAL_TEXT,
           title = "title",
           content = "content",
           date = Timestamp.now(),
           visibility = Note.Visibility.DEFAULT,
           userId = "1",
+          folderId = "1",
           noteClass = Note.Class("CS-100", "Sample Class", 2024, "path"),
           image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888))
 
@@ -61,6 +61,12 @@ class NoteViewModelTest {
   }
 
   @Test
+  fun getRootNotesFromCallsRepository() {
+    noteViewModel.getRootNotesFrom("1")
+    verify(noteRepository).getRootNotesFrom(eq("1"), any(), any())
+  }
+
+  @Test
   fun getNoteByIdCallsRepository() {
     noteViewModel.getNoteById("1")
     verify(noteRepository).getNoteById(eq("1"), any(), any())
@@ -79,8 +85,14 @@ class NoteViewModelTest {
   }
 
   @Test
-  fun deleteNoteByIDCallsRepository() {
+  fun deleteNoteByIdCallsRepository() {
     noteViewModel.deleteNoteById("1", "1")
     verify(noteRepository).deleteNoteById(eq("1"), any(), any())
+  }
+
+  @Test
+  fun getNotesFromFolderCallsRepository() {
+    noteViewModel.getNotesFromFolder("1")
+    verify(noteRepository).getNotesFromFolder(eq("1"), any(), any())
   }
 }

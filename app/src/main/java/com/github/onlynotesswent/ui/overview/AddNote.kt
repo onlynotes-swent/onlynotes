@@ -29,6 +29,7 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -68,6 +69,7 @@ fun AddNoteScreen(
     userViewModel: UserViewModel
 ) {
 
+  val folderId = noteViewModel.currentFolderId.collectAsState()
   val currentYear = Calendar.getInstance().get(Calendar.YEAR)
   var title by remember { mutableStateOf("") }
   var className by remember { mutableStateOf("") }
@@ -178,50 +180,41 @@ fun AddNoteScreen(
 
               Spacer(modifier = Modifier.height(10.dp))
 
+              val scanNoteText = "Scan note"
+              val createNoteText = "Create note"
               OptionDropDownMenu(
                   value = template,
                   expanded = expandedTemplate,
                   buttonTag = "templateButton",
                   menuTag = "templateMenu",
                   onExpandedChange = { expandedTemplate = it },
-                  items = listOf("Scan note", "Create note", "Upload note"),
+                  items = listOf(scanNoteText, createNoteText),
                   onItemClick = { template = it })
 
               Spacer(modifier = Modifier.height(70.dp))
 
               Button(
                   onClick = {
-                    var type = Note.Type.NORMAL_TEXT
-                    when (template) {
-                      "Scan Note" -> {
-                        // call scan image API or functions. Once scanned, add the note to database
-                        scanner.scan()
-                        type = Note.Type.PDF
-                      }
-                      "Create Note" -> {
-                        type = Note.Type.NORMAL_TEXT
-                      }
-                      "Upload Note" -> {
-                        // upload image implementation here
-                        type = Note.Type.JPEG
-                      }
+                    if (template == scanNoteText) {
+                      // call scan image API or functions. Once scanned, add the note to database
+                      scanner.scan()
                     }
                     // provisional note, we will have to change this later
                     val note =
                         Note(
                             id = noteViewModel.getNewUid(),
-                            type = type,
                             title = title,
                             content = "",
                             date = Timestamp.now(),
                             visibility = visibility!!,
                             noteClass = Note.Class(classCode, className, classYear, "path"),
                             userId = userViewModel.currentUser.value!!.uid,
-                            image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888))
+                            image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888),
+                            folderId = folderId.value)
                     // create the note and add it to database
                     noteViewModel.addNote(note, userViewModel.currentUser.value!!.uid)
 
-                    if (type == Note.Type.NORMAL_TEXT) {
+                    if (template == createNoteText) {
                       noteViewModel.selectedNote(note)
                       navigationActions.navigateTo(Screen.EDIT_NOTE)
                     } else {

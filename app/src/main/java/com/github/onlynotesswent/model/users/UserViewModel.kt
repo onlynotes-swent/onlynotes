@@ -21,6 +21,9 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
   private val _currentUser = MutableStateFlow<User?>(null)
   val currentUser: StateFlow<User?> = _currentUser.asStateFlow()
 
+  private val _profileUser = MutableStateFlow<User?>(null)
+  val profileUser: StateFlow<User?> = _profileUser.asStateFlow()
+
   /** Exception thrown when a user is not logged in. */
   class UserNotLoggedInException : Exception("User Not Logged In")
 
@@ -46,11 +49,33 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
   }
 
   /**
+   * Sets the profile user to the specified user, used for displaying public profiles.
+   *
+   * @param user The user to set as the profile user.
+   */
+  fun setProfileUser(user: User) {
+    _profileUser.value = user
+  }
+
+  /**
+   * Refreshes the profile user to the specified user, used for displaying public profiles.
+   *
+   * @param uid The UID of the user to set as the profile user.
+   */
+  fun refreshProfileUser(uid: String) {
+    repository.getUserById(
+        uid,
+        onSuccess = { _profileUser.value = it },
+        onUserNotFound = { _profileUser.value = null },
+        onFailure = { _profileUser.value = null })
+  }
+
+  /**
    * Refreshes the current user by fetching the latest user data from the repository. If the current
    * user is not null, it retrieves the user by their UID and updates the current user state. If the
    * user is not found or an error occurs, the current user state is set to null.
    */
-  internal fun refreshUser() {
+  fun refreshCurrentUser() {
     _currentUser.value?.let { user ->
       repository.getUserById(
           user.uid,
@@ -175,7 +200,7 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
         user = followingUID,
         follower = _currentUser.value!!.uid,
         {
-          refreshUser()
+          refreshCurrentUser()
           onSuccess()
         },
         onFailure)
@@ -199,7 +224,7 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
         user = followingUID,
         follower = _currentUser.value!!.uid,
         {
-          refreshUser()
+          refreshCurrentUser()
           onSuccess()
         },
         onFailure)

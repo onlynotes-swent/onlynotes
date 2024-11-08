@@ -14,7 +14,6 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
 
   private data class FirebaseNote(
       val id: String,
-      val type: Note.Type,
       val title: String,
       val content: String,
       val date: Timestamp,
@@ -24,9 +23,51 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
       val className: String,
       val classYear: Int,
       val publicPath: String,
+      val folderId: String?,
       val image: String,
       val commentsList: List<String>
   )
+  /**
+   * Converts a single Comment object into a formatted string for Firestore storage.
+   *
+   * @param comment The Comment object to convert.
+   * @return A string representing the Comment, formatted as
+   *   "commentId<delimiter>userId<delimiter>userName<delimiter>content<delimiter>creationDate<delimiter>editedDate".
+   *
+   * Each field is separated by the `commentDelimiter` for easy parsing during retrieval.
+   */
+  private fun convertCommentToString(comment: Note.Comment): String {
+    return comment.commentId +
+        commentDelimiter +
+        comment.userId +
+        commentDelimiter +
+        comment.userName +
+        commentDelimiter +
+        comment.content +
+        commentDelimiter +
+        comment.creationDate.seconds.toString() +
+        commentDelimiter +
+        comment.editedDate.seconds.toString()
+  }
+  /**
+   * Converts a formatted string snapshot of a comment back into a Comment object.
+   *
+   * @param commentSnapshot The string representing the comment, formatted as
+   *   "commentId<delimiter>userId<delimiter>userName<delimiter>content<delimiter>creationDate<delimiter>editedDate".
+   * @return A Comment object created from the parsed string values.
+   * @throws IndexOutOfBoundsException if the comment snapshot is improperly formatted and does not
+   *   contain the expected number of fields.
+   */
+  private fun convertCommentStringToComment(commentSnapshot: String): Note.Comment {
+    val commentValues = commentSnapshot.split(commentDelimiter)
+    return Note.Comment(
+        commentValues[0],
+        userId = commentValues[1],
+        userName = commentValues[2],
+        content = commentValues[3],
+        creationDate = Timestamp(commentValues[4].toLong(), 0),
+        editedDate = Timestamp(commentValues[5].toLong(), 0))
+  }
   /**
    * Converts a list of Comment objects to a list of snapshot strings for Firestore storage.
    *
@@ -35,22 +76,17 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
    *   "commentId<delimiter>userId<delimiter>content".
    */
   private fun convertCommentsList(commentsList: List<Note.Comment>): List<String> {
-    return commentsList.map {
-      it.commentId + commentDelimiter + it.userId + commentDelimiter + it.content
-    }
+    return commentsList.map { convertCommentToString(it) }
   }
   /**
    * Converts a list of snapshot strings to a list of Comment objects.
    *
-   * @param snapshotList The list of snapshot strings, where each string represents a Comment in the
-   *   format "commentId<delimiter>userId<delimiter>content".
+   * @param commentSnapshotList The list of snapshot strings, where each string represents a Comment
+   *   in the format "commentId<delimiter>userId<delimiter>content".
    * @return A list of Comment objects created from the parsed snapshot strings.
    */
   private fun commentStringToCommentClass(commentSnapshotList: List<String>): List<Note.Comment> {
-    return commentSnapshotList.map {
-      val commentValues = it.split(commentDelimiter)
-      Note.Comment(commentValues[0], userId = commentValues[1], content = commentValues[2])
-    }
+    return commentSnapshotList.map { convertCommentStringToComment(it) }
   }
 
   /**
@@ -62,7 +98,6 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
   private fun convertNotes(note: Note): FirebaseNote {
     return FirebaseNote(
         note.id,
-        note.type,
         note.title,
         note.content,
         note.date,
@@ -72,6 +107,7 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
         note.noteClass.className,
         note.noteClass.classYear,
         note.noteClass.publicPath,
+        note.folderId,
         "null",
         convertCommentsList(note.comments.commentsList))
   }
@@ -107,7 +143,7 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
         onSuccess(publicNotes)
       } else {
         task.exception?.let { e ->
-          Log.e("NoteRepositoryFirestore", "Error getting visibility documents", e)
+          Log.e(TAG, "Error getting visibility documents", e)
           onFailure(e)
         }
       }
@@ -128,7 +164,30 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
         onSuccess(userNotes)
       } else {
         task.exception?.let { e ->
-          Log.e("NoteRepositoryFirestore", "Error getting user documents", e)
+          Log.e(TAG, "Error getting user documents", e)
+          onFailure(e)
+        }
+      }
+    }
+  }
+
+  override fun getRootNotesFrom(
+      userId: String,
+      onSuccess: (List<Note>) -> Unit,
+      onFailure: (Exception) -> Unit
+  ) {
+    db.collection(collectionPath).get().addOnCompleteListener { task ->
+      if (task.isSuccessful) {
+        val userRootNotes =
+            task.result.documents
+                .mapNotNull { document -> documentSnapshotToNote(document) }
+                .filter {
+                  it.userId == userId && it.folderId == null
+                } // filter out notes that are in folders
+        onSuccess(userRootNotes)
+      } else {
+        task.exception?.let { e ->
+          Log.e(TAG, "Error getting user documents", e)
           onFailure(e)
         }
       }
@@ -146,7 +205,7 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
         }
       } else {
         task.exception?.let { e ->
-          Log.e("NoteRepositoryFirestore", "Error getting document", e)
+          Log.e(TAG, "Error getting document", e)
           onFailure(e)
         }
       }
@@ -172,6 +231,27 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
         db.collection(collectionPath).document(id).delete(), onSuccess, onFailure)
   }
 
+  override fun getNotesFromFolder(
+      folderId: String,
+      onSuccess: (List<Note>) -> Unit,
+      onFailure: (Exception) -> Unit
+  ) {
+    db.collection(collectionPath).get().addOnCompleteListener { task ->
+      if (task.isSuccessful) {
+        val folderNotes =
+            task.result.documents
+                .mapNotNull { document -> documentSnapshotToNote(document) }
+                .filter { it.folderId == folderId }
+        onSuccess(folderNotes)
+      } else {
+        task.exception?.let { e ->
+          Log.e(TAG, "Error getting user documents", e)
+          onFailure(e)
+        }
+      }
+    }
+  }
+
   /**
    * Performs a Firestore operation and calls the appropriate callback based on the result.
    *
@@ -189,7 +269,7 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
         onSuccess()
       } else {
         result.exception?.let { e ->
-          Log.e("NoteRepositoryFirestore", "Error performing Firestore operation", e)
+          Log.e(TAG, "Error performing Firestore operation", e)
           onFailure(e)
         }
       }
@@ -205,7 +285,6 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
   fun documentSnapshotToNote(document: DocumentSnapshot): Note? {
     return try {
       val id = document.id
-      val type = Note.Type.valueOf(document.getString("type") ?: return null)
       val title = document.getString("title") ?: return null
       val content = document.getString("content") ?: return null
       val date = document.getTimestamp("date") ?: return null
@@ -217,6 +296,7 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
       val className = document.getString("className") ?: return null
       val classYear = document.getLong("classYear")?.toInt() ?: return null
       val classPath = document.getString("publicPath") ?: return null
+      val folderId = document.getString("folderId")
       val image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)
       val comments =
           commentStringToCommentClass(document.get("commentsList") as? List<String> ?: emptyList())
@@ -225,18 +305,22 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
 
       Note(
           id = id,
-          type = type,
           title = title,
           content = content,
           date = date,
           visibility = visibility,
           userId = userId,
           noteClass = Note.Class(classCode, className, classYear, classPath),
+          folderId = folderId,
           image = image,
           comments = Note.CommentCollection(comments))
     } catch (e: Exception) {
-      Log.e("NoteRepositoryFirestore", "Error converting document to Note", e)
+      Log.e(TAG, "Error converting document to Note", e)
       null
     }
+  }
+
+  companion object {
+    const val TAG = "NoteRepositoryFirestore"
   }
 }

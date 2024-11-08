@@ -7,6 +7,10 @@ plugins {
     id("com.google.gms.google-services")
 }
 
+jacoco {
+    toolVersion = "0.8.11"  // Set the JaCoCo version globally here
+}
+
 android {
     namespace = "com.github.onlynotesswent"
     compileSdk = 34
@@ -40,7 +44,7 @@ android {
     }
 
     testCoverage {
-        jacocoVersion = "0.8.8"
+        jacocoVersion = "0.8.11"
     }
 
     buildFeatures {
@@ -121,6 +125,13 @@ fun DependencyHandlerScope.globalTestImplementation(dep: Any) {
 }
 
 dependencies {
+    configurations.all {
+        resolutionStrategy.eachDependency {
+            if (requested.group == "org.jacoco" && requested.version == "0.8.8") {
+                useVersion("0.8.11")
+            }
+        }
+    }
 
 
     implementation(libs.androidx.core.ktx)
@@ -135,6 +146,11 @@ dependencies {
     testImplementation(libs.junit)
     globalTestImplementation(libs.androidx.junit)
     globalTestImplementation(libs.androidx.espresso.core)
+
+
+
+
+
 
     // -------------- Firebase ---------------------
     implementation(libs.firebase.database.ktx)
@@ -179,6 +195,11 @@ dependencies {
     androidTestImplementation("org.mockito:mockito-android:5.14.1")
 
 
+    //Image Library
+    implementation("io.coil-kt:coil-compose:2.1.0")
+    implementation(libs.imagepicker)
+
+
     // --------- Kaspresso test framework ----------
     globalTestImplementation(libs.kaspresso)
     globalTestImplementation(libs.kaspresso.compose)
@@ -198,6 +219,7 @@ tasks.withType<Test> {
         excludes = listOf("jdk.internal.*")
     }
 }
+
 
 tasks.register("jacocoTestReport", JacocoReport::class) {
     mustRunAfter("testDebugUnitTest", "connectedDebugAndroidTest")

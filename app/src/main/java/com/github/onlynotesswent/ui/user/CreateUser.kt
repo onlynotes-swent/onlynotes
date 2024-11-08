@@ -48,7 +48,7 @@ fun CreateUserScreen(navigationActions: NavigationActions, userViewModel: UserVi
   val lastName = remember { mutableStateOf("") }
   val userName = remember { mutableStateOf("") }
   val userNameError = remember { mutableStateOf(false) }
-  val saveEnabled = remember { mutableStateOf(false) }
+  val enableSaving = remember { mutableStateOf(false) }
   val context = LocalContext.current
 
   Scaffold(
@@ -78,7 +78,7 @@ fun CreateUserScreen(navigationActions: NavigationActions, userViewModel: UserVi
               UserNameTextField(userName, userNameError)
 
               // Save Button
-              saveEnabled.value = userName.value.isNotBlank()
+              enableSaving.value = userName.value.isNotBlank()
               SaveButton(
                   onClick = {
                     val user =
@@ -104,7 +104,7 @@ fun CreateUserScreen(navigationActions: NavigationActions, userViewModel: UserVi
                         })
                   },
                   // Disable the button if the user name is empty
-                  enabled = saveEnabled)
+                  enabled = enableSaving)
             }
       })
 }
