@@ -12,6 +12,7 @@ data class Note(
     val visibility: Visibility,
     val noteClass: Class,
     val userId: String,
+    val folderId: String? = null, // if note not assigned to a folder, folderId is null
     val image: Bitmap,
     val comments: CommentCollection = CommentCollection()
 ) {
@@ -92,7 +93,7 @@ data class Note(
        * @param userId The ID of the user adding the comment.
        * @param userName The username of the added comment user.
        * @param content The text content of the comment.
-       * @param CommentCollection The current collection of comments.
+       * @param commentCollection The current collection of comments.
        * @return An updated CommentCollection including the new comment.
        */
       fun addComment(

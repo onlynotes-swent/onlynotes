@@ -27,6 +27,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -67,7 +68,9 @@ fun AddNoteScreen(
     userViewModel: UserViewModel
 ) {
 
+  val folderId = noteViewModel.currentFolderId.collectAsState()
   val currentYear = Calendar.getInstance().get(Calendar.YEAR)
+
   var title by remember { mutableStateOf("") }
   var className by remember { mutableStateOf("") }
   var classCode by remember { mutableStateOf("") }
@@ -188,7 +191,8 @@ fun AddNoteScreen(
                             visibility = visibility!!,
                             noteClass = Note.Class(classCode, className, classYear, "path"),
                             userId = userViewModel.currentUser.value!!.uid,
-                            image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888))
+                            image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888),
+                            folderId = folderId.value)
                     // create the note and add it to database
                     noteViewModel.addNote(note, userViewModel.currentUser.value!!.uid)
 
