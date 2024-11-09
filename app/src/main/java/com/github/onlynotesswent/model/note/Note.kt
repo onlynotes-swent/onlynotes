@@ -60,9 +60,7 @@ data class Note(
       val publicPath: String
   )
 
-  /**
-   * Represents a list of Comments for a Note. The class is immutable.
-   */
+  /** Represents a list of Comments for a Note. The class is immutable. */
   class CommentCollection(val commentsList: List<Comment> = emptyList()) {
     /**
      * Retrieves a list of comments made by a specific user.
