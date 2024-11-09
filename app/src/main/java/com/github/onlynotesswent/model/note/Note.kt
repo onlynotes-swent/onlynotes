@@ -60,7 +60,9 @@ data class Note(
       val publicPath: String
   )
 
-  /** Represents a list of Comments for a Note. The class is immutable. */
+  /**
+   * Represents a list of Comments for a Note. The class is immutable.
+   */
   class CommentCollection(val commentsList: List<Comment> = emptyList()) {
     /**
      * Retrieves a list of comments made by a specific user.
@@ -81,12 +83,12 @@ data class Note(
      * @param content The text content of the comment.
      * @return An updated CommentCollection including the new comment.
      */
-    fun addComment(userId: String, userName: String, content: String): CommentCollection {
+    fun addCommentByUser(userId: String, userName: String, content: String): CommentCollection {
       val mutableCommentsList = commentsList.toMutableList()
       mutableCommentsList.add(
           0,
           Comment(
-              generateId(userId, content),
+              generateCommentId(userId, content),
               userId,
               userName,
               content,
@@ -102,12 +104,12 @@ data class Note(
      * @param content The new content for the comment.
      * @return An updated CommentCollection with the modified comment.
      */
-    fun editComment(commentId: String, content: String): CommentCollection {
+    fun editCommentByCommentId(commentId: String, content: String): CommentCollection {
       val updatedCommentsList =
           commentsList.map {
             if (it.commentId == commentId)
                 Comment(
-                    generateId(it.userId, content),
+                    generateCommentId(it.userId, content),
                     it.userId,
                     it.userName,
                     content,
@@ -124,7 +126,7 @@ data class Note(
      * @param commentId The ID of the comment to be deleted.
      * @return An updated CommentCollection excluding the deleted comment.
      */
-    fun deleteComment(commentId: String): CommentCollection {
+    fun deleteCommentByCommentId(commentId: String): CommentCollection {
       return CommentCollection(commentsList.filter { it.commentId != commentId })
     }
 
@@ -135,7 +137,7 @@ data class Note(
      * @param content The content of the comment.
      * @return A SHA-256 hash string that uniquely represents this comment instance.
      */
-    private fun generateId(userId: String, content: String): String {
+    private fun generateCommentId(userId: String, content: String): String {
       val timestamp = System.currentTimeMillis()
       val input = "$userId$content$timestamp"
       val digest = MessageDigest.getInstance("SHA-256")
