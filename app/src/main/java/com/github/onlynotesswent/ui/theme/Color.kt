@@ -2,10 +2,13 @@ package com.github.onlynotesswent.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val Purple80 = Color(0xFFD0BCFF)
-val PurpleGrey80 = Color(0xFFCCC2DC)
-val Pink80 = Color(0xFFEFB8C8)
+// Color palette for the main themes of the app: Light mode and Dark mode
+val MainColor = Color(0xFF00A5DF)
+val LightAccent = Color(0xFF50C3DD)
+val DarkAccent = Color(0xFF735D73)
+val LightShade = Color(0xFFE7E4F1)
+val DarkShade = Color(0xFF191925)
+val LightContainer = Color(0xFF7AC0D0)
+val DarkContainer = Color(0xFF02739A)
 
-val Purple40 = Color(0xFF6650a4)
-val PurpleGrey40 = Color(0xFF625b71)
-val Pink40 = Color(0xFF7D5260)
+val Danger = Color(0xFFF44336)
