@@ -27,6 +27,7 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SheetState
@@ -65,6 +66,8 @@ import com.github.onlynotesswent.utils.ProfilePictureTaker
  *
  * @param navigationActions An instance of NavigationActions to handle navigation events.
  * @param userViewModel An instance of UserViewModel to manage user data.
+ * @param profilePictureTaker An instance of ProfilePictureTaker to choose a profile picture.
+ * @param fileViewModel An instance of FileViewModel to manage file operations.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -180,11 +183,13 @@ fun EditProfileScreen(
                               }
                             },
                             onFailure = { exception ->
-                              Toast.makeText(
-                                      localContext,
-                                      "Error while updating user: ${exception.message}",
-                                      Toast.LENGTH_SHORT)
-                                  .show()
+                              val errorMessage =
+                                  when (exception) {
+                                    is UserRepositoryFirestore.UsernameTakenException ->
+                                        "Username is already taken. Please choose a different one."
+                                    else -> "Oops! Something went wrong. Please try again later."
+                                  }
+                              Toast.makeText(localContext, errorMessage, Toast.LENGTH_SHORT).show()
                               Log.e("EditProfileScreen", "Error while updating user ", exception)
                               userNameError.value =
                                   exception is UserRepositoryFirestore.UsernameTakenException
@@ -252,24 +257,18 @@ fun EditableProfilePicture(
     IconButton(
         onClick = { showSheet.value = true },
         modifier =
-            Modifier.testTag("displayBottomSheet") // Size of the edit icon
+            Modifier.testTag("displayBottomSheet")
                 .align(Alignment.BottomEnd) // Position on the bottom-left corner
                 .offset(x = (0).dp, y = (-5).dp)
                 .clip(CircleShape)
-                .size(40.dp)
-                .background(
-                    androidx.compose.material3.ButtonDefaults.buttonColors()
-                        .containerColor) // Background color
-        ,
+                .size(40.dp) // Size of the edit icon background
+                .background(MaterialTheme.colorScheme.secondary),
         content = {
           Icon(
               imageVector = Icons.Default.Edit,
               contentDescription = "Display Bottom Sheet",
-              modifier = Modifier.size(30.dp),
-              tint =
-                  androidx.compose.material3.ButtonDefaults.buttonColors()
-                      .contentColor
-                      .copy(alpha = 0.8f))
+              modifier = Modifier.size(30.dp), // Size of the edit icon
+              tint = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.8f))
         })
 
     if (showSheet.value) {
@@ -309,9 +308,9 @@ fun BottomSheetContent(
                   profilePictureTaker.pickImage()
                   onClose()
                 },
-                "Edit Profile Picture",
+                "Edit profile picture",
                 Icons.Default.Edit,
-                Color.LightGray,
+                MaterialTheme.colorScheme.tertiary,
                 "editProfilePicture")
             Spacer(modifier = Modifier.height(16.dp))
             BottomSheetRow(
@@ -320,9 +319,9 @@ fun BottomSheetContent(
                   hasProfilePictureBeenChanged.value = true
                   onClose()
                 },
-                "Remove Profile Picture",
+                "Remove profile picture",
                 Icons.Default.Delete,
-                Color.Red,
+                MaterialTheme.colorScheme.tertiary,
                 "removeProfilePicture")
           }
         } else {
@@ -340,7 +339,7 @@ fun BottomSheetContent(
               },
               "Add a profile picture",
               Icons.Default.Add,
-              Color.LightGray,
+              MaterialTheme.colorScheme.tertiary,
               "addProfilePicture")
         }
       }
