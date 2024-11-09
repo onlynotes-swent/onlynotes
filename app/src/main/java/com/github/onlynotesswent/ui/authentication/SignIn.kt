@@ -1,9 +1,13 @@
 package com.github.onlynotesswent.ui.authentication
 
 import android.content.Context
+import android.content.Intent
 import android.util.Log
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
+import androidx.activity.compose.ManagedActivityResultLauncher
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.ActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -19,6 +23,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -31,12 +36,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.credentials.CredentialManager
 import com.github.onlynotesswent.R
 import com.github.onlynotesswent.model.authentication.GoogleCredSignIn
 import com.github.onlynotesswent.model.users.UserViewModel
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
 import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.api.ApiException
 import com.google.firebase.Firebase
 import com.google.firebase.auth.AuthCredential
 import com.google.firebase.auth.AuthResult
@@ -55,14 +64,42 @@ fun SignInScreen(
 ) {
 
   // AUTHENTICATION:
-  val context = LocalContext.current as? AppCompatActivity
-  if (context == null) {
-    // Don not display screen if context isn not an AppCompatActivity
-    Log.e("SignInScreen", "Context is not an AppCompatActivity")
-    return
-  }
+  val context = LocalContext.current
+  val credentialManager = CredentialManager.create(context)
+  val googleSignIn = GoogleCredSignIn(context, credentialManager, serverClientId)
 
-  val googleSignIn = GoogleCredSignIn(context, serverClientId)
+  // launcher for fallback method
+  val launcher =
+      rememberFirebaseAuthLauncher(
+          onAuthComplete = { result ->
+            authSuccessHandler(result, navigationActions, userViewModel) { s ->
+              Toast.makeText(context, s, Toast.LENGTH_LONG).show()
+            }
+          },
+          onAuthError = { e ->
+            Toast.makeText(context, "Login Failed!", Toast.LENGTH_LONG).show()
+            Log.e("SignInScreen", "Failed to sign in: ${e.statusCode}")
+          })
+
+  val onClickSignIn: () -> Unit = {
+    try {
+      // Try to log in using Google Credentials
+      googleSignIn.googleLogin { googleIdToken ->
+        // Sign in to Firebase with the Google ID token
+        val firebaseCredential = GoogleAuthProvider.getCredential(googleIdToken, null)
+        signInWithFirebase(firebaseCredential, navigationActions, userViewModel, context)
+      }
+    } catch (e: Exception) {
+      // In case of failure use fallback deprecated method
+      val gso =
+          GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+              .requestIdToken(serverClientId)
+              .requestEmail()
+              .build()
+      val googleSignInClient = GoogleSignIn.getClient(context, gso)
+      launcher.launch(googleSignInClient.signInIntent)
+    }
+  }
 
   // UI:
   Scaffold(modifier = Modifier.fillMaxSize().testTag("loginScreenScaffold")) { padding ->
@@ -74,20 +111,13 @@ fun SignInScreen(
       WelcomeText()
       Logo()
       Spacer(modifier = Modifier.height(80.dp))
-      SignInButton(
-          onClick = {
-            googleSignIn.googleLogin {
-              // Get the ID token from the credential and sign in to Firebase
-              val idToken = idToken
-              val credential = GoogleAuthProvider.getCredential(idToken, null)
-              signInWithFirebase(credential, navigationActions, userViewModel, context)
-            }
-          })
+      SignInButton(onClick = { onClickSignIn() })
     }
   }
 }
 
-private fun signInWithFirebase(
+// AUTHENTICATION:
+internal fun signInWithFirebase(
     credential: AuthCredential,
     navigationActions: NavigationActions,
     userViewModel: UserViewModel,
@@ -129,6 +159,38 @@ internal fun authSuccessHandler(
       { showMessage("Error while fetching user: $it") })
 }
 
+@Composable
+internal fun rememberFirebaseAuthLauncher(
+    onAuthComplete: (AuthResult) -> Unit,
+    onAuthError: (ApiException) -> Unit
+): ManagedActivityResultLauncher<Intent, ActivityResult> {
+  val scope = rememberCoroutineScope()
+  return rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+      result ->
+    activityResultHandler(result, scope, onAuthComplete, onAuthError)
+  }
+}
+
+internal fun activityResultHandler(
+    result: ActivityResult,
+    scope: CoroutineScope,
+    onAuthComplete: (AuthResult) -> Unit,
+    onAuthError: (ApiException) -> Unit
+) {
+  val task = result.data?.let { GoogleSignIn.getSignedInAccountFromIntent(it) }
+  try {
+    val account = task?.getResult(ApiException::class.java)!!
+    val credential = GoogleAuthProvider.getCredential(account.idToken!!, null)
+    scope.launch {
+      val authResult = Firebase.auth.signInWithCredential(credential).await()
+      onAuthComplete(authResult)
+    }
+  } catch (e: ApiException) {
+    onAuthError(e)
+  }
+}
+
+// UI:
 @Composable
 internal fun Logo() {
   Image(
