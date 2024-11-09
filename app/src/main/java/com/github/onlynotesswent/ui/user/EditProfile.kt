@@ -4,23 +4,35 @@ import android.content.Context
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
@@ -30,11 +42,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 import coil.compose.rememberAsyncImagePainter
 import com.github.onlynotesswent.model.file.FileType
@@ -52,7 +66,10 @@ import com.github.onlynotesswent.utils.ProfilePictureTaker
  *
  * @param navigationActions An instance of NavigationActions to handle navigation events.
  * @param userViewModel An instance of UserViewModel to manage user data.
+ * @param profilePictureTaker An instance of ProfilePictureTaker to choose a profile picture.
+ * @param fileViewModel An instance of FileViewModel to manage file operations.
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditProfileScreen(
     navigationActions: NavigationActions,
@@ -71,13 +88,16 @@ fun EditProfileScreen(
   val isProfilePictureUpToDate = remember { mutableStateOf(false) }
   val hasProfilePictureBeenChanged = remember { mutableStateOf(false) }
   val localContext = LocalContext.current
+  val sheetState = rememberModalBottomSheetState()
+  val showSheet = remember { mutableStateOf(false) }
+
   if (user.value == null) {
     // If the user is null, display an error message
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally) {
-          Text("User  not found ...")
+          Text("User not found ...")
         }
     Log.e("EditProfileScreen", "User not found")
   } else
@@ -95,8 +115,8 @@ fun EditProfileScreen(
                 navigationActions,
                 includeBackButton = true,
                 onBackButtonClick = {
-                  // When we go back we  we will need to fetch again the old profile picture if it
-                  // was changed, because going back doesn't save the changes
+                  // When we go back we will need to fetch again the old profile picture (if the
+                  // picture was changed), because going back doesn't save the changes
                   isProfilePictureUpToDate.value = !hasProfilePictureBeenChanged.value
                   navigationActions.goBack()
                 })
@@ -113,7 +133,10 @@ fun EditProfileScreen(
                       fileViewModel,
                       isProfilePictureUpToDate,
                       hasProfilePictureBeenChanged,
-                      localContext)
+                      localContext,
+                      showSheet,
+                      sheetState,
+                  )
 
                   // Text Fields for user information
                   FirstNameTextField(newFirstName)
@@ -138,11 +161,19 @@ fun EditProfileScreen(
                               // Upload or delete the profile picture if it has been changed
                               if (hasProfilePictureBeenChanged.value) {
                                 if (profilePictureUri.value.isNotBlank()) {
-                                  fileViewModel.uploadFile(
-                                      userViewModel.currentUser.value!!.uid,
-                                      profilePictureUri.value.toUri(),
-                                      FileType.PROFILE_PIC_JPEG,
-                                  )
+                                  if (user.value!!.hasProfilePicture) {
+                                    fileViewModel.updateFile(
+                                        userViewModel.currentUser.value!!.uid,
+                                        profilePictureUri.value.toUri(),
+                                        FileType.PROFILE_PIC_JPEG,
+                                    )
+                                  } else {
+                                    fileViewModel.uploadFile(
+                                        userViewModel.currentUser.value!!.uid,
+                                        profilePictureUri.value.toUri(),
+                                        FileType.PROFILE_PIC_JPEG,
+                                    )
+                                  }
                                 } else {
                                   fileViewModel.deleteFile(
                                       userViewModel.currentUser.value!!.uid,
@@ -152,11 +183,13 @@ fun EditProfileScreen(
                               }
                             },
                             onFailure = { exception ->
-                              Toast.makeText(
-                                      localContext,
-                                      "Error while updating user: ${exception.message}",
-                                      Toast.LENGTH_SHORT)
-                                  .show()
+                              val errorMessage =
+                                  when (exception) {
+                                    is UserRepositoryFirestore.UsernameTakenException ->
+                                        "Username is already taken. Please choose a different one."
+                                    else -> "Oops! Something went wrong. Please try again later."
+                                  }
+                              Toast.makeText(localContext, errorMessage, Toast.LENGTH_SHORT).show()
                               Log.e("EditProfileScreen", "Error while updating user ", exception)
                               userNameError.value =
                                   exception is UserRepositoryFirestore.UsernameTakenException
@@ -167,6 +200,7 @@ fun EditProfileScreen(
           })
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditableProfilePicture(
     profilePictureTaker: ProfilePictureTaker,
@@ -175,7 +209,9 @@ fun EditableProfilePicture(
     fileViewModel: FileViewModel,
     isProfilePictureUpToDate: MutableState<Boolean>,
     hasProfilePictureBeenChanged: MutableState<Boolean>,
-    localContext: Context
+    localContext: Context,
+    showSheet: MutableState<Boolean>,
+    sheetState: SheetState
 ) {
   val user = userViewModel.currentUser.collectAsState()
 
@@ -218,46 +254,110 @@ fun EditableProfilePicture(
 
     // Edit Icon Overlay
     IconButton(
-        onClick = { // Edit the image and save the URI to the profilePicture state
-          profilePictureTaker.setOnImageSelected { uri ->
-            if (uri != null) {
-              profilePictureUri.value = uri.toString()
-              hasProfilePictureBeenChanged.value = true
-            }
-          }
-          profilePictureTaker.pickImage()
-        },
+        onClick = { showSheet.value = true },
         modifier =
-            Modifier.testTag("editProfilePicture")
-                .align(Alignment.CenterEnd) // Position on the bottom-right corner
-                .offset(x = 42.dp, y = 15.dp)
-                .clip(CircleShape)) {
+            Modifier.testTag("displayBottomSheet")
+                .align(Alignment.BottomEnd) // Position on the bottom-left corner
+                .offset(x = (0).dp, y = (-5).dp)
+                .clip(CircleShape)
+                .size(40.dp) // Size of the edit icon background
+                .background(MaterialTheme.colorScheme.secondary),
+        content = {
           Icon(
               imageVector = Icons.Default.Edit,
-              contentDescription = "Edit Profile Picture",
-              modifier = Modifier.testTag("editProfilePicture").size(40.dp) // Size of the edit icon
-              ,
-              tint = Color.Blue // Icon color
-              )
-        }
+              contentDescription = "Display Bottom Sheet",
+              modifier = Modifier.size(30.dp), // Size of the edit icon
+              tint = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.8f))
+        })
 
-    // Delete Image Icon
-    IconButton(
-        onClick = { // Delete the image and clear the uri
-          profilePictureUri.value = ""
-          hasProfilePictureBeenChanged.value = true
-        },
-        modifier =
-            Modifier.align(Alignment.CenterEnd) // Position on the bottom-left corner
-                .offset(x = 42.dp, y = (-25).dp)
-                .clip(CircleShape)) {
-          Icon(
-              imageVector = Icons.Default.Delete,
-              contentDescription = "Delete Profile Picture",
-              modifier =
-                  Modifier.testTag("deleteProfilePicture").size(40.dp), // Size of the edit icon
-              tint = Color.Red // Icon color
-              )
+    if (showSheet.value) {
+      ModalBottomSheet(onDismissRequest = { showSheet.value = false }, sheetState = sheetState) {
+        BottomSheetContent(
+            onClose = { showSheet.value = false },
+            profilePictureTaker,
+            profilePictureUri,
+            hasProfilePictureBeenChanged)
+      }
+    }
+  }
+}
+
+@Composable
+fun BottomSheetContent(
+    onClose: () -> Unit,
+    profilePictureTaker: ProfilePictureTaker,
+    profilePictureUri: MutableState<String>,
+    hasProfilePictureBeenChanged: MutableState<Boolean>
+) {
+  Column(
+      modifier = Modifier.fillMaxWidth().padding(30.dp),
+      horizontalAlignment = Alignment.CenterHorizontally,
+      verticalArrangement = Arrangement.Center) {
+        if (profilePictureUri.value.isNotBlank()) {
+          // If the user has a profile picture, display the edit and remove options
+          Column(horizontalAlignment = Alignment.Start) {
+            BottomSheetRow(
+                {
+                  profilePictureTaker.setOnImageSelected { uri ->
+                    if (uri != null) {
+                      profilePictureUri.value = uri.toString()
+                      hasProfilePictureBeenChanged.value = true
+                    }
+                  }
+                  profilePictureTaker.pickImage()
+                  onClose()
+                },
+                "Edit profile picture",
+                Icons.Default.Edit,
+                MaterialTheme.colorScheme.tertiary,
+                "editProfilePicture")
+            Spacer(modifier = Modifier.height(16.dp))
+            BottomSheetRow(
+                {
+                  profilePictureUri.value = ""
+                  hasProfilePictureBeenChanged.value = true
+                  onClose()
+                },
+                "Remove profile picture",
+                Icons.Default.Delete,
+                MaterialTheme.colorScheme.tertiary,
+                "removeProfilePicture")
+          }
+        } else {
+          // If the user doesn't have a profile picture, display the add option
+          BottomSheetRow(
+              {
+                profilePictureTaker.setOnImageSelected { uri ->
+                  if (uri != null) {
+                    profilePictureUri.value = uri.toString()
+                    hasProfilePictureBeenChanged.value = true
+                  }
+                }
+                profilePictureTaker.pickImage()
+                onClose()
+              },
+              "Add a profile picture",
+              Icons.Default.Add,
+              MaterialTheme.colorScheme.tertiary,
+              "addProfilePicture")
         }
+      }
+}
+
+@Composable
+fun BottomSheetRow(
+    onClick: () -> Unit,
+    description: String,
+    icon: ImageVector,
+    color: Color,
+    testTag: String
+) {
+  Row(modifier = Modifier.testTag(testTag).clickable { onClick() }) {
+    Icon(
+        imageVector = icon,
+        contentDescription = description,
+        modifier = Modifier.size(30.dp).offset(x = (-20).dp, y = (-3).dp),
+        tint = color)
+    Text(description, fontSize = 18.sp)
   }
 }
