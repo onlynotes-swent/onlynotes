@@ -2,10 +2,10 @@ package com.github.onlynotesswent.ui.overview
 
 import android.graphics.Bitmap
 import android.util.Log
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -15,16 +15,15 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.outlined.Clear
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -57,7 +56,6 @@ import java.util.Locale
  * @param noteViewModel The ViewModel that provides the current note to be edited and handles note
  *   updates.
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditNoteScreen(
     navigationActions: NavigationActions,
@@ -106,25 +104,17 @@ fun EditNoteScreen(
     Scaffold(
         modifier = Modifier.testTag("editNoteScreen"),
         topBar = {
-          TopAppBar(
-              colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFB3E5FC)),
-              title = {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically) {
-                      Spacer(modifier = Modifier.weight(1.5f))
-                      Text("Edit note", Modifier.testTag("editNoteTitle"))
-                      Spacer(modifier = Modifier.weight(2f))
-                    }
+          ScreenTopBar(
+              title = "Edit note",
+              titleTestTag = "editNoteTitle",
+              onBackClick = { navigationActions.goBack() },
+              icon = {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
+                    contentDescription = "Back",
+                    tint = MaterialTheme.colorScheme.onSurface)
               },
-              navigationIcon = {
-                IconButton(
-                    onClick = { navigationActions.goBack() }, Modifier.testTag("goBackButton")) {
-                      Icon(
-                          imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                          contentDescription = "Back")
-                    }
-              })
+              iconTestTag = "goBackButton")
         },
         content = { paddingValues ->
           Column(
@@ -136,12 +126,17 @@ fun EditNoteScreen(
                       .verticalScroll(rememberScrollState()),
               verticalArrangement = Arrangement.spacedBy(8.dp),
               horizontalAlignment = Alignment.CenterHorizontally) {
-                OutlinedTextField(
+                NoteDataTextField(
                     value = updatedNoteTitle,
                     onValueChange = { updatedNoteTitle = it },
-                    label = { Text("Note Title") },
-                    placeholder = { Text("Enter the new title here") },
-                    modifier = Modifier.fillMaxWidth().testTag("EditTitle textField"))
+                    label = "Note Title",
+                    placeholder = "Enter the new title here",
+                    modifier = Modifier.fillMaxWidth().testTag("EditTitle textField"),
+                    trailingIcon = {
+                      IconButton(onClick = { updatedNoteTitle = "" }) {
+                        Icon(Icons.Outlined.Clear, contentDescription = "Clear Title")
+                      }
+                    })
 
                 OptionDropDownMenu(
                     value =
@@ -154,32 +149,32 @@ fun EditNoteScreen(
                     items = Note.Visibility.READABLE_STRINGS,
                     onItemClick = { visibility = Note.Visibility.fromReadableString(it) })
 
-                OutlinedTextField(
+                NoteDataTextField(
                     value = updatedClassName,
                     onValueChange = { updatedClassName = it },
-                    label = { Text("Class Name") },
-                    placeholder = { Text("Set the Class Name for the Note") },
+                    label = "Class Name",
+                    placeholder = "Set the class name for the note",
                     modifier = Modifier.fillMaxWidth().testTag("EditClassName textField"))
 
-                OutlinedTextField(
+                NoteDataTextField(
                     value = updatedClassCode,
                     onValueChange = { updatedClassCode = it },
-                    label = { Text("Class Code") },
-                    placeholder = { Text("Set the Class Code for the Note") },
+                    label = "Class Code",
+                    placeholder = "Set the class code for the note",
                     modifier = Modifier.fillMaxWidth().testTag("EditClassCode textField"))
 
-                OutlinedTextField(
+                NoteDataTextField(
                     value = updatedClassYear.toString(),
                     onValueChange = { updatedClassYear = it.toIntOrNull() ?: currentYear },
-                    label = { Text("Class Year") },
-                    placeholder = { Text("Set the Class Year for the Note") },
+                    label = "Class Year",
+                    placeholder = "Set the class year for the note",
                     modifier = Modifier.fillMaxWidth().testTag("EditClassYear textField"))
 
-                OutlinedTextField(
+                NoteDataTextField(
                     value = updatedNoteText,
                     onValueChange = { updatedNoteText = it },
-                    label = { Text("Note Content") },
-                    placeholder = { Text("Enter your note here...") },
+                    label = "Note Content",
+                    placeholder = "Enter your note here...",
                     modifier = Modifier.fillMaxWidth().height(400.dp).testTag("EditNote textField"))
 
                 Button(
@@ -209,12 +204,20 @@ fun EditNoteScreen(
                         navigationActions.navigateTo(Screen.OVERVIEW)
                       }
                     },
+                    colors =
+                        ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.onPrimary),
                     modifier = Modifier.testTag("Save button")) {
                       Text("Update note")
                     }
 
                 Button(
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF0000)),
+                    colors =
+                        ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.background,
+                            contentColor = MaterialTheme.colorScheme.error),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.error),
                     onClick = {
                       noteViewModel.deleteNoteById(
                           note?.id ?: "", note?.userId ?: currentUser!!.uid)
@@ -223,7 +226,12 @@ fun EditNoteScreen(
                     modifier = Modifier.testTag("Delete button")) {
                       Text("Delete note")
                     }
+
                 Button(
+                    colors =
+                        ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.onPrimary),
                     onClick = {
                       updatedComments =
                           Note.CommentCollection.addComment(
