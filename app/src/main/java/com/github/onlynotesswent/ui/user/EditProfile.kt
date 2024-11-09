@@ -97,7 +97,7 @@ fun EditProfileScreen(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally) {
-          Text("User  not found ...")
+          Text("User not found ...")
         }
     Log.e("EditProfileScreen", "User not found")
   } else
@@ -115,8 +115,8 @@ fun EditProfileScreen(
                 navigationActions,
                 includeBackButton = true,
                 onBackButtonClick = {
-                  // When we go back we  we will need to fetch again the old profile picture if it
-                  // was changed, because going back doesn't save the changes
+                  // When we go back we will need to fetch again the old profile picture (if the
+                  // picture was changed), because going back doesn't save the changes
                   isProfilePictureUpToDate.value = !hasProfilePictureBeenChanged.value
                   navigationActions.goBack()
                 })
@@ -253,7 +253,6 @@ fun EditableProfilePicture(
         contentScale = ContentScale.Crop)
 
     // Edit Icon Overlay
-
     IconButton(
         onClick = { showSheet.value = true },
         modifier =
