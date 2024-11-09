@@ -201,7 +201,7 @@ class EndToEndTest {
     composeTestRule
         .onNodeWithTag("templateMenu")
         .onChildren()
-        .filter(hasText("Create Note"))
+        .filter(hasText("Create note"))
         .onFirst()
         .performClick()
 
