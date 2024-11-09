@@ -251,9 +251,7 @@ fun EditNoteScreen(
                           OutlinedTextField(
                               value = comment.content,
                               onValueChange = {
-                                updatedComments =
-                                    updatedComments.editComment(
-                                        comment.commentId, it)
+                                updatedComments = updatedComments.editComment(comment.commentId, it)
                                 updateOnlyNoteCommentAndDate()
                               },
                               label = {
@@ -273,9 +271,7 @@ fun EditNoteScreen(
 
                           IconButton(
                               onClick = {
-                                updatedComments =
-                                    updatedComments.deleteComment(
-                                        comment.commentId)
+                                updatedComments = updatedComments.deleteComment(comment.commentId)
                                 updateOnlyNoteCommentAndDate()
                               },
                               modifier = Modifier.testTag("DeleteCommentButton")) {
