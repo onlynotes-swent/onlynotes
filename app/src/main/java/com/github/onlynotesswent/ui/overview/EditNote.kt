@@ -86,6 +86,7 @@ fun EditNoteScreen(
             visibility = note?.visibility ?: Note.Visibility.DEFAULT,
             noteClass = note?.noteClass ?: Note.Class("", "", currentYear, ""),
             userId = note?.userId ?: "",
+            folderId = note?.folderId,
             image =
                 note?.image
                     ?: Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888), // Placeholder Bitmap
@@ -226,11 +227,10 @@ fun EditNoteScreen(
                 Button(
                     onClick = {
                       updatedComments =
-                          Note.CommentCollection.addComment(
+                          updatedComments.addComment(
                               currentUser?.uid ?: "1",
                               currentUser?.userName ?: "Invalid username",
-                              "",
-                              updatedComments)
+                              "")
                       updateOnlyNoteCommentAndDate()
                     },
                     modifier = Modifier.testTag("Add Comment Button")) {
@@ -252,8 +252,8 @@ fun EditNoteScreen(
                               value = comment.content,
                               onValueChange = {
                                 updatedComments =
-                                    Note.CommentCollection.editComment(
-                                        comment.commentId, it, updatedComments)
+                                    updatedComments.editComment(
+                                        comment.commentId, it)
                                 updateOnlyNoteCommentAndDate()
                               },
                               label = {
@@ -274,8 +274,8 @@ fun EditNoteScreen(
                           IconButton(
                               onClick = {
                                 updatedComments =
-                                    Note.CommentCollection.deleteComment(
-                                        comment.commentId, updatedComments)
+                                    updatedComments.deleteComment(
+                                        comment.commentId)
                                 updateOnlyNoteCommentAndDate()
                               },
                               modifier = Modifier.testTag("DeleteCommentButton")) {
