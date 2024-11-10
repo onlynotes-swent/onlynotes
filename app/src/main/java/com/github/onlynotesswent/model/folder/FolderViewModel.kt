@@ -92,6 +92,16 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
   }
 
   /**
+   * Deletes all folders from a user.
+   *
+   * @param userId The ID of the user to delete folders notes for.
+   */
+  fun deleteFoldersByUserId(userId: String) {
+    repository.deleteFoldersByUserId(
+        userId, onSuccess = { getRootFoldersFromUid(userId) }, onFailure = {})
+  }
+
+  /**
    * Retrieves all folders owned by a user.
    *
    * @param userId The ID of the user to retrieve folders for.

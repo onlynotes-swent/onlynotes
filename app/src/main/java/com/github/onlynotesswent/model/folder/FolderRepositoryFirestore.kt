@@ -54,6 +54,39 @@ class FolderRepositoryFirestore(private val db: FirebaseFirestore) : FolderRepos
     }
   }
 
+  override fun deleteFoldersByUserId(
+      userId: String,
+      onSuccess: () -> Unit,
+      onFailure: (Exception) -> Unit
+  ) {
+    db.collection(folderCollectionPath).get().addOnCompleteListener { task ->
+      if (task.isSuccessful) {
+        val userFolders =
+            task.result.documents
+                .mapNotNull { document -> documentSnapshotToFolder(document) }
+                .filter { it.userId == userId }
+        userFolders.forEach { folder ->
+          db.collection(folderCollectionPath).document(folder.id).delete().addOnCompleteListener {
+              result ->
+            if (result.isSuccessful) {
+              onSuccess()
+            } else {
+              result.exception?.let { e: Exception ->
+                onFailure(e)
+                Log.e(TAG, "Failed to delete folder: ${e.message}")
+              }
+            }
+          }
+        }
+      } else {
+        task.exception?.let { e: Exception ->
+          onFailure(e)
+          Log.e(TAG, "Failed to retrieve folders from user: ${e.message}")
+        }
+      }
+    }
+  }
+
   override fun getFolderById(
       folderId: String,
       onSuccess: (Folder) -> Unit,

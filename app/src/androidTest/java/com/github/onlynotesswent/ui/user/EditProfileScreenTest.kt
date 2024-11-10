@@ -15,6 +15,8 @@ import androidx.compose.ui.test.performTextInput
 import androidx.core.net.toUri
 import com.github.onlynotesswent.model.file.FileRepository
 import com.github.onlynotesswent.model.file.FileViewModel
+import com.github.onlynotesswent.model.folder.FolderRepository
+import com.github.onlynotesswent.model.folder.FolderViewModel
 import com.github.onlynotesswent.model.note.NoteRepository
 import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.model.users.User
@@ -42,9 +44,11 @@ class EditProfileScreenTest {
   @Mock private lateinit var profilePictureTaker: ProfilePictureTaker
   @Mock private lateinit var mockNoteRepository: NoteRepository
   @Mock private lateinit var mockFileRepository: FileRepository
+  @Mock private lateinit var mockFolderRepository: FolderRepository
   private lateinit var noteViewModel: NoteViewModel
   private lateinit var userViewModel: UserViewModel
   private lateinit var fileViewModel: FileViewModel
+  private lateinit var folderViewModel: FolderViewModel
   private val testUid = "testUid123"
   private val testUser =
       User(
@@ -67,6 +71,7 @@ class EditProfileScreenTest {
     userViewModel = UserViewModel(mockUserRepository)
     noteViewModel = NoteViewModel(mockNoteRepository)
     fileViewModel = FileViewModel(mockFileRepository)
+    folderViewModel = FolderViewModel(mockFolderRepository)
 
     // Mock the current route to be the user create screen
     `when`(mockNavigationActions.currentRoute()).thenReturn(Screen.EDIT_PROFILE)
@@ -98,7 +103,13 @@ class EditProfileScreenTest {
   @Test
   fun displayAllComponents() {
     composeTestRule.setContent {
-      EditProfileScreen(mockNavigationActions, userViewModel, profilePictureTaker, fileViewModel)
+      EditProfileScreen(
+          mockNavigationActions,
+          userViewModel,
+          profilePictureTaker,
+          fileViewModel,
+          noteViewModel,
+          folderViewModel)
     }
 
     composeTestRule.onNodeWithTag("ProfileScreen").assertExists()
@@ -118,7 +129,13 @@ class EditProfileScreenTest {
   @Test
   fun submitNavigatesToHomeProfile() {
     composeTestRule.setContent {
-      EditProfileScreen(mockNavigationActions, userViewModel, profilePictureTaker, fileViewModel)
+      EditProfileScreen(
+          mockNavigationActions,
+          userViewModel,
+          profilePictureTaker,
+          fileViewModel,
+          noteViewModel,
+          folderViewModel)
     }
 
     composeTestRule.onNodeWithTag("saveButton").performClick()
@@ -128,7 +145,13 @@ class EditProfileScreenTest {
   @Test
   fun modifyProfile() {
     composeTestRule.setContent {
-      EditProfileScreen(mockNavigationActions, userViewModel, profilePictureTaker, fileViewModel)
+      EditProfileScreen(
+          mockNavigationActions,
+          userViewModel,
+          profilePictureTaker,
+          fileViewModel,
+          noteViewModel,
+          folderViewModel)
     }
 
     composeTestRule.onNodeWithTag("inputUserName").performTextClearance()
@@ -153,7 +176,13 @@ class EditProfileScreenTest {
   @Test
   fun userNameFieldDisplaysError() {
     composeTestRule.setContent {
-      EditProfileScreen(mockNavigationActions, userViewModel, profilePictureTaker, fileViewModel)
+      EditProfileScreen(
+          mockNavigationActions,
+          userViewModel,
+          profilePictureTaker,
+          fileViewModel,
+          noteViewModel,
+          folderViewModel)
     }
 
     composeTestRule.onNodeWithTag("inputFirstName").performTextClearance()
@@ -172,7 +201,13 @@ class EditProfileScreenTest {
   @Test
   fun saveButtonDisabledWhenUserNameIsEmpty() {
     composeTestRule.setContent {
-      EditProfileScreen(mockNavigationActions, userViewModel, profilePictureTaker, fileViewModel)
+      EditProfileScreen(
+          mockNavigationActions,
+          userViewModel,
+          profilePictureTaker,
+          fileViewModel,
+          noteViewModel,
+          folderViewModel)
     }
 
     composeTestRule.onNodeWithTag("saveButton").assertIsEnabled()
@@ -185,7 +220,13 @@ class EditProfileScreenTest {
   @Test
   fun goBackButtonWork() {
     composeTestRule.setContent {
-      EditProfileScreen(mockNavigationActions, userViewModel, profilePictureTaker, fileViewModel)
+      EditProfileScreen(
+          mockNavigationActions,
+          userViewModel,
+          profilePictureTaker,
+          fileViewModel,
+          noteViewModel,
+          folderViewModel)
     }
 
     composeTestRule.onNodeWithTag("goBackButton").performClick()
@@ -196,7 +237,13 @@ class EditProfileScreenTest {
   fun addProfilePicture() {
     doNothing().`when`(profilePictureTaker).pickImage()
     composeTestRule.setContent {
-      EditProfileScreen(mockNavigationActions, userViewModel, profilePictureTaker, fileViewModel)
+      EditProfileScreen(
+          mockNavigationActions,
+          userViewModel,
+          profilePictureTaker,
+          fileViewModel,
+          noteViewModel,
+          folderViewModel)
     }
     composeTestRule.onNodeWithTag("displayBottomSheet").assertIsEnabled()
     composeTestRule.onNodeWithTag("displayBottomSheet").performClick()
@@ -222,7 +269,13 @@ class EditProfileScreenTest {
         {})
 
     composeTestRule.setContent {
-      EditProfileScreen(mockNavigationActions, userViewModel, profilePictureTaker, fileViewModel)
+      EditProfileScreen(
+          mockNavigationActions,
+          userViewModel,
+          profilePictureTaker,
+          fileViewModel,
+          noteViewModel,
+          folderViewModel)
     }
     composeTestRule.onNodeWithTag("profilePicture").assertIsDisplayed()
     verify(mockFileRepository).downloadFile(any(), any(), any(), any(), any())
@@ -237,7 +290,13 @@ class EditProfileScreenTest {
     }
 
     composeTestRule.setContent {
-      EditProfileScreen(mockNavigationActions, userViewModel, profilePictureTaker, fileViewModel)
+      EditProfileScreen(
+          mockNavigationActions,
+          userViewModel,
+          profilePictureTaker,
+          fileViewModel,
+          noteViewModel,
+          folderViewModel)
     }
 
     composeTestRule.onNodeWithTag("displayBottomSheet").assertIsEnabled()
@@ -255,7 +314,13 @@ class EditProfileScreenTest {
     }
 
     composeTestRule.setContent {
-      EditProfileScreen(mockNavigationActions, userViewModel, profilePictureTaker, fileViewModel)
+      EditProfileScreen(
+          mockNavigationActions,
+          userViewModel,
+          profilePictureTaker,
+          fileViewModel,
+          noteViewModel,
+          folderViewModel)
     }
 
     composeTestRule.onNodeWithTag("displayBottomSheet").assertIsEnabled()

@@ -178,6 +178,12 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
    * @param onFailure Callback to be invoked if an error occurs.
    */
   fun deleteUserById(id: String, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) {
+    getFollowersFrom(
+        id,
+        { followers -> followers.forEach { follower -> unfollowUser(follower.uid, {}, {}) } },
+        {})
+    getFollowingFrom(
+        id, { following -> following.forEach { follow -> unfollowUser(follow.uid, {}, {}) } }, {})
     repository.deleteUserById(id, onSuccess, onFailure)
   }
 

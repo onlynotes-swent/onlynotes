@@ -160,6 +160,16 @@ class FolderRepositoryFirestoreTest {
   }
 
   @Test
+  fun deleteNotesByUserId_callsDocuments() {
+    `when`(mockQuerySnapshot.documents)
+        .thenReturn(listOf(mockDocumentSnapshot, mockDocumentSnapshot2))
+
+    folderRepositoryFirestore.deleteFoldersByUserId("1", onSuccess = {}, onFailure = {})
+
+    verify(timeout(100)) { (mockQuerySnapshot).documents }
+  }
+
+  @Test
   fun updateFolder_callsCollection() {
     `when`(mockDocumentReference.set(any())).thenReturn(Tasks.forResult(null))
 

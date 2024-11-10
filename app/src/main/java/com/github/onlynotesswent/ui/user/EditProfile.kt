@@ -3,6 +3,7 @@ package com.github.onlynotesswent.ui.user
 import android.content.Context
 import android.util.Log
 import android.widget.Toast
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -24,6 +25,8 @@ import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -53,11 +56,14 @@ import androidx.core.net.toUri
 import coil.compose.rememberAsyncImagePainter
 import com.github.onlynotesswent.model.file.FileType
 import com.github.onlynotesswent.model.file.FileViewModel
+import com.github.onlynotesswent.model.folder.FolderViewModel
+import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.model.users.UserRepositoryFirestore
 import com.github.onlynotesswent.model.users.UserViewModel
 import com.github.onlynotesswent.ui.navigation.BottomNavigationMenu
 import com.github.onlynotesswent.ui.navigation.LIST_TOP_LEVEL_DESTINATION
 import com.github.onlynotesswent.ui.navigation.NavigationActions
+import com.github.onlynotesswent.ui.navigation.Route
 import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
 import com.github.onlynotesswent.utils.ProfilePictureTaker
 
@@ -68,6 +74,7 @@ import com.github.onlynotesswent.utils.ProfilePictureTaker
  * @param userViewModel An instance of UserViewModel to manage user data.
  * @param profilePictureTaker An instance of ProfilePictureTaker to choose a profile picture.
  * @param fileViewModel An instance of FileViewModel to manage file operations.
+ * @param noteViewModel An instance of UserViewModel to manage note data.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -75,7 +82,9 @@ fun EditProfileScreen(
     navigationActions: NavigationActions,
     userViewModel: UserViewModel,
     profilePictureTaker: ProfilePictureTaker,
-    fileViewModel: FileViewModel
+    fileViewModel: FileViewModel,
+    noteViewModel: NoteViewModel,
+    folderViewModel: FolderViewModel
 ) {
   val user = userViewModel.currentUser.collectAsState()
 
@@ -196,6 +205,26 @@ fun EditProfileScreen(
                             })
                       },
                       enabled = saveEnabled)
+
+                  Button(
+                      colors =
+                          ButtonDefaults.buttonColors(
+                              containerColor = MaterialTheme.colorScheme.background,
+                              contentColor = MaterialTheme.colorScheme.error),
+                      border = BorderStroke(1.dp, MaterialTheme.colorScheme.error),
+                      onClick = {
+                        noteViewModel.deleteNotesByUserId(user.value!!.uid)
+                        folderViewModel.deleteFoldersByUserId(user.value!!.uid)
+
+                        userViewModel.deleteUserById(
+                            user.value!!.uid,
+                            onSuccess = { navigationActions.navigateTo(Route.AUTH) },
+                            onFailure = { e ->
+                              Log.e("EditProfileScreen", "Error deleting user", e)
+                            })
+                      },
+                      content = { Text("Delete Account") },
+                      modifier = Modifier.padding(top = 16.dp).testTag("deleteAccountButton"))
                 }
           })
 }
