@@ -226,6 +226,9 @@ dependencies {
 
     // ----------      Json handling   ------------
     implementation(libs.gson)
+
+    // ----------      HTTP client     ------------
+    implementation(libs.okhttp)
 }
 
 tasks.withType<Test> {
