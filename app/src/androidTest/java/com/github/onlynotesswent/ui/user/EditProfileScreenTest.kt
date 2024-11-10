@@ -24,6 +24,7 @@ import com.github.onlynotesswent.model.users.UserRepository
 import com.github.onlynotesswent.model.users.UserRepositoryFirestore
 import com.github.onlynotesswent.model.users.UserViewModel
 import com.github.onlynotesswent.ui.navigation.NavigationActions
+import com.github.onlynotesswent.ui.navigation.Route
 import com.github.onlynotesswent.ui.navigation.Screen
 import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
 import com.github.onlynotesswent.utils.ProfilePictureTaker
@@ -120,6 +121,7 @@ class EditProfileScreenTest {
     composeTestRule.onNodeWithTag("saveButton").assertExists()
     composeTestRule.onNodeWithTag("profilePicture").assertExists()
     composeTestRule.onNodeWithTag("displayBottomSheet").assertExists()
+    composeTestRule.onNodeWithTag("deleteAccountButton").assertExists()
   }
 
   private fun hasError(): SemanticsMatcher {
@@ -347,5 +349,27 @@ class EditProfileScreenTest {
 
     composeTestRule.onNodeWithTag("editProfilePicture").performClick()
     composeTestRule.onNodeWithTag("profilePicture").assertIsDisplayed()
+  }
+
+  @Test
+  fun testDeletAccount() {
+    composeTestRule.setContent {
+      EditProfileScreen(
+          mockNavigationActions,
+          userViewModel,
+          profilePictureTaker,
+          fileViewModel,
+          noteViewModel,
+          folderViewModel)
+    }
+
+    composeTestRule.onNodeWithTag("deleteAccountButton").assertIsEnabled()
+    composeTestRule.onNodeWithTag("deleteAccountButton").performClick()
+
+    verify(mockUserRepository).deleteUserById(testUid, any(), any())
+    verify(mockNoteRepository).deleteNotesByUserId(testUid, any(), any())
+    verify(mockFolderRepository).deleteFoldersByUserId(testUid, any(), any())
+    verify(mockFileRepository).deleteFile(testUid, any(), any(), any())
+    verify(mockNavigationActions).navigateTo(Route.AUTH)
   }
 }

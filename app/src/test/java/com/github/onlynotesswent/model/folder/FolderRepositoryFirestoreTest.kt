@@ -160,7 +160,7 @@ class FolderRepositoryFirestoreTest {
   }
 
   @Test
-  fun deleteNotesByUserId_callsDocuments() {
+  fun deleteFoldersByUserId_callsDocuments() {
     `when`(mockQuerySnapshot.documents)
         .thenReturn(listOf(mockDocumentSnapshot, mockDocumentSnapshot2))
 

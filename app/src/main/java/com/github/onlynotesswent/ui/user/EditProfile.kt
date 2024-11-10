@@ -215,6 +215,7 @@ fun EditProfileScreen(
                       onClick = {
                         noteViewModel.deleteNotesByUserId(user.value!!.uid)
                         folderViewModel.deleteFoldersByUserId(user.value!!.uid)
+                        fileViewModel.deleteFile(user.value!!.uid, FileType.PROFILE_PIC_JPEG)
 
                         userViewModel.deleteUserById(
                             user.value!!.uid,

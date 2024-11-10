@@ -66,18 +66,9 @@ class FolderRepositoryFirestore(private val db: FirebaseFirestore) : FolderRepos
                 .mapNotNull { document -> documentSnapshotToFolder(document) }
                 .filter { it.userId == userId }
         userFolders.forEach { folder ->
-          db.collection(folderCollectionPath).document(folder.id).delete().addOnCompleteListener {
-              result ->
-            if (result.isSuccessful) {
-              onSuccess()
-            } else {
-              result.exception?.let { e: Exception ->
-                onFailure(e)
-                Log.e(TAG, "Failed to delete folder: ${e.message}")
-              }
-            }
-          }
+          db.collection(folderCollectionPath).document(folder.id).delete()
         }
+        onSuccess()
       } else {
         task.exception?.let { e: Exception ->
           onFailure(e)
