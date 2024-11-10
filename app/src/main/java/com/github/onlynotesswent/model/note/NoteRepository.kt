@@ -64,7 +64,7 @@ interface NoteRepository {
   fun updateNote(note: Note, onSuccess: () -> Unit, onFailure: (Exception) -> Unit)
 
   /**
-   * Deletes a by its ID.
+   * Deletes a note by its ID.
    *
    * @param id The ID of the note to delete.
    * @param onSuccess Callback to be invoked if the note is deleted successfully.
