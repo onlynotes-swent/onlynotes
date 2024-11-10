@@ -320,7 +320,7 @@ fun BottomSheetContent(
                 },
                 "Remove profile picture",
                 Icons.Default.Delete,
-                MaterialTheme.colorScheme.tertiary,
+                MaterialTheme.colorScheme.error,
                 "removeProfilePicture")
           }
         } else {
@@ -350,7 +350,7 @@ fun BottomSheetRow(
     description: String,
     icon: ImageVector,
     color: Color,
-    testTag: String
+    testTag: String,
 ) {
   Row(modifier = Modifier.testTag(testTag).clickable { onClick() }) {
     Icon(

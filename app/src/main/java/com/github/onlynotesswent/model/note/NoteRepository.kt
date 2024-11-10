@@ -64,13 +64,24 @@ interface NoteRepository {
   fun updateNote(note: Note, onSuccess: () -> Unit, onFailure: (Exception) -> Unit)
 
   /**
-   * Deletes a note by its ID.
+   * Deletes a note from a user.
    *
    * @param id The ID of the note to delete.
    * @param onSuccess Callback to be invoked if the note is deleted successfully.
    * @param onFailure Callback to be invoked if an error occurs.
    */
   fun deleteNoteById(id: String, onSuccess: () -> Unit, onFailure: (Exception) -> Unit)
+
+
+  /**
+   * Deletes all notes by a user.
+   *
+   * @param userId The ID of the user to delete notes for.
+   * @param onSuccess Callback to be invoked if the notes are deleted successfully.
+   * @param onFailure Callback to be invoked if an error occurs.
+   */
+
+  fun deleteNotesByUserId(userId: String, onSuccess: () -> Unit, onFailure: (Exception) -> Unit)
 
   /**
    * Retrieves all notes from a folder.
