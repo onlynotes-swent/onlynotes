@@ -1,60 +1,55 @@
 package com.github.onlynotesswent.utils
 
-import com.github.onlynotesswent.model.file.FileType
+import android.util.Log
 import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.flashcard.Flashcard
 import com.github.onlynotesswent.model.flashcard.FlashcardViewModel
 import com.github.onlynotesswent.model.note.Note
 import com.google.firebase.Timestamp
 import com.google.gson.JsonParser
-import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
-import kotlin.coroutines.suspendCoroutine
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import java.io.IOException
 
 class NotesToFlashcard(
     private val flashcardViewModel: FlashcardViewModel,
     private val fileViewModel: FileViewModel,
     private val openAIClient: OpenAI
 ) {
-  companion object {
-    const val PROMPT_PREFIX =
-        "Convert the following notes into a JSON array of flashcards with 'question' and 'answer' fields, only return the json array with no additional text. Here is the note content in mark down: "
-  }
+  private val promptPrefix =
+      "Convert the following notes into a JSON array of flashcards with 'question' and 'answer' fields, only return the json array with no additional text. Here is the note content: "
 
   /**
-   * Converts a note into a list of flashcards by making a request to OpenAI API. It is a suspend
-   * function to allow for asynchronous execution.
+   * Converts a note into a list of flashcards by making a request to OpenAI API.
    *
    * @param note the note to be converted into flashcards
-   * @return a list of flashcards generated from the note
    */
-  suspend fun convertNoteToFlashcards(note: Note): List<Flashcard> {
-    return withContext(Dispatchers.IO) { // Run the API request on the IO thread
-      try {
-        val responseJson =
-            withContext(Dispatchers.IO) {
-              // Fetch the markdown file content for the note
-              val noteContent =
-                  suspendCoroutine<String> { continuation ->
-                    fileViewModel.getFile(
-                        note.id,
-                        FileType.NOTE_TEXT,
-                        onSuccess = { byteArray -> continuation.resume(String(byteArray)) },
-                        onFailure = { exception -> continuation.resumeWithException(exception) })
-                  }
+  fun convertNoteToFlashcards(
+      note: Note,
+      onSuccess: (List<Flashcard>) -> Unit,
+      onFailure: (Exception) -> Unit
+  ) {
+    try {
+      // TODO: When markdown support is implemented, fetch the markdown file content using
+      // fileViewModel
+      // val noteContent = fileViewModel.getFile(note.fileId)
 
-              // Use the content to create the prompt for OpenAI
-              // TODO: modify note.content to markdown format when we implement markdown support
-              openAIClient.sendRequest(PROMPT_PREFIX + note.content)
-            }
+      // TODO: modify note.content to markdown format when we implement markdown support
+      openAIClient.sendRequest(
+          promptPrefix + note.content,
+          callback =
+              object : OpenAICallback {
+                override fun onSuccess(response: String) {
+                  parseFlashcardsFromJson(response, note, onSuccess, onFailure)
+                }
 
-        parseFlashcardsFromJson(responseJson, note)
-      } catch (e: Exception) {
-        // TODO: Handle exceptions
-        emptyList<Flashcard>()
-      }
+                override fun onFailure(error: IOException) {
+                  // Log error and notify user of the failure
+                  Log.e("NotesToFlashcard", "Failed to send request to OpenAI API", error)
+                  onFailure(error)
+                }
+              })
+    } catch (e: Exception) {
+      Log.e("NotesToFlashcard", "Unexpected error in convertNoteToFlashcards", e)
+      onFailure(e)
     }
   }
 
@@ -63,16 +58,21 @@ class NotesToFlashcard(
    * into a list of Flashcard objects.
    *
    * @param jsonResponse the JSON response from OpenAI API containing flashcard data
-   * @return a list of Flashcard objects
    */
-  private fun parseFlashcardsFromJson(jsonResponse: String, note: Note): List<Flashcard> {
+  private fun parseFlashcardsFromJson(
+      jsonResponse: String,
+      note: Note,
+      onSuccess: (List<Flashcard>) -> Unit,
+      onFailure: (Exception) -> Unit
+  ) {
     val flashcards = mutableListOf<Flashcard>()
     try {
       val json = JsonParser.parseString(jsonResponse).asJsonObject
       val choices = json.getAsJsonArray("choices")
 
       if (choices != null && choices.size() > 0) {
-        val content = choices[0].asJsonObject.get("text").asString
+        // Extract the "content" field from the first choice
+        val content = choices[0].asJsonObject.get("message").asJsonObject.get("content").asString
         val flashcardArray = JsonParser.parseString(content).asJsonArray
 
         flashcardArray.forEach { element ->
@@ -80,7 +80,7 @@ class NotesToFlashcard(
           val question = flashcardObject.get("question").asString
           val answer = flashcardObject.get("answer").asString
 
-          flashcards.add(
+          val flashcard =
               Flashcard(
                   id = flashcardViewModel.getNewUid(),
                   front = question,
@@ -88,12 +88,15 @@ class NotesToFlashcard(
                   nextReview = Timestamp.now(),
                   userId = note.userId,
                   folderId = "",
-                  noteId = note.id))
+                  noteId = note.id)
+          flashcards.add(flashcard)
+          flashcardViewModel.addFlashcard(flashcard)
         }
       }
     } catch (e: Exception) {
-      //TODO: Handle exceptions
+      Log.e("NotesToFlashcard", "Error parsing flashcards from JSON", e)
+      onFailure(e)
     }
-    return flashcards
+    onSuccess(flashcards)
   }
 }
