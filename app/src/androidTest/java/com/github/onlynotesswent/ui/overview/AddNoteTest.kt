@@ -14,6 +14,8 @@ import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
+import com.github.onlynotesswent.model.file.FileRepository
+import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.note.NoteRepository
 import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.model.scanner.Scanner
@@ -40,6 +42,8 @@ class AddNoteTest {
   @Mock private lateinit var mockNavigationActions: NavigationActions
   @Mock private lateinit var mockNoteRepository: NoteRepository
   private lateinit var noteViewModel: NoteViewModel
+  @Mock private lateinit var mockFileRepository: FileRepository
+  private lateinit var fileViewModel: FileViewModel
   private lateinit var scanner: Scanner
 
   @get:Rule val composeTestRule = createComposeRule()
@@ -50,6 +54,7 @@ class AddNoteTest {
     MockitoAnnotations.openMocks(this)
     userViewModel = UserViewModel(mockUserRepository)
     noteViewModel = NoteViewModel(mockNoteRepository)
+    fileViewModel = FileViewModel(mockFileRepository)
     scanner = Scanner(mock(ComponentActivity::class.java))
 
     // Mock the current route to be the add note screen
@@ -64,7 +69,7 @@ class AddNoteTest {
   @Test
   fun displayAllComponents() {
     composeTestRule.setContent {
-      AddNoteScreen(mockNavigationActions, scanner, noteViewModel, userViewModel)
+      AddNoteScreen(mockNavigationActions, scanner, noteViewModel, userViewModel, fileViewModel)
     }
 
     composeTestRule.onNodeWithTag("addNoteScreen").assertIsDisplayed()
@@ -90,7 +95,7 @@ class AddNoteTest {
   @Test
   fun clickGoBackButton() {
     composeTestRule.setContent {
-      AddNoteScreen(mockNavigationActions, scanner, noteViewModel, userViewModel)
+      AddNoteScreen(mockNavigationActions, scanner, noteViewModel, userViewModel, fileViewModel)
     }
 
     composeTestRule.onNodeWithTag("goBackButton").performClick()
@@ -102,7 +107,7 @@ class AddNoteTest {
   @Test
   fun doesNotSubmitWithoutTitleAndOptionsSelected() {
     composeTestRule.setContent {
-      AddNoteScreen(mockNavigationActions, scanner, noteViewModel, userViewModel)
+      AddNoteScreen(mockNavigationActions, scanner, noteViewModel, userViewModel, fileViewModel)
     }
 
     composeTestRule.onNodeWithTag("createNoteButton").assertIsNotEnabled()
@@ -133,7 +138,7 @@ class AddNoteTest {
   @Test
   fun createNoteButtonTextChangesWhenScanNoteSelected() {
     composeTestRule.setContent {
-      AddNoteScreen(mockNavigationActions, scanner, noteViewModel, userViewModel)
+      AddNoteScreen(mockNavigationActions, scanner, noteViewModel, userViewModel, fileViewModel)
     }
 
     // Initially, the button text should be "Create Note"
@@ -155,7 +160,7 @@ class AddNoteTest {
   @Test
   fun createNoteButtonTextChangesWhenCreateNoteSelected() {
     composeTestRule.setContent {
-      AddNoteScreen(mockNavigationActions, scanner, noteViewModel, userViewModel)
+      AddNoteScreen(mockNavigationActions, scanner, noteViewModel, userViewModel, fileViewModel)
     }
 
     // Initially, the button text should be "Create Note"
@@ -177,7 +182,7 @@ class AddNoteTest {
   @Test
   fun createNoteFromScratchButtonCorrect() {
     composeTestRule.setContent {
-      AddNoteScreen(mockNavigationActions, scanner, noteViewModel, userViewModel)
+      AddNoteScreen(mockNavigationActions, scanner, noteViewModel, userViewModel, fileViewModel)
     }
 
     composeTestRule.onNodeWithTag("inputNoteTitle").performTextInput("test")

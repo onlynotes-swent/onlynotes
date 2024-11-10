@@ -35,12 +35,10 @@ class FileViewModel(private val repository: FileRepository) : ViewModel() {
     repository.init {}
   }
 
-    /**
-     * Factory for creating a FileViewModel.
-     */
+  /** Factory for creating a FileViewModel. */
   companion object {
     val Factory: ViewModelProvider.Factory = viewModelFactory {
-        initializer { FileViewModel(FileRepositoryFirebaseStorage(Firebase.storage)) }
+      initializer { FileViewModel(FileRepositoryFirebaseStorage(Firebase.storage)) }
     }
   }
 

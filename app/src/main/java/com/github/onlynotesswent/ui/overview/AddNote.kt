@@ -177,13 +177,10 @@ fun AddNoteScreen(
 
               Button(
                   onClick = {
-                      val noteUid = noteViewModel.getNewUid()
+                    val noteUid = noteViewModel.getNewUid()
                     if (template == scanNoteText) {
                       // call scan image API or functions. Once scanned, add the note to database
-                      scanner.scan {
-                          fileViewModel.uploadFile(noteUid, it, FileType.NOTE_PDF)
-                      }
-
+                      scanner.scan { fileViewModel.uploadFile(noteUid, it, FileType.NOTE_PDF) }
                     }
                     // provisional note, we will have to change this later
                     val note =

@@ -22,7 +22,6 @@ import com.google.mlkit.vision.documentscanner.GmsDocumentScanning
 import com.google.mlkit.vision.documentscanner.GmsDocumentScanningResult
 import java.io.File
 
-
 /**
  * Scanner class that initializes the scanner and handles the scanning activity
  *
@@ -47,7 +46,7 @@ open class Scanner(
                 .build())
 ) {
 
-    private var onScanSuccess: ((Uri) -> Unit)? = null
+  private var onScanSuccess: ((Uri) -> Unit)? = null
 
   private lateinit var scannerLauncher: ActivityResultLauncher<IntentSenderRequest>
 
@@ -68,22 +67,21 @@ open class Scanner(
   /**
    * Initiates a scan, which returns a uri to the scanned pdf file.
    *
-   * @param onSuccess the callback to be invoked if the user is not found. the function to be called when the scanning is successful,
-   *    with the uri of the scanned pdf file
+   * @param onSuccess the callback to be invoked if the user is not found. the function to be called
+   *   when the scanning is successful, with the uri of the scanned pdf file
    */
-
   fun scan(onSuccess: (Uri) -> Unit) {
-      if (!::scannerLauncher.isInitialized) {
-          // Shouldn't happen if code is correct, so no toast is shown
-          Log.e(TAG, "Error: scannerLauncher is not initialized")
-          return
-      }
-      if (onScanSuccess != null) {
-          Toast.makeText(activity, "Scan already in progress", Toast.LENGTH_SHORT).show()
-          Log.e(TAG, "Error: scan already in progress")
-          return
-      }
-      onScanSuccess = onSuccess
+    if (!::scannerLauncher.isInitialized) {
+      // Shouldn't happen if code is correct, so no toast is shown
+      Log.e(TAG, "Error: scannerLauncher is not initialized")
+      return
+    }
+    if (onScanSuccess != null) {
+      Toast.makeText(activity, "Scan already in progress", Toast.LENGTH_SHORT).show()
+      Log.e(TAG, "Error: scan already in progress")
+      return
+    }
+    onScanSuccess = onSuccess
 
     scanner
         .getStartScanIntent(activity)
@@ -116,9 +114,9 @@ open class Scanner(
       val path = result.pdf?.uri?.path
       if (path != null) {
         try {
-            // Calls the stored callback with the safe content uri of the scanned pdf file.
-            onScanSuccess
-                ?.invoke(FileProvider.getUriForFile(activity, fileProviderAuthority, File(path)))
+          // Calls the stored callback with the safe content uri of the scanned pdf file.
+          onScanSuccess?.invoke(
+              FileProvider.getUriForFile(activity, fileProviderAuthority, File(path)))
         } catch (e: IllegalArgumentException) {
           // Shouldn't happen, so no toast is shown
           Log.e(TAG, "$path is outside the paths supported by the File provider.")
@@ -135,7 +133,8 @@ open class Scanner(
       Toast.makeText(activity, "Scanner failed", Toast.LENGTH_SHORT).show()
     }
 
-    // Resets the callback, to avoid calling the same one multiple times in case of problems with the scan
+    // Resets the callback, to avoid calling the same one multiple times in case of problems with
+    // the scan
     onScanSuccess = null
   }
 
