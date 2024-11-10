@@ -310,15 +310,15 @@ class NoteRepositoryFirestoreTest {
     verify(mockDocumentReference).delete()
   }
 
-    @Test
-    fun deleteNotesByUserId_callsDocuments() {
-        `when`(mockQuerySnapshot.documents)
-            .thenReturn(listOf(mockDocumentSnapshot3, mockDocumentSnapshot4))
+  @Test
+  fun deleteNotesByUserId_callsDocuments() {
+    `when`(mockQuerySnapshot.documents)
+        .thenReturn(listOf(mockDocumentSnapshot3, mockDocumentSnapshot4))
 
-        noteRepositoryFirestore.deleteNotesByUserId("1", onSuccess = {}, onFailure = {})
+    noteRepositoryFirestore.deleteNotesByUserId("1", onSuccess = {}, onFailure = {})
 
-        verify(timeout(100)) { (mockQuerySnapshot).documents }
-    }
+    verify(timeout(100)) { (mockQuerySnapshot).documents }
+  }
 
   @Test
   fun updateNote_callsCollection() {

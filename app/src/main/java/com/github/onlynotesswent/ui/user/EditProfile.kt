@@ -320,7 +320,7 @@ fun BottomSheetContent(
                 },
                 "Remove profile picture",
                 Icons.Default.Delete,
-                MaterialTheme.colorScheme.error,
+                MaterialTheme.colorScheme.tertiary,
                 "removeProfilePicture")
           }
         } else {
