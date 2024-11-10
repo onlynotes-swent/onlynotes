@@ -38,6 +38,7 @@ import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
 import org.mockito.kotlin.doNothing
+import org.mockito.kotlin.eq
 
 class EditProfileScreenTest {
   @Mock private lateinit var mockUserRepository: UserRepository
@@ -96,6 +97,10 @@ class EditProfileScreenTest {
       } else {
         onSuccess()
       }
+    }
+    `when`(mockUserRepository.deleteUserById(any(), any(), any())).thenAnswer {
+      val onSuccess = it.arguments[1] as () -> Unit
+      onSuccess()
     }
 
     `when`(mockFileRepository.downloadFile(any(), any(), any(), any(), any())).thenAnswer {}
@@ -366,10 +371,10 @@ class EditProfileScreenTest {
     composeTestRule.onNodeWithTag("deleteAccountButton").assertIsEnabled()
     composeTestRule.onNodeWithTag("deleteAccountButton").performClick()
 
-    verify(mockUserRepository).deleteUserById(testUid, any(), any())
-    verify(mockNoteRepository).deleteNotesByUserId(testUid, any(), any())
-    verify(mockFolderRepository).deleteFoldersByUserId(testUid, any(), any())
-    verify(mockFileRepository).deleteFile(testUid, any(), any(), any())
+    verify(mockUserRepository).deleteUserById(eq(testUid), any(), any())
+    verify(mockNoteRepository).deleteNotesByUserId(eq(testUid), any(), any())
+    verify(mockFolderRepository).deleteFoldersByUserId(eq(testUid), any(), any())
+    verify(mockFileRepository).deleteFile(eq(testUid), any(), any(), any())
     verify(mockNavigationActions).navigateTo(Route.AUTH)
   }
 }
