@@ -65,7 +65,7 @@ fun SignInScreen(
   val context = LocalContext.current
   val credentialManager = CredentialManager.create(context)
 
-  // launcher for fallback method
+  // Launcher for fallback method
   val launcher =
       rememberFirebaseAuthLauncher(
           onAuthComplete = { result ->
@@ -81,7 +81,6 @@ fun SignInScreen(
   val googleSignIn = GoogleCredSignIn(context, credentialManager, serverClientId, launcher)
 
   val onClickSignIn: () -> Unit = {
-      // Try to log in using Google Credentials
       googleSignIn.googleLogin { googleIdToken ->
         // Sign in to Firebase with the Google ID token
         val firebaseCredential = GoogleAuthProvider.getCredential(googleIdToken, null)

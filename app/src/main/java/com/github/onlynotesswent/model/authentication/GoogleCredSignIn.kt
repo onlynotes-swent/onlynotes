@@ -29,6 +29,7 @@ private const val TAG = "GoogleCredSignIn"
  * @param ctx The context to use for the sign-in request
  * @param credentialManager The CredentialManager instance to use
  * @param serverClientId The server client ID to use for the sign-in request
+ * @param launcher The launcher to use for the fallback Google sign-in method
  */
 class GoogleCredSignIn(
     private val ctx: Context,
