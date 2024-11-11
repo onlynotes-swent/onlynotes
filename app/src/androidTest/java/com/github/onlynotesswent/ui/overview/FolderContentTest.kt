@@ -121,12 +121,12 @@ class FolderContentTest {
     composeTestRule.onNodeWithTag("createNote").assertIsDisplayed()
     composeTestRule.onNodeWithTag("createFolder").assertIsDisplayed()
     composeTestRule.onNodeWithTag("createFolder").performClick()
-    composeTestRule.onNodeWithTag("createFolderDialog").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("folderDialog").assertIsDisplayed()
     composeTestRule.onNodeWithTag("inputFolderName").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("confirmFolderCreation").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("dismissFolderCreation").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("confirmFolderAction").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("dismissFolderAction").assertIsDisplayed()
     composeTestRule.onNodeWithTag("inputFolderName").performTextInput("Sample Folder Name")
-    composeTestRule.onNodeWithTag("confirmFolderCreation").performClick()
+    composeTestRule.onNodeWithTag("confirmFolderAction").performClick()
   }
 
   @Test
@@ -135,10 +135,10 @@ class FolderContentTest {
     composeTestRule.onNodeWithTag("renameFolderButton").assertIsDisplayed()
     composeTestRule.onNodeWithTag("deleteFolderButton").assertIsDisplayed()
     composeTestRule.onNodeWithTag("renameFolderButton").performClick()
-    composeTestRule.onNodeWithTag("renameFolderDialog").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("dismissRenameButton").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("confirmRenameButton").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("confirmRenameButton").performClick()
+    composeTestRule.onNodeWithTag("folderDialog").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("dismissFolderAction").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("confirmFolderAction").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("confirmFolderAction").performClick()
   }
 
   @Test

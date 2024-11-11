@@ -246,6 +246,7 @@ fun OptionDropDownMenu(
         modifier = modifier.width(maxWidth).testTag(menuTag)) {
           items.forEach { item ->
             DropdownMenuItem(
+                modifier = Modifier.testTag("item--$item"),
                 text = { Text(item) },
                 onClick = {
                   onItemClick(item)

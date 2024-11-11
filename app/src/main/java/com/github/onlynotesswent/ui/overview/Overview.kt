@@ -119,7 +119,7 @@ fun OverviewScreen(
             onDismissRequest = { expanded = false })
         // Logic to show the dialog to create a folder
         if (showCreateDialog) {
-          CreateFolderDialog(
+          FolderDialog(
               onDismiss = { showCreateDialog = false },
               onConfirm = { newName, visibility ->
                 folderViewModel.addFolder(
@@ -136,7 +136,8 @@ fun OverviewScreen(
                 } else {
                   navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
                 }
-              })
+              },
+              action = "Create")
         }
       },
       bottomBar = {
@@ -277,28 +278,31 @@ fun FolderItem(folder: Folder, onClick: () -> Unit) {
 }
 
 /**
- * Dialog that allows the user to create a folder.
+ * Dialog that allows the user to create or rename a folder.
  *
  * @param onDismiss callback to be invoked when the dialog is dismissed
  * @param onConfirm callback to be invoked when the user confirms the new name
+ * @param action the action to execute on the folder, either "Create" or "Rename"
+ * @param oldVis the visibility of the folder
+ * @param oldName the name of the folder
  */
 @Composable
-fun CreateFolderDialog(onDismiss: () -> Unit, onConfirm: (String, Visibility) -> Unit) {
+fun FolderDialog(onDismiss: () -> Unit, onConfirm: (String, Visibility) -> Unit, action:String, oldVis: Visibility?=null, oldName : String="") {
 
-  var name by remember { mutableStateOf("") }
-  var visibility: Visibility? by remember { mutableStateOf(null) }
+  var name by remember { mutableStateOf(oldName) }
+  var visibility: Visibility? by remember { mutableStateOf(oldVis) }
   var expandedVisibility by remember { mutableStateOf(false) }
 
   Dialog(onDismissRequest = onDismiss) {
     Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
       Column(
-          modifier = Modifier.padding(16.dp).testTag("createFolderDialog"),
+          modifier = Modifier.padding(16.dp).testTag("folderDialog"),
           verticalArrangement = Arrangement.spacedBy(8.dp),
           horizontalAlignment = Alignment.CenterHorizontally) {
             Row(
                 modifier = Modifier.fillMaxWidth(0.92f),
                 horizontalArrangement = Arrangement.Start) {
-                  Text("Create Folder", style = MaterialTheme.typography.titleLarge)
+                  Text("$action Folder", style = MaterialTheme.typography.titleLarge)
                 }
 
             OutlinedTextField(
@@ -319,52 +323,19 @@ fun CreateFolderDialog(onDismiss: () -> Unit, onConfirm: (String, Visibility) ->
                 widthFactor = 0.94f)
 
             Row(modifier = Modifier.fillMaxWidth(0.92f), horizontalArrangement = Arrangement.End) {
-              Button(onClick = onDismiss, modifier = Modifier.testTag("dismissFolderCreation")) {
+              Button(onClick = onDismiss, modifier = Modifier.testTag("dismissFolderAction")) {
                 Text("Cancel")
               }
               Button(
                   enabled = name.isNotEmpty() && visibility != null,
-                  onClick = { onConfirm(name, visibility!!) },
-                  modifier = Modifier.testTag("confirmFolderCreation")) {
-                    Text("Create")
+                  onClick = { onConfirm(name, visibility?: Visibility.DEFAULT) },
+                  modifier = Modifier.testTag("confirmFolderAction")) {
+                    Text(action)
                   }
             }
           }
     }
   }
-
-  /*AlertDialog(
-  modifier = Modifier.testTag("createFolderDialog"),
-  onDismissRequest = onDismiss,
-  title = { Text("Create Folder") },
-  text = {
-    OutlinedTextField(
-        value = name,
-        onValueChange = { name = it },
-        label = { Text("Folder Name") },
-        modifier = Modifier.testTag("inputFolderName"))
-    OptionDropDownMenu(
-        value = visibility?.toReadableString() ?: "Choose visibility",
-        expanded = expandedVisibility,
-        buttonTag = "visibilityButton",
-        menuTag = "visibilityMenu",
-        onExpandedChange = { expandedVisibility = it },
-        items = Visibility.READABLE_STRINGS,
-        onItemClick = { visibility = Visibility.fromReadableString(it) })
-  },
-  confirmButton = {
-    Button(
-        enabled = name.isNotEmpty() && visibility != null,
-        onClick = { onConfirm(name, visibility!!) },
-        modifier = Modifier.testTag("confirmFolderCreation")) {
-          Text("Create")
-        }
-  },
-  dismissButton = {
-    Button(onClick = onDismiss, modifier = Modifier.testTag("dismissFolderCreation")) {
-      Text("Cancel")
-    }
-  })*/
 }
 
 /**

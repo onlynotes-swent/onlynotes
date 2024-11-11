@@ -2,9 +2,13 @@ package com.github.onlynotesswent.ui.overview
 
 import android.graphics.Bitmap
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsEnabled
+import androidx.compose.ui.test.assertIsNotDisplayed
+import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTextInput
 import com.github.onlynotesswent.model.folder.Folder
 import com.github.onlynotesswent.model.folder.FolderRepository
 import com.github.onlynotesswent.model.folder.FolderViewModel
@@ -65,6 +69,10 @@ class OverviewTest {
     noteViewModel = NoteViewModel(noteRepository)
     folderRepository = mock(FolderRepository::class.java)
     folderViewModel = FolderViewModel(folderRepository)
+
+
+    // Mock folder repository to return new folder id
+    `when`(folderRepository.getNewFolderId()).thenReturn("2")
 
     // Mock the addUser method to call the onSuccess callback
     `when`(userRepository.addUser(any(), any(), any())).thenAnswer { invocation ->
@@ -211,6 +219,26 @@ class OverviewTest {
     composeTestRule.onNodeWithTag("createNoteOrFolder").performClick()
     composeTestRule.onNodeWithTag("createFolder").assertIsDisplayed()
     composeTestRule.onNodeWithTag("createFolder").performClick()
-    composeTestRule.onNodeWithTag("createFolderDialog").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("folderDialog").assertIsDisplayed()
   }
+
+  @Test
+  fun createFolderDialogWorks() {
+    composeTestRule.onNodeWithTag("createNoteOrFolder").performClick()
+    composeTestRule.onNodeWithTag("createFolder").performClick()
+
+    composeTestRule.onNodeWithTag("confirmFolderAction").assertIsNotEnabled()
+    composeTestRule.onNodeWithTag("inputFolderName").performTextInput("Folder Name")
+    composeTestRule.onNodeWithTag("confirmFolderAction").assertIsNotEnabled()
+
+    composeTestRule.onNodeWithTag("visibilityDropDown").assertIsNotDisplayed()
+    composeTestRule.onNodeWithTag("visibilityButton").assertIsDisplayed().performClick()
+
+    composeTestRule.onNodeWithTag("item--Public").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("item--Friends Only").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("item--Private").assertIsDisplayed().performClick()
+    composeTestRule.onNodeWithTag("confirmFolderAction").assertIsEnabled().assertIsDisplayed()
+    composeTestRule.onNodeWithTag("confirmFolderAction").performClick()
+  }
+
 }

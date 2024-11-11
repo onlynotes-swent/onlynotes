@@ -172,7 +172,7 @@ fun FolderContentScreen(
               onDismissRequest = { expandedFolder = false })
           // Logic to show the dialog to create a folder
           if (showCreateDialog) {
-            CreateFolderDialog(
+            FolderDialog(
                 onDismiss = { showCreateDialog = false },
                 onConfirm = { name, visibility ->
                   folderViewModel.addFolder(
@@ -189,7 +189,8 @@ fun FolderContentScreen(
                   } else {
                     navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
                   }
-                })
+                },
+                action = "Create")
           }
         }) { paddingValues ->
           CustomLazyGrid(
@@ -212,56 +213,24 @@ fun FolderContentScreen(
               })
           // Logic to show the dialog to rename a folder
           if (showRenameDialog) {
-            RenameFolderDialog(
-                currentName = updatedName,
+            FolderDialog(
                 onDismiss = { showRenameDialog = false },
-                onConfirm = { newName ->
+                onConfirm = { name,vis ->
                   folderViewModel.updateFolder(
                       Folder(
                           id = folder.value!!.id,
-                          name = newName,
+                          name = name,
                           userId = folder.value!!.userId,
-                          parentFolderId = folder.value!!.parentFolderId),
+                          parentFolderId = folder.value!!.parentFolderId,
+                          visibility = vis),
                       folder.value!!.userId)
-                  updatedName = newName
+                  updatedName = name
                   showRenameDialog = false
-                })
+                },
+                action = "Rename",
+                oldName = updatedName,
+                oldVis = folder.value!!.visibility)
           }
         }
   }
-}
-
-/**
- * Dialog that allows the user to rename a folder.
- *
- * @param currentName the current name of the folder
- * @param onDismiss callback to be invoked when the dialog is dismissed
- * @param onConfirm callback to be invoked when the user confirms the new name
- */
-@Composable
-fun RenameFolderDialog(currentName: String, onDismiss: () -> Unit, onConfirm: (String) -> Unit) {
-
-  var newName by remember { mutableStateOf(currentName) }
-
-  AlertDialog(
-      modifier = Modifier.testTag("renameFolderDialog"),
-      onDismissRequest = onDismiss,
-      title = { Text("Rename folder") },
-      text = {
-        OutlinedTextField(
-            value = newName, onValueChange = { newName = it }, label = { Text("New Folder Name") })
-      },
-      confirmButton = {
-        Button(
-            enabled = newName.isNotEmpty(),
-            onClick = { onConfirm(newName) },
-            modifier = Modifier.testTag("confirmRenameButton")) {
-              Text("Confirm")
-            }
-      },
-      dismissButton = {
-        Button(onClick = onDismiss, modifier = Modifier.testTag("dismissRenameButton")) {
-          Text("Cancel")
-        }
-      })
 }
