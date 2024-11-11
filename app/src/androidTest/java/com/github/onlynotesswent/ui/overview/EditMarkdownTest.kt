@@ -79,4 +79,12 @@ class EditMarkdownTest {
     org.mockito.kotlin.verify(navigationActions).goBack()
     org.mockito.kotlin.verify(navigationActions, never()).navigateTo(Screen.OVERVIEW)
   }
+
+  @Test
+  fun clickComponents() {
+    composeTestRule.onNodeWithTag("BoldControl").performClick()
+    composeTestRule.onNodeWithTag("ItalicControl").performClick()
+    composeTestRule.onNodeWithTag("UnderlinedControl").performClick()
+    composeTestRule.onNodeWithTag("StrikethroughControl").performClick()
+  }
 }
