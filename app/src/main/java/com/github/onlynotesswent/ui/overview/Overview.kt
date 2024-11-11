@@ -85,8 +85,7 @@ fun OverviewScreen(
                           showCreateDialog = true
                           folderViewModel.selectedParentFolderId(null)
                         },
-                        modifier = Modifier.testTag("createFolder"))
-                ),
+                        modifier = Modifier.testTag("createFolder"))),
             fabIcon = { Icon(imageVector = Icons.Default.Add, contentDescription = "AddNote") },
             expanded = expanded,
             onFabClick = { expanded = true },

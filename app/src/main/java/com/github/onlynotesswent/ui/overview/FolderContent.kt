@@ -193,8 +193,7 @@ fun FolderContentScreen(
                             showCreateDialog = true
                             folderViewModel.selectedParentFolderId(folder.value!!.id)
                           },
-                          modifier = Modifier.testTag("createFolder"))
-                  ),
+                          modifier = Modifier.testTag("createFolder"))),
               fabIcon = { Icon(imageVector = Icons.Default.Add, contentDescription = "AddNote") },
               expanded = expandedFolder,
               onFabClick = { expandedFolder = true },

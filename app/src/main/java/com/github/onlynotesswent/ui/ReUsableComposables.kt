@@ -67,16 +67,16 @@ import java.util.Locale
  */
 @Composable
 fun RefreshButton(onClick: () -> Unit) {
-    ElevatedButton(
-        onClick = onClick,
-        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surface),
-        modifier = Modifier.testTag("refreshButton")) {
+  ElevatedButton(
+      onClick = onClick,
+      colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surface),
+      modifier = Modifier.testTag("refreshButton")) {
         Text("Refresh", color = MaterialTheme.colorScheme.onSurface)
         Icon(
             imageVector = Icons.Default.Refresh,
             contentDescription = "Refresh",
             tint = MaterialTheme.colorScheme.onSurface)
-    }
+      }
 }
 
 /**
@@ -89,45 +89,45 @@ fun RefreshButton(onClick: () -> Unit) {
  */
 @Composable
 fun NoteItem(note: Note, onClick: () -> Unit) {
-    Card(
-        modifier =
-        Modifier.testTag("noteCard")
-            .fillMaxWidth()
-            .padding(vertical = 4.dp)
-            .clickable(onClick = onClick),
-        colors =
-        CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)) {
+  Card(
+      modifier =
+          Modifier.testTag("noteCard")
+              .fillMaxWidth()
+              .padding(vertical = 4.dp)
+              .clickable(onClick = onClick),
+      colors =
+          CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)) {
         Column(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween) {
+          Row(
+              modifier = Modifier.fillMaxWidth(),
+              horizontalArrangement = Arrangement.SpaceBetween) {
                 Text(
                     text =
-                    SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-                        .format(note.date.toDate()),
+                        SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+                            .format(note.date.toDate()),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onPrimaryContainer)
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onPrimaryContainer)
+                  Icon(
+                      imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                      contentDescription = null,
+                      tint = MaterialTheme.colorScheme.onPrimaryContainer)
                 }
-            }
+              }
 
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = note.title,
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onPrimaryContainer)
-            Text(
-                text = note.noteClass.classCode,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onPrimaryContainer)
+          Spacer(modifier = Modifier.height(4.dp))
+          Text(
+              text = note.title,
+              style = MaterialTheme.typography.bodyMedium,
+              fontWeight = FontWeight.Bold,
+              color = MaterialTheme.colorScheme.onPrimaryContainer)
+          Text(
+              text = note.noteClass.classCode,
+              style = MaterialTheme.typography.bodySmall,
+              color = MaterialTheme.colorScheme.onPrimaryContainer)
         }
-    }
+      }
 }
 
 /**
@@ -141,25 +141,25 @@ fun NoteItem(note: Note, onClick: () -> Unit) {
 @Composable
 fun FolderItem(folder: Folder, onClick: () -> Unit) {
 
-    Card(
-        modifier =
-        Modifier.testTag("folderCard").padding(vertical = 4.dp).clickable(onClick = onClick),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.background)) {
+  Card(
+      modifier =
+          Modifier.testTag("folderCard").padding(vertical = 4.dp).clickable(onClick = onClick),
+      colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.background)) {
         Column(
             modifier = Modifier.padding(8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-            Image(
-                painter = painterResource(id = R.drawable.folder_icon_big),
-                contentDescription = "Folder Icon",
-                modifier = Modifier.size(80.dp))
+              Image(
+                  painter = painterResource(id = R.drawable.folder_icon_big),
+                  contentDescription = "Folder Icon",
+                  modifier = Modifier.size(80.dp))
 
-            Text(
-                modifier = Modifier.align(Alignment.CenterHorizontally),
-                text = folder.name,
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onBackground)
-        }
-    }
+              Text(
+                  modifier = Modifier.align(Alignment.CenterHorizontally),
+                  text = folder.name,
+                  style = MaterialTheme.typography.bodyMedium,
+                  fontWeight = FontWeight.Bold,
+                  color = MaterialTheme.colorScheme.onBackground)
+            }
+      }
 }
 
 /**
@@ -171,32 +171,32 @@ fun FolderItem(folder: Folder, onClick: () -> Unit) {
 @Composable
 fun CreateFolderDialog(onDismiss: () -> Unit, onConfirm: (String) -> Unit) {
 
-    var name by remember { mutableStateOf("") }
+  var name by remember { mutableStateOf("") }
 
-    AlertDialog(
-        modifier = Modifier.testTag("createFolderDialog"),
-        onDismissRequest = onDismiss,
-        title = { Text("Create Folder") },
-        text = {
-            OutlinedTextField(
-                value = name,
-                onValueChange = { name = it },
-                label = { Text("Folder Name") },
-                modifier = Modifier.testTag("inputFolderName"))
-        },
-        confirmButton = {
-            Button(
-                enabled = name.isNotEmpty(),
-                onClick = { onConfirm(name) },
-                modifier = Modifier.testTag("confirmFolderCreation")) {
-                Text("Create")
+  AlertDialog(
+      modifier = Modifier.testTag("createFolderDialog"),
+      onDismissRequest = onDismiss,
+      title = { Text("Create Folder") },
+      text = {
+        OutlinedTextField(
+            value = name,
+            onValueChange = { name = it },
+            label = { Text("Folder Name") },
+            modifier = Modifier.testTag("inputFolderName"))
+      },
+      confirmButton = {
+        Button(
+            enabled = name.isNotEmpty(),
+            onClick = { onConfirm(name) },
+            modifier = Modifier.testTag("confirmFolderCreation")) {
+              Text("Create")
             }
-        },
-        dismissButton = {
-            Button(onClick = onDismiss, modifier = Modifier.testTag("dismissFolderCreation")) {
-                Text("Cancel")
-            }
-        })
+      },
+      dismissButton = {
+        Button(onClick = onDismiss, modifier = Modifier.testTag("dismissFolderCreation")) {
+          Text("Cancel")
+        }
+      })
 }
 
 /**
@@ -219,14 +219,14 @@ fun CustomDropDownMenu(
     onFabClick: () -> Unit,
     onDismissRequest: () -> Unit,
 ) {
-    Box {
-        FloatingActionButton(onClick = onFabClick, modifier = modifier) { fabIcon() }
-        DropdownMenu(expanded = expanded, onDismissRequest = onDismissRequest) {
-            menuItems.forEach { item ->
-                DropdownMenuItem(text = item.text, onClick = item.onClick, modifier = item.modifier)
-            }
-        }
+  Box {
+    FloatingActionButton(onClick = onFabClick, modifier = modifier) { fabIcon() }
+    DropdownMenu(expanded = expanded, onDismissRequest = onDismissRequest) {
+      menuItems.forEach { item ->
+        DropdownMenuItem(text = item.text, onClick = item.onClick, modifier = item.modifier)
+      }
     }
+  }
 }
 
 /**
@@ -256,35 +256,35 @@ fun CustomLazyGrid(
     paddingValues: PaddingValues,
     columnContent: @Composable (ColumnScope.() -> Unit)
 ) {
-    Box(modifier = modifier) {
-        if (notes.value.isNotEmpty() || folders.value.isNotEmpty()) {
-            LazyVerticalGrid(
-                columns = GridCells.Adaptive(minSize = 100.dp),
-                contentPadding = PaddingValues(vertical = 20.dp),
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
-                modifier = gridModifier) {
-                items(folders.value.size) { index ->
-                    FolderItem(folder = folders.value[index]) {
-                        folderViewModel.selectedFolder(folders.value[index])
-                        navigationActions.navigateTo(Screen.FOLDER_CONTENTS)
-                    }
-                }
-                items(notes.value.size) { index ->
-                    NoteItem(note = notes.value[index]) {
-                        noteViewModel.selectedNote(notes.value[index])
-                        navigationActions.navigateTo(Screen.EDIT_NOTE)
-                    }
-                }
+  Box(modifier = modifier) {
+    if (notes.value.isNotEmpty() || folders.value.isNotEmpty()) {
+      LazyVerticalGrid(
+          columns = GridCells.Adaptive(minSize = 100.dp),
+          contentPadding = PaddingValues(vertical = 20.dp),
+          horizontalArrangement = Arrangement.spacedBy(4.dp),
+          modifier = gridModifier) {
+            items(folders.value.size) { index ->
+              FolderItem(folder = folders.value[index]) {
+                folderViewModel.selectedFolder(folders.value[index])
+                navigationActions.navigateTo(Screen.FOLDER_CONTENTS)
+              }
             }
-        } else {
-            Column(
-                modifier = Modifier.fillMaxSize().padding(paddingValues),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally) {
-                columnContent()
+            items(notes.value.size) { index ->
+              NoteItem(note = notes.value[index]) {
+                noteViewModel.selectedNote(notes.value[index])
+                navigationActions.navigateTo(Screen.EDIT_NOTE)
+              }
             }
-        }
+          }
+    } else {
+      Column(
+          modifier = Modifier.fillMaxSize().padding(paddingValues),
+          verticalArrangement = Arrangement.Center,
+          horizontalAlignment = Alignment.CenterHorizontally) {
+            columnContent()
+          }
     }
+  }
 }
 
 /**
@@ -310,29 +310,29 @@ data class CustomDropDownMenuItem(
 @Composable
 fun RenameFolderDialog(currentName: String, onDismiss: () -> Unit, onConfirm: (String) -> Unit) {
 
-    var newName by remember { mutableStateOf(currentName) }
+  var newName by remember { mutableStateOf(currentName) }
 
-    AlertDialog(
-        modifier = Modifier.testTag("renameFolderDialog"),
-        onDismissRequest = onDismiss,
-        title = { Text("Rename folder") },
-        text = {
-            OutlinedTextField(
-                value = newName, onValueChange = { newName = it }, label = { Text("New Folder Name") })
-        },
-        confirmButton = {
-            Button(
-                enabled = newName.isNotEmpty(),
-                onClick = { onConfirm(newName) },
-                modifier = Modifier.testTag("confirmRenameButton")) {
-                Text("Confirm")
+  AlertDialog(
+      modifier = Modifier.testTag("renameFolderDialog"),
+      onDismissRequest = onDismiss,
+      title = { Text("Rename folder") },
+      text = {
+        OutlinedTextField(
+            value = newName, onValueChange = { newName = it }, label = { Text("New Folder Name") })
+      },
+      confirmButton = {
+        Button(
+            enabled = newName.isNotEmpty(),
+            onClick = { onConfirm(newName) },
+            modifier = Modifier.testTag("confirmRenameButton")) {
+              Text("Confirm")
             }
-        },
-        dismissButton = {
-            Button(onClick = onDismiss, modifier = Modifier.testTag("dismissRenameButton")) {
-                Text("Cancel")
-            }
-        })
+      },
+      dismissButton = {
+        Button(onClick = onDismiss, modifier = Modifier.testTag("dismissRenameButton")) {
+          Text("Cancel")
+        }
+      })
 }
 
 /**
@@ -355,19 +355,19 @@ fun NoteDataTextField(
     modifier: Modifier = Modifier,
     trailingIcon: @Composable (() -> Unit)? = null
 ) {
-    OutlinedTextField(
-        value = value,
-        onValueChange = onValueChange,
-        label = { Text(label) },
-        placeholder = { Text(placeholder) },
-        modifier = modifier,
-        trailingIcon = trailingIcon,
-        colors =
-        TextFieldDefaults.colors(
-            focusedIndicatorColor = MaterialTheme.colorScheme.primary,
-            unfocusedIndicatorColor = MaterialTheme.colorScheme.onBackground,
-            focusedContainerColor = MaterialTheme.colorScheme.background,
-            unfocusedContainerColor = MaterialTheme.colorScheme.background))
+  OutlinedTextField(
+      value = value,
+      onValueChange = onValueChange,
+      label = { Text(label) },
+      placeholder = { Text(placeholder) },
+      modifier = modifier,
+      trailingIcon = trailingIcon,
+      colors =
+          TextFieldDefaults.colors(
+              focusedIndicatorColor = MaterialTheme.colorScheme.primary,
+              unfocusedIndicatorColor = MaterialTheme.colorScheme.onBackground,
+              focusedContainerColor = MaterialTheme.colorScheme.background,
+              unfocusedContainerColor = MaterialTheme.colorScheme.background))
 }
 
 /**
@@ -389,22 +389,22 @@ fun ScreenTopBar(
     icon: @Composable () -> Unit,
     iconTestTag: String
 ) {
-    TopAppBar(
-        colors =
-        TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface),
-        title = {
-            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                Spacer(modifier = Modifier.weight(1f))
-                Text(
-                    title,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.testTag(titleTestTag))
-                Spacer(modifier = Modifier.weight(2f))
-            }
-        },
-        navigationIcon = {
-            IconButton(onClick = onBackClick, Modifier.testTag(iconTestTag), content = icon)
-        })
+  TopAppBar(
+      colors =
+          TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface),
+      title = {
+        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+          Spacer(modifier = Modifier.weight(1f))
+          Text(
+              title,
+              color = MaterialTheme.colorScheme.onSurface,
+              modifier = Modifier.testTag(titleTestTag))
+          Spacer(modifier = Modifier.weight(2f))
+        }
+      },
+      navigationIcon = {
+        IconButton(onClick = onBackClick, Modifier.testTag(iconTestTag), content = icon)
+      })
 }
 
 /**
@@ -429,26 +429,26 @@ fun OptionDropDownMenu(
     onItemClick: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Box(modifier = Modifier.fillMaxWidth()) {
-        Button(
-            onClick = { onExpandedChange(!expanded) },
-            modifier = Modifier.fillMaxWidth().testTag(buttonTag)) {
-            Text(text = value)
-            Icon(Icons.Outlined.ArrowDropDown, "Dropdown icon")
+  Box(modifier = Modifier.fillMaxWidth()) {
+    Button(
+        onClick = { onExpandedChange(!expanded) },
+        modifier = Modifier.fillMaxWidth().testTag(buttonTag)) {
+          Text(text = value)
+          Icon(Icons.Outlined.ArrowDropDown, "Dropdown icon")
         }
 
-        DropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { onExpandedChange(false) },
-            modifier = modifier.fillMaxWidth().testTag(menuTag)) {
-            items.forEach { item ->
-                DropdownMenuItem(
-                    text = { Text(item) },
-                    onClick = {
-                        onItemClick(item)
-                        onExpandedChange(false)
-                    })
-            }
+    DropdownMenu(
+        expanded = expanded,
+        onDismissRequest = { onExpandedChange(false) },
+        modifier = modifier.fillMaxWidth().testTag(menuTag)) {
+          items.forEach { item ->
+            DropdownMenuItem(
+                text = { Text(item) },
+                onClick = {
+                  onItemClick(item)
+                  onExpandedChange(false)
+                })
+          }
         }
-    }
+  }
 }
