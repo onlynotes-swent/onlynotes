@@ -62,11 +62,13 @@ import kotlinx.coroutines.delay
 /**
  * A screen to edit markdown content for a selected note.
  *
- * This screen allows users to edit markdown text with rich text formatting options (bold, italic, underline, and strikethrough),
- * using a rich text editor. It displays existing markdown content or downloads it if not available. If there is no markdown file
- * associated with the note, a new empty markdown file is created and uploaded, then re-downloaded.
+ * This screen allows users to edit markdown text with rich text formatting options (bold, italic,
+ * underline, and strikethrough), using a rich text editor. It displays existing markdown content or
+ * downloads it if not available. If there is no markdown file associated with the note, a new empty
+ * markdown file is created and uploaded, then re-downloaded.
  *
- * @param navigationActions Object to handle navigation actions, including going back to the previous screen.
+ * @param navigationActions Object to handle navigation actions, including going back to the
+ *   previous screen.
  * @param noteViewModel ViewModel to manage the note's state and interactions.
  * @param userViewModel ViewModel for user-specific actions, if required.
  * @param fileViewModel ViewModel to handle file downloads and uploads for markdown files.
@@ -180,7 +182,6 @@ fun EditMarkdownScreen(
  * @param onUnderlineClick Callback function to handle underline style toggle.
  * @param onStrikethroughClick Callback function to handle strikethrough style toggle.
  */
-
 @Composable
 fun EditorControls(
     modifier: Modifier,
@@ -259,12 +260,13 @@ fun EditorControls(
  * @param modifier Modifier to be applied to the FilterChip for layout and styling adjustments.
  * @param selected Boolean indicating whether the control is in a selected (active) state.
  * @param selectedColor Color used when the control is selected, defaulting to the primary color.
- * @param unselectedColor Color used when the control is not selected, defaulting to the inverse primary color.
- * @param onChangeClick Callback function to update the `selected` state when the control is clicked.
+ * @param unselectedColor Color used when the control is not selected, defaulting to the inverse
+ *   primary color.
+ * @param onChangeClick Callback function to update the `selected` state when the control is
+ *   clicked.
  * @param onClick Callback function to handle additional actions when the control is clicked.
  * @param content Composable lambda representing the visual content of the chip, typically an icon.
  */
-
 @Composable
 fun ControlWrapper(
     modifier: Modifier,

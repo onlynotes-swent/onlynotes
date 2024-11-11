@@ -86,10 +86,11 @@ fun EditNoteScreen(
   var expandedVisibility by remember { mutableStateOf(false) }
   var updatedComments by remember { mutableStateOf(note?.comments ?: Note.CommentCollection()) }
   var attemptedDoawnloadAttempts = 0
-    /**
-     * Downloads a markdown file associated with the note. If no file exists, it attempts once to create and upload an empty markdown file, then re-download it.
-     */
-    fun downloadMarkdownFile() {
+  /**
+   * Downloads a markdown file associated with the note. If no file exists, it attempts once to
+   * create and upload an empty markdown file, then re-download it.
+   */
+  fun downloadMarkdownFile() {
     fileViewModel.downloadFile(
         uid = note?.id ?: "errorNoId",
         fileType = FileType.NOTE_TEXT,
