@@ -8,6 +8,8 @@ import com.github.onlynotesswent.model.flashcard.FlashcardViewModel
 import com.github.onlynotesswent.model.note.Note
 import com.google.firebase.FirebaseApp
 import com.google.firebase.Timestamp
+import com.google.gson.JsonSyntaxException
+import java.io.IOException
 import org.junit.Assert.assertEquals
 import org.junit.Assert.fail
 import org.junit.Before
@@ -144,5 +146,56 @@ class NotesToFlashcardTest {
     // Retrieve captured flashcards and validate them
     val capturedFlashcards = flashcardCaptor.allValues
     assertEquals(3, capturedFlashcards.size)
+  }
+
+  @Test
+  fun `convertNoteToFlashcards failure`() {
+    // Mocking OpenAI's sendRequest to trigger onFailure
+    doAnswer { invocation ->
+          val callback = invocation.getArgument<OpenAICallback>(2)
+          callback.onFailure(IOException("Mocked IOException"))
+        }
+        .`when`(mockOpenAI)
+        .sendRequest(anyString(), anyString(), any(OpenAICallback::class.java))
+
+    // Set up a flag to ensure the failure callback was called
+    var failureCallbackCalled = false
+
+    // Execute the method
+    notesToFlashcard.convertNoteToFlashcards(
+        note = testNote,
+        onSuccess = { fail("Expected failure but got success") },
+        onFailure = { error ->
+          failureCallbackCalled = true
+          assert(error is IOException)
+          assertEquals("Mocked IOException", error.message)
+        })
+
+    // Verify that failure callback was indeed called
+    assert(failureCallbackCalled)
+  }
+
+  @Test
+  fun `convertNoteToFlashcards invalid JSON`() {
+    // Mocking OpenAI's sendRequest to trigger onSuccess
+    doAnswer { invocation ->
+          val callback = invocation.getArgument<OpenAICallback>(2)
+          callback.onSuccess("invalid JSON")
+        }
+        .`when`(mockOpenAI)
+        .sendRequest(anyString(), anyString(), any(OpenAICallback::class.java))
+
+    // Set up a flag to ensure the failure callback was called
+    var failureCallbackCalled = false
+    notesToFlashcard.convertNoteToFlashcards(
+        note = testNote,
+        onSuccess = { fail("Expected failure but got success") },
+        onFailure = { error ->
+          failureCallbackCalled = true
+          assertEquals(JsonSyntaxException::class.java, error::class.java)
+        })
+
+    // Verify that failure callback was indeed called
+    assert(failureCallbackCalled)
   }
 }
