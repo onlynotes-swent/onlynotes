@@ -102,7 +102,7 @@ fun EditMarkdownScreen(
               .show()
         })
   }
-
+  @Suppress("kotlin:S6300") // as there is no need to encrypt file
   // Function to update the Markdown file with "Hello world"
   fun updateMarkdownFile(context: Context, uid: String, fileViewModel: FileViewModel) {
     try {

@@ -90,6 +90,7 @@ fun EditNoteScreen(
    * Downloads a markdown file associated with the note. If no file exists, it attempts once to
    * create and upload an empty markdown file, then re-download it.
    */
+  @Suppress("kotlin:S6300") // as there is no need to encrypt file
   fun downloadMarkdownFile() {
     fileViewModel.downloadFile(
         uid = note?.id ?: "errorNoId",
