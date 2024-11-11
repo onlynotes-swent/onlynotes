@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -137,7 +138,7 @@ fun EditMarkdownScreen(
             iconTestTag = "goBackButton")
       },
       content = { paddingValues ->
-        Column(
+        LazyColumn(
             modifier =
                 Modifier.fillMaxSize()
                     .padding(16.dp)
@@ -145,7 +146,7 @@ fun EditMarkdownScreen(
                     .testTag("editMarkdownColumn")
                     .verticalScroll(rememberScrollState()),
         ) {
-          EditorControls(
+          item{EditorControls(
               modifier = Modifier.testTag("EditorControl"),
               state = state,
               onBoldClick = { state.toggleSpanStyle(SpanStyle(fontWeight = FontWeight.Bold)) },
@@ -155,18 +156,18 @@ fun EditMarkdownScreen(
               },
               onStrikethroughClick = {
                 state.toggleSpanStyle(SpanStyle(textDecoration = TextDecoration.LineThrough))
-              })
+              })}
 
-          RichTextEditor(
-              modifier = Modifier.fillMaxWidth().weight(2f).testTag("RichTextEditor"),
+          item{RichTextEditor(
+              modifier = Modifier.fillMaxWidth().testTag("RichTextEditor"),
               state = state,
-          )
+          )}
 
-          Button(
+          item{Button(
               modifier = Modifier.fillMaxWidth().testTag("Save button"),
               onClick = { updateMarkdownFile(context, note?.id ?: "", fileViewModel) }) {
                 Text("Save")
-              }
+              }}
         }
       })
 }
