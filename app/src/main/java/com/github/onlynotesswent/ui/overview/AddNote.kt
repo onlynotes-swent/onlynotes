@@ -185,7 +185,7 @@ fun AddNoteScreen(
                     // provisional note, we will have to change this later
                     val note =
                         Note(
-                            id = noteViewModel.getNewUid(),
+                            id = noteUid,
                             title = title,
                             content = "",
                             date = Timestamp.now(),

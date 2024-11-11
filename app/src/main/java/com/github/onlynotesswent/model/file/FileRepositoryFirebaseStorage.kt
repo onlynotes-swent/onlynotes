@@ -3,6 +3,7 @@ package com.github.onlynotesswent.model.file
 import android.net.Uri
 import android.util.Log
 import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.storage.StorageException
 import com.google.firebase.storage.StorageReference
 import java.io.File
 
@@ -33,7 +34,7 @@ class FileRepositoryFirebaseStorage(private val db: FirebaseStorage) : FileRepos
         .putFile(fileUri)
         .addOnSuccessListener { onSuccess() }
         .addOnFailureListener {
-          Log.e(TAG, "Error uploading image: ${it.message}", it)
+          Log.e(TAG, "Error uploading file.", it)
           onFailure(it)
         }
   }
@@ -43,6 +44,7 @@ class FileRepositoryFirebaseStorage(private val db: FirebaseStorage) : FileRepos
       fileType: FileType,
       cacheDir: File,
       onSuccess: (File) -> Unit,
+      onFileNotFound: () -> Unit,
       onFailure: (Exception) -> Unit
   ) {
 
@@ -56,9 +58,17 @@ class FileRepositoryFirebaseStorage(private val db: FirebaseStorage) : FileRepos
     getFileRef(uid, fileType)
         .getFile(localFile)
         .addOnSuccessListener { onSuccess(localFile) }
-        .addOnFailureListener {
-          Log.e(TAG, "Error downloading image: ${it.message}", it)
-          onFailure(it)
+        .addOnFailureListener { error ->
+          Log.e(TAG, "Error downloading file.")
+          val errorCode = (error as StorageException).errorCode
+          if (errorCode == StorageException.ERROR_OBJECT_NOT_FOUND) {
+            // Check should be external, since notes have a hasPdf and hasText field
+            Log.e(TAG, "File not found.", error)
+            onFileNotFound()
+          } else {
+            Log.e(TAG, "Error downloading file.", error)
+            onFailure(error)
+          }
         }
   }
 
@@ -66,20 +76,27 @@ class FileRepositoryFirebaseStorage(private val db: FirebaseStorage) : FileRepos
       uid: String,
       fileType: FileType,
       onSuccess: () -> Unit,
+      onFileNotFound: () -> Unit,
       onFailure: (Exception) -> Unit
   ) {
     getFileRef(uid, fileType)
         .delete()
         .addOnSuccessListener { onSuccess() }
-        .addOnFailureListener {
-          Log.e(TAG, "Error deleting image: ${it.message}", it)
-          onFailure(it)
+        .addOnFailureListener { error ->
+          val errorCode = (error as StorageException).errorCode
+          if (errorCode == StorageException.ERROR_OBJECT_NOT_FOUND) {
+            // Check should be external, since notes have a hasPdf and hasText field
+            Log.e(TAG, "File not found.", error)
+            onFileNotFound()
+          } else {
+            Log.e(TAG, "Error deleting file.", error)
+            onFailure(error)
+          }
         }
   }
 
   // Unnecessary as uploading with the same name will overwrite the image, but we can add it for
-  // clarity
-  // and possible future additions/implementations
+  // clarity and possible future additions/implementations
   override fun updateFile(
       uid: String,
       fileUri: Uri,
@@ -94,18 +111,26 @@ class FileRepositoryFirebaseStorage(private val db: FirebaseStorage) : FileRepos
       uid: String,
       fileType: FileType,
       onSuccess: (ByteArray) -> Unit,
+      onFileNotFound: () -> Unit,
       onFailure: (Exception) -> Unit
   ) {
     getFileRef(uid, fileType)
         .getBytes(MAX_FILE_SIZE)
         .addOnSuccessListener { onSuccess(it) }
-        .addOnFailureListener {
-          if (it is IndexOutOfBoundsException) {
-            Log.e(TAG, "File too large, max size is $MAX_FILE_SIZE", it)
+        .addOnFailureListener { error ->
+          if (error is IndexOutOfBoundsException) {
+            Log.e(TAG, "File too large, max size is $MAX_FILE_SIZE", error)
           } else {
-            Log.e(TAG, "Error getting image: ${it.message}", it)
+            val errorCode = (error as StorageException).errorCode
+            if (errorCode == StorageException.ERROR_OBJECT_NOT_FOUND) {
+              // Check should be external, since notes have a hasPdf and hasText field
+              Log.e(TAG, "File not found: ${error.message}", error)
+              onFileNotFound()
+            } else {
+              Log.e(TAG, "Error getting file.", error)
+            }
+            onFailure(error)
           }
-          onFailure(it)
         }
   }
 

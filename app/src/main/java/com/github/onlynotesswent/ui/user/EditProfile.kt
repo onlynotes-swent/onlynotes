@@ -203,6 +203,7 @@ fun ProfilePicture(
             // Now the current profile picture is the same as the one in the database
             hasProfilePictureBeenChanged.value = false
           },
+          {},
           onFailure = { e -> Log.e("ProfilePicture", "Error downloading profile picture", e) })
     }
 

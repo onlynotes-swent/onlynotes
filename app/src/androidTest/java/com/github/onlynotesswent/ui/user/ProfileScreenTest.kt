@@ -90,7 +90,7 @@ class ProfileScreenTest {
       }
     }
 
-    `when`(mockFileRepository.downloadFile(any(), any(), any(), any(), any())).thenAnswer {}
+    `when`(mockFileRepository.downloadFile(any(), any(), any(), any(), any(), any())).thenAnswer {}
   }
 
   @Test
@@ -220,7 +220,7 @@ class ProfileScreenTest {
       EditProfileScreen(mockNavigationActions, userViewModel, profilePictureTaker, fileViewModel)
     }
     composeTestRule.onNodeWithTag("profilePicture").performClick()
-    verify(mockFileRepository).downloadFile(any(), any(), any(), any(), any())
+    verify(mockFileRepository).downloadFile(any(), any(), any(), any(), any(), any())
   }
 
   @Test

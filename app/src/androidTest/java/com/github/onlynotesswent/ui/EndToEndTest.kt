@@ -24,7 +24,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navigation
 import androidx.test.espresso.intent.Intents
-import com.github.onlynotesswent.model.file.FileRepositoryFirebaseStorage
+import com.github.onlynotesswent.model.file.FileRepository
 import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.note.Note
 import com.github.onlynotesswent.model.note.NoteRepository
@@ -61,7 +61,7 @@ class EndToEndTest {
   private lateinit var noteViewModel: NoteViewModel
   private lateinit var noteRepository: NoteRepository
   private lateinit var fileViewModel: FileViewModel
-  private lateinit var fileRepository: FileRepositoryFirebaseStorage
+  private lateinit var fileRepository: FileRepository
   private lateinit var context: Context
   private lateinit var scanner: Scanner
 
@@ -98,7 +98,7 @@ class EndToEndTest {
     userViewModel = UserViewModel(userRepository)
     noteRepository = mock(NoteRepository::class.java)
     noteViewModel = NoteViewModel(noteRepository)
-    fileRepository = mock(FileRepositoryFirebaseStorage::class.java)
+    fileRepository = mock(FileRepository::class.java)
     fileViewModel = FileViewModel(fileRepository)
     context = mock(Context::class.java)
     scanner = mock(Scanner::class.java)

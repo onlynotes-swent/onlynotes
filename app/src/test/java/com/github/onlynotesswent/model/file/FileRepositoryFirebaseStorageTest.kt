@@ -7,21 +7,24 @@ import com.google.android.gms.tasks.OnSuccessListener
 import com.google.android.gms.tasks.Task
 import com.google.firebase.storage.FileDownloadTask
 import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.storage.StorageException
 import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.UploadTask
 import com.google.firebase.storage.UploadTask.TaskSnapshot
-import java.io.File
 import junit.framework.TestCase.assertEquals
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mock
-import org.mockito.Mockito.*
+import org.mockito.Mockito.mock
+import org.mockito.Mockito.mockStatic
+import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.shadows.ShadowLog
+import java.io.File
 
 @RunWith(RobolectricTestRunner::class)
 class FileRepositoryFirebaseStorageTest {
@@ -100,8 +103,7 @@ class FileRepositoryFirebaseStorageTest {
   @Test
   fun uploadFileFailure() {
     val fileUri = Uri.parse("content://dummy")
-    val exceptionError = "Error"
-    val exception = Exception(exceptionError)
+    val exception = StorageException.fromException(Exception())
 
     `when`(mockFileReference.putFile(eq(fileUri))).thenReturn(mockUploadTask)
 
@@ -146,7 +148,7 @@ class FileRepositoryFirebaseStorageTest {
         logs.find {
           it.type == Log.ERROR &&
               it.tag == FileRepositoryFirebaseStorage.TAG &&
-              it.msg == "Error uploading image: " + exceptionError
+              it.msg == "Error uploading file."
         }
     assert(errorLog != null) { "Expected error log was not found!" }
   }
@@ -175,6 +177,7 @@ class FileRepositoryFirebaseStorageTest {
             // Verify that the onSuccess callback returns the mock File object
             assertEquals(mockFile, it)
           },
+          onFileNotFound = { assert(false) },
           onFailure = {
             // Failure callback
             assert(false)
@@ -188,6 +191,7 @@ class FileRepositoryFirebaseStorageTest {
             // Verify that the onSuccess callback returns the mock File object
             assertEquals(mockFile, it)
           },
+          onFileNotFound = { assert(false) },
           onFailure = {
             // Failure callback
             assert(false)
@@ -197,8 +201,7 @@ class FileRepositoryFirebaseStorageTest {
 
   @Test
   fun downloadFileFailure() {
-    val exceptionError = "Error"
-    val exception = Exception(exceptionError)
+    val exception = StorageException.fromException(Exception())
 
     `when`(mockFileReference.getFile(any<File>())).thenReturn(mockFileDownloadTask)
 
@@ -223,6 +226,7 @@ class FileRepositoryFirebaseStorageTest {
             // Success callback
             assert(false)
           },
+          onFileNotFound = { assert(false) },
           onFailure = {
             // Verify correct exception is returned
             assertEquals(exception, it)
@@ -236,6 +240,7 @@ class FileRepositoryFirebaseStorageTest {
             // Success callback
             assert(false)
           },
+          onFileNotFound = { assert(false) },
           onFailure = {
             // Verify correct exception is returned
             assertEquals(exception, it)
@@ -250,7 +255,7 @@ class FileRepositoryFirebaseStorageTest {
         logs.find {
           it.type == Log.ERROR &&
               it.tag == FileRepositoryFirebaseStorage.TAG &&
-              it.msg == "Error downloading image: " + exceptionError
+              it.msg == "Error downloading file."
         }
     assert(errorLog != null) { "Expected error log was not found!" }
   }
@@ -272,6 +277,7 @@ class FileRepositoryFirebaseStorageTest {
           // Success callback
           assert(true)
         },
+        onFileNotFound = { assert(false) },
         onFailure = {
           // Failure callback
           assert(false)
@@ -284,6 +290,7 @@ class FileRepositoryFirebaseStorageTest {
           // Success callback
           assert(true)
         },
+        onFileNotFound = { assert(false) },
         onFailure = {
           // Failure callback
           assert(false)
@@ -292,8 +299,7 @@ class FileRepositoryFirebaseStorageTest {
 
   @Test
   fun deleteFileFailure() {
-    val exceptionError = "Error"
-    val exception = Exception(exceptionError)
+    val exception = StorageException.fromException(Exception())
 
     `when`(mockFileReference.delete()).thenReturn(mockDeleteTask)
 
@@ -311,6 +317,7 @@ class FileRepositoryFirebaseStorageTest {
           // Success callback
           assert(false)
         },
+        onFileNotFound = { assert(false) },
         onFailure = {
           // Failure callback
           assertEquals(exception, it)
@@ -323,6 +330,7 @@ class FileRepositoryFirebaseStorageTest {
           // Success callback
           assert(false)
         },
+        onFileNotFound = { assert(false) },
         onFailure = {
           // Failure callback
           assertEquals(exception, it)
@@ -336,50 +344,103 @@ class FileRepositoryFirebaseStorageTest {
         logs.find {
           it.type == Log.ERROR &&
               it.tag == FileRepositoryFirebaseStorage.TAG &&
-              it.msg == "Error deleting image: " + exceptionError
+              it.msg == "Error deleting file."
         }
     assert(errorLog != null) { "Expected error log was not found!" }
   }
 
-  @Test
-  fun getFileSuccess() {
-    `when`(mockFileReference.getBytes(any())).thenReturn(mockGetFileTask)
+    @Test
+    fun deleteFileFileNotFound() {
+        val exception = StorageException.fromException(Exception())
 
-    `when`(mockGetFileTask.addOnSuccessListener(any())).thenAnswer {
-      val listener = it.arguments[0] as OnSuccessListener<ByteArray>
-      listener.onSuccess(ByteArray(10))
-      mockGetFileTask
+        `when`(mockFileReference.delete()).thenReturn(mockDeleteTask)
+
+        `when`(mockDeleteTask.addOnSuccessListener(any())).thenReturn(mockDeleteTask)
+        `when`(mockDeleteTask.addOnFailureListener(any())).thenAnswer {
+            val listener = it.arguments[0] as OnFailureListener
+            listener.onFailure(exception)
+            mockDeleteTask
+        }
+
+        fileRepository.deleteFile(
+            uid,
+            FileType.PROFILE_PIC_JPEG,
+            onSuccess = {
+                // Success callback
+                assert(false)
+            },
+            onFileNotFound = { assert(false) },
+            onFailure = {
+                // Failure callback
+                assertEquals(exception, it)
+            })
+
+        fileRepository.deleteFile(
+            uid,
+            FileType.NOTE_PDF,
+            onSuccess = {
+                // Success callback
+                assert(false)
+            },
+            onFileNotFound = { assert(false) },
+            onFailure = {
+                // Failure callback
+                assertEquals(exception, it)
+            })
+
+        // Get all the logs
+        val logs = ShadowLog.getLogs()
+
+        // Check for the debug log that should be generated
+        val errorLog =
+            logs.find {
+                it.type == Log.ERROR &&
+                        it.tag == FileRepositoryFirebaseStorage.TAG &&
+                        it.msg == "Error deleting file."
+            }
+        assert(errorLog != null) { "Expected error log was not found!" }
     }
 
-    fileRepository.getFile(
-        uid,
-        FileType.PROFILE_PIC_JPEG,
-        onSuccess = {
-          // Verify that the onSuccess callback returns the mock File object
-          assert(true)
-        },
-        onFailure = {
-          // Failure callback
-          assert(false)
-        })
+    @Test
+    fun getFileSuccess() {
+        `when`(mockFileReference.getBytes(any())).thenReturn(mockGetFileTask)
 
-    fileRepository.getFile(
-        uid,
-        FileType.NOTE_PDF,
-        onSuccess = {
-          // Verify that the onSuccess callback returns the mock File object
-          assert(true)
-        },
-        onFailure = {
-          // Failure callback
-          assert(false)
-        })
-  }
+        `when`(mockGetFileTask.addOnSuccessListener(any())).thenAnswer {
+            val listener = it.arguments[0] as OnSuccessListener<ByteArray>
+            listener.onSuccess(ByteArray(10))
+            mockGetFileTask
+        }
+
+        fileRepository.getFile(
+            uid,
+            FileType.PROFILE_PIC_JPEG,
+            onSuccess = {
+                // Verify that the onSuccess callback returns the mock File object
+                assert(true)
+            },
+            onFileNotFound = { assert(false) },
+            onFailure = {
+                // Failure callback
+                assert(false)
+            })
+
+        fileRepository.getFile(
+            uid,
+            FileType.NOTE_PDF,
+            onSuccess = {
+                // Verify that the onSuccess callback returns the mock File object
+                assert(true)
+            },
+            onFileNotFound = { assert(false) },
+            onFailure = {
+                // Failure callback
+                assert(false)
+            })
+    }
 
   @Test
   fun getFileFailure() {
-    val exceptionError = "Error"
-    val exception = Exception(exceptionError)
+    val exception = StorageException.fromException(Exception())
 
     `when`(mockFileReference.getBytes(any())).thenReturn(mockGetFileTask)
 
@@ -397,6 +458,7 @@ class FileRepositoryFirebaseStorageTest {
           // Success callback
           assert(false)
         },
+        onFileNotFound = { assert(false) },
         onFailure = {
           // Verify correct exception is returned
           assertEquals(exception, it)
@@ -409,6 +471,7 @@ class FileRepositoryFirebaseStorageTest {
           // Success callback
           assert(false)
         },
+        onFileNotFound = { assert(false) },
         onFailure = {
           // Verify correct exception is returned
           assertEquals(exception, it)
@@ -422,7 +485,7 @@ class FileRepositoryFirebaseStorageTest {
         logs.find {
           it.type == Log.ERROR &&
               it.tag == FileRepositoryFirebaseStorage.TAG &&
-              it.msg == "Error getting image: " + exceptionError
+              it.msg == "Error getting file."
         }
     assert(errorLog != null) { "Expected error log was not found!" }
   }
@@ -447,6 +510,7 @@ class FileRepositoryFirebaseStorageTest {
           // Success callback
           assert(false)
         },
+        onFileNotFound = { assert(false) },
         onFailure = {
           // Verify correct exception is returned
           assertEquals(exception, it)
@@ -459,6 +523,7 @@ class FileRepositoryFirebaseStorageTest {
           // Success callback
           assert(false)
         },
+        onFileNotFound = { assert(false) },
         onFailure = {
           // Verify correct exception is returned
           assertEquals(exception, it)
@@ -476,4 +541,58 @@ class FileRepositoryFirebaseStorageTest {
         }
     assert(errorLog != null) { "Expected error log was not found!" }
   }
+
+    @Test
+    fun getFileFileNotFound() {
+        val exception = mock(StorageException::class.java)
+        `when`(exception.errorCode).thenReturn(StorageException.ERROR_OBJECT_NOT_FOUND)
+
+        `when`(mockFileReference.getBytes(any())).thenReturn(mockGetFileTask)
+
+        `when`(mockGetFileTask.addOnSuccessListener(any())).thenReturn(mockGetFileTask)
+        `when`(mockGetFileTask.addOnFailureListener(any())).thenAnswer {
+            val listener = it.arguments[0] as OnFailureListener
+            listener.onFailure(exception)
+            mockGetFileTask
+        }
+
+        fileRepository.getFile(
+            uid,
+            FileType.PROFILE_PIC_JPEG,
+            onSuccess = {
+                // Success callback
+                assert(false)
+            },
+            onFileNotFound = {
+                assert(true)
+            },
+            onFailure = {
+                assert(false)
+            })
+
+        fileRepository.getFile(
+            uid,
+            FileType.NOTE_PDF,
+            onSuccess = {
+                // Success callback
+                assert(false)
+            },
+            onFileNotFound = { assert(false) },
+            onFailure = {
+                // Verify correct exception is returned
+                assertEquals(exception, it)
+            })
+
+        // Get all the logs
+        val logs = ShadowLog.getLogs()
+
+        // Check for the debug log that should be generated
+        val errorLog =
+            logs.find {
+                it.type == Log.ERROR &&
+                        it.tag == FileRepositoryFirebaseStorage.TAG &&
+                        it.msg == "File not found."
+            }
+        assert(errorLog != null) { "Expected error log was not found!" }
+    }
 }
