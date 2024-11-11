@@ -3,6 +3,7 @@ package com.github.onlynotesswent.model.note
 import android.graphics.Bitmap
 import android.os.Looper
 import androidx.test.core.app.ApplicationProvider
+import com.github.onlynotesswent.utils.Visibility
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.android.gms.tasks.Task
 import com.google.android.gms.tasks.Tasks
@@ -47,7 +48,7 @@ class NoteRepositoryFirestoreTest {
           title = "title",
           content = "content",
           date = Timestamp.now(),
-          visibility = Note.Visibility.PUBLIC,
+          visibility = Visibility.PUBLIC,
           userId = "1",
           noteClass = Note.Class("CS-100", "Sample Class", 2024, "path"),
           image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888),
@@ -60,7 +61,7 @@ class NoteRepositoryFirestoreTest {
           title = "title",
           content = "content",
           date = Timestamp.now(),
-          visibility = Note.Visibility.PRIVATE,
+          visibility = Visibility.PRIVATE,
           userId = "1",
           noteClass = Note.Class("CS-100", "Sample Class", 2024, "path"),
           image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888),
@@ -74,7 +75,7 @@ class NoteRepositoryFirestoreTest {
           title = "title",
           content = "content",
           date = Timestamp.now(),
-          visibility = Note.Visibility.PUBLIC,
+          visibility = Visibility.PUBLIC,
           userId = "1",
           folderId = "1",
           noteClass = Note.Class("CS-100", "Sample Class", 2024, "path"),
@@ -86,7 +87,7 @@ class NoteRepositoryFirestoreTest {
           title = "title",
           content = "content",
           date = Timestamp.now(),
-          visibility = Note.Visibility.PRIVATE,
+          visibility = Visibility.PRIVATE,
           userId = "1",
           folderId = "1",
           noteClass = Note.Class("CS-100", "Sample Class", 2024, "path"),

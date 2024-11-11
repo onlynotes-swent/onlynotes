@@ -41,6 +41,7 @@ import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.model.users.UserViewModel
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
+import com.github.onlynotesswent.utils.Visibility
 import com.google.firebase.Timestamp
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -81,7 +82,7 @@ fun EditNoteScreen(
             title = note?.title ?: "",
             content = note?.content ?: "",
             date = Timestamp.now(), // Use current timestamp
-            visibility = note?.visibility ?: Note.Visibility.DEFAULT,
+            visibility = note?.visibility ?: Visibility.DEFAULT,
             noteClass = note?.noteClass ?: Note.Class("", "", currentYear, ""),
             userId = note?.userId ?: "",
             folderId = note?.folderId,
@@ -140,15 +141,13 @@ fun EditNoteScreen(
                     })
 
                 OptionDropDownMenu(
-                    value =
-                        visibility?.toReadableString()
-                            ?: Note.Visibility.DEFAULT.toReadableString(),
+                    value = visibility?.toReadableString() ?: Visibility.DEFAULT.toReadableString(),
                     expanded = expandedVisibility,
                     buttonTag = "visibilityEditButton",
                     menuTag = "visibilityEditMenu",
                     onExpandedChange = { expandedVisibility = it },
-                    items = Note.Visibility.READABLE_STRINGS,
-                    onItemClick = { visibility = Note.Visibility.fromReadableString(it) })
+                    items = Visibility.READABLE_STRINGS,
+                    onItemClick = { visibility = Visibility.fromReadableString(it) })
 
                 NoteDataTextField(
                     value = updatedClassName,
@@ -187,7 +186,7 @@ fun EditNoteScreen(
                               title = updatedNoteTitle,
                               content = updatedNoteText,
                               date = Timestamp.now(), // Use current timestamp
-                              visibility = visibility ?: Note.Visibility.DEFAULT,
+                              visibility = visibility ?: Visibility.DEFAULT,
                               noteClass =
                                   Note.Class(
                                       updatedClassCode, updatedClassName, updatedClassYear, "path"),

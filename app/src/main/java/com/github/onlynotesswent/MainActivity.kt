@@ -88,7 +88,7 @@ fun OnlyNotesApp(scanner: Scanner, profilePictureTaker: ProfilePictureTaker) {
         route = Route.SEARCH,
     ) {
       composable(Screen.SEARCH_NOTE) {
-        SearchScreen(navigationActions, noteViewModel, userViewModel)
+        SearchScreen(navigationActions, noteViewModel, userViewModel, folderViewModel)
       }
     }
 

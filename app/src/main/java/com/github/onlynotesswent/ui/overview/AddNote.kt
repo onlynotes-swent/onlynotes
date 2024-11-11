@@ -2,7 +2,7 @@ package com.github.onlynotesswent.ui.overview
 
 import android.graphics.Bitmap
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.ArrowDropDown
@@ -45,6 +46,7 @@ import com.github.onlynotesswent.model.scanner.Scanner
 import com.github.onlynotesswent.model.users.UserViewModel
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
+import com.github.onlynotesswent.utils.Visibility
 import com.google.firebase.Timestamp
 import java.util.Calendar
 
@@ -76,7 +78,7 @@ fun AddNoteScreen(
   var classCode by remember { mutableStateOf("") }
   var classYear by remember { mutableIntStateOf(currentYear) }
   var template by remember { mutableStateOf(templateInitialText) }
-  var visibility: Note.Visibility? by remember { mutableStateOf(null) }
+  var visibility: Visibility? by remember { mutableStateOf(null) }
   var expandedVisibility by remember { mutableStateOf(false) }
   var expandedTemplate by remember { mutableStateOf(false) }
 
@@ -122,8 +124,8 @@ fun AddNoteScreen(
                   buttonTag = "visibilityButton",
                   menuTag = "visibilityMenu",
                   onExpandedChange = { expandedVisibility = it },
-                  items = Note.Visibility.READABLE_STRINGS,
-                  onItemClick = { visibility = Note.Visibility.fromReadableString(it) })
+                  items = Visibility.READABLE_STRINGS,
+                  onItemClick = { visibility = Visibility.fromReadableString(it) })
 
               Spacer(modifier = Modifier.height(10.dp))
 
@@ -229,19 +231,19 @@ fun OptionDropDownMenu(
     items: List<String>,
     onItemClick: (String) -> Unit,
     modifier: Modifier = Modifier,
+    widthFactor: Float = 0.8f
 ) {
-  Box(modifier = Modifier.fillMaxWidth()) {
+  BoxWithConstraints(modifier = Modifier.fillMaxWidth(widthFactor)) {
     Button(
         onClick = { onExpandedChange(!expanded) },
-        modifier = Modifier.fillMaxWidth().testTag(buttonTag)) {
+        modifier = Modifier.width(maxWidth).testTag(buttonTag)) {
           Text(text = value)
           Icon(Icons.Outlined.ArrowDropDown, "Dropdown icon")
         }
-
     DropdownMenu(
         expanded = expanded,
         onDismissRequest = { onExpandedChange(false) },
-        modifier = modifier.fillMaxWidth().testTag(menuTag)) {
+        modifier = modifier.width(maxWidth).testTag(menuTag)) {
           items.forEach { item ->
             DropdownMenuItem(
                 text = { Text(item) },

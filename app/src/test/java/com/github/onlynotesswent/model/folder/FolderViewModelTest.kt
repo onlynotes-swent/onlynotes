@@ -78,4 +78,10 @@ class FolderViewModelTest {
     folderViewModel.getSubFoldersOf("pid")
     verify(folderRepository).getSubFoldersOf(eq("pid"), any(), any())
   }
+
+  @Test
+  fun getPublicFoldersCallsRepository() {
+    folderViewModel.getPublicFolders()
+    verify(folderRepository).getPublicFolders(any(), any())
+  }
 }

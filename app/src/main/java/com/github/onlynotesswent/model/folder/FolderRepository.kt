@@ -91,4 +91,12 @@ interface FolderRepository {
       onSuccess: (List<Folder>) -> Unit,
       onFailure: (Exception) -> Unit
   )
+
+  /**
+   * Retrieves all public folders.
+   *
+   * @param onSuccess Callback to be invoked with the retrieved folders.
+   * @param onFailure Callback to be invoked if an error occurs.
+   */
+  fun getPublicFolders(onSuccess: (List<Folder>) -> Unit, onFailure: (Exception) -> Unit)
 }

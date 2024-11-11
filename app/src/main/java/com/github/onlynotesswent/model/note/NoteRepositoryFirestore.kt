@@ -2,6 +2,7 @@ package com.github.onlynotesswent.model.note
 
 import android.graphics.Bitmap
 import android.util.Log
+import com.github.onlynotesswent.utils.Visibility
 import com.google.android.gms.tasks.Task
 import com.google.firebase.Firebase
 import com.google.firebase.Timestamp
@@ -17,7 +18,7 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
       val title: String,
       val content: String,
       val date: Timestamp,
-      val visibility: Note.Visibility,
+      val visibility: Visibility,
       val userId: String,
       val classCode: String,
       val className: String,
@@ -139,7 +140,7 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
         val publicNotes =
             task.result.documents
                 .mapNotNull { document -> documentSnapshotToNote(document) }
-                .filter { it.visibility == Note.Visibility.PUBLIC }
+                .filter { it.visibility == Visibility.PUBLIC }
         onSuccess(publicNotes)
       } else {
         task.exception?.let { e ->
@@ -289,8 +290,7 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
       val content = document.getString("content") ?: return null
       val date = document.getTimestamp("date") ?: return null
       val visibility =
-          Note.Visibility.fromString(
-              document.getString("visibility") ?: Note.Visibility.DEFAULT.toString())
+          Visibility.fromString(document.getString("visibility") ?: Visibility.DEFAULT.toString())
       val userId = document.getString("userId") ?: return null
       val classCode = document.getString("classCode") ?: return null
       val className = document.getString("className") ?: return null

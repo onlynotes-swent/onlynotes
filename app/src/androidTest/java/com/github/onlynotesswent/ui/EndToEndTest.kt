@@ -41,6 +41,7 @@ import com.github.onlynotesswent.ui.overview.EditNoteScreen
 import com.github.onlynotesswent.ui.overview.OverviewScreen
 import com.github.onlynotesswent.ui.theme.AppTheme
 import com.github.onlynotesswent.ui.user.CreateUserScreen
+import com.github.onlynotesswent.utils.Visibility
 import com.google.firebase.Timestamp
 import org.junit.After
 import org.junit.Before
@@ -85,7 +86,7 @@ class EndToEndTest {
           content = "",
           date = Timestamp.now(),
           userId = testUid,
-          visibility = Note.Visibility.DEFAULT,
+          visibility = Visibility.DEFAULT,
           noteClass = Note.Class("classCode", "className", 2024, "publicPath"),
           image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888))
 

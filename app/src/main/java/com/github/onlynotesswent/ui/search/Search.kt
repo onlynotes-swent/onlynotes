@@ -37,6 +37,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.github.onlynotesswent.model.folder.FolderViewModel
 import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.model.users.User
 import com.github.onlynotesswent.model.users.UserViewModel
@@ -44,6 +45,7 @@ import com.github.onlynotesswent.ui.navigation.BottomNavigationMenu
 import com.github.onlynotesswent.ui.navigation.LIST_TOP_LEVEL_DESTINATION
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
+import com.github.onlynotesswent.ui.overview.FolderItem
 import com.github.onlynotesswent.ui.overview.NoteItem
 
 /**
@@ -56,11 +58,11 @@ import com.github.onlynotesswent.ui.overview.NoteItem
 fun SearchScreen(
     navigationActions: NavigationActions,
     noteViewModel: NoteViewModel,
-    userViewModel: UserViewModel
+    userViewModel: UserViewModel,
+    folderViewModel: FolderViewModel
 ) {
   var searchQuery by remember { mutableStateOf(TextFieldValue("")) }
-  val userChipSelected = remember { mutableStateOf(false) }
-  val noteChipSelected = remember { mutableStateOf(false) }
+  val searchType = remember { mutableStateOf(SearchType.NOTES) }
 
   val notes = noteViewModel.publicNotes.collectAsState()
   val filteredNotes = notes.value.filter { it.title.contains(searchQuery.text, ignoreCase = true) }
@@ -71,6 +73,10 @@ fun SearchScreen(
         it.fullName().contains(searchQuery.text, ignoreCase = true) ||
             it.userHandle().contains(searchQuery.text, ignoreCase = true)
       }
+
+  val folders = folderViewModel.publicFolders.collectAsState()
+  val filteredFolders =
+      folders.value.filter { it.name.contains(searchQuery.text, ignoreCase = true) }
 
   Scaffold(
       modifier = Modifier.testTag("searchScreen"),
@@ -104,35 +110,50 @@ fun SearchScreen(
                       .testTag("searchTextField"))
           Row(modifier = Modifier.fillMaxWidth().padding(top = 8.dp, start = 20.dp)) {
             FilterChip(
-                userChipSelected.value,
+                searchType.value == SearchType.USERS,
                 label = { Text("Users") },
                 onClick = {
-                  userChipSelected.value = !userChipSelected.value
-                  noteChipSelected.value = false
+                  searchType.value = SearchType.USERS
+                  userViewModel.getAllUsers()
                 },
                 leadingIcon = {
-                  if (userChipSelected.value)
+                  if (searchType.value == SearchType.USERS)
                       Icon(
                           imageVector = Icons.Default.Check,
                           contentDescription = "Chip Icon",
                           tint = MaterialTheme.colorScheme.onBackground)
                 },
-                modifier = Modifier.padding(horizontal = 15.dp).testTag("userFilterChip"))
+                modifier = Modifier.padding(horizontal = 10.dp).testTag("userFilterChip"))
             FilterChip(
-                noteChipSelected.value,
+                searchType.value == SearchType.NOTES,
                 label = { Text("Notes") },
                 onClick = {
-                  noteChipSelected.value = !noteChipSelected.value
-                  userChipSelected.value = false
+                  searchType.value = SearchType.NOTES
+                  noteViewModel.getPublicNotes()
                 },
                 leadingIcon = {
-                  if (noteChipSelected.value)
+                  if (searchType.value == SearchType.NOTES)
                       Icon(
                           imageVector = Icons.Default.Check,
                           contentDescription = "Chip Icon",
                           tint = MaterialTheme.colorScheme.onBackground)
                 },
-                modifier = Modifier.padding(horizontal = 15.dp).testTag("noteFilterChip"))
+                modifier = Modifier.padding(horizontal = 5.dp).testTag("noteFilterChip"))
+            FilterChip(
+                searchType.value == SearchType.FOLDERS,
+                label = { Text("Folders") },
+                onClick = {
+                  searchType.value = SearchType.FOLDERS
+                  folderViewModel.getPublicFolders()
+                },
+                leadingIcon = {
+                  if (searchType.value == SearchType.FOLDERS)
+                      Icon(
+                          imageVector = Icons.Default.Check,
+                          contentDescription = "Chip Icon",
+                          tint = MaterialTheme.colorScheme.onBackground)
+                },
+                modifier = Modifier.padding(horizontal = 10.dp).testTag("folderFilterChip"))
           }
         }
       },
@@ -146,13 +167,24 @@ fun SearchScreen(
         // To skip large nested if-else blocks, we can use a boolean to determine which list to
         // display.
         val displayUsers: Boolean =
-            searchQuery.text.isNotBlank() && userChipSelected.value && filteredUsers.isNotEmpty()
+            searchQuery.text.isNotBlank() &&
+                searchType.value == SearchType.USERS &&
+                filteredUsers.isNotEmpty()
         val displayNotes: Boolean =
-            searchQuery.text.isNotBlank() && noteChipSelected.value && filteredNotes.isNotEmpty()
+            searchQuery.text.isNotBlank() &&
+                searchType.value == SearchType.NOTES &&
+                filteredNotes.isNotEmpty()
+
+        val displayFolders: Boolean =
+            searchQuery.text.isNotBlank() &&
+                searchType.value == SearchType.FOLDERS &&
+                filteredFolders.isNotEmpty()
+
         val displayLoader: Boolean =
             searchQuery.text.isNotBlank() &&
-                ((userChipSelected.value && filteredUsers.isEmpty()) ||
-                    (noteChipSelected.value && filteredNotes.isEmpty()))
+                ((searchType.value == SearchType.USERS && filteredUsers.isEmpty()) ||
+                    (searchType.value == SearchType.NOTES && filteredNotes.isEmpty()) ||
+                    (searchType.value == SearchType.FOLDERS && filteredFolders.isEmpty()))
 
         if (displayNotes) {
           LazyColumn(
@@ -187,8 +219,30 @@ fun SearchScreen(
               }
         }
 
+        if (displayFolders) {
+          LazyColumn(
+              contentPadding = PaddingValues(vertical = 40.dp),
+              modifier =
+                  Modifier.fillMaxWidth()
+                      .padding(horizontal = 16.dp)
+                      .padding(padding)
+                      .testTag("filteredFolderList")) {
+                items(filteredFolders.size) { index ->
+                  FolderItem(filteredFolders[index]) {
+                    folderViewModel.selectedFolder(filteredFolders[index])
+                    navigationActions.navigateTo(Screen.FOLDER_CONTENTS)
+                  }
+                }
+              }
+        }
+
         if (displayLoader) {
-          val searchedText = if (userChipSelected.value) "users" else "notes"
+          val searchedText =
+              when (searchType.value) {
+                SearchType.USERS -> "users"
+                SearchType.NOTES -> "notes"
+                SearchType.FOLDERS -> "folders"
+              }
           Text(
               modifier =
                   Modifier.padding(padding)
@@ -241,4 +295,10 @@ fun UserItem(user: User, onClick: () -> Unit) {
               color = MaterialTheme.colorScheme.onPrimaryContainer)
         }
       }
+}
+
+enum class SearchType {
+  USERS,
+  NOTES,
+  FOLDERS
 }

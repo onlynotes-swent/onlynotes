@@ -174,13 +174,14 @@ fun FolderContentScreen(
           if (showCreateDialog) {
             CreateFolderDialog(
                 onDismiss = { showCreateDialog = false },
-                onConfirm = { name ->
+                onConfirm = { name, visibility ->
                   folderViewModel.addFolder(
                       Folder(
                           id = folderViewModel.getNewFolderId(),
                           name = name,
                           userId = currentUser.value!!.uid,
-                          parentFolderId = parentFolderId.value),
+                          parentFolderId = parentFolderId.value,
+                          visibility = visibility),
                       userViewModel.currentUser.value!!.uid)
                   showCreateDialog = false
                   if (parentFolderId.value != null) {

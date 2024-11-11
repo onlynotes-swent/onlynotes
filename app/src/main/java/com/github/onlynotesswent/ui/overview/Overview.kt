@@ -20,7 +20,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -47,6 +46,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import com.github.onlynotesswent.R
 import com.github.onlynotesswent.model.folder.Folder
 import com.github.onlynotesswent.model.folder.FolderViewModel
@@ -58,6 +58,7 @@ import com.github.onlynotesswent.ui.navigation.LIST_TOP_LEVEL_DESTINATION
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
 import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
+import com.github.onlynotesswent.utils.Visibility
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -120,13 +121,14 @@ fun OverviewScreen(
         if (showCreateDialog) {
           CreateFolderDialog(
               onDismiss = { showCreateDialog = false },
-              onConfirm = { newName ->
+              onConfirm = { newName, visibility ->
                 folderViewModel.addFolder(
                     Folder(
                         id = folderViewModel.getNewFolderId(),
                         name = newName,
                         userId = userViewModel.currentUser.value!!.uid,
-                        parentFolderId = parentFolderId.value),
+                        parentFolderId = parentFolderId.value,
+                        visibility = visibility),
                     userViewModel.currentUser.value!!.uid)
                 showCreateDialog = false
                 if (parentFolderId.value != null) {
@@ -281,34 +283,88 @@ fun FolderItem(folder: Folder, onClick: () -> Unit) {
  * @param onConfirm callback to be invoked when the user confirms the new name
  */
 @Composable
-fun CreateFolderDialog(onDismiss: () -> Unit, onConfirm: (String) -> Unit) {
+fun CreateFolderDialog(onDismiss: () -> Unit, onConfirm: (String, Visibility) -> Unit) {
 
   var name by remember { mutableStateOf("") }
+  var visibility: Visibility? by remember { mutableStateOf(null) }
+  var expandedVisibility by remember { mutableStateOf(false) }
 
-  AlertDialog(
-      modifier = Modifier.testTag("createFolderDialog"),
-      onDismissRequest = onDismiss,
-      title = { Text("Create Folder") },
-      text = {
-        OutlinedTextField(
-            value = name,
-            onValueChange = { name = it },
-            label = { Text("Folder Name") },
-            modifier = Modifier.testTag("inputFolderName"))
-      },
-      confirmButton = {
-        Button(
-            enabled = name.isNotEmpty(),
-            onClick = { onConfirm(name) },
-            modifier = Modifier.testTag("confirmFolderCreation")) {
-              Text("Create")
+  Dialog(onDismissRequest = onDismiss) {
+    Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
+      Column(
+          modifier = Modifier.padding(16.dp).testTag("createFolderDialog"),
+          verticalArrangement = Arrangement.spacedBy(8.dp),
+          horizontalAlignment = Alignment.CenterHorizontally) {
+            Row(
+                modifier = Modifier.fillMaxWidth(0.92f),
+                horizontalArrangement = Arrangement.Start) {
+                  Text("Create Folder", style = MaterialTheme.typography.titleLarge)
+                }
+
+            OutlinedTextField(
+                value = name,
+                onValueChange = { name = it },
+                label = { Text("Folder Name") },
+                modifier = Modifier.testTag("inputFolderName"))
+
+            OptionDropDownMenu(
+                value = visibility?.toReadableString() ?: "Choose visibility",
+                expanded = expandedVisibility,
+                buttonTag = "visibilityButton",
+                menuTag = "visibilityMenu",
+                onExpandedChange = { expandedVisibility = it },
+                items = Visibility.READABLE_STRINGS,
+                onItemClick = { visibility = Visibility.fromReadableString(it) },
+                modifier = Modifier.testTag("visibilityDropDown"),
+                widthFactor = 0.94f)
+
+            Row(modifier = Modifier.fillMaxWidth(0.92f), horizontalArrangement = Arrangement.End) {
+              Button(onClick = onDismiss, modifier = Modifier.testTag("dismissFolderCreation")) {
+                Text("Cancel")
+              }
+              Button(
+                  enabled = name.isNotEmpty() && visibility != null,
+                  onClick = { onConfirm(name, visibility!!) },
+                  modifier = Modifier.testTag("confirmFolderCreation")) {
+                    Text("Create")
+                  }
             }
-      },
-      dismissButton = {
-        Button(onClick = onDismiss, modifier = Modifier.testTag("dismissFolderCreation")) {
-          Text("Cancel")
+          }
+    }
+  }
+
+  /*AlertDialog(
+  modifier = Modifier.testTag("createFolderDialog"),
+  onDismissRequest = onDismiss,
+  title = { Text("Create Folder") },
+  text = {
+    OutlinedTextField(
+        value = name,
+        onValueChange = { name = it },
+        label = { Text("Folder Name") },
+        modifier = Modifier.testTag("inputFolderName"))
+    OptionDropDownMenu(
+        value = visibility?.toReadableString() ?: "Choose visibility",
+        expanded = expandedVisibility,
+        buttonTag = "visibilityButton",
+        menuTag = "visibilityMenu",
+        onExpandedChange = { expandedVisibility = it },
+        items = Visibility.READABLE_STRINGS,
+        onItemClick = { visibility = Visibility.fromReadableString(it) })
+  },
+  confirmButton = {
+    Button(
+        enabled = name.isNotEmpty() && visibility != null,
+        onClick = { onConfirm(name, visibility!!) },
+        modifier = Modifier.testTag("confirmFolderCreation")) {
+          Text("Create")
         }
-      })
+  },
+  dismissButton = {
+    Button(onClick = onDismiss, modifier = Modifier.testTag("dismissFolderCreation")) {
+      Text("Cancel")
+    }
+  })*/
 }
 
 /**
