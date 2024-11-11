@@ -6,12 +6,12 @@ import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -125,19 +125,16 @@ fun EditMarkdownScreen(
   Scaffold(
       topBar = {
         ScreenTopBar(
-            title = "Modify Markdown",
             titleTestTag = "modifyMDTitle",
             onBackClick = { navigationActions.goBack() },
+            title = "Modify Markdown",
             icon = {
-              Icon(
-                  imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                  contentDescription = "Back",
-                  tint = MaterialTheme.colorScheme.onSurface)
+              Icon(imageVector = Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "Back")
             },
             iconTestTag = "goBackButton")
       },
       content = { paddingValues ->
-        LazyColumn(
+        Column(
             modifier =
                 Modifier.fillMaxSize()
                     .padding(16.dp)
@@ -145,34 +142,28 @@ fun EditMarkdownScreen(
                     .testTag("editMarkdownColumn")
                     .verticalScroll(rememberScrollState()),
         ) {
-          item {
-            EditorControls(
-                modifier = Modifier.testTag("EditorControl"),
-                state = state,
-                onBoldClick = { state.toggleSpanStyle(SpanStyle(fontWeight = FontWeight.Bold)) },
-                onItalicClick = { state.toggleSpanStyle(SpanStyle(fontStyle = FontStyle.Italic)) },
-                onUnderlineClick = {
-                  state.toggleSpanStyle(SpanStyle(textDecoration = TextDecoration.Underline))
-                },
-                onStrikethroughClick = {
-                  state.toggleSpanStyle(SpanStyle(textDecoration = TextDecoration.LineThrough))
-                })
-          }
+          EditorControls(
+              modifier = Modifier.testTag("EditorControl"),
+              state = state,
+              onBoldClick = { state.toggleSpanStyle(SpanStyle(fontWeight = FontWeight.Bold)) },
+              onItalicClick = { state.toggleSpanStyle(SpanStyle(fontStyle = FontStyle.Italic)) },
+              onUnderlineClick = {
+                state.toggleSpanStyle(SpanStyle(textDecoration = TextDecoration.Underline))
+              },
+              onStrikethroughClick = {
+                state.toggleSpanStyle(SpanStyle(textDecoration = TextDecoration.LineThrough))
+              })
 
-          item {
-            RichTextEditor(
-                modifier = Modifier.fillMaxWidth().testTag("RichTextEditor"),
-                state = state,
-            )
-          }
+          RichTextEditor(
+              modifier = Modifier.fillMaxWidth().weight(2f).testTag("RichTextEditor"),
+              state = state,
+          )
 
-          item {
-            Button(
-                modifier = Modifier.fillMaxWidth().testTag("Save button"),
-                onClick = { updateMarkdownFile(context, note?.id ?: "", fileViewModel) }) {
-                  Text("Save")
-                }
-          }
+          Button(
+              modifier = Modifier.fillMaxWidth().testTag("Save button"),
+              onClick = { updateMarkdownFile(context, note?.id ?: "", fileViewModel) }) {
+                Text("Save")
+              }
         }
       })
 }
