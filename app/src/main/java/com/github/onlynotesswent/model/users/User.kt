@@ -24,7 +24,7 @@ data class User(
     val userName: String,
     val email: String,
     val uid: String,
-    val dateOfJoining: Timestamp,
+    val dateOfJoining: Timestamp = Timestamp.now(),
     val rating: Double = 0.0,
     val friends: Friends = Friends(),
     val hasProfilePicture: Boolean = false,
