@@ -62,7 +62,7 @@ fun FolderContentScreen(
   val userFolderNotes = noteViewModel.folderNotes.collectAsState()
   currentUser.let { noteViewModel.getNotesFromFolder(folder.value?.id ?: "") }
 
-  val userFolderSubFolders = folderViewModel.userSubFolders.collectAsState()
+  val userFolderSubFolders = folderViewModel.folderSubFolders.collectAsState()
   currentUser.let { folderViewModel.getSubFoldersOf(folder.value?.id ?: "") }
 
   val parentFolderId = folderViewModel.parentFolderId.collectAsState()
@@ -105,9 +105,9 @@ fun FolderContentScreen(
               navigationIcon = {
                 IconButton(
                     onClick = {
-                      navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
-                    }, // For now we always return to overview screen, go back does not work
-                    // properly
+                        // We always return to overview screen
+                        navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
+                    },
                     modifier = Modifier.testTag("clearButton")) {
                       Icon(imageVector = Icons.Default.Clear, contentDescription = "Clear")
                     }
@@ -130,10 +130,31 @@ fun FolderContentScreen(
                                   expanded = false
                                   folderViewModel.deleteFolderById(
                                       folder.value!!.id, folder.value!!.userId)
-                                  // TODO for now we just delete the folder directly
-                                  // later on we need to figure out how to recursively delete all
-                                  // elements of a
-                                  // folder(folders and notes)
+                                  // If folder is subfolder, set parentId and folderId of sub elements to parent folder id
+                                  if (folder.value!!.parentFolderId != null) {
+                                      userFolderSubFolders.value.forEach { subFolder ->
+                                          folderViewModel.updateFolder(
+                                              subFolder.copy(parentFolderId = folder.value!!.parentFolderId), subFolder.userId)
+                                      }
+                                      userFolderNotes.value.forEach { note ->
+                                          noteViewModel.updateNote(
+                                              note.copy(folderId = folder.value!!.parentFolderId), note.userId)
+                                      }
+                                  } else {
+                                      userFolderSubFolders.value.forEach { subFolder ->
+                                          folderViewModel.updateFolder(
+                                              subFolder.copy(parentFolderId = null), subFolder.userId)
+                                      }
+                                      userFolderNotes.value.forEach { note ->
+                                          noteViewModel.updateNote(
+                                              note.copy(folderId = null), note.userId)
+                                      }
+                                  }
+
+                                  // TODO for now we just delete the folder directly and set the folderId field of
+                                  //  sub elements to null
+                                  // later on we will implement a recursive delete to delete all
+                                  // elements of a folder (folders and notes)
                                   navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
                                 },
                                 modifier = Modifier.testTag("deleteFolderButton"))),

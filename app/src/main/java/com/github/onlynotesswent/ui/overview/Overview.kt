@@ -266,6 +266,7 @@ fun FolderItem(folder: Folder, onClick: () -> Unit) {
                   modifier = Modifier.size(80.dp))
 
               Text(
+                  modifier = Modifier.align(Alignment.CenterHorizontally),
                   text = folder.name,
                   style = MaterialTheme.typography.bodyMedium,
                   fontWeight = FontWeight.Bold,
