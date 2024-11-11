@@ -8,6 +8,8 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
+import com.github.onlynotesswent.model.file.FileRepository
+import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.note.NoteRepository
 import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.model.users.User
@@ -31,6 +33,8 @@ class EditNoteTest {
   private lateinit var navigationActions: NavigationActions
   private lateinit var noteViewModel: NoteViewModel
   private lateinit var noteRepository: NoteRepository
+  private lateinit var fileRepository: FileRepository
+  private lateinit var fileViewModel: FileViewModel
   @get:Rule val composeTestRule = createComposeRule()
 
   @Before
@@ -41,6 +45,8 @@ class EditNoteTest {
     userViewModel = UserViewModel(userRepository)
     noteRepository = mock(NoteRepository::class.java)
     noteViewModel = NoteViewModel(noteRepository)
+    fileRepository = mock(FileRepository::class.java)
+    fileViewModel = FileViewModel(fileRepository)
 
     // Mock the addUser method to call the onSuccess callback
     `when`(userRepository.addUser(any(), any(), any())).thenAnswer { invocation ->
@@ -53,7 +59,9 @@ class EditNoteTest {
 
     // Mock the current route to be the user create screen
     `when`(navigationActions.currentRoute()).thenReturn(Screen.EDIT_NOTE)
-    composeTestRule.setContent { EditNoteScreen(navigationActions, noteViewModel, userViewModel) }
+    composeTestRule.setContent {
+      EditNoteScreen(navigationActions, noteViewModel, userViewModel, fileViewModel)
+    }
   }
 
   @Test
@@ -62,6 +70,7 @@ class EditNoteTest {
     composeTestRule.onNodeWithTag("editNoteTitle").assertIsDisplayed()
     composeTestRule.onNodeWithTag("goBackButton").assertIsDisplayed()
     composeTestRule.onNodeWithTag("Save button").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("Edit Markdown button").performScrollTo().assertIsDisplayed()
     composeTestRule.onNodeWithTag("Delete button").performScrollTo().assertIsDisplayed()
     composeTestRule.onNodeWithTag("Add Comment Button").performScrollTo().assertIsDisplayed()
     composeTestRule.onNodeWithTag("NoCommentsText").performScrollTo().assertIsDisplayed()
@@ -78,6 +87,12 @@ class EditNoteTest {
 
     org.mockito.kotlin.verify(navigationActions).goBack()
     org.mockito.kotlin.verify(navigationActions, never()).navigateTo(Screen.OVERVIEW)
+  }
+
+  @Test
+  fun modifyMarkdownButton() {
+    composeTestRule.onNodeWithTag("Edit Markdown button").performScrollTo().performClick()
+    verify(navigationActions).navigateTo(Screen.EDIT_MARKDOWN)
   }
 
   @Test
