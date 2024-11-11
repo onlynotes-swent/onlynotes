@@ -134,6 +134,7 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
    * @param parentId The ID of the parent folder.
    */
   fun getSubFoldersOf(parentId: String) {
-    repository.getSubFoldersOf(parentId, onSuccess = { _folderSubFolders.value = it }, onFailure = {})
+    repository.getSubFoldersOf(
+        parentId, onSuccess = { _folderSubFolders.value = it }, onFailure = {})
   }
 }

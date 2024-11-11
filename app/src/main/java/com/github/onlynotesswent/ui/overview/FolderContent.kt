@@ -105,8 +105,8 @@ fun FolderContentScreen(
               navigationIcon = {
                 IconButton(
                     onClick = {
-                        // We always return to overview screen
-                        navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
+                      // We always return to overview screen
+                      navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
                     },
                     modifier = Modifier.testTag("clearButton")) {
                       Icon(imageVector = Icons.Default.Clear, contentDescription = "Clear")
@@ -130,28 +130,33 @@ fun FolderContentScreen(
                                   expanded = false
                                   folderViewModel.deleteFolderById(
                                       folder.value!!.id, folder.value!!.userId)
-                                  // If folder is subfolder, set parentId and folderId of sub elements to parent folder id
+                                  // If folder is subfolder, set parentId and folderId of sub
+                                  // elements to parent folder id
                                   if (folder.value!!.parentFolderId != null) {
-                                      userFolderSubFolders.value.forEach { subFolder ->
-                                          folderViewModel.updateFolder(
-                                              subFolder.copy(parentFolderId = folder.value!!.parentFolderId), subFolder.userId)
-                                      }
-                                      userFolderNotes.value.forEach { note ->
-                                          noteViewModel.updateNote(
-                                              note.copy(folderId = folder.value!!.parentFolderId), note.userId)
-                                      }
+                                    userFolderSubFolders.value.forEach { subFolder ->
+                                      folderViewModel.updateFolder(
+                                          subFolder.copy(
+                                              parentFolderId = folder.value!!.parentFolderId),
+                                          subFolder.userId)
+                                    }
+                                    userFolderNotes.value.forEach { note ->
+                                      noteViewModel.updateNote(
+                                          note.copy(folderId = folder.value!!.parentFolderId),
+                                          note.userId)
+                                    }
                                   } else {
-                                      userFolderSubFolders.value.forEach { subFolder ->
-                                          folderViewModel.updateFolder(
-                                              subFolder.copy(parentFolderId = null), subFolder.userId)
-                                      }
-                                      userFolderNotes.value.forEach { note ->
-                                          noteViewModel.updateNote(
-                                              note.copy(folderId = null), note.userId)
-                                      }
+                                    userFolderSubFolders.value.forEach { subFolder ->
+                                      folderViewModel.updateFolder(
+                                          subFolder.copy(parentFolderId = null), subFolder.userId)
+                                    }
+                                    userFolderNotes.value.forEach { note ->
+                                      noteViewModel.updateNote(
+                                          note.copy(folderId = null), note.userId)
+                                    }
                                   }
 
-                                  // TODO for now we just delete the folder directly and set the folderId field of
+                                  // TODO for now we just delete the folder directly and set the
+                                  // folderId field of
                                   //  sub elements to null
                                   // later on we will implement a recursive delete to delete all
                                   // elements of a folder (folders and notes)
