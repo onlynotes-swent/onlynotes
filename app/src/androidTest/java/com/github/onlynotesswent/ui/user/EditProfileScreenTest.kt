@@ -6,6 +6,7 @@ import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
+import androidx.compose.ui.test.assertIsNotDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
@@ -357,6 +358,50 @@ class EditProfileScreenTest {
   }
 
   @Test
+  fun testCancelDeleteAccount() {
+    composeTestRule.setContent {
+      EditProfileScreen(
+          mockNavigationActions,
+          userViewModel,
+          profilePictureTaker,
+          fileViewModel,
+          noteViewModel,
+          folderViewModel)
+    }
+
+    composeTestRule.onNodeWithTag("deleteAccountButton").assertIsEnabled()
+    composeTestRule.onNodeWithTag("deleteAccountButton").performClick()
+
+    composeTestRule.onNodeWithTag("deleteAccountAlert").assertIsDisplayed()
+
+    composeTestRule.onNodeWithTag("dismissDeleteButton").assertIsEnabled()
+    composeTestRule.onNodeWithTag("dismissDeleteButton").performClick()
+
+    composeTestRule.onNodeWithTag("deleteAccountAlert").assertIsNotDisplayed()
+  }
+
+  @Test
+  fun testCancelGoBack() {
+    composeTestRule.setContent {
+      EditProfileScreen(
+          mockNavigationActions,
+          userViewModel,
+          profilePictureTaker,
+          fileViewModel,
+          noteViewModel,
+          folderViewModel)
+    }
+
+    composeTestRule.onNodeWithTag("inputUserName").performTextInput("testForGoBack")
+    composeTestRule.onNodeWithTag("goBackButton").assertIsEnabled()
+    composeTestRule.onNodeWithTag("goBackButton").performClick()
+    composeTestRule.onNodeWithTag("goingBackAlert").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("dismissGoingBack").assertIsEnabled()
+    composeTestRule.onNodeWithTag("dismissGoingBack").performClick()
+    composeTestRule.onNodeWithTag("goingBackAlert").assertIsNotDisplayed()
+  }
+
+  @Test
   fun testDeletAccount() {
     composeTestRule.setContent {
       EditProfileScreen(
@@ -370,6 +415,8 @@ class EditProfileScreenTest {
 
     composeTestRule.onNodeWithTag("deleteAccountButton").assertIsEnabled()
     composeTestRule.onNodeWithTag("deleteAccountButton").performClick()
+    composeTestRule.onNodeWithTag("confirmDeleteButton").assertIsEnabled()
+    composeTestRule.onNodeWithTag("confirmDeleteButton").performClick()
 
     verify(mockUserRepository).deleteUserById(eq(testUid), any(), any())
     verify(mockNoteRepository).deleteNotesByUserId(eq(testUid), any(), any())

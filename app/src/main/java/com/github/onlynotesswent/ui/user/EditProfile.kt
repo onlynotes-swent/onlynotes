@@ -25,6 +25,7 @@ import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -99,7 +100,8 @@ fun EditProfileScreen(
   val localContext = LocalContext.current
   val sheetState = rememberModalBottomSheetState()
   val showSheet = remember { mutableStateOf(false) }
-  var showDeleteAccountAlert = remember { mutableStateOf(false) }
+  val showDeleteAccountAlert = remember { mutableStateOf(false) }
+  val showGoingBackWithoutSavingChanges = remember { mutableStateOf(false) }
 
   if (user.value == null) {
     // If the user is null, display an error message
@@ -125,10 +127,14 @@ fun EditProfileScreen(
                 navigationActions,
                 includeBackButton = true,
                 onBackButtonClick = {
-                  // When we go back we will need to fetch again the old profile picture (if the
-                  // picture was changed), because going back doesn't save the changes
-                  isProfilePictureUpToDate.value = !hasProfilePictureBeenChanged.value
-                  navigationActions.goBack()
+                  if (newFirstName.value != user.value?.firstName ||
+                      newLastName.value != user.value?.lastName ||
+                      newUserName.value != user.value?.userName ||
+                      hasProfilePictureBeenChanged.value) {
+                    showGoingBackWithoutSavingChanges.value = true
+                  } else {
+                    navigationActions.goBack()
+                  }
                 })
           },
           content = { paddingValues ->
@@ -208,25 +214,73 @@ fun EditProfileScreen(
                       enabled = saveEnabled)
 
                   Button(
+                      modifier = Modifier.padding(top = 16.dp).testTag("deleteAccountButton"),
                       colors =
                           ButtonDefaults.buttonColors(
                               containerColor = MaterialTheme.colorScheme.background,
                               contentColor = MaterialTheme.colorScheme.error),
                       border = BorderStroke(1.dp, MaterialTheme.colorScheme.error),
-                      onClick = {
-                        noteViewModel.deleteNotesByUserId(user.value!!.uid)
-                        folderViewModel.deleteFoldersByUserId(user.value!!.uid)
-                        fileViewModel.deleteFile(user.value!!.uid, FileType.PROFILE_PIC_JPEG)
+                      onClick = { showDeleteAccountAlert.value = true },
+                      content = { Text("Delete Account") })
 
-                        userViewModel.deleteUserById(
-                            user.value!!.uid,
-                            onSuccess = { navigationActions.navigateTo(Route.AUTH) },
-                            onFailure = { e ->
-                              Log.e("EditProfileScreen", "Error deleting user", e)
-                            })
-                      },
-                      content = { Text("Delete Account") },
-                      modifier = Modifier.padding(top = 16.dp).testTag("deleteAccountButton"))
+                  if (showDeleteAccountAlert.value) {
+                    AlertDialog(
+                        onDismissRequest = { showDeleteAccountAlert.value = false },
+                        title = { Text("Delete Account") },
+                        text = { Text("Are you sure you want to delete your account?") },
+                        modifier = Modifier.testTag("deleteAccountAlert"),
+                        confirmButton = {
+                          Button(
+                              modifier = Modifier.testTag("confirmDeleteButton"),
+                              onClick = {
+                                showDeleteAccountAlert.value = false
+                                noteViewModel.deleteNotesByUserId(user.value!!.uid)
+                                folderViewModel.deleteFoldersByUserId(user.value!!.uid)
+                                fileViewModel.deleteFile(
+                                    user.value!!.uid, FileType.PROFILE_PIC_JPEG)
+
+                                userViewModel.deleteUserById(
+                                    user.value!!.uid,
+                                    onSuccess = { navigationActions.navigateTo(Route.AUTH) },
+                                    onFailure = { e ->
+                                      Log.e("EditProfileScreen", "Error deleting user", e)
+                                    })
+                              },
+                              content = { Text("Yes") })
+                        },
+                        dismissButton = {
+                          Button(
+                              modifier = Modifier.testTag("dismissDeleteButton"),
+                              onClick = { showDeleteAccountAlert.value = false },
+                              content = { Text("No") })
+                        })
+                  }
+                  if (showGoingBackWithoutSavingChanges.value) {
+                    AlertDialog(
+                        onDismissRequest = { showGoingBackWithoutSavingChanges.value = false },
+                        title = { Text("Unsaved changes") },
+                        text = { Text("Are you sure you want to go back without saving changes?") },
+                        modifier = Modifier.testTag("goingBackAlert"),
+                        confirmButton = {
+                          Button(
+                              modifier = Modifier.testTag("confirmGoingBack"),
+                              onClick = {
+                                showGoingBackWithoutSavingChanges.value = false
+                                // When we go back we will need to fetch again the old profile
+                                // picture (if the
+                                // picture was changed), because the user didn't save the changes
+                                isProfilePictureUpToDate.value = !hasProfilePictureBeenChanged.value
+                                navigationActions.goBack()
+                              },
+                              content = { Text("Yes") })
+                        },
+                        dismissButton = {
+                          Button(
+                              modifier = Modifier.testTag("dismissGoingBack"),
+                              onClick = { showGoingBackWithoutSavingChanges.value = false },
+                              content = { Text("No") })
+                        })
+                  }
                 }
           })
 }
