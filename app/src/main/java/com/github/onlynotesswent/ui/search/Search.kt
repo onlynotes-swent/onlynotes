@@ -8,7 +8,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -18,7 +20,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
@@ -57,10 +58,16 @@ fun SearchScreen(navigationActions: NavigationActions, noteViewModel: NoteViewMo
               Icon(
                   imageVector = Icons.Default.Search,
                   contentDescription = "Search Icon",
-                  tint = Color.Gray)
+                  tint = MaterialTheme.colorScheme.onBackground)
             },
             shape = RoundedCornerShape(50),
             singleLine = true,
+            colors =
+                OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = MaterialTheme.colorScheme.onBackground,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.onBackground,
+                    focusedTextColor = MaterialTheme.colorScheme.onBackground,
+                    unfocusedTextColor = MaterialTheme.colorScheme.onBackground),
             modifier = Modifier.fillMaxWidth().padding(16.dp).testTag("searchTextField"))
       },
       bottomBar = {
@@ -93,7 +100,8 @@ fun SearchScreen(navigationActions: NavigationActions, noteViewModel: NoteViewMo
                         .padding(24.dp)
                         .testTag("noSearchResults"),
                 text = "No notes found matching your search.",
-                textAlign = TextAlign.Center)
+                textAlign = TextAlign.Center,
+                color = MaterialTheme.colorScheme.onBackground)
           }
         }
       }

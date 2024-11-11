@@ -13,6 +13,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import com.github.onlynotesswent.model.file.FileViewModel
+import com.github.onlynotesswent.model.folder.FolderViewModel
 import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.model.scanner.Scanner
 import com.github.onlynotesswent.model.users.UserViewModel
@@ -22,11 +23,14 @@ import com.github.onlynotesswent.ui.navigation.Route
 import com.github.onlynotesswent.ui.navigation.Screen
 import com.github.onlynotesswent.ui.overview.AddNoteScreen
 import com.github.onlynotesswent.ui.overview.EditNoteScreen
+import com.github.onlynotesswent.ui.overview.FolderContentScreen
 import com.github.onlynotesswent.ui.overview.OverviewScreen
 import com.github.onlynotesswent.ui.search.SearchScreen
 import com.github.onlynotesswent.ui.theme.AppTheme
 import com.github.onlynotesswent.ui.user.CreateUserScreen
 import com.github.onlynotesswent.ui.user.EditProfileScreen
+import com.github.onlynotesswent.ui.user.PublicProfileScreen
+import com.github.onlynotesswent.ui.user.UserProfileScreen
 import com.github.onlynotesswent.utils.ProfilePictureTaker
 
 class MainActivity : ComponentActivity() {
@@ -50,6 +54,7 @@ fun OnlyNotesApp(scanner: Scanner, profilePictureTaker: ProfilePictureTaker) {
   val userViewModel: UserViewModel = viewModel(factory = UserViewModel.Factory)
   val noteViewModel: NoteViewModel = viewModel(factory = NoteViewModel.Factory)
   val fileViewModel: FileViewModel = viewModel(factory = FileViewModel.Factory)
+  val folderViewModel: FolderViewModel = viewModel(factory = FolderViewModel.Factory)
 
   NavHost(navController = navController, startDestination = Route.AUTH) {
     navigation(
@@ -65,13 +70,16 @@ fun OnlyNotesApp(scanner: Scanner, profilePictureTaker: ProfilePictureTaker) {
         route = Route.OVERVIEW,
     ) {
       composable(Screen.OVERVIEW) {
-        OverviewScreen(navigationActions, noteViewModel, userViewModel)
+        OverviewScreen(navigationActions, noteViewModel, userViewModel, folderViewModel)
       }
       composable(Screen.ADD_NOTE) {
         AddNoteScreen(navigationActions, scanner, noteViewModel, userViewModel, fileViewModel)
       }
       composable(Screen.EDIT_NOTE) {
         EditNoteScreen(navigationActions, noteViewModel, userViewModel)
+      }
+      composable(Screen.FOLDER_CONTENTS) {
+        FolderContentScreen(navigationActions, folderViewModel, noteViewModel, userViewModel)
       }
     }
 
@@ -83,10 +91,16 @@ fun OnlyNotesApp(scanner: Scanner, profilePictureTaker: ProfilePictureTaker) {
     }
 
     navigation(
-        startDestination = Screen.PROFILE,
+        startDestination = Screen.USER_PROFILE,
         route = Route.PROFILE,
     ) {
-      composable(Screen.PROFILE) {
+      composable(Screen.USER_PROFILE) {
+        UserProfileScreen(navigationActions, userViewModel, fileViewModel)
+      }
+      composable(Screen.PUBLIC_PROFILE) {
+        PublicProfileScreen(navigationActions, userViewModel, fileViewModel)
+      }
+      composable(Screen.EDIT_PROFILE) {
         EditProfileScreen(navigationActions, userViewModel, profilePictureTaker, fileViewModel)
       }
     }

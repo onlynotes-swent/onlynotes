@@ -72,7 +72,7 @@ Here is a list of the **type** values that can be used:
 ## Code Style Guidelines
 _Run Code > Optimize imports_ and _Code > Reformat code_ on all your files, as well as _Code > Inspect code_ to improve the quality of your code. 
 Remember to apply `ktfmt` format to your code before committing. You can do this by running it from the gradle. Please comment your code properly and use meaningful variable names. 
-View the following [naming_conventions.md](docs/naming_conventions.md) to see the naming conventions for packages, classes, functions, properties, and more in Kotlin for this project.
+View the following [Naming Conventions.md](docs/NamingConventions) to see the naming conventions for packages, classes, functions, properties, and more in Kotlin for this project.
 If you want more information on the official Kotlin coding conventions you can visit [Kotlin Coding Conventions](https://kotlinlang.org/docs/coding-conventions.html).
 
 ## Testing
