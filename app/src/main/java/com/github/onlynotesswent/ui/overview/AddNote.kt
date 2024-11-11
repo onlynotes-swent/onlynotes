@@ -21,9 +21,11 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -35,7 +37,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.github.onlynotesswent.model.note.Note
@@ -59,7 +60,6 @@ import java.util.Calendar
  * @param noteViewModel The ViewModel that provides the current note to be edited and handles note
  *   updates.
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddNoteScreen(
     navigationActions: NavigationActions,
@@ -67,15 +67,15 @@ fun AddNoteScreen(
     noteViewModel: NoteViewModel,
     userViewModel: UserViewModel
 ) {
+  val templateInitialText = "Choose mode"
 
   val folderId = noteViewModel.currentFolderId.collectAsState()
   val currentYear = Calendar.getInstance().get(Calendar.YEAR)
-
   var title by remember { mutableStateOf("") }
   var className by remember { mutableStateOf("") }
   var classCode by remember { mutableStateOf("") }
   var classYear by remember { mutableIntStateOf(currentYear) }
-  var template by remember { mutableStateOf("Choose An Option") }
+  var template by remember { mutableStateOf(templateInitialText) }
   var visibility: Note.Visibility? by remember { mutableStateOf(null) }
   var expandedVisibility by remember { mutableStateOf(false) }
   var expandedTemplate by remember { mutableStateOf(false) }
@@ -83,25 +83,17 @@ fun AddNoteScreen(
   Scaffold(
       modifier = Modifier.testTag("addNoteScreen"),
       topBar = {
-        TopAppBar(
-            colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFB3E5FC)),
-            title = {
-              Row(
-                  modifier = Modifier.fillMaxWidth(),
-                  verticalAlignment = Alignment.CenterVertically) {
-                    Spacer(modifier = Modifier.weight(1f))
-                    Text("Create a new note", Modifier.testTag("addNoteTitle"))
-                    Spacer(modifier = Modifier.weight(2f))
-                  }
+        ScreenTopBar(
+            title = "Create a new note",
+            titleTestTag = "addNoteTitle",
+            onBackClick = { navigationActions.goBack() },
+            icon = {
+              Icon(
+                  imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
+                  contentDescription = "Back",
+                  tint = MaterialTheme.colorScheme.onSurface)
             },
-            navigationIcon = {
-              IconButton(
-                  onClick = { navigationActions.goBack() }, Modifier.testTag("goBackButton")) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                        contentDescription = "Back")
-                  }
-            })
+            iconTestTag = "goBackButton")
       },
       content = { paddingValues ->
         Column(
@@ -110,11 +102,11 @@ fun AddNoteScreen(
             verticalArrangement = Arrangement.spacedBy(8.dp)) {
               Spacer(modifier = Modifier.height(30.dp))
 
-              OutlinedTextField(
+              NoteDataTextField(
                   value = title,
                   onValueChange = { title = it },
-                  label = { Text("Title") },
-                  placeholder = { Text("Add a Note Title") },
+                  label = "Title",
+                  placeholder = "Add a note title",
                   modifier = Modifier.fillMaxWidth().testTag("inputNoteTitle"),
                   trailingIcon = {
                     IconButton(onClick = { title = "" }) {
@@ -125,7 +117,7 @@ fun AddNoteScreen(
               Spacer(modifier = Modifier.height(10.dp))
 
               OptionDropDownMenu(
-                  value = visibility?.toReadableString() ?: "Choose an option",
+                  value = visibility?.toReadableString() ?: "Choose visibility",
                   expanded = expandedVisibility,
                   buttonTag = "visibilityButton",
                   menuTag = "visibilityMenu",
@@ -135,35 +127,35 @@ fun AddNoteScreen(
 
               Spacer(modifier = Modifier.height(10.dp))
 
-              OutlinedTextField(
+              NoteDataTextField(
                   value = className,
                   onValueChange = { className = it },
-                  label = { Text("Class Name") },
-                  placeholder = { Text("Set the Class Name for the Note") },
+                  label = "Class Name",
+                  placeholder = "Set the class name for the note",
                   modifier = Modifier.fillMaxWidth().testTag("ClassNameTextField"))
 
               Spacer(modifier = Modifier.height(5.dp))
 
-              OutlinedTextField(
+              NoteDataTextField(
                   value = classCode,
                   onValueChange = { classCode = it },
-                  label = { Text("Class Code") },
-                  placeholder = { Text("Set the Class Code for the Note") },
+                  label = "Class Code",
+                  placeholder = "Set the class code for the note",
                   modifier = Modifier.fillMaxWidth().testTag("ClassCodeTextField"))
 
               Spacer(modifier = Modifier.height(5.dp))
 
-              OutlinedTextField(
+              NoteDataTextField(
                   value = classYear.toString(),
                   onValueChange = { classYear = it.toIntOrNull() ?: currentYear },
-                  label = { Text("Class Year") },
-                  placeholder = { Text("Set the Class Year for the Note") },
+                  label = "Class Year",
+                  placeholder = "Set the class year for the note",
                   modifier = Modifier.fillMaxWidth().testTag("ClassYearTextField"))
 
               Spacer(modifier = Modifier.height(10.dp))
 
-              val scanNoteText = "Scan Note"
-              val createNoteText = "Create Note"
+              val scanNoteText = "Scan note"
+              val createNoteText = "Create note"
               OptionDropDownMenu(
                   value = template,
                   expanded = expandedTemplate,
@@ -203,9 +195,12 @@ fun AddNoteScreen(
                       navigationActions.goBack()
                     }
                   },
-                  colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50)),
+                  colors =
+                      ButtonDefaults.buttonColors(
+                          containerColor = MaterialTheme.colorScheme.primary,
+                          contentColor = MaterialTheme.colorScheme.onPrimary),
                   enabled =
-                      title.isNotEmpty() && visibility != null && template != "Choose An Option",
+                      title.isNotEmpty() && visibility != null && template != templateInitialText,
                   modifier = Modifier.fillMaxWidth().testTag("createNoteButton")) {
                     Text(text = template)
                   }
@@ -257,4 +252,76 @@ fun OptionDropDownMenu(
           }
         }
   }
+}
+
+/**
+ * A composable function that displays an `OutlinedTextField` with an optional trailing icon.
+ *
+ * @param value The current value of the text field.
+ * @param onValueChange The callback that is triggered when the value changes.
+ * @param label The label to be displayed inside the text field container.
+ * @param placeholder The placeholder to be displayed when the text field is in focus and the input
+ *   text is empty.
+ * @param modifier The modifier to be applied to the `OutlinedTextField`.
+ * @param trailingIcon An optional trailing icon displayed at the end of the text field container.
+ */
+@Composable
+fun NoteDataTextField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    label: String,
+    placeholder: String,
+    modifier: Modifier = Modifier,
+    trailingIcon: @Composable (() -> Unit)? = null
+) {
+  OutlinedTextField(
+      value = value,
+      onValueChange = onValueChange,
+      label = { Text(label) },
+      placeholder = { Text(placeholder) },
+      modifier = modifier,
+      trailingIcon = trailingIcon,
+      colors =
+          TextFieldDefaults.colors(
+              focusedIndicatorColor = MaterialTheme.colorScheme.primary,
+              unfocusedIndicatorColor = MaterialTheme.colorScheme.onBackground,
+              focusedContainerColor = MaterialTheme.colorScheme.background,
+              unfocusedContainerColor = MaterialTheme.colorScheme.background))
+}
+
+/**
+ * A composable function that displays the top app bar for the screen. It is composed of an icon
+ * button and a title.
+ *
+ * @param title The title to be displayed in the top app bar.
+ * @param titleTestTag The test tag for the title.
+ * @param onBackClick The callback to be invoked when the back button is clicked.
+ * @param icon The icon to be displayed in the top app bar.
+ * @param iconTestTag The test tag for the icon.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ScreenTopBar(
+    title: String,
+    titleTestTag: String,
+    onBackClick: () -> Unit,
+    icon: @Composable () -> Unit,
+    iconTestTag: String
+) {
+  TopAppBar(
+      colors =
+          TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface),
+      title = {
+        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+          Spacer(modifier = Modifier.weight(1f))
+          Text(
+              title,
+              color = MaterialTheme.colorScheme.onSurface,
+              modifier = Modifier.testTag(titleTestTag))
+          Spacer(modifier = Modifier.weight(2f))
+        }
+      },
+      navigationIcon = {
+        IconButton(onClick = onBackClick, Modifier.testTag(iconTestTag), content = icon)
+      })
 }

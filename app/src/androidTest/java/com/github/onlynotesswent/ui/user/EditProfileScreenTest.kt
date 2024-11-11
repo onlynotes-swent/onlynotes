@@ -4,6 +4,7 @@ import android.net.Uri
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assert
+import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.junit4.createComposeRule
@@ -107,7 +108,7 @@ class EditProfileScreenTest {
     composeTestRule.onNodeWithTag("inputUserName").assertExists()
     composeTestRule.onNodeWithTag("saveButton").assertExists()
     composeTestRule.onNodeWithTag("profilePicture").assertExists()
-    composeTestRule.onNodeWithTag("editProfilePicture").assertExists()
+    composeTestRule.onNodeWithTag("displayBottomSheet").assertExists()
   }
 
   private fun hasError(): SemanticsMatcher {
@@ -147,17 +148,6 @@ class EditProfileScreenTest {
     assert(userViewModel.currentUser.value?.lastName == "testLastName")
     composeTestRule.onNodeWithTag("saveButton").performClick()
     assert(userViewModel.currentUser.value?.lastName == "newLastName")
-  }
-
-  @Test
-  fun editProfilePicture() {
-    doNothing().`when`(profilePictureTaker).pickImage()
-    composeTestRule.setContent {
-      EditProfileScreen(mockNavigationActions, userViewModel, profilePictureTaker, fileViewModel)
-    }
-    composeTestRule.onNodeWithTag("editProfilePicture").assertIsEnabled()
-    composeTestRule.onNodeWithTag("editProfilePicture").performClick()
-    verify(profilePictureTaker).pickImage()
   }
 
   @Test
@@ -203,6 +193,20 @@ class EditProfileScreenTest {
   }
 
   @Test
+  fun addProfilePicture() {
+    doNothing().`when`(profilePictureTaker).pickImage()
+    composeTestRule.setContent {
+      EditProfileScreen(mockNavigationActions, userViewModel, profilePictureTaker, fileViewModel)
+    }
+    composeTestRule.onNodeWithTag("displayBottomSheet").assertIsEnabled()
+    composeTestRule.onNodeWithTag("displayBottomSheet").performClick()
+
+    composeTestRule.onNodeWithTag("addProfilePicture").assertIsEnabled()
+    composeTestRule.onNodeWithTag("addProfilePicture").performClick()
+    verify(profilePictureTaker).pickImage()
+  }
+
+  @Test
   fun downloadProfilePicture() {
     userViewModel.addUser(
         User(
@@ -220,7 +224,7 @@ class EditProfileScreenTest {
     composeTestRule.setContent {
       EditProfileScreen(mockNavigationActions, userViewModel, profilePictureTaker, fileViewModel)
     }
-    composeTestRule.onNodeWithTag("profilePicture").performClick()
+    composeTestRule.onNodeWithTag("profilePicture").assertIsDisplayed()
     verify(mockFileRepository).downloadFile(any(), any(), any(), any(), any())
   }
 
@@ -236,7 +240,47 @@ class EditProfileScreenTest {
       EditProfileScreen(mockNavigationActions, userViewModel, profilePictureTaker, fileViewModel)
     }
 
-    composeTestRule.onNodeWithTag("editProfilePicture").performClick()
+    composeTestRule.onNodeWithTag("displayBottomSheet").assertIsEnabled()
+    composeTestRule.onNodeWithTag("displayBottomSheet").performClick()
+    composeTestRule.onNodeWithTag("addProfilePicture").performClick()
     verify(profilePictureTaker).pickImage()
+  }
+
+  @Test
+  fun testChangingProfilePicture() {
+    doNothing().`when`(profilePictureTaker).pickImage()
+    `when`(profilePictureTaker.setOnImageSelected(any())).thenAnswer {
+      val onImageSelected = it.arguments[0] as (Uri?) -> Unit
+      onImageSelected("testUri".toUri())
+    }
+
+    composeTestRule.setContent {
+      EditProfileScreen(mockNavigationActions, userViewModel, profilePictureTaker, fileViewModel)
+    }
+
+    composeTestRule.onNodeWithTag("displayBottomSheet").assertIsEnabled()
+    composeTestRule.onNodeWithTag("displayBottomSheet").performClick()
+    composeTestRule.onNodeWithTag("addProfilePicture").performClick()
+    composeTestRule.onNodeWithTag("profilePicture").assertIsDisplayed()
+
+    composeTestRule.onNodeWithTag("displayBottomSheet").performClick()
+
+    composeTestRule.onNodeWithTag("removeProfilePicture").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("editProfilePicture").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("removeProfilePicture").assertIsEnabled()
+    composeTestRule.onNodeWithTag("editProfilePicture").assertIsEnabled()
+
+    composeTestRule.onNodeWithTag("removeProfilePicture").performClick()
+
+    composeTestRule.onNodeWithTag("displayBottomSheet").performClick()
+    composeTestRule.onNodeWithTag("addProfilePicture").performClick()
+
+    composeTestRule.onNodeWithTag("displayBottomSheet").performClick()
+
+    composeTestRule.onNodeWithTag("editProfilePicture").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("editProfilePicture").assertIsEnabled()
+
+    composeTestRule.onNodeWithTag("editProfilePicture").performClick()
+    composeTestRule.onNodeWithTag("profilePicture").assertIsDisplayed()
   }
 }

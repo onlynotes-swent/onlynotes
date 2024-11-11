@@ -17,6 +17,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -30,7 +31,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.github.onlynotesswent.model.folder.Folder
@@ -87,13 +87,18 @@ fun FolderContentScreen(
         modifier = Modifier.testTag("folderContentScreen"),
         topBar = {
           TopAppBar(
-              colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFB3E5FC)),
+              colors =
+                  TopAppBarDefaults.topAppBarColors(
+                      containerColor = MaterialTheme.colorScheme.surface),
               title = {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically) {
                       Spacer(modifier = Modifier.weight(2f))
-                      Text(updatedName, Modifier.testTag("folderContentTitle"))
+                      Text(
+                          updatedName,
+                          color = MaterialTheme.colorScheme.onSurface,
+                          modifier = Modifier.testTag("folderContentTitle"))
                       Spacer(modifier = Modifier.weight(2f))
                     }
               },
@@ -113,14 +118,14 @@ fun FolderContentScreen(
                     menuItems =
                         listOf(
                             CustomDropDownMenuItem(
-                                text = { Text("Rename Folder") },
+                                text = { Text("Rename folder") },
                                 onClick = {
                                   expanded = false
                                   showRenameDialog = true
                                 },
                                 modifier = Modifier.testTag("renameFolderButton")),
                             CustomDropDownMenuItem(
-                                text = { Text("Delete Folder") },
+                                text = { Text("Delete folder") },
                                 onClick = {
                                   expanded = false
                                   folderViewModel.deleteFolderById(
@@ -146,7 +151,7 @@ fun FolderContentScreen(
               menuItems =
                   listOf(
                       CustomDropDownMenuItem(
-                          text = { Text("Create Note") },
+                          text = { Text("Create note") },
                           onClick = {
                             expandedFolder = false
                             noteViewModel.selectedFolderId(folder.value!!.id)
@@ -154,7 +159,7 @@ fun FolderContentScreen(
                           },
                           modifier = Modifier.testTag("createNote")),
                       CustomDropDownMenuItem(
-                          text = { Text("Create Folder") },
+                          text = { Text("Create folder") },
                           onClick = {
                             expandedFolder = false
                             showCreateDialog = true
@@ -240,7 +245,7 @@ fun RenameFolderDialog(currentName: String, onDismiss: () -> Unit, onConfirm: (S
   AlertDialog(
       modifier = Modifier.testTag("renameFolderDialog"),
       onDismissRequest = onDismiss,
-      title = { Text("Rename Folder") },
+      title = { Text("Rename folder") },
       text = {
         OutlinedTextField(
             value = newName, onValueChange = { newName = it }, label = { Text("New Folder Name") })
