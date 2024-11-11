@@ -54,23 +54,24 @@ data class User(
   fun dateToString(pattern: String = "d/M/yyyy"): String =
       SimpleDateFormat(pattern, Locale.getDefault()).format(dateOfJoining.toDate())
 
-    companion object {
-        // username max length
-        private const val USERNAME_MAX_LENGTH = 20
-        // name max length
-        private const val NAME_MAX_LENGTH = 20
-        fun formatUsername(username: String): String {
-            return username.trim()
-                .replace(Regex("[^a-zA-Z0-9_-]"), "")
-                .take(USERNAME_MAX_LENGTH)
-        }
-        fun formatName(name: String): String {
-            return name.trimStart()
-                .split(Regex("\\s+"))
-                .joinToString(" ") { it.lowercase().replaceFirstChar { char -> char.uppercaseChar() } }
-                .take(NAME_MAX_LENGTH)
-        }
+  companion object {
+    // username max length
+    private const val USERNAME_MAX_LENGTH = 20
+    // name max length
+    private const val NAME_MAX_LENGTH = 20
+
+    fun formatUsername(username: String): String {
+      return username.trim().replace(Regex("[^a-zA-Z0-9_-]"), "").take(USERNAME_MAX_LENGTH)
     }
+
+    fun formatName(name: String): String {
+      return name
+          .trimStart()
+          .split(Regex("\\s+"))
+          .joinToString(" ") { it.lowercase().replaceFirstChar { char -> char.uppercaseChar() } }
+          .take(NAME_MAX_LENGTH)
+    }
+  }
 }
 
 /**

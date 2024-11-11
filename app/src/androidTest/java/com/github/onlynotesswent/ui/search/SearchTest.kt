@@ -53,26 +53,27 @@ class SearchScreenTest {
 
   private val testNotes = listOf(testNote1, testNote2)
 
-  private val testUser1 = User(
-      firstName = "User One",
-      lastName = "Name One",
-      userName = "username1",
-      email = "example@gmail.com",
-      uid = "1")
+  private val testUser1 =
+      User(
+          firstName = "User One",
+          lastName = "Name One",
+          userName = "username1",
+          email = "example@gmail.com",
+          uid = "1")
 
-    private val testUser2 = User(
-        firstName = "User Two",
-        lastName = "Name Two",
-        userName = "username2",
-        email = "example2@gmail.com",
-        uid = "2")
+  private val testUser2 =
+      User(
+          firstName = "User Two",
+          lastName = "Name Two",
+          userName = "username2",
+          email = "example2@gmail.com",
+          uid = "2")
 
-    private val testUsers = listOf(testUser1, testUser2)
+  private val testUsers = listOf(testUser1, testUser2)
 
   @Before
   fun setUp() {
     MockitoAnnotations.openMocks(this)
-
 
     `when`(navigationActions.currentRoute()).thenReturn(Screen.SEARCH_NOTE)
     `when`(noteRepository.getPublicNotes(any(), any())).thenAnswer { invocation ->
@@ -84,10 +85,8 @@ class SearchScreenTest {
       onSuccess(testUsers)
     }
 
-      userViewModel = UserViewModel(userRepository)
-      noteViewModel = NoteViewModel(noteRepository)
-
-
+    userViewModel = UserViewModel(userRepository)
+    noteViewModel = NoteViewModel(noteRepository)
   }
 
   @Test
@@ -126,7 +125,6 @@ class SearchScreenTest {
     composeTestRule.onNodeWithTag("searchTextField").performTextReplacement(testUser1.firstName)
     composeTestRule.onNodeWithTag("userFilterChip").performClick()
 
-
     composeTestRule.onNodeWithTag("filteredUserList").assertIsDisplayed()
     composeTestRule.onNodeWithTag("noSearchResults").assertIsNotDisplayed()
     composeTestRule
@@ -157,7 +155,6 @@ class SearchScreenTest {
         .onFirst()
         .assertIsDisplayed()
     composeTestRule.onAllNodesWithTag("noteCard").assertCountEquals(2)
-
 
     composeTestRule.onNodeWithTag("searchTextField").performTextReplacement("User")
     composeTestRule.onNodeWithTag("userFilterChip").performClick()
@@ -206,13 +203,13 @@ class SearchScreenTest {
   }
 
   @Test
-    fun testUserSelectionNavigatesToUserProfileScreen() {
-        composeTestRule.setContent { SearchScreen(navigationActions, noteViewModel, userViewModel) }
+  fun testUserSelectionNavigatesToUserProfileScreen() {
+    composeTestRule.setContent { SearchScreen(navigationActions, noteViewModel, userViewModel) }
 
-        composeTestRule.onNodeWithTag("searchTextField").performTextInput(testUser1.userName)
-        composeTestRule.onNodeWithTag("userFilterChip").performClick()
-        composeTestRule.onNodeWithTag("filteredUserList").onChildren().onFirst().performClick()
+    composeTestRule.onNodeWithTag("searchTextField").performTextInput(testUser1.userName)
+    composeTestRule.onNodeWithTag("userFilterChip").performClick()
+    composeTestRule.onNodeWithTag("filteredUserList").onChildren().onFirst().performClick()
 
-        verify(navigationActions).navigateTo(Screen.PUBLIC_PROFILE)
-    }
+    verify(navigationActions).navigateTo(Screen.PUBLIC_PROFILE)
+  }
 }

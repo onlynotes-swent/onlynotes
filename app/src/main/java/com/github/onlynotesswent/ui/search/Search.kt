@@ -33,7 +33,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
@@ -99,9 +98,11 @@ fun SearchScreen(
                       unfocusedBorderColor = MaterialTheme.colorScheme.onBackground,
                       focusedTextColor = MaterialTheme.colorScheme.onBackground,
                       unfocusedTextColor = MaterialTheme.colorScheme.onBackground),
-              modifier = Modifier.fillMaxWidth().padding(top = 16.dp, start = 16.dp, end = 16.dp).testTag("searchTextField"))
-          Row(
-              modifier = Modifier.fillMaxWidth().padding(top = 8.dp, start = 20.dp)) {
+              modifier =
+                  Modifier.fillMaxWidth()
+                      .padding(top = 16.dp, start = 16.dp, end = 16.dp)
+                      .testTag("searchTextField"))
+          Row(modifier = Modifier.fillMaxWidth().padding(top = 8.dp, start = 20.dp)) {
             FilterChip(
                 userChipSelected.value,
                 label = { Text("Users") },
@@ -110,11 +111,11 @@ fun SearchScreen(
                   noteChipSelected.value = false
                 },
                 leadingIcon = {
-                    if (userChipSelected.value)
-                  Icon(
-                      imageVector = Icons.Default.Check,
-                      contentDescription = "Chip Icon",
-                      tint = MaterialTheme.colorScheme.onBackground)
+                  if (userChipSelected.value)
+                      Icon(
+                          imageVector = Icons.Default.Check,
+                          contentDescription = "Chip Icon",
+                          tint = MaterialTheme.colorScheme.onBackground)
                 },
                 modifier = Modifier.padding(horizontal = 15.dp).testTag("userFilterChip"))
             FilterChip(
@@ -125,11 +126,11 @@ fun SearchScreen(
                   userChipSelected.value = false
                 },
                 leadingIcon = {
-                    if (noteChipSelected.value)
-                    Icon(
-                        imageVector = Icons.Default.Check,
-                        contentDescription = "Chip Icon",
-                        tint = MaterialTheme.colorScheme.onBackground)
+                  if (noteChipSelected.value)
+                      Icon(
+                          imageVector = Icons.Default.Check,
+                          contentDescription = "Chip Icon",
+                          tint = MaterialTheme.colorScheme.onBackground)
                 },
                 modifier = Modifier.padding(horizontal = 15.dp).testTag("noteFilterChip"))
           }
