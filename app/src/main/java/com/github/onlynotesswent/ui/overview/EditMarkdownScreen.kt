@@ -96,12 +96,10 @@ fun EditMarkdownScreen(
           // Update the UI with the downloaded file reference
           markdownContent = downloadedFile
           state.setMarkdown(markdownContent?.readText() ?: "")
-          Toast.makeText(context, "Downloaded: ${downloadedFile.name}", Toast.LENGTH_SHORT).show()
         },
         onFailure = { exception ->
           Toast.makeText(context, "Error downloading file: ${exception.message}", Toast.LENGTH_LONG)
               .show()
-          println("Error downloading file: ${exception.message}")
         })
   }
 
@@ -144,7 +142,7 @@ fun EditMarkdownScreen(
                 Modifier.fillMaxSize()
                     .padding(16.dp)
                     .padding(paddingValues)
-                    .testTag("editNoteColumn")
+                    .testTag("editMarkdownColumn")
                     .verticalScroll(rememberScrollState()),
         ) {
           EditorControls(
