@@ -9,10 +9,6 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
-import androidx.test.espresso.Espresso.onView
-import androidx.test.espresso.assertion.ViewAssertions.matches
-import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
-import androidx.test.espresso.matcher.ViewMatchers.withText
 import com.github.onlynotesswent.model.file.FileRepository
 import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.note.Note
@@ -65,6 +61,33 @@ class EditNoteTest {
 
     // Mock the current route to be the user create screen
     `when`(navigationActions.currentRoute()).thenReturn(Screen.EDIT_NOTE)
+    val mockNote =
+        Note(
+            id = "1",
+            title = "Sample Title",
+            content = "This is a sample content.",
+            date = Timestamp.now(), // Use current timestamp
+            visibility = Note.Visibility.DEFAULT,
+            userId = "1",
+            noteClass = Note.Class("CS-100", "Sample Class", 2024, "path"),
+            image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888) // Placeholder Bitmap
+            )
+
+    `when`(noteRepository.getNoteById(any(), any(), any())).thenAnswer { invocation ->
+      val onSuccess = invocation.getArgument<(Note) -> Unit>(1)
+      onSuccess(mockNote)
+    }
+
+    noteViewModel.getNoteById("mockNoteId")
+    `when`(fileRepository.downloadFile(any(), any(), any(), any(), any())).thenAnswer { invocation
+      ->
+      val onFailure = invocation.getArgument<(Exception) -> Unit>(4)
+      onFailure(Exception("Simulated failure"))
+    }
+    `when`(fileRepository.uploadFile(any(), any(), any(), any(), any())).thenAnswer { invocation ->
+      val onSuccess = invocation.getArgument<() -> Unit>(3)
+      onSuccess()
+    }
     composeTestRule.setContent {
       EditNoteScreen(navigationActions, noteViewModel, userViewModel, fileViewModel)
     }
@@ -132,36 +155,7 @@ class EditNoteTest {
     composeTestRule.onNode(hasText(expectedLabelText, substring = true)).assertIsDisplayed()
   }
 
-  @Test
-  fun downloadMarkdownFile_Failure() {
-    val mockNote =
-        Note(
-            id = "1",
-            title = "Sample Title",
-            content = "This is a sample content.",
-            date = Timestamp.now(), // Use current timestamp
-            visibility = Note.Visibility.DEFAULT,
-            userId = "1",
-            noteClass = Note.Class("CS-100", "Sample Class", 2024, "path"),
-            image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888) // Placeholder Bitmap
-            )
-
-    `when`(noteRepository.getNoteById(any(), any(), any())).thenAnswer { invocation ->
-      val onSuccess = invocation.getArgument<(Note) -> Unit>(1)
-      onSuccess(mockNote)
-    }
-
-    noteViewModel.getNoteById("mockNoteId")
-    `when`(fileRepository.downloadFile(any(), any(), any(), any(), any())).thenAnswer { invocation
-      ->
-      val onFailure = invocation.getArgument<(Exception) -> Unit>(4)
-      onFailure(Exception("Simulated failure"))
-    }
-    `when`(fileRepository.uploadFile(any(), any(), any(), any(), any())).thenAnswer { invocation ->
-      val onSuccess = invocation.getArgument<() -> Unit>(3)
-      onSuccess()
-    }
-  }
+  @Test fun downloadMarkdownFile_Failure() {}
 
   @Test
   fun saveClickCallsNavActions() {
