@@ -96,6 +96,7 @@ class NotesToFlashcard(
     } catch (e: Exception) {
       Log.e("NotesToFlashcard", "Error parsing flashcards from JSON", e)
       onFailure(e)
+      return
     }
     onSuccess(flashcards)
   }
