@@ -1,5 +1,6 @@
 package com.github.onlynotesswent.ui.overview
 
+import android.graphics.Bitmap
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotDisplayed
 import androidx.compose.ui.test.hasText
@@ -10,6 +11,7 @@ import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
 import com.github.onlynotesswent.model.file.FileRepository
 import com.github.onlynotesswent.model.file.FileViewModel
+import com.github.onlynotesswent.model.note.Note
 import com.github.onlynotesswent.model.note.NoteRepository
 import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.model.users.User
@@ -124,6 +126,33 @@ class EditNoteTest {
     composeTestRule.onNodeWithTag("EditCommentTextField").performTextInput(updatedCommentText)
     val expectedLabelText = "edited: "
     composeTestRule.onNode(hasText(expectedLabelText, substring = true)).assertIsDisplayed()
+  }
+
+  @Test
+  fun downloadMarkdownFile_Failure() {
+    val mockNote =
+        Note(
+            id = "1",
+            title = "Sample Title",
+            content = "This is a sample content.",
+            date = Timestamp.now(), // Use current timestamp
+            visibility = Note.Visibility.DEFAULT,
+            userId = "1",
+            noteClass = Note.Class("CS-100", "Sample Class", 2024, "path"),
+            image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888) // Placeholder Bitmap
+            )
+
+    `when`(noteRepository.getNoteById(any(), any(), any())).thenAnswer { invocation ->
+      val onSuccess = invocation.getArgument<(Note) -> Unit>(1)
+      onSuccess(mockNote)
+    }
+
+    noteViewModel.getNoteById("mockNoteId")
+    `when`(fileRepository.downloadFile(any(), any(), any(), any(), any())).thenAnswer { invocation
+      ->
+      val onFailure = invocation.getArgument<(Exception) -> Unit>(4)
+      onFailure(Exception("Simulated failure"))
+    }
   }
 
   @Test
