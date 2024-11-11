@@ -178,12 +178,6 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
    * @param onFailure Callback to be invoked if an error occurs.
    */
   fun deleteUserById(id: String, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) {
-    getFollowersFrom(
-        id,
-        { followers -> followers.forEach { follower -> unfollowUser(follower.uid, {}, {}) } },
-        {})
-    getFollowingFrom(
-        id, { following -> following.forEach { follow -> unfollowUser(follow.uid, {}, {}) } }, {})
     repository.deleteUserById(id, onSuccess, onFailure)
   }
 
@@ -213,7 +207,7 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
   }
 
   /**
-   * Make current user follow the specified user. The method changes both the current user's
+   * Make current user unfollow the specified user. The method changes both the current user's
    * following list and the specified user's followers list. If the current user is not logged in,
    * the onFailure callback is invoked with a UserNotLoggedInException.
    *
