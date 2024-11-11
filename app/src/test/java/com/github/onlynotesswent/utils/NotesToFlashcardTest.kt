@@ -31,7 +31,9 @@ class NotesToFlashcardTest {
 
   // Wrapper functions for Mockito functions to allow to return null for non-null types
   private fun <T> any(type: Class<T>): T = Mockito.any<T>(type)
+
   private fun <T> any(): T = Mockito.any<T>()
+
   private fun <T> capture(argumentCaptor: ArgumentCaptor<T>): T = argumentCaptor.capture()
 
   private val jsonResponse =
