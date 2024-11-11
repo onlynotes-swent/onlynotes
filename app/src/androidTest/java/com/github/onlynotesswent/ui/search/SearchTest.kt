@@ -6,21 +6,26 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import com.github.onlynotesswent.model.note.Note
 import com.github.onlynotesswent.model.note.NoteRepository
 import com.github.onlynotesswent.model.note.NoteViewModel
+import com.github.onlynotesswent.model.users.UserRepository
+import com.github.onlynotesswent.model.users.UserViewModel
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
 import com.google.firebase.Timestamp
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.mockito.Mockito.mock
+import org.mockito.Mock
 import org.mockito.Mockito.`when`
+import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
 import org.mockito.kotlin.verify
 
 class SearchScreenTest {
-  private lateinit var navigationActions: NavigationActions
+  @Mock private lateinit var navigationActions: NavigationActions
+  @Mock private lateinit var noteRepository: NoteRepository
+  @Mock private lateinit var userRepository: UserRepository
   private lateinit var noteViewModel: NoteViewModel
-  private lateinit var noteRepository: NoteRepository
+  private lateinit var userViewModel: UserViewModel
 
   @get:Rule val composeTestRule = createComposeRule()
 
@@ -49,8 +54,8 @@ class SearchScreenTest {
 
   @Before
   fun setUp() {
-    navigationActions = mock(NavigationActions::class.java)
-    noteRepository = mock(NoteRepository::class.java)
+    MockitoAnnotations.openMocks(this)
+    userViewModel = UserViewModel(userRepository)
     noteViewModel = NoteViewModel(noteRepository)
 
     `when`(navigationActions.currentRoute()).thenReturn(Screen.SEARCH_NOTE)
@@ -64,7 +69,7 @@ class SearchScreenTest {
 
   @Test
   fun testSearchFieldVisibility() {
-    composeTestRule.setContent { SearchScreen(navigationActions, noteViewModel) }
+    composeTestRule.setContent { SearchScreen(navigationActions, noteViewModel, userViewModel) }
 
     composeTestRule.onNodeWithTag("searchScreen").assertIsDisplayed()
     composeTestRule.onNodeWithTag("searchTextField").assertIsDisplayed()
@@ -72,14 +77,14 @@ class SearchScreenTest {
 
   @Test
   fun testEmptySearchQuery() {
-    composeTestRule.setContent { SearchScreen(navigationActions, noteViewModel) }
+    composeTestRule.setContent { SearchScreen(navigationActions, noteViewModel, userViewModel) }
 
     composeTestRule.onNodeWithTag("filteredNoteList").assertDoesNotExist()
   }
 
   @Test
   fun testValidSearchQueryShowsOneResult() {
-    composeTestRule.setContent { SearchScreen(navigationActions, noteViewModel) }
+    composeTestRule.setContent { SearchScreen(navigationActions, noteViewModel, userViewModel) }
 
     composeTestRule.onNodeWithTag("searchTextField").performTextInput(testNote1.title)
 
@@ -95,7 +100,7 @@ class SearchScreenTest {
 
   @Test
   fun testValidSearchQueryShowsMultipleResults() {
-    composeTestRule.setContent { SearchScreen(navigationActions, noteViewModel) }
+    composeTestRule.setContent { SearchScreen(navigationActions, noteViewModel, userViewModel) }
 
     composeTestRule.onNodeWithTag("searchTextField").performTextInput("Note")
 
@@ -116,7 +121,7 @@ class SearchScreenTest {
 
   @Test
   fun testNoSearchResultsMessage() {
-    composeTestRule.setContent { SearchScreen(navigationActions, noteViewModel) }
+    composeTestRule.setContent { SearchScreen(navigationActions, noteViewModel, userViewModel) }
 
     composeTestRule.onNodeWithTag("searchTextField").performTextInput("Non-existent Note")
 
@@ -126,7 +131,7 @@ class SearchScreenTest {
 
   @Test
   fun testNoteSelectionNavigatesToEditScreen() {
-    composeTestRule.setContent { SearchScreen(navigationActions, noteViewModel) }
+    composeTestRule.setContent { SearchScreen(navigationActions, noteViewModel, userViewModel) }
 
     composeTestRule.onNodeWithTag("searchTextField").performTextInput(testNote1.title)
     composeTestRule.onNodeWithTag("filteredNoteList").onChildren().onFirst().performClick()
