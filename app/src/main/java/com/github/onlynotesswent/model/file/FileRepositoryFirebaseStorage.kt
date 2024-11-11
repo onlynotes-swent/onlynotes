@@ -59,7 +59,6 @@ class FileRepositoryFirebaseStorage(private val db: FirebaseStorage) : FileRepos
         .getFile(localFile)
         .addOnSuccessListener { onSuccess(localFile) }
         .addOnFailureListener { error ->
-          Log.e(TAG, "Error downloading file.")
           val errorCode = (error as StorageException).errorCode
           if (errorCode == StorageException.ERROR_OBJECT_NOT_FOUND) {
             // Check should be external, since notes have a hasPdf and hasText field
@@ -124,12 +123,12 @@ class FileRepositoryFirebaseStorage(private val db: FirebaseStorage) : FileRepos
             val errorCode = (error as StorageException).errorCode
             if (errorCode == StorageException.ERROR_OBJECT_NOT_FOUND) {
               // Check should be external, since notes have a hasPdf and hasText field
-              Log.e(TAG, "File not found: ${error.message}", error)
+              Log.e(TAG, "File not found.", error)
               onFileNotFound()
             } else {
               Log.e(TAG, "Error getting file.", error)
+              onFailure(error)
             }
-            onFailure(error)
           }
         }
   }

@@ -92,7 +92,7 @@ class EditProfileScreenTest {
       }
     }
 
-    `when`(mockFileRepository.downloadFile(any(), any(), any(), any(), any())).thenAnswer {}
+    `when`(mockFileRepository.downloadFile(any(), any(), any(), any(), any(), any())).thenAnswer {}
   }
 
   @Test
@@ -225,7 +225,7 @@ class EditProfileScreenTest {
       EditProfileScreen(mockNavigationActions, userViewModel, profilePictureTaker, fileViewModel)
     }
     composeTestRule.onNodeWithTag("profilePicture").assertIsDisplayed()
-    verify(mockFileRepository).downloadFile(any(), any(), any(), any(), any())
+    verify(mockFileRepository).downloadFile(any(), any(), any(), any(), any(), any())
   }
 
   @Test
