@@ -6,7 +6,6 @@ import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -146,28 +145,34 @@ fun EditMarkdownScreen(
                     .testTag("editMarkdownColumn")
                     .verticalScroll(rememberScrollState()),
         ) {
-          item{EditorControls(
-              modifier = Modifier.testTag("EditorControl"),
-              state = state,
-              onBoldClick = { state.toggleSpanStyle(SpanStyle(fontWeight = FontWeight.Bold)) },
-              onItalicClick = { state.toggleSpanStyle(SpanStyle(fontStyle = FontStyle.Italic)) },
-              onUnderlineClick = {
-                state.toggleSpanStyle(SpanStyle(textDecoration = TextDecoration.Underline))
-              },
-              onStrikethroughClick = {
-                state.toggleSpanStyle(SpanStyle(textDecoration = TextDecoration.LineThrough))
-              })}
+          item {
+            EditorControls(
+                modifier = Modifier.testTag("EditorControl"),
+                state = state,
+                onBoldClick = { state.toggleSpanStyle(SpanStyle(fontWeight = FontWeight.Bold)) },
+                onItalicClick = { state.toggleSpanStyle(SpanStyle(fontStyle = FontStyle.Italic)) },
+                onUnderlineClick = {
+                  state.toggleSpanStyle(SpanStyle(textDecoration = TextDecoration.Underline))
+                },
+                onStrikethroughClick = {
+                  state.toggleSpanStyle(SpanStyle(textDecoration = TextDecoration.LineThrough))
+                })
+          }
 
-          item{RichTextEditor(
-              modifier = Modifier.fillMaxWidth().testTag("RichTextEditor"),
-              state = state,
-          )}
+          item {
+            RichTextEditor(
+                modifier = Modifier.fillMaxWidth().testTag("RichTextEditor"),
+                state = state,
+            )
+          }
 
-          item{Button(
-              modifier = Modifier.fillMaxWidth().testTag("Save button"),
-              onClick = { updateMarkdownFile(context, note?.id ?: "", fileViewModel) }) {
-                Text("Save")
-              }}
+          item {
+            Button(
+                modifier = Modifier.fillMaxWidth().testTag("Save button"),
+                onClick = { updateMarkdownFile(context, note?.id ?: "", fileViewModel) }) {
+                  Text("Save")
+                }
+          }
         }
       })
 }
