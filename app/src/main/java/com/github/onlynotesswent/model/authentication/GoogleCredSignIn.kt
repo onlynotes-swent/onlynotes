@@ -69,12 +69,13 @@ class GoogleCredSignIn(
         // Exception can happen when the device has never had a Google account before
         // In this case, reattempt the sign-in using traditional Google sign-in
         withContext(Dispatchers.Main) {
-            val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestIdToken(serverClientId)
-                .requestEmail()
-                .build()
-            val googleSignInClient = GoogleSignIn.getClient(ctx, gso)
-            launcher.launch(googleSignInClient.signInIntent)
+          val gso =
+              GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                  .requestIdToken(serverClientId)
+                  .requestEmail()
+                  .build()
+          val googleSignInClient = GoogleSignIn.getClient(ctx, gso)
+          launcher.launch(googleSignInClient.signInIntent)
         }
       }
     }

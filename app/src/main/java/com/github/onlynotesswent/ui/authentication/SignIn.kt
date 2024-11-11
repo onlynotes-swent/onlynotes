@@ -81,11 +81,11 @@ fun SignInScreen(
   val googleSignIn = GoogleCredSignIn(context, credentialManager, serverClientId, launcher)
 
   val onClickSignIn: () -> Unit = {
-      googleSignIn.googleLogin { googleIdToken ->
-        // Sign in to Firebase with the Google ID token
-        val firebaseCredential = GoogleAuthProvider.getCredential(googleIdToken, null)
-        signInWithFirebase(firebaseCredential, navigationActions, userViewModel, context)
-      }
+    googleSignIn.googleLogin { googleIdToken ->
+      // Sign in to Firebase with the Google ID token
+      val firebaseCredential = GoogleAuthProvider.getCredential(googleIdToken, null)
+      signInWithFirebase(firebaseCredential, navigationActions, userViewModel, context)
+    }
   }
 
   // UI:
