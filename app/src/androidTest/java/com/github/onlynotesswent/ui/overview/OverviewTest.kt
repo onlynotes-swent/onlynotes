@@ -70,7 +70,6 @@ class OverviewTest {
     folderRepository = mock(FolderRepository::class.java)
     folderViewModel = FolderViewModel(folderRepository)
 
-
     // Mock folder repository to return new folder id
     `when`(folderRepository.getNewFolderId()).thenReturn("2")
 
@@ -240,5 +239,4 @@ class OverviewTest {
     composeTestRule.onNodeWithTag("confirmFolderAction").assertIsEnabled().assertIsDisplayed()
     composeTestRule.onNodeWithTag("confirmFolderAction").performClick()
   }
-
 }

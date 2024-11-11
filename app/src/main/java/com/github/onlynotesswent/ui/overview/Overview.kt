@@ -287,7 +287,13 @@ fun FolderItem(folder: Folder, onClick: () -> Unit) {
  * @param oldName the name of the folder
  */
 @Composable
-fun FolderDialog(onDismiss: () -> Unit, onConfirm: (String, Visibility) -> Unit, action:String, oldVis: Visibility?=null, oldName : String="") {
+fun FolderDialog(
+    onDismiss: () -> Unit,
+    onConfirm: (String, Visibility) -> Unit,
+    action: String,
+    oldVis: Visibility? = null,
+    oldName: String = ""
+) {
 
   var name by remember { mutableStateOf(oldName) }
   var visibility: Visibility? by remember { mutableStateOf(oldVis) }
@@ -328,7 +334,7 @@ fun FolderDialog(onDismiss: () -> Unit, onConfirm: (String, Visibility) -> Unit,
               }
               Button(
                   enabled = name.isNotEmpty() && visibility != null,
-                  onClick = { onConfirm(name, visibility?: Visibility.DEFAULT) },
+                  onClick = { onConfirm(name, visibility ?: Visibility.DEFAULT) },
                   modifier = Modifier.testTag("confirmFolderAction")) {
                     Text(action)
                   }
