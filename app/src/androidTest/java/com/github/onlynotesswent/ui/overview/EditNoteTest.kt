@@ -155,8 +155,6 @@ class EditNoteTest {
     composeTestRule.onNode(hasText(expectedLabelText, substring = true)).assertIsDisplayed()
   }
 
-  @Test fun downloadMarkdownFile_Failure() {}
-
   @Test
   fun saveClickCallsNavActions() {
     // Ensure the button is enabled
