@@ -39,6 +39,9 @@ import androidx.compose.ui.unit.dp
 import com.github.onlynotesswent.model.note.Note
 import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.model.users.UserViewModel
+import com.github.onlynotesswent.ui.NoteDataTextField
+import com.github.onlynotesswent.ui.OptionDropDownMenu
+import com.github.onlynotesswent.ui.ScreenTopBar
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
 import com.google.firebase.Timestamp

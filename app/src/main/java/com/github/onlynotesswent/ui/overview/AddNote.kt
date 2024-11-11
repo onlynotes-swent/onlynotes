@@ -2,9 +2,7 @@ package com.github.onlynotesswent.ui.overview
 
 import android.graphics.Bitmap
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -12,22 +10,14 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
-import androidx.compose.material.icons.outlined.ArrowDropDown
 import androidx.compose.material.icons.outlined.Clear
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -43,6 +33,9 @@ import com.github.onlynotesswent.model.note.Note
 import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.model.scanner.Scanner
 import com.github.onlynotesswent.model.users.UserViewModel
+import com.github.onlynotesswent.ui.NoteDataTextField
+import com.github.onlynotesswent.ui.OptionDropDownMenu
+import com.github.onlynotesswent.ui.ScreenTopBar
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
 import com.google.firebase.Timestamp
@@ -205,123 +198,5 @@ fun AddNoteScreen(
                     Text(text = template)
                   }
             }
-      })
-}
-
-/**
- * A composable function that displays an `OutlinedTextField` with a dropdown menu.
- *
- * @param value The current value of the text field.
- * @param expanded A boolean indicating whether the dropdown menu is expanded.
- * @param onExpandedChange A callback to be invoked when the expanded state of the dropdown menu
- *   changes.
- * @param items A list of strings representing the items to be displayed in the dropdown menu.
- * @param onItemClick A callback to be invoked when an item in the dropdown menu is clicked.
- * @param modifier The modifier to be applied to the `OutlinedTextField`.
- */
-@Composable
-fun OptionDropDownMenu(
-    expanded: Boolean,
-    value: String,
-    buttonTag: String,
-    menuTag: String,
-    onExpandedChange: (Boolean) -> Unit,
-    items: List<String>,
-    onItemClick: (String) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-  Box(modifier = Modifier.fillMaxWidth()) {
-    Button(
-        onClick = { onExpandedChange(!expanded) },
-        modifier = Modifier.fillMaxWidth().testTag(buttonTag)) {
-          Text(text = value)
-          Icon(Icons.Outlined.ArrowDropDown, "Dropdown icon")
-        }
-
-    DropdownMenu(
-        expanded = expanded,
-        onDismissRequest = { onExpandedChange(false) },
-        modifier = modifier.fillMaxWidth().testTag(menuTag)) {
-          items.forEach { item ->
-            DropdownMenuItem(
-                text = { Text(item) },
-                onClick = {
-                  onItemClick(item)
-                  onExpandedChange(false)
-                })
-          }
-        }
-  }
-}
-
-/**
- * A composable function that displays an `OutlinedTextField` with an optional trailing icon.
- *
- * @param value The current value of the text field.
- * @param onValueChange The callback that is triggered when the value changes.
- * @param label The label to be displayed inside the text field container.
- * @param placeholder The placeholder to be displayed when the text field is in focus and the input
- *   text is empty.
- * @param modifier The modifier to be applied to the `OutlinedTextField`.
- * @param trailingIcon An optional trailing icon displayed at the end of the text field container.
- */
-@Composable
-fun NoteDataTextField(
-    value: String,
-    onValueChange: (String) -> Unit,
-    label: String,
-    placeholder: String,
-    modifier: Modifier = Modifier,
-    trailingIcon: @Composable (() -> Unit)? = null
-) {
-  OutlinedTextField(
-      value = value,
-      onValueChange = onValueChange,
-      label = { Text(label) },
-      placeholder = { Text(placeholder) },
-      modifier = modifier,
-      trailingIcon = trailingIcon,
-      colors =
-          TextFieldDefaults.colors(
-              focusedIndicatorColor = MaterialTheme.colorScheme.primary,
-              unfocusedIndicatorColor = MaterialTheme.colorScheme.onBackground,
-              focusedContainerColor = MaterialTheme.colorScheme.background,
-              unfocusedContainerColor = MaterialTheme.colorScheme.background))
-}
-
-/**
- * A composable function that displays the top app bar for the screen. It is composed of an icon
- * button and a title.
- *
- * @param title The title to be displayed in the top app bar.
- * @param titleTestTag The test tag for the title.
- * @param onBackClick The callback to be invoked when the back button is clicked.
- * @param icon The icon to be displayed in the top app bar.
- * @param iconTestTag The test tag for the icon.
- */
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun ScreenTopBar(
-    title: String,
-    titleTestTag: String,
-    onBackClick: () -> Unit,
-    icon: @Composable () -> Unit,
-    iconTestTag: String
-) {
-  TopAppBar(
-      colors =
-          TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface),
-      title = {
-        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-          Spacer(modifier = Modifier.weight(1f))
-          Text(
-              title,
-              color = MaterialTheme.colorScheme.onSurface,
-              modifier = Modifier.testTag(titleTestTag))
-          Spacer(modifier = Modifier.weight(2f))
-        }
-      },
-      navigationIcon = {
-        IconButton(onClick = onBackClick, Modifier.testTag(iconTestTag), content = icon)
       })
 }

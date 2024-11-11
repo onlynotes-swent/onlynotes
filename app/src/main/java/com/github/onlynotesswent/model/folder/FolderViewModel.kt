@@ -36,7 +36,7 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
   val selectedFolder: StateFlow<Folder?> = _selectedFolder.asStateFlow()
 
   init {
-    repository.init {}
+    repository.init { }
   }
 
   companion object {
