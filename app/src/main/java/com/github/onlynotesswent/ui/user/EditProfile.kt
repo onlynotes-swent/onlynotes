@@ -99,6 +99,7 @@ fun EditProfileScreen(
   val localContext = LocalContext.current
   val sheetState = rememberModalBottomSheetState()
   val showSheet = remember { mutableStateOf(false) }
+  var showDeleteAccountAlert = remember { mutableStateOf(false) }
 
   if (user.value == null) {
     // If the user is null, display an error message

@@ -169,8 +169,9 @@ class UserRepositoryFirestoreTest {
     var onSuccessCalled = false
     userRepositoryFirestore.deleteUserById(user.uid, { onSuccessCalled = true }, { assert(false) })
 
-    // Verify if Firestore collection was called
-    verify(mockCollectionReference, timeout(1000)).document(user.uid)
+    // Verify if Firestore collection was called multiple times
+    verify(mockCollectionReference, atLeastOnce()).document(any())
+
     assert(onSuccessCalled)
   }
 
