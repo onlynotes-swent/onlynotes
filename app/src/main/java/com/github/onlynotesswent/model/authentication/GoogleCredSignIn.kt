@@ -1,11 +1,16 @@
 package com.github.onlynotesswent.model.authentication
 
 import android.content.Context
+import android.content.Intent
 import android.util.Log
+import androidx.activity.compose.ManagedActivityResultLauncher
+import androidx.activity.result.ActivityResult
 import androidx.credentials.CredentialManager
 import androidx.credentials.CustomCredential
 import androidx.credentials.GetCredentialRequest
 import androidx.credentials.GetCredentialResponse
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException
@@ -14,6 +19,7 @@ import java.util.UUID
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 private const val TAG = "GoogleCredSignIn"
 
@@ -27,7 +33,8 @@ private const val TAG = "GoogleCredSignIn"
 class GoogleCredSignIn(
     private val ctx: Context,
     private val credentialManager: CredentialManager,
-    private val serverClientId: String
+    private val serverClientId: String,
+    private val launcher: ManagedActivityResultLauncher<Intent, ActivityResult>
 ) {
   // Instantiate a Google sign-in request
   private val googleIdOption: GetGoogleIdOption =
@@ -39,17 +46,16 @@ class GoogleCredSignIn(
           .build()
 
   // Retrieve the credentials
-  val request: GetCredentialRequest =
+  private val request: GetCredentialRequest =
       GetCredentialRequest.Builder().addCredentialOption(googleIdOption).build()
 
   /**
    * Handle the Google login process, and retrieve a credential
    *
    * @param callback The callback to handle the Google ID token credential
-   * @throws Exception If the device has never had a Google account before
    */
   fun googleLogin(callback: (String) -> Unit) {
-    // Retrieve user's available credentials
+    // Retrieve user's available credentials or prompt them to sign in
     CoroutineScope(Dispatchers.IO).launch {
       try {
         // Attempt to get the Google ID credential
@@ -61,7 +67,14 @@ class GoogleCredSignIn(
         Log.e(TAG, "Error getting credential", e)
         // Exception can happen when the device has never had a Google account before
         // In this case, reattempt the sign-in using traditional Google sign-in
-        throw (Exception("Error getting credential"))
+        withContext(Dispatchers.Main) {
+            val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestIdToken(serverClientId)
+                .requestEmail()
+                .build()
+            val googleSignInClient = GoogleSignIn.getClient(ctx, gso)
+            launcher.launch(googleSignInClient.signInIntent)
+        }
       }
     }
   }

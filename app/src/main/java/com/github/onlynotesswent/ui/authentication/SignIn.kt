@@ -66,7 +66,6 @@ fun SignInScreen(
   // AUTHENTICATION:
   val context = LocalContext.current
   val credentialManager = CredentialManager.create(context)
-  val googleSignIn = GoogleCredSignIn(context, credentialManager, serverClientId)
 
   // launcher for fallback method
   val launcher =
@@ -81,24 +80,15 @@ fun SignInScreen(
             Log.e("SignInScreen", "Failed to sign in: ${e.statusCode}")
           })
 
+  val googleSignIn = GoogleCredSignIn(context, credentialManager, serverClientId, launcher)
+
   val onClickSignIn: () -> Unit = {
-    try {
       // Try to log in using Google Credentials
       googleSignIn.googleLogin { googleIdToken ->
         // Sign in to Firebase with the Google ID token
         val firebaseCredential = GoogleAuthProvider.getCredential(googleIdToken, null)
         signInWithFirebase(firebaseCredential, navigationActions, userViewModel, context)
       }
-    } catch (e: Exception) {
-      // In case of failure use fallback deprecated method
-      val gso =
-          GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-              .requestIdToken(serverClientId)
-              .requestEmail()
-              .build()
-      val googleSignInClient = GoogleSignIn.getClient(context, gso)
-      launcher.launch(googleSignInClient.signInIntent)
-    }
   }
 
   // UI:
