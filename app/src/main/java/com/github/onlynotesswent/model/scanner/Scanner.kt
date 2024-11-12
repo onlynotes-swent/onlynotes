@@ -111,32 +111,32 @@ open class Scanner(
     // If the result is correctly returned, share the pdf file
     val result = GmsDocumentScanningResult.fromActivityResultIntent(activityResult.data)
 
-//    when {
-//      resultCode == Activity.RESULT_OK && result != null -> {
-//        val path = result.pdf?.uri?.path
-//        if (path != null) {
-//          try {
-//            // Calls the stored callback with the safe content uri of the scanned pdf file.
-//            onScanSuccess?.invoke(
-//                FileProvider.getUriForFile(activity, fileProviderAuthority, File(path)))
-//          } catch (e: IllegalArgumentException) {
-//            // Shouldn't happen, so no toast is shown
-//            Log.e(TAG, "$path is outside the paths supported by the File provider.")
-//          }
-//        } else {
-//          Log.e(TAG, "Path to pdf file is null")
-//          Toast.makeText(activity, "Scanned pdf not found", Toast.LENGTH_SHORT).show()
-//        }
-//      }
-//      resultCode == Activity.RESULT_CANCELED -> {
-//        Log.d(TAG, "Scanner cancelled")
-//        Toast.makeText(activity, "Scanner cancelled", Toast.LENGTH_SHORT).show()
-//      }
-//      else -> {
-//        Log.e(TAG, "Scanner failed with resultCode: $resultCode")
-//        Toast.makeText(activity, "Scanner failed", Toast.LENGTH_SHORT).show()
-//      }
-//    }
+    //    when {
+    //      resultCode == Activity.RESULT_OK && result != null -> {
+    //        val path = result.pdf?.uri?.path
+    //        if (path != null) {
+    //          try {
+    //            // Calls the stored callback with the safe content uri of the scanned pdf file.
+    //            onScanSuccess?.invoke(
+    //                FileProvider.getUriForFile(activity, fileProviderAuthority, File(path)))
+    //          } catch (e: IllegalArgumentException) {
+    //            // Shouldn't happen, so no toast is shown
+    //            Log.e(TAG, "$path is outside the paths supported by the File provider.")
+    //          }
+    //        } else {
+    //          Log.e(TAG, "Path to pdf file is null")
+    //          Toast.makeText(activity, "Scanned pdf not found", Toast.LENGTH_SHORT).show()
+    //        }
+    //      }
+    //      resultCode == Activity.RESULT_CANCELED -> {
+    //        Log.d(TAG, "Scanner cancelled")
+    //        Toast.makeText(activity, "Scanner cancelled", Toast.LENGTH_SHORT).show()
+    //      }
+    //      else -> {
+    //        Log.e(TAG, "Scanner failed with resultCode: $resultCode")
+    //        Toast.makeText(activity, "Scanner failed", Toast.LENGTH_SHORT).show()
+    //      }
+    //    }
 
     if (resultCode == Activity.RESULT_OK && result != null) {
       val path = result.pdf?.uri?.path

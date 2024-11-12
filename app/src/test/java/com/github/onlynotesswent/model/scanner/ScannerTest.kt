@@ -439,7 +439,7 @@ class ScannerTest {
     val logs = ShadowLog.getLogs()
 
     // Check for the debug log that should be generated
-    val errorLog = logs.find { it.type == Log.ERROR && it.tag == Scanner.TAG && it.msg == msg}
+    val errorLog = logs.find { it.type == Log.ERROR && it.tag == Scanner.TAG && it.msg == msg }
     assert(errorLog != null) { "Expected error log was not found!" }
   }
 }
