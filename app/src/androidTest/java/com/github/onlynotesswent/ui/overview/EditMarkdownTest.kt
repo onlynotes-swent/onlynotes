@@ -1,7 +1,7 @@
 package com.github.onlynotesswent.ui.overview
 
+import androidx.compose.ui.test.assertContentDescriptionContains
 import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.assertIsNotDisplayed
 import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
@@ -96,29 +96,38 @@ class EditMarkdownTest {
 
   @Test
   fun clickComponents() {
+    composeTestRule.onNodeWithTag("BoldControl").assertContentDescriptionContains("Unselected")
     composeTestRule.onNodeWithTag("BoldControl").performClick()
-    composeTestRule.onNodeWithTag("FilterChipIcon").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("BoldControl").assertContentDescriptionContains("Selected")
     composeTestRule.onNodeWithTag("BoldControl").performClick()
-    composeTestRule.onNodeWithTag("FilterChipIcon").assertIsNotDisplayed()
+    composeTestRule.onNodeWithTag("BoldControl").assertContentDescriptionContains("Unselected")
 
+    composeTestRule.onNodeWithTag("ItalicControl").assertContentDescriptionContains("Unselected")
     composeTestRule.onNodeWithTag("ItalicControl").performClick()
-    composeTestRule.onNodeWithTag("FilterChipIcon").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("ItalicControl").assertContentDescriptionContains("Selected")
     composeTestRule.onNodeWithTag("ItalicControl").performClick()
-    composeTestRule.onNodeWithTag("FilterChipIcon").assertIsNotDisplayed()
+    composeTestRule.onNodeWithTag("ItalicControl").assertContentDescriptionContains("Unselected")
 
-    composeTestRule.onNodeWithTag("ItalicControl").performClick()
-    composeTestRule.onNodeWithTag("FilterChipIcon").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("ItalicControl").performClick()
-    composeTestRule.onNodeWithTag("FilterChipIcon").assertIsNotDisplayed()
+    composeTestRule
+        .onNodeWithTag("UnderlinedControl")
+        .assertContentDescriptionContains("Unselected")
+    composeTestRule.onNodeWithTag("UnderlinedControl").performClick()
+    composeTestRule.onNodeWithTag("UnderlinedControl").assertContentDescriptionContains("Selected")
+    composeTestRule.onNodeWithTag("UnderlinedControl").performClick()
+    composeTestRule
+        .onNodeWithTag("UnderlinedControl")
+        .assertContentDescriptionContains("Unselected")
 
-    composeTestRule.onNodeWithTag("BoldControl").performClick()
-    composeTestRule.onNodeWithTag("FilterChipIcon").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("BoldControl").performClick()
-    composeTestRule.onNodeWithTag("FilterChipIcon").assertIsNotDisplayed()
-
+    composeTestRule
+        .onNodeWithTag("StrikethroughControl")
+        .assertContentDescriptionContains("Unselected")
     composeTestRule.onNodeWithTag("StrikethroughControl").performClick()
-    composeTestRule.onNodeWithTag("FilterChipIcon").assertIsDisplayed()
+    composeTestRule
+        .onNodeWithTag("StrikethroughControl")
+        .assertContentDescriptionContains("Selected")
     composeTestRule.onNodeWithTag("StrikethroughControl").performClick()
-    composeTestRule.onNodeWithTag("FilterChipIcon").assertIsNotDisplayed()
+    composeTestRule
+        .onNodeWithTag("StrikethroughControl")
+        .assertContentDescriptionContains("Unselected")
   }
 }

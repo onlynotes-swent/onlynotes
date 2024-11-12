@@ -42,6 +42,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -83,13 +85,13 @@ fun EditMarkdownScreen(
   val state = rememberRichTextState()
 
   val context = LocalContext.current
-  val selectedNote by noteViewModel.selectedNote.collectAsState()
+  val note by noteViewModel.selectedNote.collectAsState()
   var markdownContent: File? by remember { mutableStateOf(null) }
 
   // Function to download and set the Markdown file
   LaunchedEffect(Unit) {
     fileViewModel.downloadFile(
-        uid = selectedNote?.id ?: "errorNoId",
+        uid = note?.id ?: "errorNoId",
         fileType = FileType.NOTE_TEXT,
         context = context,
         onSuccess = { downloadedFile: File ->
@@ -158,7 +160,7 @@ fun EditMarkdownScreen(
 
           Button(
               modifier = Modifier.fillMaxWidth().testTag("Save button"),
-              onClick = { updateMarkdownFile(context, selectedNote?.id ?: "", fileViewModel) }) {
+              onClick = { updateMarkdownFile(context, note?.id ?: "", fileViewModel) }) {
                 Text("Save")
               }
         }
@@ -270,11 +272,12 @@ fun ControlWrapper(
     content: @Composable () -> Unit
 ) {
   FilterChip(
-      modifier = modifier,
+      modifier =
+          modifier.semantics { contentDescription = if (selected) "Selected" else "Unselected" },
       selected = selected,
       onClick = {
-        onClick()
         onChangeClick(!selected)
+        onClick()
       },
       shape = RoundedCornerShape(6.dp),
       colors =
@@ -288,7 +291,7 @@ fun ControlWrapper(
           Icon(
               modifier = Modifier.size(20.dp).testTag("FilterChipIcon"),
               imageVector = Icons.Default.Check,
-              contentDescription = "Chip Icon",
+              contentDescription = if (selected) "Selected" else "Not Selected",
               tint = MaterialTheme.colorScheme.onBackground)
         }
       },
