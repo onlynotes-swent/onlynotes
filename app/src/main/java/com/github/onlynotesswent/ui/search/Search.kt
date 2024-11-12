@@ -65,18 +65,23 @@ fun SearchScreen(
   searchWords.value = searchQuery.value.split("\\s+".toRegex())
 
   val filteredNotes = remember { mutableStateOf(noteViewModel.publicNotes.value) }
-  filteredNotes.value = noteViewModel.publicNotes.collectAsState().value.filter { textMatchesSearch(it.title, searchWords.value) }
+  filteredNotes.value =
+      noteViewModel.publicNotes.collectAsState().value.filter {
+        textMatchesSearch(it.title, searchWords.value)
+      }
 
   val filteredUsers = remember { mutableStateOf(userViewModel.allUsers.value) }
   filteredUsers.value =
       userViewModel.allUsers.collectAsState().value.filter {
-          textMatchesSearch(it.fullName(), searchWords.value) ||
-                  textMatchesSearch(it.userHandle(), searchWords.value)
+        textMatchesSearch(it.fullName(), searchWords.value) ||
+            textMatchesSearch(it.userHandle(), searchWords.value)
       }
 
   val filteredFolders = remember { mutableStateOf(folderViewModel.publicFolders.value) }
   filteredFolders.value =
-      folderViewModel.publicFolders.collectAsState().value.filter { textMatchesSearch(it.name, searchWords.value) }
+      folderViewModel.publicFolders.collectAsState().value.filter {
+        textMatchesSearch(it.name, searchWords.value)
+      }
 
   Scaffold(
       modifier = Modifier.testTag("searchScreen"),
@@ -189,10 +194,7 @@ fun SearchScreen(
         if (displayNotes) {
           LazyColumn(
               contentPadding = PaddingValues(horizontal = 16.dp),
-              modifier =
-                  Modifier.fillMaxWidth()
-                      .padding(padding)
-                      .testTag("filteredNoteList")) {
+              modifier = Modifier.fillMaxWidth().padding(padding).testTag("filteredNoteList")) {
                 items(filteredNotes.value.size) { index ->
                   NoteItem(note = filteredNotes.value[index]) {
                     noteViewModel.selectedNote(filteredNotes.value[index])
@@ -204,10 +206,7 @@ fun SearchScreen(
         if (displayUsers) {
           LazyColumn(
               contentPadding = PaddingValues(horizontal = 16.dp),
-              modifier =
-                  Modifier.fillMaxWidth()
-                      .padding(padding)
-                      .testTag("filteredUserList")) {
+              modifier = Modifier.fillMaxWidth().padding(padding).testTag("filteredUserList")) {
                 items(filteredUsers.value.size) { index ->
                   UserItem(filteredUsers.value[index]) {
                     userViewModel.setProfileUser(filteredUsers.value[index])
@@ -218,19 +217,17 @@ fun SearchScreen(
         }
 
         if (displayFolders) {
-            CustomLazyGrid(
-                modifier = Modifier.fillMaxSize().padding(padding),
-                notes = remember { mutableStateOf(emptyList()) },
-                folders = filteredFolders,
-                gridModifier =
-                Modifier.fillMaxWidth()
-                    .padding(horizontal = 16.dp)
-                    .testTag("filteredFolderList"),
-                folderViewModel = folderViewModel,
-                noteViewModel = noteViewModel,
-                navigationActions = navigationActions,
-                paddingValues = padding,
-                columnContent = {})
+          CustomLazyGrid(
+              modifier = Modifier.fillMaxSize().padding(padding),
+              notes = remember { mutableStateOf(emptyList()) },
+              folders = filteredFolders,
+              gridModifier =
+                  Modifier.fillMaxWidth().padding(horizontal = 16.dp).testTag("filteredFolderList"),
+              folderViewModel = folderViewModel,
+              noteViewModel = noteViewModel,
+              navigationActions = navigationActions,
+              paddingValues = padding,
+              columnContent = {})
         }
 
         if (displayLoader) {

@@ -157,7 +157,6 @@ class SearchScreenTest {
         .assertIsDisplayed()
     composeTestRule.onAllNodesWithTag("noteCard").assertCountEquals(1)
 
-
     composeTestRule.onNodeWithTag("searchTextField").performTextReplacement(testUser1.firstName)
     composeTestRule.onNodeWithTag("userFilterChip").performClick()
 
@@ -170,7 +169,6 @@ class SearchScreenTest {
         .assertIsDisplayed()
     composeTestRule.onAllNodesWithTag("userCard").assertCountEquals(1)
 
-
     composeTestRule.onNodeWithTag("searchTextField").performTextReplacement(testFolder1.name)
     composeTestRule.onNodeWithTag("folderFilterChip").performClick()
 
@@ -182,7 +180,6 @@ class SearchScreenTest {
         .onFirst()
         .assertIsDisplayed()
     composeTestRule.onAllNodesWithTag("folderCard").assertCountEquals(1)
-
   }
 
   @Test
@@ -293,16 +290,16 @@ class SearchScreenTest {
     verify(navigationActions).navigateTo(Screen.PUBLIC_PROFILE)
   }
 
-    @Test
-    fun testFolderSelectionNavigatesToFolderScreen() {
-        composeTestRule.setContent {
-            SearchScreen(navigationActions, noteViewModel, userViewModel, folderViewModel)
-        }
-
-        composeTestRule.onNodeWithTag("searchTextField").performTextInput(testFolder1.name)
-        composeTestRule.onNodeWithTag("folderFilterChip").performClick()
-        composeTestRule.onNodeWithTag("filteredFolderList").onChildren().onFirst().performClick()
-
-        verify(navigationActions).navigateTo(Screen.FOLDER_CONTENTS)
+  @Test
+  fun testFolderSelectionNavigatesToFolderScreen() {
+    composeTestRule.setContent {
+      SearchScreen(navigationActions, noteViewModel, userViewModel, folderViewModel)
     }
+
+    composeTestRule.onNodeWithTag("searchTextField").performTextInput(testFolder1.name)
+    composeTestRule.onNodeWithTag("folderFilterChip").performClick()
+    composeTestRule.onNodeWithTag("filteredFolderList").onChildren().onFirst().performClick()
+
+    verify(navigationActions).navigateTo(Screen.FOLDER_CONTENTS)
+  }
 }

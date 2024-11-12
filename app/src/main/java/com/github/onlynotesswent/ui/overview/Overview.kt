@@ -147,7 +147,9 @@ fun OverviewScreen(
             selectedItem = navigationActions.currentRoute())
       }) { paddingValues ->
         CustomLazyGrid(
-            modifier = Modifier.fillMaxSize().padding(top = 20.dp,bottom = paddingValues.calculateBottomPadding()),
+            modifier =
+                Modifier.fillMaxSize()
+                    .padding(top = 20.dp, bottom = paddingValues.calculateBottomPadding()),
             notes = userRootNotes,
             folders = userRootFolders,
             gridModifier =
@@ -406,7 +408,7 @@ fun CustomLazyGrid(
     if (notes.value.isNotEmpty() || folders.value.isNotEmpty()) {
       LazyVerticalGrid(
           columns = GridCells.Adaptive(minSize = 100.dp),
-          //contentPadding = paddingValues,
+          // contentPadding = paddingValues,
           horizontalArrangement = Arrangement.spacedBy(4.dp),
           modifier = gridModifier) {
             items(folders.value.size) { index ->
