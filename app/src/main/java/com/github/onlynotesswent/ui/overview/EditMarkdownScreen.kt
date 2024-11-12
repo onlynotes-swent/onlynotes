@@ -83,13 +83,13 @@ fun EditMarkdownScreen(
   val state = rememberRichTextState()
 
   val context = LocalContext.current
-  val note by noteViewModel.selectedNote.collectAsState()
+  val selectedNote by noteViewModel.selectedNote.collectAsState()
   var markdownContent: File? by remember { mutableStateOf(null) }
 
   // Function to download and set the Markdown file
   LaunchedEffect(Unit) {
     fileViewModel.downloadFile(
-        uid = note?.id ?: "errorNoId",
+        uid = selectedNote?.id ?: "errorNoId",
         fileType = FileType.NOTE_TEXT,
         context = context,
         onSuccess = { downloadedFile: File ->
@@ -103,12 +103,9 @@ fun EditMarkdownScreen(
         })
   }
   @Suppress("kotlin:S6300") // as there is no need to encrypt file
-  // Function to update the Markdown file with "Hello world"
   fun updateMarkdownFile(context: Context, uid: String, fileViewModel: FileViewModel) {
     try {
       if (markdownContent != null) {
-        // Write "Hello world" to the file
-
         markdownContent!!.writeText(state.toMarkdown())
 
         // Get the file URI
@@ -161,7 +158,7 @@ fun EditMarkdownScreen(
 
           Button(
               modifier = Modifier.fillMaxWidth().testTag("Save button"),
-              onClick = { updateMarkdownFile(context, note?.id ?: "", fileViewModel) }) {
+              onClick = { updateMarkdownFile(context, selectedNote?.id ?: "", fileViewModel) }) {
                 Text("Save")
               }
         }
