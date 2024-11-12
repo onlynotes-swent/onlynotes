@@ -86,10 +86,14 @@ fun SearchScreen(navigationActions: NavigationActions, noteViewModel: NoteViewMo
                         .padding(padding)
                         .testTag("filteredNoteList")) {
                   items(filteredNotes.size) { index ->
-                    NoteItem(note = filteredNotes[index], noteViewModel = noteViewModel, showDialog = false, navigationActions = navigationActions) {
-                      noteViewModel.selectedNote(filteredNotes[index])
-                      navigationActions.navigateTo(Screen.EDIT_NOTE)
-                    }
+                    NoteItem(
+                        note = filteredNotes[index],
+                        noteViewModel = noteViewModel,
+                        showDialog = false,
+                        navigationActions = navigationActions) {
+                          noteViewModel.selectedNote(filteredNotes[index])
+                          navigationActions.navigateTo(Screen.EDIT_NOTE)
+                        }
                   }
                 }
           } else {

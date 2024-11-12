@@ -120,11 +120,14 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
    * @param userID The user ID.
    */
   fun updateNote(note: Note, userID: String, prevFolderId: String?) {
-    repository.updateNote(note = note, onSuccess = {
-      getRootNotesFrom(userID)
-      // Call to getNotesFromFolder to update the state of the folder notes
-      if (prevFolderId != null) getNotesFromFolder(prevFolderId)
-    }, onFailure = {})
+    repository.updateNote(
+        note = note,
+        onSuccess = {
+          getRootNotesFrom(userID)
+          // Call to getNotesFromFolder to update the state of the folder notes
+          if (prevFolderId != null) getNotesFromFolder(prevFolderId)
+        },
+        onFailure = {})
   }
 
   /**
