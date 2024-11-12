@@ -58,7 +58,7 @@ data class User(
     // username max length
     private const val USERNAME_MAX_LENGTH = 20
     // name max length
-    private const val NAME_MAX_LENGTH = 20
+    private const val NAME_MAX_LENGTH = 40
 
     fun formatUsername(username: String): String {
       return username.trim().replace(Regex("[^a-zA-Z0-9_-]"), "").take(USERNAME_MAX_LENGTH)
