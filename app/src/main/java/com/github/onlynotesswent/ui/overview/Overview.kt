@@ -248,7 +248,7 @@ fun NoteItem(note: Note, author: String? = null, onClick: () -> Unit) {
                 color = MaterialTheme.colorScheme.onPrimaryContainer)
           }
           Text(
-              text = note.noteCourse.courseCode,
+              text = note.noteCourse.fullName(),
               style = MaterialTheme.typography.bodySmall,
               color = MaterialTheme.colorScheme.onPrimaryContainer)
         }
