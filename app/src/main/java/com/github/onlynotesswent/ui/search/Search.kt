@@ -26,6 +26,7 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -45,6 +46,7 @@ import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
 import com.github.onlynotesswent.ui.overview.CustomLazyGrid
 import com.github.onlynotesswent.ui.overview.NoteItem
+import kotlinx.coroutines.delay
 
 /**
  * Displays the search screen where users can search notes by title.
@@ -80,17 +82,23 @@ fun SearchScreen(
   val filteredFolders = remember { mutableStateOf(folders.value) }
   filteredFolders.value = folders.value.filter { textMatchesSearch(it.name, searchWords.value) }
 
+  // Refresh the list of notes, users, and folders periodically.
+  RefreshPeriodically(noteViewModel, userViewModel, folderViewModel)
+  // Refresh the list of notes, users, and folders when the search query is empty,
+  // typically when reloading the screen.
+  if (searchQuery.value.isBlank()) {
+    noteViewModel.getPublicNotes()
+    userViewModel.getAllUsers()
+    folderViewModel.getPublicFolders()
+  }
+
   Scaffold(
       modifier = Modifier.testTag("searchScreen"),
       topBar = {
         Column {
           OutlinedTextField(
               value = searchQuery.value,
-              onValueChange = {
-                searchQuery.value = it
-                noteViewModel.getPublicNotes()
-                userViewModel.getAllUsers()
-              },
+              onValueChange = { searchQuery.value = it },
               placeholder = { Text("Search ...") },
               leadingIcon = {
                 Icon(
@@ -250,6 +258,22 @@ fun SearchScreen(
               color = MaterialTheme.colorScheme.onBackground)
         }
       }
+}
+
+@Composable
+private fun RefreshPeriodically(
+    noteViewModel: NoteViewModel,
+    userViewModel: UserViewModel,
+    folderViewModel: FolderViewModel
+) {
+  LaunchedEffect(Unit) {
+    while (true) {
+      delay(5000)
+      noteViewModel.getPublicNotes()
+      userViewModel.getAllUsers()
+      folderViewModel.getPublicFolders()
+    }
+  }
 }
 
 @Composable
