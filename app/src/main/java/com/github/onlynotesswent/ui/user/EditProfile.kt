@@ -228,8 +228,14 @@ fun EditableProfilePicture(
             // Now the current profile picture is the same as the one in the database
             hasProfilePictureBeenChanged.value = false
           },
-          {},
-          onFailure = { e -> Log.e("ProfilePicture", "Error downloading profile picture", e) })
+          onFileNotFound = {
+            // Shouldn't happen if correctly implemented, and error is logged repository-side
+          },
+          onFailure = {
+            // Error is logged repository-side
+            Toast.makeText(localContext, "Error downloading profile picture", Toast.LENGTH_SHORT)
+                .show()
+          })
     }
 
     // Profile Picture Painter

@@ -58,17 +58,7 @@ class FileRepositoryFirebaseStorage(private val db: FirebaseStorage) : FileRepos
     getFileRef(uid, fileType)
         .getFile(localFile)
         .addOnSuccessListener { onSuccess(localFile) }
-        .addOnFailureListener { error ->
-          val errorCode = (error as StorageException).errorCode
-          if (errorCode == StorageException.ERROR_OBJECT_NOT_FOUND) {
-            // Check should be external, since notes have a hasPdf and hasText field
-            Log.e(TAG, "File not found.", error)
-            onFileNotFound()
-          } else {
-            Log.e(TAG, "Error downloading file.", error)
-            onFailure(error)
-          }
-        }
+        .addOnFailureListener { handleException("downloading", it, onFileNotFound, onFailure) }
   }
 
   override fun deleteFile(
@@ -81,17 +71,7 @@ class FileRepositoryFirebaseStorage(private val db: FirebaseStorage) : FileRepos
     getFileRef(uid, fileType)
         .delete()
         .addOnSuccessListener { onSuccess() }
-        .addOnFailureListener { error ->
-          val errorCode = (error as StorageException).errorCode
-          if (errorCode == StorageException.ERROR_OBJECT_NOT_FOUND) {
-            // Check should be external, since notes have a hasPdf and hasText field
-            Log.e(TAG, "File not found.", error)
-            onFileNotFound()
-          } else {
-            Log.e(TAG, "Error deleting file.", error)
-            onFailure(error)
-          }
-        }
+        .addOnFailureListener { handleException("deleting", it, onFileNotFound, onFailure) }
   }
 
   // Unnecessary as uploading with the same name will overwrite the image, but we can add it for
@@ -119,16 +99,9 @@ class FileRepositoryFirebaseStorage(private val db: FirebaseStorage) : FileRepos
         .addOnFailureListener { error ->
           if (error is IndexOutOfBoundsException) {
             Log.e(TAG, "File too large, max size is $MAX_FILE_SIZE", error)
+            onFailure(error)
           } else {
-            val errorCode = (error as StorageException).errorCode
-            if (errorCode == StorageException.ERROR_OBJECT_NOT_FOUND) {
-              // Check should be external, since notes have a hasPdf and hasText field
-              Log.e(TAG, "File not found.", error)
-              onFileNotFound()
-            } else {
-              Log.e(TAG, "Error getting file.", error)
-              onFailure(error)
-            }
+            handleException("getting", error, onFileNotFound, onFailure)
           }
         }
   }
@@ -156,6 +129,33 @@ class FileRepositoryFirebaseStorage(private val db: FirebaseStorage) : FileRepos
       FileType.NOTE_PDF,
       FileType.NOTE_TEXT ->
           notesFilesFolderRef.child(uid).child(noteFileName + fileType.fileExtension)
+    }
+  }
+
+  /**
+   * Handles exceptions (which should be `StorageException`) that occur when performing an action on
+   * a file that could not . Handles the case where the file is not found.
+   *
+   * @param failedActionString The string representation of the failed action. For example, if
+   *   downloading the fail failed, this would be "downloading".
+   * @param exception The exception that occurred.
+   * @param onFileNotFound The function to call when the file is not found.
+   * @param onFailure The function to call when the action fails.
+   */
+  private fun handleException(
+      failedActionString: String,
+      exception: Exception,
+      onFileNotFound: () -> Unit,
+      onFailure: (Exception) -> Unit
+  ) {
+    val errorCode = (exception as StorageException).errorCode
+    if (errorCode == StorageException.ERROR_OBJECT_NOT_FOUND) {
+      // Check should be external, since notes have a hasPdf and hasText field
+      Log.e(TAG, "File not found.", exception)
+      onFileNotFound()
+    } else {
+      Log.e(TAG, "Error $failedActionString file.", exception)
+      onFailure(exception)
     }
   }
 

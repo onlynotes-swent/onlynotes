@@ -88,19 +88,9 @@ class ScannerTest {
   fun initTest() {
 
     // Call a scan without initializing first
-    scanner.scan({})
+    scanner.scan {}
 
-    // Get all the logs
-    val logs = ShadowLog.getLogs()
-
-    // Check for the debug log that should be generated
-    val errorLog =
-        logs.find {
-          it.type == Log.ERROR &&
-              it.tag == Scanner.TAG &&
-              it.msg == "Error: scannerLauncher is not initialized"
-        }
-    assert(errorLog != null) { "Expected error log was not found!" }
+    verifyErrorLog("Error: scannerLauncher is not initialized")
 
     // Initialize the scanner
     scanner.init()
@@ -148,17 +138,7 @@ class ScannerTest {
       verify(mockToast).show()
     }
 
-    // Get all the logs
-    val logs = ShadowLog.getLogs()
-
-    // Check for the debug log that should be generated
-    val errorLog =
-        logs.find {
-          it.type == Log.ERROR &&
-              it.tag == Scanner.TAG &&
-              it.msg == "Error: scan already in progress"
-        }
-    assert(errorLog != null) { "Expected error log was not found!" }
+    verifyErrorLog("Error: scan already in progress")
   }
 
   /**
@@ -179,7 +159,7 @@ class ScannerTest {
 
     // Trigger the scan
     scanner.init()
-    scanner.scan({})
+    scanner.scan {}
 
     // Verify that the scanning intent was retrieved and launched
     verify(mockDocScanner).getStartScanIntent(mockMainActivity)
@@ -212,19 +192,9 @@ class ScannerTest {
 
       // Trigger the scan method that will lead to failure and show the Toast
       scanner.init()
-      scanner.scan({})
+      scanner.scan {}
 
-      // Get all the logs
-      val logs = ShadowLog.getLogs()
-
-      // Check for the debug log that should be generated
-      val errorLog =
-          logs.find {
-            it.type == Log.ERROR &&
-                it.tag == Scanner.TAG &&
-                it.msg == "Failed to launch scanner: test"
-          }
-      assert(errorLog != null) { "Expected error log was not found!" }
+      verifyErrorLog("Failed to launch scanner: test")
 
       // Verify that Toast.makeText() was called with the appropriate arguments
       toastMock.verify { makeText(any<Context>(), any<String>(), any()) }
@@ -266,7 +236,7 @@ class ScannerTest {
 
       // Trigger the scan method that will lead to failure and show the Toast
       scanner.init()
-      scanner.scan({})
+      scanner.scan {}
 
       // Verify that Toast.makeText() was called with the appropriate arguments
       toastMock.verify { makeText(any<Context>(), any<String>(), any()) }
@@ -304,17 +274,7 @@ class ScannerTest {
       // Call the captured handleActivityResult, that will fail
       handleActivityResult.onActivityResult(ActivityResult(Activity.RESULT_OK, null))
 
-      // Get all the logs
-      val logs = ShadowLog.getLogs()
-
-      // Check for the debug log that should be generated
-      val errorLog =
-          logs.find {
-            it.type == Log.ERROR &&
-                it.tag == Scanner.TAG &&
-                it.msg == "Scanner failed with resultCode: ${Activity.RESULT_OK}"
-          }
-      assert(errorLog != null) { "Expected error log was not found!" }
+      verifyErrorLog("Scanner failed with resultCode: ${Activity.RESULT_OK}")
 
       // Verify that Toast.makeText() was called with the appropriate arguments
       ToastMock.verify { makeText(eq(mockMainActivity), eq("Scanner failed"), any()) }
@@ -353,15 +313,7 @@ class ScannerTest {
 
       handleActivityResult.onActivityResult(ActivityResult(Activity.RESULT_CANCELED, null))
 
-      // Get all the logs
-      val logs = ShadowLog.getLogs()
-
-      // Check for the debug log that should be generated
-      val debugLog =
-          logs.find {
-            it.type == Log.DEBUG && it.tag == Scanner.TAG && it.msg == "Scanner cancelled"
-          }
-      assert(debugLog != null) { "Expected debug log was not found!" }
+      verifyErrorLog("Scanner cancelled")
 
       // Verify that Toast.makeText() was called with the appropriate arguments
       ToastMock.verify { makeText(eq(mockMainActivity), eq("Scanner cancelled"), any()) }
@@ -414,15 +366,7 @@ class ScannerTest {
 
         handleActivityResult.onActivityResult(ActivityResult(Activity.RESULT_OK, Intent()))
 
-        // Get all the logs
-        val logs = ShadowLog.getLogs()
-
-        // Check for the debug log that should be generated
-        val errorLog =
-            logs.find {
-              it.type == Log.ERROR && it.tag == Scanner.TAG && it.msg == "Path to pdf file is null"
-            }
-        assert(errorLog != null) { "Expected debug log was not found!" }
+        verifyErrorLog("Path to pdf file is null")
 
         // Verify that Toast.makeText() was called with the appropriate arguments
         ToastMock.verify { makeText(eq(mockMainActivity), any<String>(), any()) }
@@ -488,5 +432,14 @@ class ScannerTest {
 
     ScanningResultMock.close()
     FileProviderMock.close()
+  }
+
+  private fun verifyErrorLog(msg: String) {
+    // Get all the logs
+    val logs = ShadowLog.getLogs()
+
+    // Check for the debug log that should be generated
+    val errorLog = logs.find { it.type == Log.ERROR && it.tag == Scanner.TAG && it.msg == msg}
+    assert(errorLog != null) { "Expected error log was not found!" }
   }
 }
