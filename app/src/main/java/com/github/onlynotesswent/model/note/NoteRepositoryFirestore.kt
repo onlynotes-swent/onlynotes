@@ -304,12 +304,15 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
       // Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888) is the default bitMap, to be changed
       // when we implement images by URL
 
-
-        val course = if (courseYear == 0 || courseCode.isEmpty() || courseName.isEmpty() || publicPath.isEmpty()) {
+      val course =
+          if (courseYear == 0 ||
+              courseCode.isEmpty() ||
+              courseName.isEmpty() ||
+              publicPath.isEmpty()) {
             Course.DEFAULT
-        } else {
+          } else {
             Course(courseCode, courseName, courseYear, publicPath)
-        }
+          }
 
       Note(
           id = id,
