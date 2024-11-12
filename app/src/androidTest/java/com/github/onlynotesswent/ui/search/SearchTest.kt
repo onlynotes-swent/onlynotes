@@ -44,7 +44,7 @@ class SearchScreenTest {
           content = "",
           date = Timestamp.now(),
           visibility = Visibility.PUBLIC,
-          userId = "test",
+          userId = "1",
           noteCourse = Course("CS-100", "Sample Course 1", 2024, "path"),
           image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888))
   private val testNote2 =
@@ -54,7 +54,7 @@ class SearchScreenTest {
           content = "",
           date = Timestamp.now(),
           visibility = Visibility.PUBLIC,
-          userId = "test",
+          userId = "2",
           noteCourse = Course("CS-200", "Sample Course 2", 2024, "path"),
           image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888))
 
