@@ -1,5 +1,6 @@
 package com.github.onlynotesswent.utils
 
+import com.github.onlynotesswent.BuildConfig
 import java.io.IOException
 import okhttp3.Call
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -8,6 +9,7 @@ import okhttp3.Protocol
 import okhttp3.Request
 import okhttp3.Response
 import okhttp3.ResponseBody.Companion.toResponseBody
+import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
 import org.junit.Before
 import org.junit.Test
@@ -32,6 +34,10 @@ class OpenAITest {
     // Initialize Mockito and create mock instances for the test
     MockitoAnnotations.openMocks(this)
     mockClient = mock(OkHttpClient::class.java)
+
+    val apiKey = BuildConfig.OPEN_AI_API_KEY
+    assertTrue("API key should not be blank", apiKey.isNotBlank())
+
     openAI = OpenAI(client = mockClient) // Inject mock OkHttpClient into OpenAI class
   }
 
