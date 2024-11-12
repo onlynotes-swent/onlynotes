@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -26,15 +27,12 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.github.onlynotesswent.model.folder.FolderViewModel
@@ -45,7 +43,7 @@ import com.github.onlynotesswent.ui.navigation.BottomNavigationMenu
 import com.github.onlynotesswent.ui.navigation.LIST_TOP_LEVEL_DESTINATION
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
-import com.github.onlynotesswent.ui.overview.FolderItem
+import com.github.onlynotesswent.ui.overview.CustomLazyGrid
 import com.github.onlynotesswent.ui.overview.NoteItem
 
 /**
@@ -61,31 +59,33 @@ fun SearchScreen(
     userViewModel: UserViewModel,
     folderViewModel: FolderViewModel
 ) {
-  var searchQuery by remember { mutableStateOf(TextFieldValue("")) }
+  val searchQuery = remember { mutableStateOf("") }
   val searchType = remember { mutableStateOf(SearchType.NOTES) }
+  val searchWords = remember { mutableStateOf(emptyList<String>()) }
+  searchWords.value = searchQuery.value.split("\\s+".toRegex())
 
-  val notes = noteViewModel.publicNotes.collectAsState()
-  val filteredNotes = notes.value.filter { it.title.contains(searchQuery.text, ignoreCase = true) }
+  val filteredNotes = remember { mutableStateOf(noteViewModel.publicNotes.value) }
+  filteredNotes.value = noteViewModel.publicNotes.collectAsState().value.filter { textMatchesSearch(it.title, searchWords.value) }
 
-  val users = userViewModel.allUsers.collectAsState()
-  val filteredUsers =
-      users.value.filter {
-        it.fullName().contains(searchQuery.text, ignoreCase = true) ||
-            it.userHandle().contains(searchQuery.text, ignoreCase = true)
+  val filteredUsers = remember { mutableStateOf(userViewModel.allUsers.value) }
+  filteredUsers.value =
+      userViewModel.allUsers.collectAsState().value.filter {
+          textMatchesSearch(it.fullName(), searchWords.value) ||
+                  textMatchesSearch(it.userHandle(), searchWords.value)
       }
 
-  val folders = folderViewModel.publicFolders.collectAsState()
-  val filteredFolders =
-      folders.value.filter { it.name.contains(searchQuery.text, ignoreCase = true) }
+  val filteredFolders = remember { mutableStateOf(folderViewModel.publicFolders.value) }
+  filteredFolders.value =
+      folderViewModel.publicFolders.collectAsState().value.filter { textMatchesSearch(it.name, searchWords.value) }
 
   Scaffold(
       modifier = Modifier.testTag("searchScreen"),
       topBar = {
         Column {
           OutlinedTextField(
-              value = searchQuery,
+              value = searchQuery.value,
               onValueChange = {
-                searchQuery = it
+                searchQuery.value = it
                 noteViewModel.getPublicNotes()
                 userViewModel.getAllUsers()
               },
@@ -108,7 +108,7 @@ fun SearchScreen(
                   Modifier.fillMaxWidth()
                       .padding(top = 16.dp, start = 16.dp, end = 16.dp)
                       .testTag("searchTextField"))
-          Row(modifier = Modifier.fillMaxWidth().padding(top = 8.dp, start = 20.dp)) {
+          Row(modifier = Modifier.fillMaxWidth().padding(top = 6.dp, start = 30.dp)) {
             FilterChip(
                 searchType.value == SearchType.USERS,
                 label = { Text("Users") },
@@ -167,36 +167,35 @@ fun SearchScreen(
         // To skip large nested if-else blocks, we can use a boolean to determine which list to
         // display.
         val displayUsers: Boolean =
-            searchQuery.text.isNotBlank() &&
+            searchQuery.value.isNotBlank() &&
                 searchType.value == SearchType.USERS &&
-                filteredUsers.isNotEmpty()
+                filteredUsers.value.isNotEmpty()
         val displayNotes: Boolean =
-            searchQuery.text.isNotBlank() &&
+            searchQuery.value.isNotBlank() &&
                 searchType.value == SearchType.NOTES &&
-                filteredNotes.isNotEmpty()
+                filteredNotes.value.isNotEmpty()
 
         val displayFolders: Boolean =
-            searchQuery.text.isNotBlank() &&
+            searchQuery.value.isNotBlank() &&
                 searchType.value == SearchType.FOLDERS &&
-                filteredFolders.isNotEmpty()
+                filteredFolders.value.isNotEmpty()
 
         val displayLoader: Boolean =
-            searchQuery.text.isNotBlank() &&
-                ((searchType.value == SearchType.USERS && filteredUsers.isEmpty()) ||
-                    (searchType.value == SearchType.NOTES && filteredNotes.isEmpty()) ||
-                    (searchType.value == SearchType.FOLDERS && filteredFolders.isEmpty()))
+            searchQuery.value.isNotBlank() &&
+                ((searchType.value == SearchType.USERS && filteredUsers.value.isEmpty()) ||
+                    (searchType.value == SearchType.NOTES && filteredNotes.value.isEmpty()) ||
+                    (searchType.value == SearchType.FOLDERS && filteredFolders.value.isEmpty()))
 
         if (displayNotes) {
           LazyColumn(
-              contentPadding = PaddingValues(vertical = 40.dp),
+              contentPadding = PaddingValues(horizontal = 16.dp),
               modifier =
                   Modifier.fillMaxWidth()
-                      .padding(horizontal = 16.dp)
                       .padding(padding)
                       .testTag("filteredNoteList")) {
-                items(filteredNotes.size) { index ->
-                  NoteItem(note = filteredNotes[index]) {
-                    noteViewModel.selectedNote(filteredNotes[index])
+                items(filteredNotes.value.size) { index ->
+                  NoteItem(note = filteredNotes.value[index]) {
+                    noteViewModel.selectedNote(filteredNotes.value[index])
                     navigationActions.navigateTo(Screen.EDIT_NOTE)
                   }
                 }
@@ -204,15 +203,14 @@ fun SearchScreen(
         }
         if (displayUsers) {
           LazyColumn(
-              contentPadding = PaddingValues(vertical = 40.dp),
+              contentPadding = PaddingValues(horizontal = 16.dp),
               modifier =
                   Modifier.fillMaxWidth()
-                      .padding(horizontal = 16.dp)
                       .padding(padding)
                       .testTag("filteredUserList")) {
-                items(filteredUsers.size) { index ->
-                  UserItem(filteredUsers[index]) {
-                    userViewModel.setProfileUser(filteredUsers[index])
+                items(filteredUsers.value.size) { index ->
+                  UserItem(filteredUsers.value[index]) {
+                    userViewModel.setProfileUser(filteredUsers.value[index])
                     navigationActions.navigateTo(Screen.PUBLIC_PROFILE)
                   }
                 }
@@ -220,20 +218,19 @@ fun SearchScreen(
         }
 
         if (displayFolders) {
-          LazyColumn(
-              contentPadding = PaddingValues(vertical = 40.dp),
-              modifier =
-                  Modifier.fillMaxWidth()
-                      .padding(horizontal = 16.dp)
-                      .padding(padding)
-                      .testTag("filteredFolderList")) {
-                items(filteredFolders.size) { index ->
-                  FolderItem(filteredFolders[index]) {
-                    folderViewModel.selectedFolder(filteredFolders[index])
-                    navigationActions.navigateTo(Screen.FOLDER_CONTENTS)
-                  }
-                }
-              }
+            CustomLazyGrid(
+                modifier = Modifier.fillMaxSize().padding(padding),
+                notes = remember { mutableStateOf(emptyList()) },
+                folders = filteredFolders,
+                gridModifier =
+                Modifier.fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+                    .testTag("filteredFolderList"),
+                folderViewModel = folderViewModel,
+                noteViewModel = noteViewModel,
+                navigationActions = navigationActions,
+                paddingValues = padding,
+                columnContent = {})
         }
 
         if (displayLoader) {
@@ -301,4 +298,8 @@ enum class SearchType {
   USERS,
   NOTES,
   FOLDERS
+}
+
+fun textMatchesSearch(text: String, searchWords: List<String>): Boolean {
+  return searchWords.all { text.contains(it, ignoreCase = true) }
 }

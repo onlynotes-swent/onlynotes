@@ -109,7 +109,7 @@ class SearchScreenTest {
       onSuccess(testUsers)
     }
     `when`(folderRepository.getPublicFolders(any(), any())).thenAnswer { invocation ->
-      val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(1)
+      val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(0)
       onSuccess(testFolders)
     }
 
@@ -157,6 +157,7 @@ class SearchScreenTest {
         .assertIsDisplayed()
     composeTestRule.onAllNodesWithTag("noteCard").assertCountEquals(1)
 
+
     composeTestRule.onNodeWithTag("searchTextField").performTextReplacement(testUser1.firstName)
     composeTestRule.onNodeWithTag("userFilterChip").performClick()
 
@@ -168,6 +169,20 @@ class SearchScreenTest {
         .onFirst()
         .assertIsDisplayed()
     composeTestRule.onAllNodesWithTag("userCard").assertCountEquals(1)
+
+
+    composeTestRule.onNodeWithTag("searchTextField").performTextReplacement(testFolder1.name)
+    composeTestRule.onNodeWithTag("folderFilterChip").performClick()
+
+    composeTestRule.onNodeWithTag("filteredFolderList").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("noSearchResults").assertIsNotDisplayed()
+    composeTestRule
+        .onAllNodesWithTag("folderCard")
+        .filter(hasText(testFolder1.name))
+        .onFirst()
+        .assertIsDisplayed()
+    composeTestRule.onAllNodesWithTag("folderCard").assertCountEquals(1)
+
   }
 
   @Test
@@ -211,6 +226,23 @@ class SearchScreenTest {
         .assertIsDisplayed()
 
     composeTestRule.onAllNodesWithTag("userCard").assertCountEquals(2)
+
+    composeTestRule.onNodeWithTag("searchTextField").performTextReplacement("Folder")
+    composeTestRule.onNodeWithTag("folderFilterChip").performClick()
+
+    composeTestRule.onNodeWithTag("filteredFolderList").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("noSearchResults").assertIsNotDisplayed()
+    composeTestRule
+        .onAllNodesWithTag("folderCard")
+        .filter(hasText(testFolder1.name))
+        .onFirst()
+        .assertIsDisplayed()
+    composeTestRule
+        .onAllNodesWithTag("folderCard")
+        .filter(hasText(testFolder2.name))
+        .onFirst()
+        .assertIsDisplayed()
+    composeTestRule.onAllNodesWithTag("folderCard").assertCountEquals(2)
   }
 
   @Test
@@ -228,6 +260,11 @@ class SearchScreenTest {
     composeTestRule.onNodeWithTag("userFilterChip").performClick()
     composeTestRule.onNodeWithTag("noSearchResults").assertIsDisplayed()
     composeTestRule.onNodeWithText("No users found matching your search.").assertIsDisplayed()
+
+    composeTestRule.onNodeWithTag("searchTextField").performTextInput("Non-existent Folder")
+    composeTestRule.onNodeWithTag("folderFilterChip").performClick()
+    composeTestRule.onNodeWithTag("noSearchResults").assertIsDisplayed()
+    composeTestRule.onNodeWithText("No folders found matching your search.").assertIsDisplayed()
   }
 
   @Test
@@ -255,4 +292,17 @@ class SearchScreenTest {
 
     verify(navigationActions).navigateTo(Screen.PUBLIC_PROFILE)
   }
+
+    @Test
+    fun testFolderSelectionNavigatesToFolderScreen() {
+        composeTestRule.setContent {
+            SearchScreen(navigationActions, noteViewModel, userViewModel, folderViewModel)
+        }
+
+        composeTestRule.onNodeWithTag("searchTextField").performTextInput(testFolder1.name)
+        composeTestRule.onNodeWithTag("folderFilterChip").performClick()
+        composeTestRule.onNodeWithTag("filteredFolderList").onChildren().onFirst().performClick()
+
+        verify(navigationActions).navigateTo(Screen.FOLDER_CONTENTS)
+    }
 }

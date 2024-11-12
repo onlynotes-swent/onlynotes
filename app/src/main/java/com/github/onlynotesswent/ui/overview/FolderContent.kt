@@ -196,8 +196,7 @@ fun FolderContentScreen(
               folders = userFolderSubFolders,
               gridModifier =
                   Modifier.fillMaxWidth()
-                      .padding(horizontal = 16.dp)
-                      .padding(paddingValues)
+                      .padding(20.dp)
                       .testTag("noteAndFolderList"),
               folderViewModel = folderViewModel,
               noteViewModel = noteViewModel,
