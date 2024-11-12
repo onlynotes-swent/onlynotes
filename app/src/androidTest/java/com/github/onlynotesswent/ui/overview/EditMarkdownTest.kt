@@ -1,9 +1,12 @@
 package com.github.onlynotesswent.ui.overview
 
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsNotDisplayed
+import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTextInput
 import com.github.onlynotesswent.model.file.FileRepository
 import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.note.NoteRepository
@@ -17,31 +20,30 @@ import com.google.firebase.Timestamp
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.mockito.Mock
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
+import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
 import org.mockito.kotlin.never
 
 class EditMarkdownTest {
-  private lateinit var userRepository: UserRepository
+  @Mock private lateinit var userRepository: UserRepository
+  @Mock private lateinit var noteRepository: NoteRepository
+  @Mock private lateinit var fileRepository: FileRepository
+  @Mock private lateinit var navigationActions: NavigationActions
   private lateinit var userViewModel: UserViewModel
-  private lateinit var navigationActions: NavigationActions
   private lateinit var noteViewModel: NoteViewModel
-  private lateinit var noteRepository: NoteRepository
-  private lateinit var fileRepository: FileRepository
   private lateinit var fileViewModel: FileViewModel
   @get:Rule val composeTestRule = createComposeRule()
 
   @Before
   fun setUp() {
     // Mock is a way to create a fake object that can be used in place of a real object
-    userRepository = mock(UserRepository::class.java)
-    navigationActions = mock(NavigationActions::class.java)
+    MockitoAnnotations.openMocks(this)
     userViewModel = UserViewModel(userRepository)
-    noteRepository = mock(NoteRepository::class.java)
     noteViewModel = NoteViewModel(noteRepository)
-    fileRepository = mock(FileRepository::class.java)
     fileViewModel = FileViewModel(fileRepository)
 
     // Mock the addUser method to call the onSuccess callback
@@ -50,7 +52,7 @@ class EditMarkdownTest {
       onSuccess()
     }
 
-    val testUser = User("", "", "testUserName", "", "testUID", Timestamp.now(), 0.0)
+    val testUser = User("testFirstName", "testLastName", "testUserName", "test@gmail.com", "testUID", Timestamp.now(), 0.0)
     userViewModel.addUser(testUser, {}, {})
 
     // Mock the current route to be the user create screen
@@ -75,16 +77,41 @@ class EditMarkdownTest {
   @Test
   fun clickGoBackButton() {
     composeTestRule.onNodeWithTag("goBackButton").performClick()
-
     org.mockito.kotlin.verify(navigationActions).goBack()
     org.mockito.kotlin.verify(navigationActions, never()).navigateTo(Screen.OVERVIEW)
   }
 
   @Test
+  fun enterText() {
+    composeTestRule.onNodeWithTag("RichTextEditor").performTextInput("example text")
+    composeTestRule.onNodeWithTag("RichTextEditor").assertTextEquals("example text")
+  }
+
+  @Test
   fun clickComponents() {
     composeTestRule.onNodeWithTag("BoldControl").performClick()
+    composeTestRule.onNodeWithTag("FilterChipIcon").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("BoldControl").performClick()
+    composeTestRule.onNodeWithTag("FilterChipIcon").assertIsNotDisplayed()
+
     composeTestRule.onNodeWithTag("ItalicControl").performClick()
-    composeTestRule.onNodeWithTag("UnderlinedControl").performClick()
+    composeTestRule.onNodeWithTag("FilterChipIcon").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("ItalicControl").performClick()
+    composeTestRule.onNodeWithTag("FilterChipIcon").assertIsNotDisplayed()
+
+    composeTestRule.onNodeWithTag("ItalicControl").performClick()
+    composeTestRule.onNodeWithTag("FilterChipIcon").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("ItalicControl").performClick()
+    composeTestRule.onNodeWithTag("FilterChipIcon").assertIsNotDisplayed()
+
+    composeTestRule.onNodeWithTag("BoldControl").performClick()
+    composeTestRule.onNodeWithTag("FilterChipIcon").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("BoldControl").performClick()
+    composeTestRule.onNodeWithTag("FilterChipIcon").assertIsNotDisplayed()
+
     composeTestRule.onNodeWithTag("StrikethroughControl").performClick()
+    composeTestRule.onNodeWithTag("FilterChipIcon").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("StrikethroughControl").performClick()
+    composeTestRule.onNodeWithTag("FilterChipIcon").assertIsNotDisplayed()
   }
 }

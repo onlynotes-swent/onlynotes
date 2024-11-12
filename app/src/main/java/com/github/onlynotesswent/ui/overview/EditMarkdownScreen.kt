@@ -289,7 +289,7 @@ fun ControlWrapper(
       leadingIcon = {
         if (selected) {
           Icon(
-              modifier = Modifier.size(20.dp),
+              modifier = Modifier.size(20.dp).testTag("FilterChipIcon"),
               imageVector = Icons.Default.Check,
               contentDescription = "Chip Icon",
               tint = MaterialTheme.colorScheme.onBackground)
@@ -299,5 +299,6 @@ fun ControlWrapper(
         Box(modifier = Modifier.padding(all = 4.dp), contentAlignment = Alignment.Center) {
           content()
         }
-      })
+      }
+  )
 }

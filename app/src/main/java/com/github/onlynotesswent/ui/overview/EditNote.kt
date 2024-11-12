@@ -85,7 +85,7 @@ fun EditNoteScreen(
   var visibility by remember { mutableStateOf(note?.visibility) }
   var expandedVisibility by remember { mutableStateOf(false) }
   var updatedComments by remember { mutableStateOf(note?.comments ?: Note.CommentCollection()) }
-  var attemptedDoawnloadAttempts = 0
+  var attemptedMarkdownDownloads = 0
   /**
    * Downloads a markdown file associated with the note. If no file exists, it attempts once to
    * create and upload an empty markdown file, then re-download it.
@@ -101,8 +101,8 @@ fun EditNoteScreen(
           state.setMarkdown(downloadedFile.readText())
         },
         onFailure = { _ ->
-          attemptedDoawnloadAttempts += 1
-          if (attemptedDoawnloadAttempts < 2) {
+            attemptedMarkdownDownloads += 1
+          if (attemptedMarkdownDownloads < 2) {
             val file = File(context.cacheDir, "${note?.id ?: "errorNoId"}.md")
             if (!file.exists()) {
               file.createNewFile()

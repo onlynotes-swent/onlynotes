@@ -23,31 +23,30 @@ import com.google.firebase.Timestamp
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.mockito.Mock
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
+import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
 import org.mockito.kotlin.never
 
 class EditNoteTest {
-  private lateinit var userRepository: UserRepository
+  @Mock private lateinit var userRepository: UserRepository
+  @Mock private lateinit var noteRepository: NoteRepository
+  @Mock private lateinit var fileRepository: FileRepository
+  @Mock private lateinit var navigationActions: NavigationActions
   private lateinit var userViewModel: UserViewModel
-  private lateinit var navigationActions: NavigationActions
   private lateinit var noteViewModel: NoteViewModel
-  private lateinit var noteRepository: NoteRepository
-  private lateinit var fileRepository: FileRepository
   private lateinit var fileViewModel: FileViewModel
   @get:Rule val composeTestRule = createComposeRule()
 
   @Before
   fun setUp() {
+    MockitoAnnotations.openMocks(this)
     // Mock is a way to create a fake object that can be used in place of a real object
-    userRepository = mock(UserRepository::class.java)
-    navigationActions = mock(NavigationActions::class.java)
     userViewModel = UserViewModel(userRepository)
-    noteRepository = mock(NoteRepository::class.java)
     noteViewModel = NoteViewModel(noteRepository)
-    fileRepository = mock(FileRepository::class.java)
     fileViewModel = FileViewModel(fileRepository)
 
     // Mock the addUser method to call the onSuccess callback
