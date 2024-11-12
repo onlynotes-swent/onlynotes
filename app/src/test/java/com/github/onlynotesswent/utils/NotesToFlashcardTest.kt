@@ -30,8 +30,10 @@ import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
 class NotesToFlashcardTest {
-  private fun <T> any(): T = Mockito.any<T>()
+  // Function to allow null arguments for Mockito when needed
+  private fun <T> any(): T = Mockito.any()
 
+  // Helper function to capture arguments in Mockito tests, bypassing Kotlin's null-safety checks
   private fun <T> capture(argumentCaptor: ArgumentCaptor<T>): T = argumentCaptor.capture()
 
   private val jsonResponse =
@@ -70,6 +72,7 @@ class NotesToFlashcardTest {
 
   private lateinit var notesToFlashcard: NotesToFlashcard
 
+  // Mock dependencies
   @Mock private lateinit var mockFlashcardRepository: FlashcardRepository
 
   @Mock private lateinit var mockFlashcardViewModel: FlashcardViewModel
@@ -78,6 +81,7 @@ class NotesToFlashcardTest {
 
   @Mock private lateinit var mockOpenAI: OpenAI
 
+  // Argument captor for Flashcard objects
   @Captor private lateinit var flashcardCaptor: ArgumentCaptor<Flashcard>
 
   @Before

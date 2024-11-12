@@ -22,8 +22,8 @@ class OpenAITest {
   @Mock private lateinit var mockClient: OkHttpClient
   @Mock private lateinit var mockCall: Call
 
-  // Function to provide non-null arguments for Mockito when needed
-  private fun <T> any(): T = Mockito.any<T>()
+  // Function to allow null arguments for Mockito when needed
+  private fun <T> any(): T = Mockito.any()
 
   private lateinit var openAI: OpenAI
 
