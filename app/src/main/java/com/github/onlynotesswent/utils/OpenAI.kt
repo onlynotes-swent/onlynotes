@@ -9,25 +9,35 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 
-interface OpenAICallback {
-  fun onSuccess(response: String)
-
-  fun onFailure(error: IOException)
-}
-
-/** A class that sends requests to the OpenAI API to generate text based on a given prompt. */
-class OpenAI {
+/**
+ * A class that sends requests to the OpenAI API to generate text based on a given prompt.
+ *
+ * @param client the OkHttpClient instance to use for sending requests (default: OkHttpClient()),
+ *   used for testing
+ */
+class OpenAI(private val client: OkHttpClient = OkHttpClient()) {
   private val apiKey: String = BuildConfig.OPEN_AI_API_KEY
   private val endpoint = "https://api.openai.com/v1/chat/completions"
-  private val client = OkHttpClient()
+
+  init {
+    // Check if the API key is provided
+    require(apiKey.isNotBlank()) { "API key is missing. Please provide a valid OpenAI API key." }
+  }
 
   /**
    * Sends a POST request to the OpenAI API to generate text based on the given prompt.
    *
    * @param prompt the prompt to generate text from
+   * @param onSuccess the callback function to invoke on a successful response
+   * @param onFailure the callback function to invoke on a failed response
    * @param model the model to use for generating text (default: "gpt-3.5-turbo")
    */
-  fun sendRequest(prompt: String, model: String = "gpt-3.5-turbo", callback: OpenAICallback) {
+  fun sendRequest(
+      prompt: String,
+      onSuccess: (String) -> Unit,
+      onFailure: (IOException) -> Unit,
+      model: String = "gpt-3.5-turbo",
+  ) {
     // Create the JSON body using Gson
     val messageObject =
         JsonObject().apply {
@@ -61,12 +71,12 @@ class OpenAI {
         .enqueue(
             object : okhttp3.Callback {
               override fun onFailure(call: okhttp3.Call, e: IOException) {
-                callback.onFailure(e) // Invoke the failure callback
+                onFailure(e) // Invoke the failure callback
               }
 
               override fun onResponse(call: okhttp3.Call, response: okhttp3.Response) {
                 val body = response.body?.string().orEmpty()
-                callback.onSuccess(body) // Invoke the success callback
+                onSuccess(body) // Invoke the success callback
               }
             })
   }

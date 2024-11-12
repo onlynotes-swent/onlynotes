@@ -7,13 +7,16 @@ import com.github.onlynotesswent.model.flashcard.FlashcardViewModel
 import com.github.onlynotesswent.model.note.Note
 import com.google.firebase.Timestamp
 import com.google.gson.JsonParser
-import java.io.IOException
 
 class NotesToFlashcard(
     private val flashcardViewModel: FlashcardViewModel,
     private val fileViewModel: FileViewModel,
     private val openAIClient: OpenAI
 ) {
+  companion object {
+    private const val TAG = "NotesToFlashcard"
+  }
+
   private val promptPrefix =
       "Convert the following notes into a JSON array of flashcards with 'question' and 'answer' fields, only return the json array with no additional text. Here is the note content: "
 
@@ -30,25 +33,28 @@ class NotesToFlashcard(
     try {
       // TODO: When markdown support is implemented, fetch the markdown file content using
       // fileViewModel
-      // val noteContent = fileViewModel.getFile(note.fileId)
+      // Example:
+      // var markdownContent = ""
+      // fileViewModel.downloadFile(
+      //         uid = note?.id ?: "errorNoId",
+      //         fileType = FileType.NOTE_TEXT,
+      //         context = context,
+      //         onSuccess = { downloadedFile ->
+      //             markdownContent = downloadedFile?.readText() ?: "" // Read the markdown content
+      //         },
+      //         onFailure = { e ->
+      //         Log.e(TAG, "Error downloading file", e)
+      //         onFailure(e)
+      //         }
+      //     )
 
       // TODO: modify note.content to markdown format when we implement markdown support
       openAIClient.sendRequest(
           promptPrefix + note.content,
-          callback =
-              object : OpenAICallback {
-                override fun onSuccess(response: String) {
-                  parseFlashcardsFromJson(response, note, onSuccess, onFailure)
-                }
-
-                override fun onFailure(error: IOException) {
-                  // Log error and notify user of the failure
-                  Log.e("NotesToFlashcard", "Failed to send request to OpenAI API", error)
-                  onFailure(error)
-                }
-              })
+          { parseFlashcardsFromJson(it, note, onSuccess, onFailure) },
+          { onFailure(it) })
     } catch (e: Exception) {
-      Log.e("NotesToFlashcard", "Unexpected error in convertNoteToFlashcards", e)
+      Log.e(TAG, "Unexpected error in convertNoteToFlashcards", e)
       onFailure(e)
     }
   }
@@ -94,7 +100,7 @@ class NotesToFlashcard(
         }
       }
     } catch (e: Exception) {
-      Log.e("NotesToFlashcard", "Error parsing flashcards from JSON", e)
+      Log.e(TAG, "Error parsing flashcards from JSON", e)
       onFailure(e)
       return
     }

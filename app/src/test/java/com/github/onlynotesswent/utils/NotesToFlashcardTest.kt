@@ -30,10 +30,6 @@ import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
 class NotesToFlashcardTest {
-
-  // Wrapper functions for Mockito functions to allow to return null for non-null types
-  private fun <T> any(type: Class<T>): T = Mockito.any<T>(type)
-
   private fun <T> any(): T = Mockito.any<T>()
 
   private fun <T> capture(argumentCaptor: ArgumentCaptor<T>): T = argumentCaptor.capture()
@@ -89,8 +85,7 @@ class NotesToFlashcardTest {
     MockitoAnnotations.openMocks(this)
 
     // Initialize FirebaseApp with Robolectric context
-    val context = org.robolectric.RuntimeEnvironment.getApplication()
-    FirebaseApp.initializeApp(context)
+    FirebaseApp.initializeApp(org.robolectric.RuntimeEnvironment.getApplication())
 
     // Mock FlashcardRepository and set up FlashcardViewModel with it
     mockFlashcardRepository = mock(FlashcardRepository::class.java)
@@ -105,11 +100,12 @@ class NotesToFlashcardTest {
   fun `convertNoteToFlashcards should parse JSON and create flashcards`() {
     // Mocking OpenAI's sendRequest to trigger onSuccess
     doAnswer { invocation ->
-          val callback = invocation.getArgument<OpenAICallback>(2)
-          callback.onSuccess(jsonResponse)
+          val onSuccess = invocation.getArgument<(String) -> Unit>(1)
+          onSuccess(jsonResponse)
+          null
         }
         .`when`(mockOpenAI)
-        .sendRequest(anyString(), anyString(), any(OpenAICallback::class.java))
+        .sendRequest(anyString(), any(), any(), anyString())
 
     // Capture the success callback's flashcards list
     val onSuccess: (List<Flashcard>) -> Unit = { flashcards ->
@@ -152,11 +148,12 @@ class NotesToFlashcardTest {
   fun `convertNoteToFlashcards failure`() {
     // Mocking OpenAI's sendRequest to trigger onFailure
     doAnswer { invocation ->
-          val callback = invocation.getArgument<OpenAICallback>(2)
-          callback.onFailure(IOException("Mocked IOException"))
+          val onFailure = invocation.getArgument<(IOException) -> Unit>(2)
+          onFailure(IOException("Mocked IOException"))
+          null
         }
         .`when`(mockOpenAI)
-        .sendRequest(anyString(), anyString(), any(OpenAICallback::class.java))
+        .sendRequest(anyString(), any(), any(), anyString())
 
     // Set up a flag to ensure the failure callback was called
     var failureCallbackCalled = false
@@ -179,11 +176,12 @@ class NotesToFlashcardTest {
   fun `convertNoteToFlashcards invalid JSON`() {
     // Mocking OpenAI's sendRequest to trigger onSuccess
     doAnswer { invocation ->
-          val callback = invocation.getArgument<OpenAICallback>(2)
-          callback.onSuccess("invalid JSON")
+          val onSuccess = invocation.getArgument<(String) -> Unit>(1)
+          onSuccess("invalid JSON")
+          null
         }
         .`when`(mockOpenAI)
-        .sendRequest(anyString(), anyString(), any(OpenAICallback::class.java))
+        .sendRequest(anyString(), any(), any(), anyString())
 
     // Set up a flag to ensure the failure callback was called
     var failureCallbackCalled = false
