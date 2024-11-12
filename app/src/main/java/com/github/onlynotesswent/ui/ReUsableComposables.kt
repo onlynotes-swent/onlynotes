@@ -174,15 +174,10 @@ fun NoteItem(
  * @param onClick The lambda function to be invoked when the folder card is clicked.
  */
 @Composable
-fun FolderItem(
-    folder: Folder,
-    onClick: () -> Unit
-) {
+fun FolderItem(folder: Folder, onClick: () -> Unit) {
   Card(
       modifier =
-          Modifier.testTag("folderCard")
-              .padding(vertical = 4.dp)
-              .clickable(onClick = onClick),
+          Modifier.testTag("folderCard").padding(vertical = 4.dp).clickable(onClick = onClick),
       colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.background)) {
         Column(
             modifier = Modifier.padding(8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
@@ -304,10 +299,10 @@ fun CustomLazyGrid(
           modifier = gridModifier) {
             items(folders.value.size) { index ->
               FolderItem(folder = folders.value[index]) {
-                    folderViewModel.selectedFolder(folders.value[index])
-                    // Add the folder ID to the screen navigation stack
-                    navigationActions.pushToScreenNavigationStack(folders.value[index].id)
-                    navigationActions.navigateTo(Screen.FOLDER_CONTENTS)
+                folderViewModel.selectedFolder(folders.value[index])
+                // Add the folder ID to the screen navigation stack
+                navigationActions.pushToScreenNavigationStack(folders.value[index].id)
+                navigationActions.navigateTo(Screen.FOLDER_CONTENTS)
               }
             }
             items(notes.value.size) { index ->

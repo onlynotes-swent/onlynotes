@@ -97,9 +97,10 @@ fun FolderContentScreen(
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically) {
-                      // Update the updatedName state whenever the folder state changes to display it in the title
+                      // Update the updatedName state whenever the folder state changes to display
+                      // it in the title
                       LaunchedEffect(folder.value?.name) {
-                          updatedName = folder.value?.name ?: "Folder name not found"
+                        updatedName = folder.value?.name ?: "Folder name not found"
                       }
                       Spacer(modifier = Modifier.weight(2f))
                       Text(
@@ -113,19 +114,20 @@ fun FolderContentScreen(
                 IconButton(
                     onClick = {
                       var previousFolderId = navigationActions.popFromScreenNavigationStack()
-                      // If we pop from the stack the current folder, we call pop twice to get the previous folder
+                      // If we pop from the stack the current folder, we call pop twice to get the
+                      // previous folder
                       if (previousFolderId != null && previousFolderId == folder.value?.id) {
-                          // Set the selected folder state to the previous folder
-                          previousFolderId = navigationActions.popFromScreenNavigationStack()
-                          if (previousFolderId != null) {
-                              folderViewModel.getFolderById(previousFolderId)
-                          } else {
-                              navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
-                          }
-                      } else if (previousFolderId != null && previousFolderId != folder.value?.id) {
+                        // Set the selected folder state to the previous folder
+                        previousFolderId = navigationActions.popFromScreenNavigationStack()
+                        if (previousFolderId != null) {
                           folderViewModel.getFolderById(previousFolderId)
-                      } else {
+                        } else {
                           navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
+                        }
+                      } else if (previousFolderId != null && previousFolderId != folder.value?.id) {
+                        folderViewModel.getFolderById(previousFolderId)
+                      } else {
+                        navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
                       }
                     },
                     modifier = Modifier.testTag("clearButton")) {
@@ -148,7 +150,8 @@ fun FolderContentScreen(
                                 text = { Text("Delete folder") },
                                 onClick = {
                                   expanded = false
-                                  // Clear the folder navigation stack as we go back to overview screen
+                                  // Clear the folder navigation stack as we go back to overview
+                                  // screen
                                   navigationActions.clearScreenNavigationStack()
                                   folderViewModel.deleteFolderById(
                                       folder.value!!.id, folder.value!!.userId)
