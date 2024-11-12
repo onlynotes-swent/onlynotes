@@ -47,6 +47,8 @@ val LIST_TOP_LEVEL_DESTINATION =
 open class NavigationActions(
     private val navController: NavHostController,
 ) {
+
+  private val screenNavigationStack = mutableListOf<String>()
   /**
    * Navigate to the specified [TopLevelDestination]
    *
@@ -95,5 +97,30 @@ open class NavigationActions(
    */
   open fun currentRoute(): String {
     return navController.currentDestination?.route ?: ""
+  }
+
+  /**
+   * Pushes an Id to the screen navigation stack (either folder id or user id)
+   *
+   * @param id The Id to push.
+   */
+  fun pushToScreenNavigationStack(id: String) {
+    screenNavigationStack.add(id)
+  }
+
+  /**
+   * Pops an Id from the screen navigation stack.
+   *
+   * @return The popped Id.
+   */
+  fun popFromScreenNavigationStack(): String? {
+    return screenNavigationStack.removeLastOrNull()
+  }
+
+  /**
+   * Clears the screen navigation stack.
+   */
+  fun clearScreenNavigationStack() {
+    screenNavigationStack.clear()
   }
 }

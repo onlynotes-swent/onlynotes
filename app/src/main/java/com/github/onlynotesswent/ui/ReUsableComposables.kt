@@ -1,12 +1,7 @@
 package com.github.onlynotesswent.ui
 
-import android.content.ClipData
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.draganddrop.dragAndDropSource
-import androidx.compose.foundation.draganddrop.dragAndDropTarget
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -44,7 +39,6 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -52,10 +46,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draganddrop.DragAndDropEvent
-import androidx.compose.ui.draganddrop.DragAndDropTarget
-import androidx.compose.ui.draganddrop.DragAndDropTransferData
-import androidx.compose.ui.draganddrop.toAndroidDragEvent
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -123,6 +113,8 @@ fun NoteItem(
                 // Move out will move the given note to the overview menu
                 noteViewModel.updateNote(note.copy(folderId = null), note.userId, note.folderId)
                 showMoveOutDialog = false
+                // Clear the screen navigation stack as we navigate to the overview screen
+                navigationActions.clearScreenNavigationStack()
                 navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
               }) {
                 Text("Move")
@@ -186,7 +178,6 @@ fun FolderItem(
     folder: Folder,
     onClick: () -> Unit
 ) {
-
   Card(
       modifier =
           Modifier.testTag("folderCard")
@@ -314,6 +305,8 @@ fun CustomLazyGrid(
             items(folders.value.size) { index ->
               FolderItem(folder = folders.value[index]) {
                     folderViewModel.selectedFolder(folders.value[index])
+                    // Add the folder ID to the screen navigation stack
+                    navigationActions.pushToScreenNavigationStack(folders.value[index].id)
                     navigationActions.navigateTo(Screen.FOLDER_CONTENTS)
               }
             }

@@ -21,6 +21,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -96,6 +97,10 @@ fun FolderContentScreen(
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically) {
+                      // Update the updatedName state whenever the folder state changes to display it in the title
+                      LaunchedEffect(folder.value?.name) {
+                          updatedName = folder.value?.name ?: "Folder name not found"
+                      }
                       Spacer(modifier = Modifier.weight(2f))
                       Text(
                           updatedName,
@@ -107,8 +112,21 @@ fun FolderContentScreen(
               navigationIcon = {
                 IconButton(
                     onClick = {
-                      // We always return to overview screen
-                      navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
+                      var previousFolderId = navigationActions.popFromScreenNavigationStack()
+                      // If we pop from the stack the current folder, we call pop twice to get the previous folder
+                      if (previousFolderId != null && previousFolderId == folder.value?.id) {
+                          // Set the selected folder state to the previous folder
+                          previousFolderId = navigationActions.popFromScreenNavigationStack()
+                          if (previousFolderId != null) {
+                              folderViewModel.getFolderById(previousFolderId)
+                          } else {
+                              navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
+                          }
+                      } else if (previousFolderId != null && previousFolderId != folder.value?.id) {
+                          folderViewModel.getFolderById(previousFolderId)
+                      } else {
+                          navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
+                      }
                     },
                     modifier = Modifier.testTag("clearButton")) {
                       Icon(imageVector = Icons.Default.Clear, contentDescription = "Clear")
@@ -130,6 +148,8 @@ fun FolderContentScreen(
                                 text = { Text("Delete folder") },
                                 onClick = {
                                   expanded = false
+                                  // Clear the folder navigation stack as we go back to overview screen
+                                  navigationActions.clearScreenNavigationStack()
                                   folderViewModel.deleteFolderById(
                                       folder.value!!.id, folder.value!!.userId)
                                   // If folder is subfolder, set parent Id and folder Id of sub
