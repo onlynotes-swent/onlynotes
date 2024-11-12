@@ -12,11 +12,11 @@ import kotlinx.coroutines.flow.asStateFlow
 
 class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
 
-  // Left here for possible future use cases
+  // TODO Left here for possible future use cases
   private val _publicFolders = MutableStateFlow<List<Folder>>(emptyList())
   val publicFolders: StateFlow<List<Folder>> = _publicFolders.asStateFlow()
 
-  // Left here for possible future use cases
+  // TODO Left here for possible future use cases
   private val _userFolders = MutableStateFlow<List<Folder>>(emptyList())
   val userFolders: StateFlow<List<Folder>> = _userFolders.asStateFlow()
 
@@ -35,8 +35,12 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
   private val _selectedFolder = MutableStateFlow<Folder?>(null)
   val selectedFolder: StateFlow<Folder?> = _selectedFolder.asStateFlow()
 
+  // Dragged folder
+  private val _draggedFolder = MutableStateFlow<Folder?>(null)
+  val draggedFolder: StateFlow<Folder?> = _draggedFolder.asStateFlow()
+
   init {
-    repository.init {}
+    repository.init { }
   }
 
   companion object {
@@ -52,6 +56,15 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
    */
   fun selectedParentFolderId(parentFolderId: String?) {
     _parentFolderId.value = parentFolderId
+  }
+
+  /**
+   * Sets the dragged folder.
+   *
+   * @param folder The dragged folder.
+   */
+  fun draggedFolder(folder: Folder?) {
+    _draggedFolder.value = folder
   }
 
   /**
@@ -125,7 +138,11 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
    * @param folder The folder with updated information.
    */
   fun updateFolder(folder: Folder, userId: String) {
-    repository.updateFolder(folder, onSuccess = { getRootFoldersFromUid(userId) }, onFailure = {})
+    repository.updateFolder(folder, onSuccess = {
+      getRootFoldersFromUid(userId)
+      // Update the state of the parent folder
+      if (folder.parentFolderId != null) getSubFoldersOf(folder.parentFolderId)
+    }, onFailure = {})
   }
 
   /**

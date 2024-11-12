@@ -130,39 +130,29 @@ fun FolderContentScreen(
                                 text = { Text("Delete folder") },
                                 onClick = {
                                   expanded = false
-                                  folderViewModel.deleteFolderById(
-                                      folder.value!!.id, folder.value!!.userId)
-                                  // If folder is subfolder, set parentId and folderId of sub
-                                  // elements to parent folder id
+                                  folderViewModel.deleteFolderById(folder.value!!.id, folder.value!!.userId)
+                                  // If folder is subfolder, set parent Id and folder Id of sub elements to parent folder id
                                   if (folder.value!!.parentFolderId != null) {
                                     userFolderSubFolders.value.forEach { subFolder ->
                                       folderViewModel.updateFolder(
-                                          subFolder.copy(
-                                              parentFolderId = folder.value!!.parentFolderId),
+                                          subFolder.copy(parentFolderId = folder.value!!.parentFolderId),
                                           subFolder.userId)
                                     }
                                     userFolderNotes.value.forEach { note ->
-                                      noteViewModel.updateNote(
-                                          note.copy(folderId = folder.value!!.parentFolderId),
-                                          note.userId)
+                                      noteViewModel.updateNote(note.copy(folderId = folder.value!!.parentFolderId), note.userId, note.folderId)
                                     }
                                   } else {
+                                    // folder is root folder
                                     userFolderSubFolders.value.forEach { subFolder ->
-                                      folderViewModel.updateFolder(
-                                          subFolder.copy(parentFolderId = null), subFolder.userId)
+                                      folderViewModel.updateFolder(subFolder.copy(parentFolderId = null), subFolder.userId)
                                     }
                                     userFolderNotes.value.forEach { note ->
-                                      noteViewModel.updateNote(
-                                          note.copy(folderId = null), note.userId)
+                                      noteViewModel.updateNote(note.copy(folderId = null), note.userId, note.folderId)
                                     }
                                   }
-
-                                  // TODO for now we just delete the folder directly and set the
-                                  // folderId field of
-                                  //  sub elements to null
-                                  // later on we will implement a recursive delete to delete all
-                                  // elements of a folder (folders and notes)
-                                  navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
+                                    navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
+                                    // TODO for now we just delete the folder directly and set the
+                                    // folderId field of sub elements to null, later on we will implement a recursive delete to delete all elements of a folder (folders and notes)
                                 },
                                 modifier = Modifier.testTag("deleteFolderButton"))),
                     fabIcon = {

@@ -1,7 +1,12 @@
 package com.github.onlynotesswent.ui
 
+import android.content.ClipData
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.draganddrop.dragAndDropSource
+import androidx.compose.foundation.draganddrop.dragAndDropTarget
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,7 +22,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.outlined.ArrowDropDown
 import androidx.compose.material3.AlertDialog
@@ -39,6 +44,7 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -46,6 +52,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draganddrop.DragAndDropEvent
+import androidx.compose.ui.draganddrop.DragAndDropTarget
+import androidx.compose.ui.draganddrop.DragAndDropTransferData
+import androidx.compose.ui.draganddrop.toAndroidDragEvent
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -57,6 +67,7 @@ import com.github.onlynotesswent.model.note.Note
 import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
+import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -85,16 +96,62 @@ fun RefreshButton(onClick: () -> Unit) {
  * other interactions.
  *
  * @param note The note data that will be displayed in this card.
+ * @param noteViewModel The ViewModel that provides the list of notes to display.
+ * @param showDialog A boolean indicating whether the move out dialog should be displayed.
+ * @param navigationActions The navigation view model used to transition between different screens.
  * @param onClick The lambda function to be invoked when the note card is clicked.
  */
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun NoteItem(note: Note, onClick: () -> Unit) {
+fun NoteItem(note: Note, noteViewModel: NoteViewModel, showDialog: Boolean, navigationActions: NavigationActions, onClick: () -> Unit) {
+
+    // Mutable state to show the move out dialog
+    var showMoveOutDialog by remember { mutableStateOf(showDialog) }
+
+    if (showMoveOutDialog && note.folderId != null) {
+        AlertDialog(
+            onDismissRequest = { showMoveOutDialog = false },
+            title = { Text("Move note out of folder") },
+            confirmButton = {
+                Button(onClick = {
+                    // Move out will move the given note to the overview menu
+                    noteViewModel.updateNote(note.copy(folderId = null), note.userId, note.folderId)
+                    showMoveOutDialog = false
+                    navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
+                }) {
+                    Text("Move")
+                }
+            },
+            dismissButton = {
+                Button(onClick = { showMoveOutDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
   Card(
       modifier =
           Modifier.testTag("noteCard")
               .fillMaxWidth()
               .padding(vertical = 4.dp)
-              .clickable(onClick = onClick),
+              // Enable drag and drop for the note card (as a source)
+              .dragAndDropSource {
+                  detectTapGestures(
+                      onTap = {
+                          onClick()
+                      },
+                      onLongPress = {
+                          noteViewModel.selectedNote(note)
+                          // Start a drag-and-drop operation to transfer the data which is being dragged
+                          startTransfer(
+                              // Transfer the note Id as a ClipData object
+                              DragAndDropTransferData(
+                                  ClipData.newPlainText("Note", note.id)
+                              )
+                          )
+                      },
+                  )
+              },
       colors =
           CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)) {
         Column(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
@@ -110,7 +167,9 @@ fun NoteItem(note: Note, onClick: () -> Unit) {
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
                   Icon(
-                      imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                      // Show move out menu when clicking on the Icon
+                      modifier = Modifier.clickable { showMoveOutDialog = true },
+                      imageVector = Icons.Filled.MoreVert,
                       contentDescription = null,
                       tint = MaterialTheme.colorScheme.onPrimaryContainer)
                 }
@@ -136,14 +195,74 @@ fun NoteItem(note: Note, onClick: () -> Unit) {
  * interactions.
  *
  * @param folder The folder data that will be displayed in this card.
+ * @param folderViewModel The ViewModel that provides the list of folders to display.
+ * @param noteViewModel The ViewModel that provides the list of notes to display.
+ * @param navigationActions The navigation view model used to transition between different screens.
  * @param onClick The lambda function to be invoked when the folder card is clicked.
  */
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun FolderItem(folder: Folder, onClick: () -> Unit) {
+fun FolderItem(folder: Folder, folderViewModel: FolderViewModel, noteViewModel: NoteViewModel, navigationActions: NavigationActions, onClick: () -> Unit) {
+
+  var navigateToOverview by remember { mutableStateOf(false) }
+
+  // LaunchedEffect to navigate to the overview screen when a subfolder is dropped into another subfolder
+  LaunchedEffect(navigateToOverview) {
+       if(navigateToOverview) {
+           navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
+       }
+  }
 
   Card(
       modifier =
-          Modifier.testTag("folderCard").padding(vertical = 4.dp).clickable(onClick = onClick),
+          Modifier
+              .testTag("folderCard")
+              .padding(vertical = 4.dp)
+              .dragAndDropSource {
+                  detectTapGestures(
+                      // When tapping on a folder, perform onCLick
+                      onTap = { onClick() },
+                      onLongPress = {
+                          folderViewModel.draggedFolder(folder)
+                          // Start a drag-and-drop operation to transfer the data which is being dragged
+                          startTransfer(
+                              DragAndDropTransferData(
+                                  // Transfer the folder Id as a ClipData object
+                                  ClipData.newPlainText("Folder", folder.id)
+                              )
+                          )
+                      })
+              }// Enable drag-and-drop for the folder (as a target)
+              .dragAndDropTarget(
+                  // Accept any drag-and-drop event (either folder or note in this case)
+                  shouldStartDragAndDrop = { true },
+                  // Handle the drop event
+                  target = remember {
+                      object : DragAndDropTarget {
+                          override fun onDrop(event: DragAndDropEvent): Boolean {
+                              navigateToOverview = false
+                              // Get the dragged object Id
+                              val draggedObjectId = event.toAndroidDragEvent().clipData.getItemAt(0).text.toString()
+                              val selectedNote = noteViewModel.selectedNote.value
+                              if (selectedNote != null && selectedNote.id == draggedObjectId) {
+                                  // Update the selected note (dragged) with the new folder Id
+                                  noteViewModel.updateNote(selectedNote.copy(folderId = folder.id), selectedNote.userId, selectedNote.folderId)
+                                  return true
+                              }
+                              // Get the dragged folder in case a folder is being dragged
+                              val draggedFolder = folderViewModel.draggedFolder.value
+                              if (draggedFolder != null && draggedFolder.id == draggedObjectId && draggedFolder.id != folder.id) {
+                                    // Update the dragged folder with the new parent folder Id. Folder here represents the target folder, so the future parent of the dragged folder
+                                    folderViewModel.updateFolder(draggedFolder.copy(parentFolderId = folder.id), folder.userId)
+                                    // Allows calling the LaunchedEffect after returning true
+                                    navigateToOverview = true
+                                    return true
+                              }
+                              return false
+                          }
+                      }
+                  }
+              ),
       colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.background)) {
         Column(
             modifier = Modifier.padding(8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
@@ -264,13 +383,13 @@ fun CustomLazyGrid(
           horizontalArrangement = Arrangement.spacedBy(4.dp),
           modifier = gridModifier) {
             items(folders.value.size) { index ->
-              FolderItem(folder = folders.value[index]) {
+              FolderItem(folder = folders.value[index], folderViewModel = folderViewModel, noteViewModel =  noteViewModel, navigationActions = navigationActions) {
                 folderViewModel.selectedFolder(folders.value[index])
                 navigationActions.navigateTo(Screen.FOLDER_CONTENTS)
               }
             }
             items(notes.value.size) { index ->
-              NoteItem(note = notes.value[index]) {
+              NoteItem(note = notes.value[index], noteViewModel = noteViewModel, showDialog = false, navigationActions =  navigationActions) {
                 noteViewModel.selectedNote(notes.value[index])
                 navigationActions.navigateTo(Screen.EDIT_NOTE)
               }
