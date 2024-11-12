@@ -35,10 +35,6 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
   private val _selectedFolder = MutableStateFlow<Folder?>(null)
   val selectedFolder: StateFlow<Folder?> = _selectedFolder.asStateFlow()
 
-  // Dragged folder
-  private val _draggedFolder = MutableStateFlow<Folder?>(null)
-  val draggedFolder: StateFlow<Folder?> = _draggedFolder.asStateFlow()
-
   init {
     repository.init {}
   }
@@ -56,15 +52,6 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
    */
   fun selectedParentFolderId(parentFolderId: String?) {
     _parentFolderId.value = parentFolderId
-  }
-
-  /**
-   * Sets the dragged folder.
-   *
-   * @param folder The dragged folder.
-   */
-  fun draggedFolder(folder: Folder?) {
-    _draggedFolder.value = folder
   }
 
   /**
