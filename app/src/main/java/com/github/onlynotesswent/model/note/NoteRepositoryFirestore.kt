@@ -2,6 +2,7 @@ package com.github.onlynotesswent.model.note
 
 import android.graphics.Bitmap
 import android.util.Log
+import com.github.onlynotesswent.utils.Course
 import com.github.onlynotesswent.utils.Visibility
 import com.google.android.gms.tasks.Task
 import com.google.firebase.Firebase
@@ -104,10 +105,10 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
         note.date,
         note.visibility,
         note.userId,
-        note.noteClass.classCode,
-        note.noteClass.className,
-        note.noteClass.classYear,
-        note.noteClass.publicPath,
+        note.noteCourse.courseCode,
+        note.noteCourse.courseName,
+        note.noteCourse.courseYear,
+        note.noteCourse.publicPath,
         note.folderId,
         "null",
         convertCommentsList(note.comments.commentsList))
@@ -292,9 +293,9 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
       val visibility =
           Visibility.fromString(document.getString("visibility") ?: Visibility.DEFAULT.toString())
       val userId = document.getString("userId") ?: return null
-      val classCode = document.getString("classCode") ?: return null
-      val className = document.getString("className") ?: return null
-      val classYear = document.getLong("classYear")?.toInt() ?: return null
+      val classCode = document.getString("courseCode") ?: return null
+      val className = document.getString("courseName") ?: return null
+      val classYear = document.getLong("courseYear")?.toInt() ?: return null
       val classPath = document.getString("publicPath") ?: return null
       val folderId = document.getString("folderId")
       val image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)
@@ -310,7 +311,7 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
           date = date,
           visibility = visibility,
           userId = userId,
-          noteClass = Note.Class(classCode, className, classYear, classPath),
+          noteCourse = Course(classCode, className, classYear, classPath),
           folderId = folderId,
           image = image,
           comments = Note.CommentCollection(comments))

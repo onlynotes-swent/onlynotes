@@ -64,24 +64,21 @@ fun SearchScreen(
   val searchWords = remember { mutableStateOf(emptyList<String>()) }
   searchWords.value = searchQuery.value.split("\\s+".toRegex())
 
-  val filteredNotes = remember { mutableStateOf(noteViewModel.publicNotes.value) }
-  filteredNotes.value =
-      noteViewModel.publicNotes.collectAsState().value.filter {
-        textMatchesSearch(it.title, searchWords.value)
-      }
+  val notes = noteViewModel.publicNotes.collectAsState()
+  val filteredNotes = remember { mutableStateOf(notes.value) }
+  filteredNotes.value = notes.value.filter { textMatchesSearch(it.title, searchWords.value) }
 
-  val filteredUsers = remember { mutableStateOf(userViewModel.allUsers.value) }
+  val users = userViewModel.allUsers.collectAsState()
+  val filteredUsers = remember { mutableStateOf(users.value) }
   filteredUsers.value =
-      userViewModel.allUsers.collectAsState().value.filter {
+      users.value.filter {
         textMatchesSearch(it.fullName(), searchWords.value) ||
             textMatchesSearch(it.userHandle(), searchWords.value)
       }
 
-  val filteredFolders = remember { mutableStateOf(folderViewModel.publicFolders.value) }
-  filteredFolders.value =
-      folderViewModel.publicFolders.collectAsState().value.filter {
-        textMatchesSearch(it.name, searchWords.value)
-      }
+  val folders = folderViewModel.publicFolders.collectAsState()
+  val filteredFolders = remember { mutableStateOf(folders.value) }
+  filteredFolders.value = folders.value.filter { textMatchesSearch(it.name, searchWords.value) }
 
   Scaffold(
       modifier = Modifier.testTag("searchScreen"),
@@ -196,10 +193,15 @@ fun SearchScreen(
               contentPadding = PaddingValues(horizontal = 16.dp),
               modifier = Modifier.fillMaxWidth().padding(padding).testTag("filteredNoteList")) {
                 items(filteredNotes.value.size) { index ->
-                  NoteItem(note = filteredNotes.value[index]) {
-                    noteViewModel.selectedNote(filteredNotes.value[index])
-                    navigationActions.navigateTo(Screen.EDIT_NOTE)
-                  }
+                  NoteItem(
+                      note = filteredNotes.value[index],
+                      author =
+                          users.value
+                              .first { it.uid == filteredNotes.value[index].userId }
+                              .userHandle()) {
+                        noteViewModel.selectedNote(filteredNotes.value[index])
+                        navigationActions.navigateTo(Screen.EDIT_NOTE)
+                      }
                 }
               }
         }

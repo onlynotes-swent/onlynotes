@@ -20,6 +20,7 @@ import com.github.onlynotesswent.model.users.UserRepository
 import com.github.onlynotesswent.model.users.UserViewModel
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
+import com.github.onlynotesswent.utils.Course
 import com.github.onlynotesswent.utils.Visibility
 import com.google.firebase.Timestamp
 import org.junit.Before
@@ -50,7 +51,7 @@ class OverviewTest {
               date = Timestamp.now(), // Use current timestamp
               visibility = Visibility.DEFAULT,
               userId = "1",
-              noteClass = Note.Class("CS-100", "Sample Class", 2024, "path"),
+              noteCourse = Course("CS-100", "Sample Course", 2024, "path"),
               image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888) // Placeholder Bitmap
               ))
 

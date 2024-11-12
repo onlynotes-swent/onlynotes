@@ -1,6 +1,7 @@
 package com.github.onlynotesswent.model.note
 
 import android.graphics.Bitmap
+import com.github.onlynotesswent.utils.Course
 import com.github.onlynotesswent.utils.Visibility
 import com.google.firebase.Timestamp
 import java.security.MessageDigest
@@ -11,27 +12,12 @@ data class Note(
     val content: String,
     val date: Timestamp,
     val visibility: Visibility = Visibility.DEFAULT,
-    val noteClass: Class,
+    val noteCourse: Course,
     val userId: String,
     val folderId: String? = null, // if note not assigned to a folder, folderId is null
     val image: Bitmap,
     val comments: CommentCollection = CommentCollection()
 ) {
-
-  /**
-   * Represents a class that a note belongs to.
-   *
-   * @param classCode The code of the class.
-   * @param className The name of the class.
-   * @param classYear The year of the class.
-   * @param publicPath The public path of the class.
-   */
-  data class Class(
-      val classCode: String,
-      val className: String,
-      val classYear: Int,
-      val publicPath: String
-  )
 
   /** Represents a list of Comments for a Note. The class is immutable. */
   class CommentCollection(val commentsList: List<Comment> = emptyList()) {

@@ -203,10 +203,11 @@ fun RefreshButton(onClick: () -> Unit) {
  * other interactions.
  *
  * @param note The note data that will be displayed in this card.
+ * @param author The author of the note, or null if the author is not to be displayed.
  * @param onClick The lambda function to be invoked when the note card is clicked.
  */
 @Composable
-fun NoteItem(note: Note, onClick: () -> Unit) {
+fun NoteItem(note: Note, author: String? = null, onClick: () -> Unit) {
   Card(
       modifier =
           Modifier.testTag("noteCard")
@@ -240,8 +241,14 @@ fun NoteItem(note: Note, onClick: () -> Unit) {
               style = MaterialTheme.typography.bodyMedium,
               fontWeight = FontWeight.Bold,
               color = MaterialTheme.colorScheme.onPrimaryContainer)
+          if (author != null) {
+            Text(
+                text = author,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onPrimaryContainer)
+          }
           Text(
-              text = note.noteClass.classCode,
+              text = note.noteCourse.courseCode,
               style = MaterialTheme.typography.bodySmall,
               color = MaterialTheme.colorScheme.onPrimaryContainer)
         }
@@ -408,7 +415,6 @@ fun CustomLazyGrid(
     if (notes.value.isNotEmpty() || folders.value.isNotEmpty()) {
       LazyVerticalGrid(
           columns = GridCells.Adaptive(minSize = 100.dp),
-          // contentPadding = paddingValues,
           horizontalArrangement = Arrangement.spacedBy(4.dp),
           modifier = gridModifier) {
             items(folders.value.size) { index ->

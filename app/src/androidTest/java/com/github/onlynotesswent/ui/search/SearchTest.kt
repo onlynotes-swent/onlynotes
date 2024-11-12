@@ -14,6 +14,7 @@ import com.github.onlynotesswent.model.users.UserRepository
 import com.github.onlynotesswent.model.users.UserViewModel
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
+import com.github.onlynotesswent.utils.Course
 import com.github.onlynotesswent.utils.Visibility
 import com.google.firebase.Timestamp
 import org.junit.Before
@@ -44,7 +45,7 @@ class SearchScreenTest {
           date = Timestamp.now(),
           visibility = Visibility.PUBLIC,
           userId = "test",
-          noteClass = Note.Class("CS-100", "Sample Class 1", 2024, "path"),
+          noteCourse = Course("CS-100", "Sample Course 1", 2024, "path"),
           image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888))
   private val testNote2 =
       Note(
@@ -54,7 +55,7 @@ class SearchScreenTest {
           date = Timestamp.now(),
           visibility = Visibility.PUBLIC,
           userId = "test",
-          noteClass = Note.Class("CS-200", "Sample Class 2", 2024, "path"),
+          noteCourse = Course("CS-200", "Sample Course 2", 2024, "path"),
           image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888))
 
   private val testNotes = listOf(testNote1, testNote2)

@@ -1,6 +1,7 @@
 package com.github.onlynotesswent.model.note
 
 import android.graphics.Bitmap
+import com.github.onlynotesswent.utils.Course
 import com.github.onlynotesswent.utils.Visibility
 import com.google.firebase.Timestamp
 import org.hamcrest.CoreMatchers.`is`
@@ -29,7 +30,7 @@ class NoteViewModelTest {
           visibility = Visibility.DEFAULT,
           userId = "1",
           folderId = "1",
-          noteClass = Note.Class("CS-100", "Sample Class", 2024, "path"),
+          noteCourse = Course("CS-100", "Sample Course", 2024, "path"),
           image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888))
 
   @Before

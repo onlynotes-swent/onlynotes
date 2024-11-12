@@ -41,6 +41,7 @@ import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.model.users.UserViewModel
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
+import com.github.onlynotesswent.utils.Course
 import com.github.onlynotesswent.utils.Visibility
 import com.google.firebase.Timestamp
 import java.text.SimpleDateFormat
@@ -66,11 +67,11 @@ fun EditNoteScreen(
   val note by noteViewModel.selectedNote.collectAsState()
   val currentUser by userViewModel.currentUser.collectAsState()
   val currentYear = Calendar.getInstance().get(Calendar.YEAR)
-  var updatedNoteText by remember { mutableStateOf(note?.content ?: "") }
-  var updatedNoteTitle by remember { mutableStateOf(note?.title ?: "") }
-  var updatedClassName by remember { mutableStateOf(note?.noteClass?.className ?: "") }
-  var updatedClassCode by remember { mutableStateOf(note?.noteClass?.classCode ?: "") }
-  var updatedClassYear by remember { mutableIntStateOf(note?.noteClass?.classYear ?: currentYear) }
+  var noteText by remember { mutableStateOf(note?.content ?: "") }
+  var noteTitle by remember { mutableStateOf(note?.title ?: "") }
+  var courseName by remember { mutableStateOf(note?.noteCourse?.courseName ?: "") }
+  var courseCode by remember { mutableStateOf(note?.noteCourse?.courseCode ?: "") }
+  var courseYear by remember { mutableIntStateOf(note?.noteCourse?.courseYear ?: currentYear) }
   var visibility by remember { mutableStateOf(note?.visibility) }
   var expandedVisibility by remember { mutableStateOf(false) }
   var updatedComments by remember { mutableStateOf(note?.comments ?: Note.CommentCollection()) }
@@ -83,7 +84,7 @@ fun EditNoteScreen(
             content = note?.content ?: "",
             date = Timestamp.now(), // Use current timestamp
             visibility = note?.visibility ?: Visibility.DEFAULT,
-            noteClass = note?.noteClass ?: Note.Class("", "", currentYear, ""),
+            noteCourse = note?.noteCourse ?: Course.DEFAULT,
             userId = note?.userId ?: "",
             folderId = note?.folderId,
             image =
@@ -99,7 +100,7 @@ fun EditNoteScreen(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally) {
-          Text("User  not found ...")
+          Text("User not found ...")
         }
     Log.e("EditNoteScreen", "User not found")
   } else {
@@ -129,13 +130,13 @@ fun EditNoteScreen(
               verticalArrangement = Arrangement.spacedBy(8.dp),
               horizontalAlignment = Alignment.CenterHorizontally) {
                 NoteDataTextField(
-                    value = updatedNoteTitle,
-                    onValueChange = { updatedNoteTitle = it },
+                    value = noteTitle,
+                    onValueChange = { noteTitle = it },
                     label = "Note Title",
                     placeholder = "Enter the new title here",
                     modifier = Modifier.fillMaxWidth().testTag("EditTitle textField"),
                     trailingIcon = {
-                      IconButton(onClick = { updatedNoteTitle = "" }) {
+                      IconButton(onClick = { noteTitle = "" }) {
                         Icon(Icons.Outlined.Clear, contentDescription = "Clear Title")
                       }
                     })
@@ -150,46 +151,44 @@ fun EditNoteScreen(
                     onItemClick = { visibility = Visibility.fromReadableString(it) })
 
                 NoteDataTextField(
-                    value = updatedClassName,
-                    onValueChange = { updatedClassName = it },
-                    label = "Class Name",
-                    placeholder = "Set the class name for the note",
-                    modifier = Modifier.fillMaxWidth().testTag("EditClassName textField"))
+                    value = courseName,
+                    onValueChange = { courseName = Course.formatCourseName(it) },
+                    label = "Course Name",
+                    placeholder = "Set the course name for the note",
+                    modifier = Modifier.fillMaxWidth().testTag("EditCourseName textField"))
 
                 NoteDataTextField(
-                    value = updatedClassCode,
-                    onValueChange = { updatedClassCode = it },
-                    label = "Class Code",
-                    placeholder = "Set the class code for the note",
-                    modifier = Modifier.fillMaxWidth().testTag("EditClassCode textField"))
+                    value = courseCode,
+                    onValueChange = { courseCode = Course.formatCourseCode(it) },
+                    label = "Course Code",
+                    placeholder = "Set the course code for the note",
+                    modifier = Modifier.fillMaxWidth().testTag("EditCourseCode textField"))
 
                 NoteDataTextField(
-                    value = updatedClassYear.toString(),
-                    onValueChange = { updatedClassYear = it.toIntOrNull() ?: currentYear },
-                    label = "Class Year",
-                    placeholder = "Set the class year for the note",
-                    modifier = Modifier.fillMaxWidth().testTag("EditClassYear textField"))
+                    value = courseYear.toString(),
+                    onValueChange = { courseYear = it.toIntOrNull() ?: currentYear },
+                    label = "Course Year",
+                    placeholder = "Set the course year for the note",
+                    modifier = Modifier.fillMaxWidth().testTag("EditCourseYear textField"))
 
                 NoteDataTextField(
-                    value = updatedNoteText,
-                    onValueChange = { updatedNoteText = it },
+                    value = noteText,
+                    onValueChange = { noteText = it },
                     label = "Note Content",
                     placeholder = "Enter your note here...",
                     modifier = Modifier.fillMaxWidth().height(400.dp).testTag("EditNote textField"))
 
                 Button(
-                    enabled = updatedNoteTitle.isNotEmpty(),
+                    enabled = noteTitle.isNotEmpty(),
                     onClick = {
                       noteViewModel.updateNote(
                           Note(
                               id = note?.id ?: "1",
-                              title = updatedNoteTitle,
-                              content = updatedNoteText,
+                              title = noteTitle,
+                              content = noteText,
                               date = Timestamp.now(), // Use current timestamp
                               visibility = visibility ?: Visibility.DEFAULT,
-                              noteClass =
-                                  Note.Class(
-                                      updatedClassCode, updatedClassName, updatedClassYear, "path"),
+                              noteCourse = Course(courseCode, courseName, courseYear, "path"),
                               userId = note?.userId ?: currentUser!!.uid,
                               folderId = note?.folderId,
                               image =
