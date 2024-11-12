@@ -74,9 +74,9 @@ class AddNoteTest {
     composeTestRule.onNodeWithTag("createNoteButton").assertIsDisplayed()
     composeTestRule.onNodeWithTag("visibilityButton").assertIsDisplayed()
     composeTestRule.onNodeWithTag("templateButton").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("ClassNameTextField").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("ClassCodeTextField").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("ClassYearTextField").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("CourseNameTextField").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("CourseCodeTextField").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("CourseYearTextField").assertIsDisplayed()
     composeTestRule.onNodeWithTag("visibilityMenu").assertIsNotDisplayed()
     composeTestRule.onNodeWithTag("templateMenu").assertIsNotDisplayed()
 
