@@ -299,6 +299,5 @@ fun ControlWrapper(
         Box(modifier = Modifier.padding(all = 4.dp), contentAlignment = Alignment.Center) {
           content()
         }
-      }
-  )
+      })
 }

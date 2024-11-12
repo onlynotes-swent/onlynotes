@@ -101,7 +101,7 @@ fun EditNoteScreen(
           state.setMarkdown(downloadedFile.readText())
         },
         onFailure = { _ ->
-            attemptedMarkdownDownloads += 1
+          attemptedMarkdownDownloads += 1
           if (attemptedMarkdownDownloads < 2) {
             val file = File(context.cacheDir, "${note?.id ?: "errorNoId"}.md")
             if (!file.exists()) {

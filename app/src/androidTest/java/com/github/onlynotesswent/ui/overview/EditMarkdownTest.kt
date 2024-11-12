@@ -21,7 +21,6 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.mockito.Mock
-import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
@@ -52,7 +51,15 @@ class EditMarkdownTest {
       onSuccess()
     }
 
-    val testUser = User("testFirstName", "testLastName", "testUserName", "test@gmail.com", "testUID", Timestamp.now(), 0.0)
+    val testUser =
+        User(
+            "testFirstName",
+            "testLastName",
+            "testUserName",
+            "test@gmail.com",
+            "testUID",
+            Timestamp.now(),
+            0.0)
     userViewModel.addUser(testUser, {}, {})
 
     // Mock the current route to be the user create screen
