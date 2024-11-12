@@ -23,7 +23,7 @@ data class Course(
 
   companion object {
     // default course
-    val DEFAULT = Course("DEF-123", "Default Course", 2024, "default")
+    val DEFAULT = Course("CS-311", "The Software Enterprise", 2024, "default")
     // course code max length
     private const val COURSE_CODE_MAX_LENGTH = 10
     // course name max length
