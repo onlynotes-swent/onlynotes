@@ -287,22 +287,29 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
   fun documentSnapshotToNote(document: DocumentSnapshot): Note? {
     return try {
       val id = document.id
-      val title = document.getString("title") ?: return null
-      val content = document.getString("content") ?: return null
-      val date = document.getTimestamp("date") ?: return null
+      val title = document.getString("title") ?: ""
+      val content = document.getString("content") ?: ""
+      val date = document.getTimestamp("date") ?: Timestamp.now()
       val visibility =
           Visibility.fromString(document.getString("visibility") ?: Visibility.DEFAULT.toString())
       val userId = document.getString("userId") ?: return null
-      val classCode = document.getString("courseCode") ?: return null
-      val className = document.getString("courseName") ?: return null
-      val classYear = document.getLong("courseYear")?.toInt() ?: return null
-      val classPath = document.getString("publicPath") ?: return null
+      val courseCode = document.getString("courseCode") ?: ""
+      val courseName = document.getString("courseName") ?: ""
+      val courseYear = document.getLong("courseYear")?.toInt() ?: 0
+      val publicPath = document.getString("publicPath") ?: ""
       val folderId = document.getString("folderId")
       val image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)
       val comments =
           commentStringToCommentClass(document.get("commentsList") as? List<String> ?: emptyList())
       // Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888) is the default bitMap, to be changed
       // when we implement images by URL
+
+
+        val course = if (courseYear == 0 || courseCode.isEmpty() || courseName.isEmpty() || publicPath.isEmpty()) {
+            Course.DEFAULT
+        } else {
+            Course(courseCode, courseName, courseYear, publicPath)
+        }
 
       Note(
           id = id,
@@ -311,7 +318,7 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
           date = date,
           visibility = visibility,
           userId = userId,
-          noteCourse = Course(classCode, className, classYear, classPath),
+          noteCourse = course,
           folderId = folderId,
           image = image,
           comments = Note.CommentCollection(comments))
