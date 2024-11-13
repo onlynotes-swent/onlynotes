@@ -74,7 +74,11 @@ fun OverviewScreen(
                 listOf(
                     CustomDropDownMenuItem(
                         text = { Text("Create note") },
-                        icon = { Icon(painter = painterResource(id = R.drawable.add_note_icon), contentDescription = "AddNote") },
+                        icon = {
+                          Icon(
+                              painter = painterResource(id = R.drawable.add_note_icon),
+                              contentDescription = "AddNote")
+                        },
                         onClick = {
                           expanded = false
                           navigationActions.navigateTo(Screen.ADD_NOTE)
@@ -83,7 +87,11 @@ fun OverviewScreen(
                         modifier = Modifier.testTag("createNote")),
                     CustomDropDownMenuItem(
                         text = { Text("Create folder") },
-                        icon = { Icon(painter = painterResource(id = R.drawable.folder_create_icon), contentDescription = "createFolder") },
+                        icon = {
+                          Icon(
+                              painter = painterResource(id = R.drawable.folder_create_icon),
+                              contentDescription = "createFolder")
+                        },
                         onClick = {
                           expanded = false
                           showCreateDialog = true

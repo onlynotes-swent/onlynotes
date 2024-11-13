@@ -98,7 +98,7 @@ fun FolderContentScreen(
                       containerColor = MaterialTheme.colorScheme.surface),
               title = {
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth().testTag("folderContentTitle"),
                     verticalAlignment = Alignment.CenterVertically) {
                       // Update the updatedName state whenever the folder state changes to display
                       // it in the title
@@ -109,11 +109,8 @@ fun FolderContentScreen(
                       Icon(
                           painter = painterResource(id = R.drawable.open_folder_icon),
                           contentDescription = "Folder icon")
-                      Spacer (modifier = Modifier.weight(0.25f))
-                      Text(
-                          updatedName,
-                          color = MaterialTheme.colorScheme.onSurface,
-                          modifier = Modifier.testTag("folderContentTitle"))
+                      Spacer(modifier = Modifier.weight(0.25f))
+                      Text(updatedName, color = MaterialTheme.colorScheme.onSurface)
                       Spacer(modifier = Modifier.weight(2f))
                     }
               },
@@ -148,7 +145,11 @@ fun FolderContentScreen(
                         listOf(
                             CustomDropDownMenuItem(
                                 text = { Text("Rename folder") },
-                                icon = { Icon(imageVector = Icons.Default.Edit, contentDescription = "RenameFolder") },
+                                icon = {
+                                  Icon(
+                                      imageVector = Icons.Default.Edit,
+                                      contentDescription = "RenameFolder")
+                                },
                                 onClick = {
                                   expanded = false
                                   showRenameDialog = true
@@ -156,7 +157,11 @@ fun FolderContentScreen(
                                 modifier = Modifier.testTag("renameFolderButton")),
                             CustomDropDownMenuItem(
                                 text = { Text("Delete folder") },
-                                icon = { Icon(painter = painterResource(id =R.drawable.folder_delete_icon), contentDescription = "DeleteFolder") },
+                                icon = {
+                                  Icon(
+                                      painter = painterResource(id = R.drawable.folder_delete_icon),
+                                      contentDescription = "DeleteFolder")
+                                },
                                 onClick = {
                                   expanded = false
                                   // Clear the folder navigation stack as we go back to overview
@@ -211,7 +216,11 @@ fun FolderContentScreen(
                   listOf(
                       CustomDropDownMenuItem(
                           text = { Text("Create note") },
-                          icon = { Icon(painter = painterResource(id = R.drawable.add_note_icon), contentDescription = "AddNote") },
+                          icon = {
+                            Icon(
+                                painter = painterResource(id = R.drawable.add_note_icon),
+                                contentDescription = "AddNote")
+                          },
                           onClick = {
                             expandedFolder = false
                             noteViewModel.selectedFolderId(folder.value!!.id)
@@ -220,7 +229,11 @@ fun FolderContentScreen(
                           modifier = Modifier.testTag("createNote")),
                       CustomDropDownMenuItem(
                           text = { Text("Create folder") },
-                          icon = { Icon(painter = painterResource(id = R.drawable.folder_create_icon), contentDescription = "createFolder") },
+                          icon = {
+                            Icon(
+                                painter = painterResource(id = R.drawable.folder_create_icon),
+                                contentDescription = "createFolder")
+                          },
                           onClick = {
                             expandedFolder = false
                             showCreateDialog = true

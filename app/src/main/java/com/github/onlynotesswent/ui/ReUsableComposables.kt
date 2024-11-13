@@ -106,12 +106,9 @@ fun NoteItem(
     AlertDialog(
         onDismissRequest = { showMoveOutDialog = false },
         title = {
-            Box(
-                modifier = Modifier.fillMaxWidth(),
-                contentAlignment = Alignment.Center
-            ) {
-                Text("Move note out of folder")
-            }
+          Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+            Text("Move note out of folder")
+          }
         },
         confirmButton = {
           Button(
@@ -150,8 +147,10 @@ fun NoteItem(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                   Icon(
                       // Show move out menu when clicking on the Icon
-                      modifier = Modifier.clickable(enabled = note.folderId != null) {
-                          showMoveOutDialog = true },
+                      modifier =
+                          Modifier.clickable(enabled = note.folderId != null) {
+                            showMoveOutDialog = true
+                          },
                       imageVector = Icons.Filled.MoreVert,
                       contentDescription = null,
                       tint = MaterialTheme.colorScheme.onPrimaryContainer)
@@ -218,12 +217,9 @@ fun CreateFolderDialog(onDismiss: () -> Unit, onConfirm: (String) -> Unit) {
       modifier = Modifier.testTag("createFolderDialog"),
       onDismissRequest = onDismiss,
       title = {
-          Box(
-            modifier = Modifier.fillMaxWidth(),
-            contentAlignment = Alignment.Center
-          ) {
-            Text("Create folder")
-          }
+        Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+          Text("Create folder")
+        }
       },
       text = {
         OutlinedTextField(
@@ -271,7 +267,11 @@ fun CustomDropDownMenu(
     FloatingActionButton(onClick = onFabClick, modifier = modifier) { fabIcon() }
     DropdownMenu(expanded = expanded, onDismissRequest = onDismissRequest) {
       menuItems.forEach { item ->
-        DropdownMenuItem(text = item.text, leadingIcon = item.icon, onClick = item.onClick, modifier = item.modifier)
+        DropdownMenuItem(
+            text = item.text,
+            leadingIcon = item.icon,
+            onClick = item.onClick,
+            modifier = item.modifier)
       }
     }
   }
@@ -372,12 +372,9 @@ fun RenameFolderDialog(currentName: String, onDismiss: () -> Unit, onConfirm: (S
       modifier = Modifier.testTag("renameFolderDialog"),
       onDismissRequest = onDismiss,
       title = {
-          Box(
-              modifier = Modifier.fillMaxWidth(),
-              contentAlignment = Alignment.Center
-          ) {
-              Text("Rename folder")
-          }
+        Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+          Text("Rename folder")
+        }
       },
       text = {
         OutlinedTextField(

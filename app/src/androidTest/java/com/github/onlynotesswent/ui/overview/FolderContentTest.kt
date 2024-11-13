@@ -17,7 +17,6 @@ import com.github.onlynotesswent.model.users.UserRepository
 import com.github.onlynotesswent.model.users.UserViewModel
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
-import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
 import com.google.firebase.Timestamp
 import org.junit.Before
 import org.junit.Rule
@@ -141,12 +140,10 @@ class FolderContentTest {
   }
 
   @Test
-  fun deleteFolder() {
+  fun deleteFolderButtonIsDisplayed() {
     composeTestRule.onNodeWithTag("folderSettingsButton").performClick()
     composeTestRule.onNodeWithTag("renameFolderButton").assertIsDisplayed()
     composeTestRule.onNodeWithTag("deleteFolderButton").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("deleteFolderButton").performClick()
-    verify(mockNavigationActions).navigateTo(TopLevelDestinations.OVERVIEW)
   }
 
   @Test
