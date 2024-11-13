@@ -22,6 +22,7 @@ import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Route
 import com.github.onlynotesswent.ui.navigation.Screen
 import com.github.onlynotesswent.ui.overview.AddNoteScreen
+import com.github.onlynotesswent.ui.overview.EditMarkdownScreen
 import com.github.onlynotesswent.ui.overview.EditNoteScreen
 import com.github.onlynotesswent.ui.overview.FolderContentScreen
 import com.github.onlynotesswent.ui.overview.OverviewScreen
@@ -76,10 +77,13 @@ fun OnlyNotesApp(scanner: Scanner, profilePictureTaker: ProfilePictureTaker) {
         AddNoteScreen(navigationActions, scanner, noteViewModel, userViewModel, fileViewModel)
       }
       composable(Screen.EDIT_NOTE) {
-        EditNoteScreen(navigationActions, noteViewModel, userViewModel)
+        EditNoteScreen(navigationActions, noteViewModel, userViewModel, fileViewModel)
       }
       composable(Screen.FOLDER_CONTENTS) {
         FolderContentScreen(navigationActions, folderViewModel, noteViewModel, userViewModel)
+      }
+      composable(Screen.EDIT_MARKDOWN) {
+        EditMarkdownScreen(navigationActions, noteViewModel, userViewModel, fileViewModel)
       }
     }
 
@@ -87,7 +91,9 @@ fun OnlyNotesApp(scanner: Scanner, profilePictureTaker: ProfilePictureTaker) {
         startDestination = Screen.SEARCH_NOTE,
         route = Route.SEARCH,
     ) {
-      composable(Screen.SEARCH_NOTE) { SearchScreen(navigationActions, noteViewModel) }
+      composable(Screen.SEARCH_NOTE) {
+        SearchScreen(navigationActions, noteViewModel, userViewModel, folderViewModel)
+      }
     }
 
     navigation(

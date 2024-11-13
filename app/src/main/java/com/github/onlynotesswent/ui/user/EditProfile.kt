@@ -149,9 +149,9 @@ fun EditProfileScreen(
                       onClick = {
                         val updatedUser =
                             user.value!!.copy(
-                                firstName = newFirstName.value,
-                                lastName = newLastName.value,
-                                userName = newUserName.value,
+                                firstName = newFirstName.value.trim(),
+                                lastName = newLastName.value.trim(),
+                                userName = newUserName.value.trim(),
                                 hasProfilePicture = profilePictureUri.value.isNotBlank())
 
                         userViewModel.updateUser(
