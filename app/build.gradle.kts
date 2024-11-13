@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.sonar)
     id("jacoco")
     id("com.google.gms.google-services")
+
 }
 
 jacoco {
@@ -52,7 +53,7 @@ android {
     }
 
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.4.2"
+        kotlinCompilerExtensionVersion = "1.5.2"//"1.4.2"
     }
 
     compileOptions {
@@ -196,9 +197,12 @@ dependencies {
 
 
     //Image Library
+    implementation("androidx.compose.material:material-icons-extended:<version>")
     implementation("io.coil-kt:coil-compose:2.1.0")
     implementation(libs.imagepicker)
 
+    //Rich text editor
+    implementation("com.mohamedrejeb.richeditor:richeditor-compose:1.0.0-rc10")
 
     // --------- Kaspresso test framework ----------
     globalTestImplementation(libs.kaspresso)
