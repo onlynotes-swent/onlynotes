@@ -1,4 +1,4 @@
-package com.github.onlynotesswent.model.scanner
+package com.github.onlynotesswent.utils
 
 import android.app.Activity
 import android.content.ActivityNotFoundException

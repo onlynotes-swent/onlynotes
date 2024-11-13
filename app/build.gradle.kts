@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsKotlinAndroid)
@@ -26,6 +28,18 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
+        }
+
+        val openAiApiKey = project.rootProject.file("apikeys.properties").takeIf { it.exists() }?.let { keystoreFile ->
+            val properties = Properties()
+            properties.load(keystoreFile.inputStream())
+            properties.getProperty("OPEN_AI_API_KEY")
+        } ?: System.getenv("OPEN_AI_API_KEY") ?: ""
+
+        buildConfigField("String", "OPEN_AI_API_KEY", "\"$openAiApiKey\"")
+
+        buildFeatures {
+            buildConfig = true
         }
     }
 
@@ -214,6 +228,12 @@ dependencies {
     // ----------         ML Kit        ------------
     implementation(libs.mlkit.document.scanner)
     implementation(libs.mlkit.text.recognition)
+
+    // ----------      Json handling   ------------
+    implementation(libs.gson)
+
+    // ----------      HTTP client     ------------
+    implementation(libs.okhttp)
 }
 
 tasks.withType<Test> {
