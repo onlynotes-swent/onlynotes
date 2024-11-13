@@ -136,4 +136,9 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
   fun getSubFoldersOf(parentId: String) {
     repository.getSubFoldersOf(parentId, onSuccess = { _userSubFolders.value = it }, onFailure = {})
   }
+
+  /** Retrieves all public folders. */
+  fun getPublicFolders() {
+    repository.getPublicFolders(onSuccess = { _publicFolders.value = it }, onFailure = {})
+  }
 }
