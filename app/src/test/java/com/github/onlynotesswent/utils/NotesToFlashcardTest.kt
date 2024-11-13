@@ -129,6 +129,7 @@ class NotesToFlashcardTest {
       for (flashcard in flashcards) {
         assertEquals(testNote.userId, flashcard.userId)
         assertEquals(testNote.id, flashcard.noteId)
+        assertEquals(testNote.folderId, flashcard.folderId)
       }
     }
 
