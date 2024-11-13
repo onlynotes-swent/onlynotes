@@ -233,13 +233,6 @@ fun EditNoteScreen(
                     modifier = Modifier.testTag("Edit Markdown button")) {
                       Text("Edit Markdown")
                     }
-                NoteDataTextField(
-                    value = noteText,
-                    onValueChange = { noteText = it },
-                    label = "Note Content",
-                    placeholder = "Enter your note here...",
-                    modifier = Modifier.fillMaxWidth().height(400.dp).testTag("EditNote textField"))
-
                 Button(
                     enabled = noteTitle.isNotEmpty(),
                     onClick = {
