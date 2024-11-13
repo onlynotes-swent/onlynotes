@@ -48,8 +48,8 @@ class EditProfileScreenTest {
   private val testUid = "testUid123"
   private val testUser =
       User(
-          firstName = "testFirstName",
-          lastName = "testLastName",
+          firstName = "First Name",
+          lastName = "Last Name",
           userName = "testUserName",
           email = "testEmail",
           uid = testUid,
@@ -133,21 +133,21 @@ class EditProfileScreenTest {
 
     composeTestRule.onNodeWithTag("inputUserName").performTextClearance()
     composeTestRule.onNodeWithTag("inputUserName").performTextInput("newUserName")
-    assert(userViewModel.currentUser.value?.userName == "testUserName")
+    assert(userViewModel.currentUser.value?.userName == testUser.userName)
     composeTestRule.onNodeWithTag("saveButton").performClick()
     assert(userViewModel.currentUser.value?.userName == "newUserName")
 
     composeTestRule.onNodeWithTag("inputFirstName").performTextClearance()
-    composeTestRule.onNodeWithTag("inputFirstName").performTextInput("newFirstName")
-    assert(userViewModel.currentUser.value?.firstName == "testFirstName")
+    composeTestRule.onNodeWithTag("inputFirstName").performTextInput("New First Name")
+    assert(userViewModel.currentUser.value?.firstName == testUser.firstName)
     composeTestRule.onNodeWithTag("saveButton").performClick()
-    assert(userViewModel.currentUser.value?.firstName == "newFirstName")
+    assert(userViewModel.currentUser.value?.firstName == "New First Name")
 
     composeTestRule.onNodeWithTag("inputLastName").performTextClearance()
-    composeTestRule.onNodeWithTag("inputLastName").performTextInput("newLastName")
-    assert(userViewModel.currentUser.value?.lastName == "testLastName")
+    composeTestRule.onNodeWithTag("inputLastName").performTextInput("New Last Name")
+    assert(userViewModel.currentUser.value?.lastName == testUser.lastName)
     composeTestRule.onNodeWithTag("saveButton").performClick()
-    assert(userViewModel.currentUser.value?.lastName == "newLastName")
+    assert(userViewModel.currentUser.value?.lastName == "New Last Name")
   }
 
   @Test
@@ -157,7 +157,7 @@ class EditProfileScreenTest {
     }
 
     composeTestRule.onNodeWithTag("inputFirstName").performTextClearance()
-    composeTestRule.onNodeWithTag("inputFirstName").performTextInput("newFirstName")
+    composeTestRule.onNodeWithTag("inputFirstName").performTextInput("New First Name")
 
     composeTestRule.onNodeWithTag("inputUserName").performTextClearance()
     composeTestRule.onNodeWithTag("inputUserName").performTextInput(existingUserName)
@@ -165,8 +165,8 @@ class EditProfileScreenTest {
     composeTestRule.onNodeWithTag("saveButton").performClick() // error occurs
     composeTestRule.onNodeWithTag("inputUserName").assert(hasError()) // error shown
 
-    assert(userViewModel.currentUser.value?.userName == "testUserName") // did not change
-    assert(userViewModel.currentUser.value?.firstName == "testFirstName") // did not change
+    assert(userViewModel.currentUser.value?.userName == testUser.userName) // did not change
+    assert(userViewModel.currentUser.value?.firstName == testUser.firstName) // did not change
   }
 
   @Test

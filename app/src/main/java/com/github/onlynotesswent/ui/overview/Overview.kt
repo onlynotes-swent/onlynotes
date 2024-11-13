@@ -20,7 +20,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -47,6 +46,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import com.github.onlynotesswent.R
 import com.github.onlynotesswent.model.folder.Folder
 import com.github.onlynotesswent.model.folder.FolderViewModel
@@ -58,6 +58,7 @@ import com.github.onlynotesswent.ui.navigation.LIST_TOP_LEVEL_DESTINATION
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
 import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
+import com.github.onlynotesswent.utils.Visibility
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -118,15 +119,16 @@ fun OverviewScreen(
             onDismissRequest = { expanded = false })
         // Logic to show the dialog to create a folder
         if (showCreateDialog) {
-          CreateFolderDialog(
+          FolderDialog(
               onDismiss = { showCreateDialog = false },
-              onConfirm = { newName ->
+              onConfirm = { newName, visibility ->
                 folderViewModel.addFolder(
                     Folder(
                         id = folderViewModel.getNewFolderId(),
                         name = newName,
                         userId = userViewModel.currentUser.value!!.uid,
-                        parentFolderId = parentFolderId.value),
+                        parentFolderId = parentFolderId.value,
+                        visibility = visibility),
                     userViewModel.currentUser.value!!.uid)
                 showCreateDialog = false
                 if (parentFolderId.value != null) {
@@ -134,7 +136,8 @@ fun OverviewScreen(
                 } else {
                   navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
                 }
-              })
+              },
+              action = "Create")
         }
       },
       bottomBar = {
@@ -144,7 +147,9 @@ fun OverviewScreen(
             selectedItem = navigationActions.currentRoute())
       }) { paddingValues ->
         CustomLazyGrid(
-            modifier = Modifier.fillMaxSize().padding(paddingValues),
+            modifier =
+                Modifier.fillMaxSize()
+                    .padding(top = 20.dp, bottom = paddingValues.calculateBottomPadding()),
             notes = userRootNotes,
             folders = userRootFolders,
             gridModifier =
@@ -198,10 +203,11 @@ fun RefreshButton(onClick: () -> Unit) {
  * other interactions.
  *
  * @param note The note data that will be displayed in this card.
+ * @param author The author of the note, or null if the author is not to be displayed.
  * @param onClick The lambda function to be invoked when the note card is clicked.
  */
 @Composable
-fun NoteItem(note: Note, onClick: () -> Unit) {
+fun NoteItem(note: Note, author: String? = null, onClick: () -> Unit) {
   Card(
       modifier =
           Modifier.testTag("noteCard")
@@ -235,8 +241,14 @@ fun NoteItem(note: Note, onClick: () -> Unit) {
               style = MaterialTheme.typography.bodyMedium,
               fontWeight = FontWeight.Bold,
               color = MaterialTheme.colorScheme.onPrimaryContainer)
+          if (author != null) {
+            Text(
+                text = author,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onPrimaryContainer)
+          }
           Text(
-              text = note.noteClass.classCode,
+              text = note.noteCourse.fullName(),
               style = MaterialTheme.typography.bodySmall,
               color = MaterialTheme.colorScheme.onPrimaryContainer)
         }
@@ -275,40 +287,70 @@ fun FolderItem(folder: Folder, onClick: () -> Unit) {
 }
 
 /**
- * Dialog that allows the user to create a folder.
+ * Dialog that allows the user to create or rename a folder.
  *
  * @param onDismiss callback to be invoked when the dialog is dismissed
  * @param onConfirm callback to be invoked when the user confirms the new name
+ * @param action the action to execute on the folder, either "Create" or "Rename"
+ * @param oldVis the visibility of the folder
+ * @param oldName the name of the folder
  */
 @Composable
-fun CreateFolderDialog(onDismiss: () -> Unit, onConfirm: (String) -> Unit) {
+fun FolderDialog(
+    onDismiss: () -> Unit,
+    onConfirm: (String, Visibility) -> Unit,
+    action: String,
+    oldVis: Visibility? = null,
+    oldName: String = ""
+) {
 
-  var name by remember { mutableStateOf("") }
+  var name by remember { mutableStateOf(oldName) }
+  var visibility: Visibility? by remember { mutableStateOf(oldVis) }
+  var expandedVisibility by remember { mutableStateOf(false) }
 
-  AlertDialog(
-      modifier = Modifier.testTag("createFolderDialog"),
-      onDismissRequest = onDismiss,
-      title = { Text("Create Folder") },
-      text = {
-        OutlinedTextField(
-            value = name,
-            onValueChange = { name = it },
-            label = { Text("Folder Name") },
-            modifier = Modifier.testTag("inputFolderName"))
-      },
-      confirmButton = {
-        Button(
-            enabled = name.isNotEmpty(),
-            onClick = { onConfirm(name) },
-            modifier = Modifier.testTag("confirmFolderCreation")) {
-              Text("Create")
+  Dialog(onDismissRequest = onDismiss) {
+    Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
+      Column(
+          modifier = Modifier.padding(16.dp).testTag("folderDialog"),
+          verticalArrangement = Arrangement.spacedBy(8.dp),
+          horizontalAlignment = Alignment.CenterHorizontally) {
+            Row(
+                modifier = Modifier.fillMaxWidth(0.92f),
+                horizontalArrangement = Arrangement.Start) {
+                  Text("$action Folder", style = MaterialTheme.typography.titleLarge)
+                }
+
+            OutlinedTextField(
+                value = name,
+                onValueChange = { name = it },
+                label = { Text("Folder Name") },
+                modifier = Modifier.testTag("inputFolderName"))
+
+            OptionDropDownMenu(
+                value = visibility?.toReadableString() ?: "Choose visibility",
+                expanded = expandedVisibility,
+                buttonTag = "visibilityButton",
+                menuTag = "visibilityMenu",
+                onExpandedChange = { expandedVisibility = it },
+                items = Visibility.READABLE_STRINGS,
+                onItemClick = { visibility = Visibility.fromReadableString(it) },
+                modifier = Modifier.testTag("visibilityDropDown"),
+                widthFactor = 0.94f)
+
+            Row(modifier = Modifier.fillMaxWidth(0.92f), horizontalArrangement = Arrangement.End) {
+              Button(onClick = onDismiss, modifier = Modifier.testTag("dismissFolderAction")) {
+                Text("Cancel")
+              }
+              Button(
+                  enabled = name.isNotEmpty() && visibility != null,
+                  onClick = { onConfirm(name, visibility ?: Visibility.DEFAULT) },
+                  modifier = Modifier.testTag("confirmFolderAction")) {
+                    Text(action)
+                  }
             }
-      },
-      dismissButton = {
-        Button(onClick = onDismiss, modifier = Modifier.testTag("dismissFolderCreation")) {
-          Text("Cancel")
-        }
-      })
+          }
+    }
+  }
 }
 
 /**
@@ -366,13 +408,13 @@ fun CustomLazyGrid(
     noteViewModel: NoteViewModel,
     navigationActions: NavigationActions,
     paddingValues: PaddingValues,
+    contentAlignment: Alignment = Alignment.TopCenter,
     columnContent: @Composable (ColumnScope.() -> Unit)
 ) {
-  Box(modifier = modifier) {
+  Box(modifier = modifier, contentAlignment = contentAlignment) {
     if (notes.value.isNotEmpty() || folders.value.isNotEmpty()) {
       LazyVerticalGrid(
           columns = GridCells.Adaptive(minSize = 100.dp),
-          contentPadding = PaddingValues(vertical = 20.dp),
           horizontalArrangement = Arrangement.spacedBy(4.dp),
           modifier = gridModifier) {
             items(folders.value.size) { index ->
