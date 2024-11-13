@@ -39,7 +39,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -493,7 +492,7 @@ fun NonModifiableProfilePicture(
 
     // Profile Picture Painter
     val painter =
-        if (profilePictureUri.value.isNotBlank()) {
+        if (user.value!!.hasProfilePicture && profilePictureUri.value.isNotBlank()) {
           // Load the profile picture if it exists
           rememberAsyncImagePainter(profilePictureUri.value)
         } else {
