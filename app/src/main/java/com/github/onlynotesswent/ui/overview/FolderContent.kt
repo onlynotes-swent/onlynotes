@@ -176,8 +176,7 @@ fun FolderContentScreen(
                                     userFolderNotes.value.forEach { note ->
                                       noteViewModel.updateNote(
                                           note.copy(folderId = folder.value!!.parentFolderId),
-                                          note.userId,
-                                          note.folderId)
+                                          note.userId)
                                     }
                                   } else {
                                     // folder is root folder
@@ -187,7 +186,7 @@ fun FolderContentScreen(
                                     }
                                     userFolderNotes.value.forEach { note ->
                                       noteViewModel.updateNote(
-                                          note.copy(folderId = null), note.userId, note.folderId)
+                                          note.copy(folderId = null), note.userId)
                                     }
                                   }
                                   navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)

@@ -117,8 +117,18 @@ open class NavigationActions(
     return screenNavigationStack.removeLastOrNull()
   }
 
-  /** Clears the screen navigation stack. */
+  /**
+   * Clears the screen navigation stack.
+   * */
   fun clearScreenNavigationStack() {
     screenNavigationStack.clear()
+  }
+
+  /**
+   * Returns the screen navigation stack.
+   * */
+  fun getScreenNavigationStack(): MutableList<String> {
+    // Copy of the navigation stack to prevent modification
+    return screenNavigationStack.toMutableList()
   }
 }

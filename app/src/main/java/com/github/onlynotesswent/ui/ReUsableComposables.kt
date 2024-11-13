@@ -117,7 +117,7 @@ fun NoteItem(
           Button(
               onClick = {
                 // Move out will move the given note to the overview menu
-                noteViewModel.updateNote(note.copy(folderId = null), note.userId, note.folderId)
+                noteViewModel.updateNote(note.copy(folderId = null), note.userId)
                 showMoveOutDialog = false
                 // Clear the screen navigation stack as we navigate to the overview screen
                 navigationActions.clearScreenNavigationStack()
