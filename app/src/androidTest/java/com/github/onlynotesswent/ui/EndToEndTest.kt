@@ -24,6 +24,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navigation
 import androidx.test.espresso.intent.Intents
+import com.github.onlynotesswent.model.file.FileRepository
+import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.folder.FolderRepository
 import com.github.onlynotesswent.model.folder.FolderViewModel
 import com.github.onlynotesswent.model.note.Note
@@ -64,6 +66,8 @@ class EndToEndTest {
   private lateinit var noteViewModel: NoteViewModel
   private lateinit var folderRepository: FolderRepository
   private lateinit var folderViewModel: FolderViewModel
+  private lateinit var fileRepository: FileRepository
+  private lateinit var fileViewModel: FileViewModel
 
   private lateinit var context: Context
   private lateinit var scanner: Scanner
@@ -103,6 +107,9 @@ class EndToEndTest {
     noteViewModel = NoteViewModel(noteRepository)
     folderRepository = mock(FolderRepository::class.java)
     folderViewModel = FolderViewModel(folderRepository)
+    fileRepository = mock(FileRepository::class.java)
+    fileViewModel = FileViewModel(fileRepository)
+
     context = mock(Context::class.java)
     scanner = mock(Scanner::class.java)
 
@@ -150,7 +157,7 @@ class EndToEndTest {
                     AddNoteScreen(navigationActions, scanner, noteViewModel, userViewModel)
                   }
                   composable(Screen.EDIT_NOTE) {
-                    EditNoteScreen(navigationActions, noteViewModel, userViewModel)
+                    EditNoteScreen(navigationActions, noteViewModel, userViewModel, fileViewModel)
                   }
                 }
               }

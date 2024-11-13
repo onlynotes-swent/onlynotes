@@ -1,6 +1,7 @@
 package com.github.onlynotesswent.ui.overview
 
 import android.graphics.Bitmap
+import android.net.Uri
 import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
@@ -8,7 +9,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -25,6 +25,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -34,8 +35,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
+import com.github.onlynotesswent.model.file.FileType
+import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.note.Note
 import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.model.users.UserViewModel
@@ -44,6 +49,9 @@ import com.github.onlynotesswent.ui.navigation.Screen
 import com.github.onlynotesswent.utils.Course
 import com.github.onlynotesswent.utils.Visibility
 import com.google.firebase.Timestamp
+import com.mohamedrejeb.richeditor.model.rememberRichTextState
+import com.mohamedrejeb.richeditor.ui.material3.RichTextEditor
+import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -62,8 +70,11 @@ import java.util.Locale
 fun EditNoteScreen(
     navigationActions: NavigationActions,
     noteViewModel: NoteViewModel,
-    userViewModel: UserViewModel
+    userViewModel: UserViewModel,
+    fileViewModel: FileViewModel
 ) {
+  val state = rememberRichTextState()
+  val context = LocalContext.current
   val note by noteViewModel.selectedNote.collectAsState()
   val currentUser by userViewModel.currentUser.collectAsState()
   val currentYear = Calendar.getInstance().get(Calendar.YEAR)
@@ -75,6 +86,42 @@ fun EditNoteScreen(
   var visibility by remember { mutableStateOf(note?.visibility) }
   var expandedVisibility by remember { mutableStateOf(false) }
   var updatedComments by remember { mutableStateOf(note?.comments ?: Note.CommentCollection()) }
+  var attemptedMarkdownDownloads = 0
+  /**
+   * Downloads a markdown file associated with the note. If no file exists, it attempts once to
+   * create and upload an empty markdown file, then re-download it.
+   */
+  @Suppress("kotlin:S6300") // as there is no need to encrypt file
+  fun downloadMarkdownFile() {
+    fileViewModel.downloadFile(
+        uid = note?.id ?: "errorNoId",
+        fileType = FileType.NOTE_TEXT,
+        context = context,
+        onSuccess = { downloadedFile: File ->
+          // Update the UI with the downloaded file reference
+          state.setMarkdown(downloadedFile.readText())
+        },
+        onFailure = { _ ->
+          attemptedMarkdownDownloads += 1
+          if (attemptedMarkdownDownloads < 2) {
+            val file = File(context.cacheDir, "${note?.id ?: "errorNoId"}.md")
+            if (!file.exists()) {
+              file.createNewFile()
+            }
+            file.writeText("")
+            // Get the file URI
+            val fileUri = Uri.fromFile(file)
+
+            fileViewModel.uploadFile(note?.id ?: "errorNoId", fileUri, FileType.NOTE_TEXT)
+            Log.d(
+                "MarkdownAttachment",
+                "No markdown associated. Attempting to attach a Markdown to this note.")
+            downloadMarkdownFile()
+          }
+          Log.e("MarkdownAttachment", "Failed to attach a Markdown to this note.")
+        })
+  }
+  LaunchedEffect(Unit) { downloadMarkdownFile() }
 
   fun updateOnlyNoteCommentAndDate() {
     noteViewModel.updateNote(
@@ -171,13 +218,20 @@ fun EditNoteScreen(
                     placeholder = "Set the course year for the note",
                     modifier = Modifier.fillMaxWidth().testTag("EditCourseYear textField"))
 
-                NoteDataTextField(
-                    value = noteText,
-                    onValueChange = { noteText = it },
-                    label = "Note Content",
-                    placeholder = "Enter your note here...",
-                    modifier = Modifier.fillMaxWidth().height(400.dp).testTag("EditNote textField"))
+                RichTextEditor(
+                    modifier = Modifier.fillMaxWidth().pointerInput(Unit) {},
+                    state = state,
+                    readOnly = true)
 
+                Button(
+                    colors =
+                        ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.onPrimary),
+                    onClick = { navigationActions.navigateTo(Screen.EDIT_MARKDOWN) },
+                    modifier = Modifier.testTag("Edit Markdown button")) {
+                      Text("Edit Markdown")
+                    }
                 Button(
                     enabled = noteTitle.isNotEmpty(),
                     onClick = {
