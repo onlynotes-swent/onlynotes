@@ -27,6 +27,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -83,7 +84,7 @@ fun SearchScreen(
   filteredFolders.value = folders.value.filter { textMatchesSearch(it.name, searchWords.value) }
 
   // Refresh the list of notes, users, and folders periodically.
-  RefreshPeriodically(noteViewModel, userViewModel, folderViewModel)
+  RefreshPeriodically(searchQuery, noteViewModel, userViewModel, folderViewModel)
   // Refresh the list of notes, users, and folders when the search query is empty,
   // typically when reloading the screen.
   if (searchQuery.value.isBlank()) {
@@ -262,13 +263,14 @@ fun SearchScreen(
 
 @Composable
 private fun RefreshPeriodically(
+    searchQuery: MutableState<String>,
     noteViewModel: NoteViewModel,
     userViewModel: UserViewModel,
     folderViewModel: FolderViewModel
 ) {
   LaunchedEffect(Unit) {
-    while (true) {
-      delay(5000)
+    while (searchQuery.value.isNotBlank()) {
+      delay(3000)
       noteViewModel.getPublicNotes()
       userViewModel.getAllUsers()
       folderViewModel.getPublicFolders()
