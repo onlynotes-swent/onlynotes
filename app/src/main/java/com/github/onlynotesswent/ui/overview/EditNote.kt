@@ -3,7 +3,6 @@ package com.github.onlynotesswent.ui.overview
 import android.graphics.Bitmap
 import android.net.Uri
 import android.util.Log
-import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -112,15 +111,12 @@ fun EditNoteScreen(
             val fileUri = Uri.fromFile(file)
 
             fileViewModel.uploadFile(note?.id ?: "errorNoId", fileUri, FileType.NOTE_TEXT)
-            Toast.makeText(
-                    context,
-                    "No markdown associated attempting to attach a Markdown to this note",
-                    Toast.LENGTH_SHORT)
-                .show()
+            Log.d(
+                "MarkdownAttachment",
+                "No markdown associated. Attempting to attach a Markdown to this note.")
             downloadMarkdownFile()
           }
-          Toast.makeText(context, "Failed to attach a Markdown to this note", Toast.LENGTH_SHORT)
-              .show()
+          Log.e("MarkdownAttachment", "Failed to attach a Markdown to this note.")
         })
   }
   LaunchedEffect(Unit) { downloadMarkdownFile() }

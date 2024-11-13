@@ -2,6 +2,7 @@ package com.github.onlynotesswent.ui.overview
 
 import android.content.Context
 import android.net.Uri
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
@@ -85,13 +86,13 @@ fun EditMarkdownScreen(
   val state = rememberRichTextState()
 
   val context = LocalContext.current
-  val note by noteViewModel.selectedNote.collectAsState()
+  val selectedNote by noteViewModel.selectedNote.collectAsState()
   var markdownContent: File? by remember { mutableStateOf(null) }
 
   // Function to download and set the Markdown file
   LaunchedEffect(Unit) {
     fileViewModel.downloadFile(
-        uid = note?.id ?: "errorNoId",
+        uid = selectedNote?.id ?: "errorNoId",
         fileType = FileType.NOTE_TEXT,
         context = context,
         onSuccess = { downloadedFile: File ->
@@ -102,6 +103,7 @@ fun EditMarkdownScreen(
         onFailure = { exception ->
           Toast.makeText(context, "Error downloading file: ${exception.message}", Toast.LENGTH_LONG)
               .show()
+          Log.e("FileDownload", "Error downloading file: ${exception.message}")
         })
   }
   @Suppress("kotlin:S6300") // as there is no need to encrypt file
@@ -118,6 +120,7 @@ fun EditMarkdownScreen(
       }
     } catch (e: IOException) {
       Toast.makeText(context, "Error updating file: ${e.message}", Toast.LENGTH_LONG).show()
+      Log.e("FileUpdate", "Error updating file: ${e.message}")
     }
   }
 
@@ -160,7 +163,7 @@ fun EditMarkdownScreen(
 
           Button(
               modifier = Modifier.fillMaxWidth().testTag("Save button"),
-              onClick = { updateMarkdownFile(context, note?.id ?: "", fileViewModel) }) {
+              onClick = { updateMarkdownFile(context, selectedNote?.id ?: "", fileViewModel) }) {
                 Text("Save")
               }
         }
