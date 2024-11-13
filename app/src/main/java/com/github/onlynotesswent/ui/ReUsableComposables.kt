@@ -99,14 +99,20 @@ fun NoteItem(
     navigationActions: NavigationActions,
     onClick: () -> Unit
 ) {
-
   // Mutable state to show the move out dialog
   var showMoveOutDialog by remember { mutableStateOf(showDialog) }
 
   if (showMoveOutDialog && note.folderId != null) {
     AlertDialog(
         onDismissRequest = { showMoveOutDialog = false },
-        title = { Text("Move note out of folder") },
+        title = {
+            Box(
+                modifier = Modifier.fillMaxWidth(),
+                contentAlignment = Alignment.Center
+            ) {
+                Text("Move note out of folder")
+            }
+        },
         confirmButton = {
           Button(
               onClick = {
@@ -144,7 +150,8 @@ fun NoteItem(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                   Icon(
                       // Show move out menu when clicking on the Icon
-                      modifier = Modifier.clickable { showMoveOutDialog = true },
+                      modifier = Modifier.clickable(enabled = note.folderId != null) {
+                          showMoveOutDialog = true },
                       imageVector = Icons.Filled.MoreVert,
                       contentDescription = null,
                       tint = MaterialTheme.colorScheme.onPrimaryContainer)
@@ -182,7 +189,7 @@ fun FolderItem(folder: Folder, onClick: () -> Unit) {
         Column(
             modifier = Modifier.padding(8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
               Image(
-                  painter = painterResource(id = R.drawable.folder_icon_big),
+                  painter = painterResource(id = R.drawable.folder_icon),
                   contentDescription = "Folder Icon",
                   modifier = Modifier.size(80.dp))
 
@@ -210,7 +217,14 @@ fun CreateFolderDialog(onDismiss: () -> Unit, onConfirm: (String) -> Unit) {
   AlertDialog(
       modifier = Modifier.testTag("createFolderDialog"),
       onDismissRequest = onDismiss,
-      title = { Text("Create Folder") },
+      title = {
+          Box(
+            modifier = Modifier.fillMaxWidth(),
+            contentAlignment = Alignment.Center
+          ) {
+            Text("Create folder")
+          }
+      },
       text = {
         OutlinedTextField(
             value = name,
@@ -257,7 +271,7 @@ fun CustomDropDownMenu(
     FloatingActionButton(onClick = onFabClick, modifier = modifier) { fabIcon() }
     DropdownMenu(expanded = expanded, onDismissRequest = onDismissRequest) {
       menuItems.forEach { item ->
-        DropdownMenuItem(text = item.text, onClick = item.onClick, modifier = item.modifier)
+        DropdownMenuItem(text = item.text, leadingIcon = item.icon, onClick = item.onClick, modifier = item.modifier)
       }
     }
   }
@@ -331,11 +345,13 @@ fun CustomLazyGrid(
  * Custom dropdown menu item that contains a text and an onClick action.
  *
  * @param text The text to be displayed in the dropdown menu item.
+ * @param icon The icon to be displayed in the dropdown menu item.
  * @param onClick The action to be invoked when the dropdown menu item is clicked.
  * @param modifier The modifier for the dropdown menu item.
  */
 data class CustomDropDownMenuItem(
     val text: @Composable () -> Unit,
+    val icon: @Composable () -> Unit,
     val onClick: () -> Unit,
     val modifier: Modifier = Modifier
 )
@@ -355,7 +371,14 @@ fun RenameFolderDialog(currentName: String, onDismiss: () -> Unit, onConfirm: (S
   AlertDialog(
       modifier = Modifier.testTag("renameFolderDialog"),
       onDismissRequest = onDismiss,
-      title = { Text("Rename folder") },
+      title = {
+          Box(
+              modifier = Modifier.fillMaxWidth(),
+              contentAlignment = Alignment.Center
+          ) {
+              Text("Rename folder")
+          }
+      },
       text = {
         OutlinedTextField(
             value = newName, onValueChange = { newName = it }, label = { Text("New Folder Name") })

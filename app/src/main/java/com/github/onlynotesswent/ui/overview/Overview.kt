@@ -19,7 +19,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import com.github.onlynotesswent.R
 import com.github.onlynotesswent.model.folder.Folder
 import com.github.onlynotesswent.model.folder.FolderViewModel
 import com.github.onlynotesswent.model.note.NoteViewModel
@@ -72,6 +74,7 @@ fun OverviewScreen(
                 listOf(
                     CustomDropDownMenuItem(
                         text = { Text("Create note") },
+                        icon = { Icon(painter = painterResource(id = R.drawable.add_note_icon), contentDescription = "AddNote") },
                         onClick = {
                           expanded = false
                           navigationActions.navigateTo(Screen.ADD_NOTE)
@@ -80,6 +83,7 @@ fun OverviewScreen(
                         modifier = Modifier.testTag("createNote")),
                     CustomDropDownMenuItem(
                         text = { Text("Create folder") },
+                        icon = { Icon(painter = painterResource(id = R.drawable.folder_create_icon), contentDescription = "createFolder") },
                         onClick = {
                           expanded = false
                           showCreateDialog = true

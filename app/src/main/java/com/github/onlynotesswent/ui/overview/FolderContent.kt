@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -30,7 +31,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import com.github.onlynotesswent.R
 import com.github.onlynotesswent.model.folder.Folder
 import com.github.onlynotesswent.model.folder.FolderViewModel
 import com.github.onlynotesswent.model.note.NoteViewModel
@@ -103,6 +106,10 @@ fun FolderContentScreen(
                         updatedName = folder.value?.name ?: "Folder name not found"
                       }
                       Spacer(modifier = Modifier.weight(2f))
+                      Icon(
+                          painter = painterResource(id = R.drawable.open_folder_icon),
+                          contentDescription = "Folder icon")
+                      Spacer (modifier = Modifier.weight(0.25f))
                       Text(
                           updatedName,
                           color = MaterialTheme.colorScheme.onSurface,
@@ -141,6 +148,7 @@ fun FolderContentScreen(
                         listOf(
                             CustomDropDownMenuItem(
                                 text = { Text("Rename folder") },
+                                icon = { Icon(imageVector = Icons.Default.Edit, contentDescription = "RenameFolder") },
                                 onClick = {
                                   expanded = false
                                   showRenameDialog = true
@@ -148,6 +156,7 @@ fun FolderContentScreen(
                                 modifier = Modifier.testTag("renameFolderButton")),
                             CustomDropDownMenuItem(
                                 text = { Text("Delete folder") },
+                                icon = { Icon(painter = painterResource(id =R.drawable.folder_delete_icon), contentDescription = "DeleteFolder") },
                                 onClick = {
                                   expanded = false
                                   // Clear the folder navigation stack as we go back to overview
@@ -203,6 +212,7 @@ fun FolderContentScreen(
                   listOf(
                       CustomDropDownMenuItem(
                           text = { Text("Create note") },
+                          icon = { Icon(painter = painterResource(id = R.drawable.add_note_icon), contentDescription = "AddNote") },
                           onClick = {
                             expandedFolder = false
                             noteViewModel.selectedFolderId(folder.value!!.id)
@@ -211,6 +221,7 @@ fun FolderContentScreen(
                           modifier = Modifier.testTag("createNote")),
                       CustomDropDownMenuItem(
                           text = { Text("Create folder") },
+                          icon = { Icon(painter = painterResource(id = R.drawable.folder_create_icon), contentDescription = "createFolder") },
                           onClick = {
                             expandedFolder = false
                             showCreateDialog = true
