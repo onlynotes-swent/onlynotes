@@ -93,7 +93,7 @@ class NotesToFlashcard(
                   back = answer,
                   nextReview = Timestamp.now(),
                   userId = note.userId,
-                  folderId = "",
+                  folderId = note.folderId?: "",
                   noteId = note.id)
           flashcards.add(flashcard)
           flashcardViewModel.addFlashcard(flashcard)
