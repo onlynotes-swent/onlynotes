@@ -1,6 +1,7 @@
 package com.github.onlynotesswent.model.folder
 
 import android.util.Log
+import com.github.onlynotesswent.utils.Visibility
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.DocumentSnapshot
@@ -179,6 +180,23 @@ class FolderRepositoryFirestore(private val db: FirebaseFirestore) : FolderRepos
     }
   }
 
+  override fun getPublicFolders(onSuccess: (List<Folder>) -> Unit, onFailure: (Exception) -> Unit) {
+    db.collection(folderCollectionPath).get().addOnCompleteListener { task ->
+      if (task.isSuccessful) {
+        val publicFolders =
+            task.result.documents
+                .mapNotNull { document -> documentSnapshotToFolder(document) }
+                .filter { it.visibility == Visibility.PUBLIC }
+        onSuccess(publicFolders)
+      } else {
+        task.exception?.let { e: Exception ->
+          onFailure(e)
+          Log.e(TAG, "Failed to retrieve public folders: ${e.message}")
+        }
+      }
+    }
+  }
+
   /**
    * Converts a DocumentSnapshot to a Folder object.
    *
@@ -190,7 +208,8 @@ class FolderRepositoryFirestore(private val db: FirebaseFirestore) : FolderRepos
         id = document.id,
         name = document.getString("name")!!,
         userId = document.getString("userId")!!,
-        parentFolderId = document.getString("parentFolderId"))
+        parentFolderId = document.getString("parentFolderId"),
+        Visibility.fromString(document.getString("visibility") ?: Visibility.DEFAULT.toString()))
   }
 
   companion object {

@@ -2,6 +2,8 @@ package com.github.onlynotesswent.model.note
 
 import android.graphics.Bitmap
 import android.util.Log
+import com.github.onlynotesswent.utils.Course
+import com.github.onlynotesswent.utils.Visibility
 import com.google.android.gms.tasks.Task
 import com.google.firebase.Firebase
 import com.google.firebase.Timestamp
@@ -17,11 +19,11 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
       val title: String,
       val content: String,
       val date: Timestamp,
-      val visibility: Note.Visibility,
+      val visibility: Visibility,
       val userId: String,
-      val classCode: String,
-      val className: String,
-      val classYear: Int,
+      val courseCode: String,
+      val courseName: String,
+      val courseYear: Int,
       val publicPath: String,
       val folderId: String?,
       val image: String,
@@ -103,10 +105,10 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
         note.date,
         note.visibility,
         note.userId,
-        note.noteClass.classCode,
-        note.noteClass.className,
-        note.noteClass.classYear,
-        note.noteClass.publicPath,
+        note.noteCourse.courseCode,
+        note.noteCourse.courseName,
+        note.noteCourse.courseYear,
+        note.noteCourse.publicPath,
         note.folderId,
         "null",
         convertCommentsList(note.comments.commentsList))
@@ -139,7 +141,7 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
         val publicNotes =
             task.result.documents
                 .mapNotNull { document -> documentSnapshotToNote(document) }
-                .filter { it.visibility == Note.Visibility.PUBLIC }
+                .filter { it.visibility == Visibility.PUBLIC }
         onSuccess(publicNotes)
       } else {
         task.exception?.let { e ->
@@ -307,23 +309,32 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
   fun documentSnapshotToNote(document: DocumentSnapshot): Note? {
     return try {
       val id = document.id
-      val title = document.getString("title") ?: return null
-      val content = document.getString("content") ?: return null
-      val date = document.getTimestamp("date") ?: return null
+      val title = document.getString("title") ?: ""
+      val content = document.getString("content") ?: ""
+      val date = document.getTimestamp("date") ?: Timestamp.now()
       val visibility =
-          Note.Visibility.fromString(
-              document.getString("visibility") ?: Note.Visibility.DEFAULT.toString())
+          Visibility.fromString(document.getString("visibility") ?: Visibility.DEFAULT.toString())
       val userId = document.getString("userId") ?: return null
-      val classCode = document.getString("classCode") ?: return null
-      val className = document.getString("className") ?: return null
-      val classYear = document.getLong("classYear")?.toInt() ?: return null
-      val classPath = document.getString("publicPath") ?: return null
+      val courseCode = document.getString("courseCode") ?: ""
+      val courseName = document.getString("courseName") ?: ""
+      val courseYear = document.getLong("courseYear")?.toInt() ?: 0
+      val publicPath = document.getString("publicPath") ?: ""
       val folderId = document.getString("folderId")
       val image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)
       val comments =
           commentStringToCommentClass(document.get("commentsList") as? List<String> ?: emptyList())
       // Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888) is the default bitMap, to be changed
       // when we implement images by URL
+
+      val course =
+          if (courseYear == 0 ||
+              courseCode.isEmpty() ||
+              courseName.isEmpty() ||
+              publicPath.isEmpty()) {
+            Course.DEFAULT
+          } else {
+            Course(courseCode, courseName, courseYear, publicPath)
+          }
 
       Note(
           id = id,
@@ -332,7 +343,7 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
           date = date,
           visibility = visibility,
           userId = userId,
-          noteClass = Note.Class(classCode, className, classYear, classPath),
+          noteCourse = course,
           folderId = folderId,
           image = image,
           comments = Note.CommentCollection(comments))

@@ -211,4 +211,16 @@ class FolderRepositoryFirestoreTest {
 
     verify(timeout(100)) { mockDocumentSnapshot2.id }
   }
+
+  @Test
+  fun getPublicFolders_callsDocuments() {
+    `when`(mockQuerySnapshot.documents)
+        .thenReturn(listOf(mockDocumentSnapshot, mockDocumentSnapshot2))
+    var receivedFolders: List<Folder>? = null
+    folderRepositoryFirestore.getPublicFolders(
+        onSuccess = { receivedFolders = it }, onFailure = { assert(false) })
+    assertNotNull(receivedFolders)
+
+    verify(timeout(100)) { (mockQuerySnapshot).documents }
+  }
 }
