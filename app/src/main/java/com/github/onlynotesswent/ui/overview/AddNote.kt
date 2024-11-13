@@ -2,7 +2,7 @@ package com.github.onlynotesswent.ui.overview
 
 import android.graphics.Bitmap
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -10,6 +10,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.ArrowDropDown
@@ -45,15 +48,17 @@ import com.github.onlynotesswent.model.scanner.Scanner
 import com.github.onlynotesswent.model.users.UserViewModel
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
+import com.github.onlynotesswent.utils.Course
+import com.github.onlynotesswent.utils.Visibility
 import com.google.firebase.Timestamp
 import java.util.Calendar
 
 /**
  * Displays the add note screen, where users can create a new note. The screen includes text fields
- * for entering the note's title, class name, class code, and class year, as well as dropdown menus
- * for selecting the note's visibility and template. The screen also includes a button to create the
- * note, which navigates to the edit note screen if the template is "Create Note", or navigates back
- * to the overview screen if the template is "Upload Note" or "Scan Note".
+ * for entering the note's title, course name, course code, and course year, as well as dropdown
+ * menus for selecting the note's visibility and template. The screen also includes a button to
+ * create the note, which navigates to the edit note screen if the template is "Create Note", or
+ * navigates back to the overview screen if the template is "Upload Note" or "Scan Note".
  *
  * @param navigationActions The navigation view model used to transition between different screens.
  * @param scanner The scanner used to scan images and create notes.
@@ -72,11 +77,11 @@ fun AddNoteScreen(
   val folderId = noteViewModel.currentFolderId.collectAsState()
   val currentYear = Calendar.getInstance().get(Calendar.YEAR)
   var title by remember { mutableStateOf("") }
-  var className by remember { mutableStateOf("") }
-  var classCode by remember { mutableStateOf("") }
-  var classYear by remember { mutableIntStateOf(currentYear) }
+  var courseName by remember { mutableStateOf("") }
+  var courseCode by remember { mutableStateOf("") }
+  var courseYear by remember { mutableIntStateOf(currentYear) }
   var template by remember { mutableStateOf(templateInitialText) }
-  var visibility: Note.Visibility? by remember { mutableStateOf(null) }
+  var visibility: Visibility? by remember { mutableStateOf(null) }
   var expandedVisibility by remember { mutableStateOf(false) }
   var expandedTemplate by remember { mutableStateOf(false) }
 
@@ -97,7 +102,11 @@ fun AddNoteScreen(
       },
       content = { paddingValues ->
         Column(
-            modifier = Modifier.fillMaxSize().padding(16.dp).padding(paddingValues),
+            modifier =
+                Modifier.fillMaxSize()
+                    .padding(16.dp)
+                    .padding(paddingValues)
+                    .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(8.dp)) {
               Spacer(modifier = Modifier.height(30.dp))
@@ -122,35 +131,35 @@ fun AddNoteScreen(
                   buttonTag = "visibilityButton",
                   menuTag = "visibilityMenu",
                   onExpandedChange = { expandedVisibility = it },
-                  items = Note.Visibility.READABLE_STRINGS,
-                  onItemClick = { visibility = Note.Visibility.fromReadableString(it) })
+                  items = Visibility.READABLE_STRINGS,
+                  onItemClick = { visibility = Visibility.fromReadableString(it) })
 
               Spacer(modifier = Modifier.height(10.dp))
 
               NoteDataTextField(
-                  value = className,
-                  onValueChange = { className = it },
-                  label = "Class Name",
-                  placeholder = "Set the class name for the note",
-                  modifier = Modifier.fillMaxWidth().testTag("ClassNameTextField"))
+                  value = courseName,
+                  onValueChange = { courseName = Course.formatCourseName(it) },
+                  label = "Course Name",
+                  placeholder = "Set the course name for the note",
+                  modifier = Modifier.fillMaxWidth().testTag("CourseNameTextField"))
 
               Spacer(modifier = Modifier.height(5.dp))
 
               NoteDataTextField(
-                  value = classCode,
-                  onValueChange = { classCode = it },
-                  label = "Class Code",
-                  placeholder = "Set the class code for the note",
-                  modifier = Modifier.fillMaxWidth().testTag("ClassCodeTextField"))
+                  value = courseCode,
+                  onValueChange = { courseCode = Course.formatCourseCode(it) },
+                  label = "Course Code",
+                  placeholder = "Set the course code for the note",
+                  modifier = Modifier.fillMaxWidth().testTag("CourseCodeTextField"))
 
               Spacer(modifier = Modifier.height(5.dp))
 
               NoteDataTextField(
-                  value = classYear.toString(),
-                  onValueChange = { classYear = it.toIntOrNull() ?: currentYear },
-                  label = "Class Year",
-                  placeholder = "Set the class year for the note",
-                  modifier = Modifier.fillMaxWidth().testTag("ClassYearTextField"))
+                  value = courseYear.toString(),
+                  onValueChange = { courseYear = it.toIntOrNull() ?: currentYear },
+                  label = "Course Year",
+                  placeholder = "Set the course year for the note",
+                  modifier = Modifier.fillMaxWidth().testTag("CourseYearTextField"))
 
               Spacer(modifier = Modifier.height(10.dp))
 
@@ -181,7 +190,7 @@ fun AddNoteScreen(
                             content = "",
                             date = Timestamp.now(),
                             visibility = visibility!!,
-                            noteClass = Note.Class(classCode, className, classYear, "path"),
+                            noteCourse = Course(courseCode, courseName, courseYear, "path"),
                             userId = userViewModel.currentUser.value!!.uid,
                             image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888),
                             folderId = folderId.value)
@@ -229,21 +238,22 @@ fun OptionDropDownMenu(
     items: List<String>,
     onItemClick: (String) -> Unit,
     modifier: Modifier = Modifier,
+    widthFactor: Float = 0.8f
 ) {
-  Box(modifier = Modifier.fillMaxWidth()) {
+  BoxWithConstraints(modifier = Modifier.fillMaxWidth(widthFactor)) {
     Button(
         onClick = { onExpandedChange(!expanded) },
-        modifier = Modifier.fillMaxWidth().testTag(buttonTag)) {
+        modifier = Modifier.width(maxWidth).testTag(buttonTag)) {
           Text(text = value)
           Icon(Icons.Outlined.ArrowDropDown, "Dropdown icon")
         }
-
     DropdownMenu(
         expanded = expanded,
         onDismissRequest = { onExpandedChange(false) },
-        modifier = modifier.fillMaxWidth().testTag(menuTag)) {
+        modifier = modifier.width(maxWidth).testTag(menuTag)) {
           items.forEach { item ->
             DropdownMenuItem(
+                modifier = Modifier.testTag("item--$item"),
                 text = { Text(item) },
                 onClick = {
                   onItemClick(item)

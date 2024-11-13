@@ -1,5 +1,7 @@
 package com.github.onlynotesswent.model.folder
 
+import com.github.onlynotesswent.utils.Visibility
+
 /**
  * Represents a folder that contains notes.
  *
@@ -12,5 +14,6 @@ data class Folder(
     val id: String,
     val name: String,
     val userId: String,
-    val parentFolderId: String? = null
+    val parentFolderId: String? = null,
+    val visibility: Visibility = Visibility.DEFAULT
 )

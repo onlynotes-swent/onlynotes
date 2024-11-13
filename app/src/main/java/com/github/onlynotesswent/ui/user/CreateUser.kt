@@ -83,9 +83,9 @@ fun CreateUserScreen(navigationActions: NavigationActions, userViewModel: UserVi
                   onClick = {
                     val user =
                         User(
-                            firstName = firstName.value,
-                            lastName = lastName.value,
-                            userName = userName.value,
+                            firstName = firstName.value.trim(),
+                            lastName = lastName.value.trim(),
+                            userName = userName.value.trim(),
                             email = Firebase.auth.currentUser?.email ?: "",
                             uid = userViewModel.getNewUid(),
                             dateOfJoining = Timestamp.now(),
@@ -118,7 +118,7 @@ fun CreateUserScreen(navigationActions: NavigationActions, userViewModel: UserVi
 fun FirstNameTextField(newFirstName: MutableState<String>) {
   OutlinedTextField(
       value = newFirstName.value,
-      onValueChange = { newFirstName.value = it },
+      onValueChange = { newFirstName.value = User.formatName(it) },
       label = { Text("First Name") },
       modifier = Modifier.fillMaxWidth(0.8f).padding(vertical = 12.dp).testTag("inputFirstName"))
 }
@@ -134,7 +134,7 @@ fun FirstNameTextField(newFirstName: MutableState<String>) {
 fun UserNameTextField(newUserName: MutableState<String>, userNameError: MutableState<Boolean>) {
   OutlinedTextField(
       value = newUserName.value,
-      onValueChange = { newUserName.value = it },
+      onValueChange = { newUserName.value = User.formatUsername(it) },
       label = { Text("* User Name") },
       isError = userNameError.value,
       modifier = Modifier.fillMaxWidth(0.8f).padding(vertical = 12.dp).testTag("inputUserName"))
@@ -149,7 +149,7 @@ fun UserNameTextField(newUserName: MutableState<String>, userNameError: MutableS
 fun LastNameTextField(newLastName: MutableState<String>) {
   OutlinedTextField(
       value = newLastName.value,
-      onValueChange = { newLastName.value = it },
+      onValueChange = { newLastName.value = User.formatName(it) },
       label = { Text("Last Name") },
       modifier = Modifier.fillMaxWidth(0.8f).padding(vertical = 12.dp).testTag("inputLastName"))
 }
