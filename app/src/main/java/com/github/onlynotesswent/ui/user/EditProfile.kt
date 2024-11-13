@@ -113,6 +113,7 @@ fun EditProfileScreen(
             TopProfileBar(
                 "Edit Profile",
                 navigationActions,
+                userViewModel,
                 includeBackButton = true,
                 onBackButtonClick = {
                   // When we go back we will need to fetch again the old profile picture (if the
