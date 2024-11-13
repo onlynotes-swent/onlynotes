@@ -66,7 +66,7 @@ class OpenAI(private val client: OkHttpClient = OkHttpClient()) {
         JsonObject().apply {
           addProperty("model", model)
           add("messages", messagesArray)
-          addProperty("temperature", 0.2)
+          addProperty("temperature", 0.2) // The temperature value ranges from 0 to 2, lower values are more deterministic and higher values are more creative
         }
 
     // Convert the JSON body to a string
