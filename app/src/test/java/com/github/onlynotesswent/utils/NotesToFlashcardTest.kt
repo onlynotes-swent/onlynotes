@@ -21,7 +21,6 @@ import org.mockito.Mock
 import org.mockito.Mockito
 import org.mockito.Mockito.anyString
 import org.mockito.Mockito.doAnswer
-import org.mockito.Mockito.mock
 import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
@@ -72,10 +71,10 @@ class NotesToFlashcardTest {
 
   private lateinit var notesToFlashcard: NotesToFlashcard
 
+  private lateinit var flashcardViewModel: FlashcardViewModel
+
   // Mock dependencies
   @Mock private lateinit var mockFlashcardRepository: FlashcardRepository
-
-  @Mock private lateinit var mockFlashcardViewModel: FlashcardViewModel
 
   @Mock private lateinit var mockFileViewModel: FileViewModel
 
@@ -92,9 +91,8 @@ class NotesToFlashcardTest {
     FirebaseApp.initializeApp(org.robolectric.RuntimeEnvironment.getApplication())
 
     // Mock FlashcardRepository and set up FlashcardViewModel with it
-    mockFlashcardRepository = mock(FlashcardRepository::class.java)
-    mockFlashcardViewModel = FlashcardViewModel(mockFlashcardRepository)
-    notesToFlashcard = NotesToFlashcard(mockFlashcardViewModel, mockFileViewModel, mockOpenAI)
+    flashcardViewModel = FlashcardViewModel(mockFlashcardRepository)
+    notesToFlashcard = NotesToFlashcard(flashcardViewModel, mockFileViewModel, mockOpenAI)
 
     // Mock the return value for getNewUid
     `when`(mockFlashcardRepository.getNewUid()).thenReturn("test")
