@@ -229,10 +229,9 @@ fun EditableProfilePicture(
             hasProfilePictureBeenChanged.value = false
           },
           onFileNotFound = {
-            // Shouldn't happen if correctly implemented, and error is logged repository-side
+            // Shouldn't happen if correctly implemented
           },
           onFailure = {
-            // Error is logged repository-side
             Toast.makeText(localContext, "Error downloading profile picture", Toast.LENGTH_SHORT)
                 .show()
           })

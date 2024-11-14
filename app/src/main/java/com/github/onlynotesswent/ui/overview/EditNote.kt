@@ -113,9 +113,6 @@ fun EditNoteScreen(
             val fileUri = Uri.fromFile(file)
 
             fileViewModel.uploadFile(note?.id ?: "errorNoId", fileUri, FileType.NOTE_TEXT)
-            Log.e(
-                "MarkdownAttachment",
-                "No markdown associated. Attempting to attach a Markdown to this note.")
             downloadMarkdownFile()
           }
         },
@@ -124,7 +121,6 @@ fun EditNoteScreen(
           if (attemptedMarkdownDownloads < 2) {
             downloadMarkdownFile()
           }
-          Log.e("MarkdownAttachment", "Failed to attach a Markdown to this note.")
         })
   }
   LaunchedEffect(Unit) { downloadMarkdownFile() }
