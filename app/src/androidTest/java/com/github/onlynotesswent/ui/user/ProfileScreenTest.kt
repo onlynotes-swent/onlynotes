@@ -148,7 +148,7 @@ class ProfileScreenTest {
     composeTestRule.onNodeWithTag("followingText", useUnmergedTree = true).assertExists()
     composeTestRule.onNodeWithTag("followersText", useUnmergedTree = true).assertExists()
     composeTestRule.onNodeWithTag("editProfileButton").assertExists()
-      composeTestRule.onNodeWithTag("logoutButton").assertExists()
+    composeTestRule.onNodeWithTag("logoutButton").assertExists()
   }
 
   @Test
@@ -283,13 +283,13 @@ class ProfileScreenTest {
     verify(mockNavigationActions).goBack()
   }
 
-    @Test
-    fun logoutButtonWorksCorrectly() {
-        composeTestRule.setContent {
-            UserProfileScreen(mockNavigationActions, userViewModel, fileViewModel)
-        }
-
-        composeTestRule.onNodeWithTag("logoutButton").assertIsDisplayed().performClick()
-        verify(mockNavigationActions).navigateTo(Screen.AUTH)
+  @Test
+  fun logoutButtonWorksCorrectly() {
+    composeTestRule.setContent {
+      UserProfileScreen(mockNavigationActions, userViewModel, fileViewModel)
     }
+
+    composeTestRule.onNodeWithTag("logoutButton").assertIsDisplayed().performClick()
+    verify(mockNavigationActions).navigateTo(Screen.AUTH)
+  }
 }
