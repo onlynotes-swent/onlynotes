@@ -160,6 +160,7 @@ fun EditMarkdownScreen(
 }
 /**
  * A composable component that provides a set of text formatting controls for the rich text editor.
+ * It manually controls the state SpanStyle depending on the selected toggles.
  *
  * @param modifier Modifier to be applied to the Row layout containing the controls.
  * @param state The current state of the rich text editor, used to apply styles.
@@ -213,29 +214,25 @@ fun EditorControls(modifier: Modifier, state: RichTextState) {
     ControlWrapper(
         modifier = Modifier.testTag("BoldControl"),
         selected = boldSelected,
-        onChangeClick = { boldSelected = it },
-        onClick = {}) {
+        onChangeClick = { boldSelected = it }) {
           Icon(imageVector = Icons.Filled.FormatBold, contentDescription = "Bold")
         }
     ControlWrapper(
         modifier = Modifier.testTag("ItalicControl"),
         selected = italicSelected,
-        onChangeClick = { italicSelected = it },
-        onClick = {}) {
+        onChangeClick = { italicSelected = it }) {
           Icon(imageVector = Icons.Filled.FormatItalic, contentDescription = "Italic")
         }
     ControlWrapper(
         modifier = Modifier.testTag("UnderlinedControl"),
         selected = underlineSelected,
-        onChangeClick = { underlineSelected = it },
-        onClick = {}) {
+        onChangeClick = { underlineSelected = it }) {
           Icon(imageVector = Icons.Filled.FormatUnderlined, contentDescription = "Underlined")
         }
     ControlWrapper(
         modifier = Modifier.testTag("StrikethroughControl"),
         selected = strikethroughSelected,
-        onChangeClick = { strikethroughSelected = it },
-        onClick = {}) {
+        onChangeClick = { strikethroughSelected = it }) {
           Icon(imageVector = Icons.Filled.FormatStrikethrough, contentDescription = "Strikethrough")
         }
   }
@@ -251,7 +248,6 @@ fun EditorControls(modifier: Modifier, state: RichTextState) {
  *   primary color.
  * @param onChangeClick Callback function to update the `selected` state when the control is
  *   clicked.
- * @param onClick Callback function to handle additional actions when the control is clicked.
  * @param content Composable lambda representing the visual content of the chip, typically an icon.
  */
 @Composable
@@ -261,17 +257,13 @@ fun ControlWrapper(
     selectedColor: Color = MaterialTheme.colorScheme.primary,
     unselectedColor: Color = MaterialTheme.colorScheme.inversePrimary,
     onChangeClick: (Boolean) -> Unit,
-    onClick: () -> Unit,
     content: @Composable () -> Unit
 ) {
   FilterChip(
       modifier =
           modifier.semantics { contentDescription = if (selected) "Selected" else "Unselected" },
       selected = selected,
-      onClick = {
-        onChangeClick(!selected)
-        onClick()
-      },
+      onClick = { onChangeClick(!selected) },
       shape = RoundedCornerShape(6.dp),
       colors =
           FilterChipDefaults.filterChipColors(
