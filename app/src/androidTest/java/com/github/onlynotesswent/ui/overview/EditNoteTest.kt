@@ -186,9 +186,9 @@ class EditNoteTest {
     composeTestRule.onNodeWithTag("EditPdfViewButton").performScrollTo().performClick()
     verify(fileRepository).downloadFile(any(), eq(FileType.NOTE_PDF), any(), any(), any(), any())
 
-    //Todo: Currently fails, as says parameter is null. Need to fix
-    //composeTestRule.onNodeWithTag("EditPdfScanButton").performScrollTo().performClick()
-    //verify(scanner).scan(any())
+    // Todo: Currently fails, as says parameter is null. Need to fix
+    // composeTestRule.onNodeWithTag("EditPdfScanButton").performScrollTo().performClick()
+    // verify(scanner).scan(any())
 
     composeTestRule.onNodeWithTag("EditPdfDeleteButton").performScrollTo().performClick()
     verify(fileRepository).deleteFile(any(), any(), any(), any(), any())

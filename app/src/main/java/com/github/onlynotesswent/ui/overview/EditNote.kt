@@ -236,7 +236,7 @@ fun EditNoteScreen(
                     modifier = Modifier.fillMaxWidth(),
                     testTagBase = "EditPdf",
                     onViewClick = {
-                        fileViewModel.openPdf(
+                      fileViewModel.openPdf(
                           uid = note?.id ?: "errorNoId",
                           context = context,
                           onSuccess = {},
@@ -244,8 +244,7 @@ fun EditNoteScreen(
                             Toast.makeText(context, "No stored Pdf", Toast.LENGTH_SHORT).show()
                           },
                           onFailure = {
-                            Toast.makeText(context, "Failed to open Pdf", Toast.LENGTH_SHORT)
-                                .show()
+                            Toast.makeText(context, "Failed to open Pdf", Toast.LENGTH_SHORT).show()
                           })
                     },
                     onScanClick = {
