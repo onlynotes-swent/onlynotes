@@ -32,15 +32,15 @@ import com.github.onlynotesswent.model.folder.FolderViewModel
 import com.github.onlynotesswent.model.note.Note
 import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.model.users.UserViewModel
-import com.github.onlynotesswent.utils.CustomDropDownMenu
-import com.github.onlynotesswent.utils.CustomDropDownMenuItem
-import com.github.onlynotesswent.utils.CustomLazyGrid
-import com.github.onlynotesswent.utils.FolderDialog
 import com.github.onlynotesswent.ui.navigation.BottomNavigationMenu
 import com.github.onlynotesswent.ui.navigation.LIST_TOP_LEVEL_DESTINATION
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
 import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
+import com.github.onlynotesswent.utils.CustomDropDownMenu
+import com.github.onlynotesswent.utils.CustomDropDownMenuItem
+import com.github.onlynotesswent.utils.CustomLazyGrid
+import com.github.onlynotesswent.utils.FolderDialog
 
 /**
  * Displays the overview screen which contains a list of publicNotes retrieved from the ViewModel.
@@ -169,8 +169,7 @@ fun CreateItemFab(
                     showCreateDialog(true)
                     folderViewModel.selectedParentFolderId(null)
                   },
-                  modifier = Modifier.testTag("createFolder"))
-          ),
+                  modifier = Modifier.testTag("createFolder"))),
       fabIcon = { Icon(imageVector = Icons.Default.Add, contentDescription = "AddNote") },
       expanded = expandedFab,
       onFabClick = { onExpandedFabChange(true) },
@@ -201,7 +200,9 @@ fun OverviewScreenGrid(
     navigationActions: NavigationActions
 ) {
   CustomLazyGrid(
-      modifier = Modifier.fillMaxSize().padding(top = 20.dp, bottom = paddingValues.calculateBottomPadding()),
+      modifier =
+          Modifier.fillMaxSize()
+              .padding(top = 20.dp, bottom = paddingValues.calculateBottomPadding()),
       notes = userRootNotes,
       folders = userRootFolders,
       gridModifier =

@@ -45,14 +45,14 @@ import com.github.onlynotesswent.model.note.Note
 import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.model.users.User
 import com.github.onlynotesswent.model.users.UserViewModel
+import com.github.onlynotesswent.ui.navigation.NavigationActions
+import com.github.onlynotesswent.ui.navigation.Screen
+import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
+import com.github.onlynotesswent.utils.Course
 import com.github.onlynotesswent.utils.NoteDataTextField
 import com.github.onlynotesswent.utils.OptionDropDownMenu
 import com.github.onlynotesswent.utils.ScreenTopBar
-import com.github.onlynotesswent.ui.navigation.NavigationActions
-import com.github.onlynotesswent.ui.navigation.Screen
-import com.github.onlynotesswent.utils.Course
 import com.github.onlynotesswent.utils.Visibility
-import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
 import com.google.firebase.Timestamp
 import com.mohamedrejeb.richeditor.model.rememberRichTextState
 import com.mohamedrejeb.richeditor.ui.material3.RichTextEditor
@@ -223,13 +223,13 @@ fun EditNoteScreen(
 
                 Button(
                     colors =
-                    ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary,
-                        contentColor = MaterialTheme.colorScheme.onPrimary),
+                        ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.onPrimary),
                     onClick = { navigationActions.navigateTo(Screen.EDIT_MARKDOWN) },
                     modifier = Modifier.testTag("Edit Markdown button")) {
-                    Text("Edit Markdown")
-                }
+                      Text("Edit Markdown")
+                    }
 
                 SaveButton(
                     noteTitle = noteTitle,
@@ -378,9 +378,8 @@ fun SaveButton(
                 title = noteTitle,
                 content = updatedNoteText,
                 date = Timestamp.now(), // Use current timestamp
-                visibility = visibility ?:  Visibility.DEFAULT,
-                noteCourse =
-                    Course(courseCode, courseName, courseYear, "path"),
+                visibility = visibility ?: Visibility.DEFAULT,
+                noteCourse = Course(courseCode, courseName, courseYear, "path"),
                 userId = note?.userId ?: currentUser!!.uid,
                 folderId = note?.folderId,
                 image =

@@ -41,13 +41,13 @@ import com.github.onlynotesswent.model.folder.FolderViewModel
 import com.github.onlynotesswent.model.note.Note
 import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.model.users.UserViewModel
+import com.github.onlynotesswent.ui.navigation.NavigationActions
+import com.github.onlynotesswent.ui.navigation.Screen
+import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
 import com.github.onlynotesswent.utils.CustomDropDownMenu
 import com.github.onlynotesswent.utils.CustomDropDownMenuItem
 import com.github.onlynotesswent.utils.CustomLazyGrid
 import com.github.onlynotesswent.utils.FolderDialog
-import com.github.onlynotesswent.ui.navigation.NavigationActions
-import com.github.onlynotesswent.ui.navigation.Screen
-import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
 
 /**
  * Screen that displays the content of a folder.
@@ -133,9 +133,9 @@ fun FolderContentScreen(
                   updatedName = name
                   showRenameDialog = false
                 },
-                  action = "Rename",
-                  oldName = updatedName,
-                  oldVis = folder.value!!.visibility)
+                action = "Rename",
+                oldName = updatedName,
+                oldVis = folder.value!!.visibility)
           }
           // Logic to show the dialog to create a folder
           if (showCreateDialog) {
@@ -275,8 +275,7 @@ fun FolderContentTopBar(
                           // implement a recursive delete to delete all elements of a folder
                           // (folders and notes)
                         },
-                        modifier = Modifier.testTag("deleteFolderButton"))
-                ),
+                        modifier = Modifier.testTag("deleteFolderButton"))),
             fabIcon = {
               Icon(imageVector = Icons.Default.MoreVert, contentDescription = "settings")
             },
@@ -373,8 +372,7 @@ fun CreateSubItemFab(
                     showCreateDialog(true)
                     folderViewModel.selectedParentFolderId(folder!!.id)
                   },
-                  modifier = Modifier.testTag("createFolder"))
-          ),
+                  modifier = Modifier.testTag("createFolder"))),
       fabIcon = { Icon(imageVector = Icons.Default.Add, contentDescription = "AddNote") },
       expanded = expandedFolder,
       onFabClick = { onExpandedFolderChange(true) },
@@ -405,9 +403,7 @@ fun FolderContentScreenGrid(
       notes = userFolderNotes,
       folders = userFolderSubFolders,
       gridModifier =
-          Modifier.fillMaxWidth()
-              .padding(horizontal = 20.dp)
-              .testTag("noteAndFolderList"),
+          Modifier.fillMaxWidth().padding(horizontal = 20.dp).testTag("noteAndFolderList"),
       folderViewModel = folderViewModel,
       noteViewModel = noteViewModel,
       navigationActions = navigationActions,
