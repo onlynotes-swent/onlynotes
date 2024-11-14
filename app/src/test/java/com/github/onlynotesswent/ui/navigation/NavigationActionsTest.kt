@@ -81,4 +81,22 @@ class NavigationActionsTest {
     val poppedId = navigationActions.popFromScreenNavigationStack()
     assertNull(poppedId)
   }
+
+  @Test
+  fun navigateToSearchScreenCallsSetsStack() {
+    navigationActions.navigateTo(Screen.SEARCH)
+    val searchId = navigationActions.popFromScreenNavigationStack()
+    assertEquals(searchId, Screen.SEARCH)
+    val nullStackElement = navigationActions.popFromScreenNavigationStack()
+    assertNull(nullStackElement)
+  }
+
+  @Test
+  fun navigateToTopLevelDestinationClearsStack() {
+    navigationActions.pushToScreenNavigationStack("folderId1")
+    navigationActions.pushToScreenNavigationStack("folderId2")
+    navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
+    val overviewId = navigationActions.popFromScreenNavigationStack()
+    assertNull(overviewId)
+  }
 }
