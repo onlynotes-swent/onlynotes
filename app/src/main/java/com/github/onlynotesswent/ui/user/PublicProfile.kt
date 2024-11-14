@@ -67,7 +67,6 @@ import com.github.onlynotesswent.ui.navigation.LIST_TOP_LEVEL_DESTINATION
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
 import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
-import java.util.EmptyStackException
 
 // User Profile Home screen:
 /**
@@ -162,8 +161,8 @@ private fun ProfileScaffold(
             onTabSelect = { route ->
               // Navigate to route will clear navigation stack
               navigationActions.navigateTo(route)
-              if(route == TopLevelDestinations.SEARCH){
-                  navigationActions.pushToScreenNavigationStack(Screen.SEARCH)
+              if (route == TopLevelDestinations.SEARCH) {
+                navigationActions.pushToScreenNavigationStack(Screen.SEARCH)
               }
             },
             tabList = LIST_TOP_LEVEL_DESTINATION,
@@ -211,24 +210,24 @@ fun TopProfileBar(
       var userProfileId = navigationActions.popFromScreenNavigationStack()
       // If we come from search screen, we go back to search screen
       if (userProfileId == Screen.SEARCH) {
-          navigationActions.navigateTo(Screen.SEARCH)
-          // set profile user to userProfileId and navigate to public profile screen
-          // If we pop from stack and the profile id corresponds to profile user (we will navigate to
-          // the current screen), so we pop twice to get to previous visited public profile
+        navigationActions.navigateTo(Screen.SEARCH)
+        // set profile user to userProfileId and navigate to public profile screen
+        // If we pop from stack and the profile id corresponds to profile user (we will navigate to
+        // the current screen), so we pop twice to get to previous visited public profile
       } else if (userProfileId != null && userProfileId == userViewModel.profileUser.value?.uid) {
         userProfileId = navigationActions.popFromScreenNavigationStack()
 
         if (userProfileId != null) {
-           if (userProfileId == Screen.SEARCH) {
-               navigationActions.navigateTo(Screen.SEARCH)
-           } else {
-               userViewModel.getUserById(
-                   userProfileId,
-                   { userViewModel.setProfileUser(it) },
-                   { navigationActions.navigateTo(TopLevelDestinations.PROFILE) },
-                   {})
-               navigationActions.navigateTo(Screen.PUBLIC_PROFILE)
-           }
+          if (userProfileId == Screen.SEARCH) {
+            navigationActions.navigateTo(Screen.SEARCH)
+          } else {
+            userViewModel.getUserById(
+                userProfileId,
+                { userViewModel.setProfileUser(it) },
+                { navigationActions.navigateTo(TopLevelDestinations.PROFILE) },
+                {})
+            navigationActions.navigateTo(Screen.PUBLIC_PROFILE)
+          }
         } else {
           navigationActions.navigateTo(TopLevelDestinations.PROFILE)
         }

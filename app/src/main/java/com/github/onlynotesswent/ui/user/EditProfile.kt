@@ -106,11 +106,11 @@ fun EditProfileScreen(
           modifier = Modifier.testTag("ProfileScreen"),
           bottomBar = {
             BottomNavigationMenu(
-                onTabSelect = {
-                    route -> navigationActions.navigateTo(route)
-                    if (route == TopLevelDestinations.SEARCH) {
-                        navigationActions.pushToScreenNavigationStack(Screen.SEARCH)
-                    }
+                onTabSelect = { route ->
+                  navigationActions.navigateTo(route)
+                  if (route == TopLevelDestinations.SEARCH) {
+                    navigationActions.pushToScreenNavigationStack(Screen.SEARCH)
+                  }
                 },
                 tabList = LIST_TOP_LEVEL_DESTINATION,
                 selectedItem = navigationActions.currentRoute())

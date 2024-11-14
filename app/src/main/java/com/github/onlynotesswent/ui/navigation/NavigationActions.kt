@@ -75,19 +75,19 @@ open class NavigationActions(
       }
     }
     clearScreenNavigationStack()
-//    val poppedId = popFromScreenNavigationStack()
-//    // If we come from search screen, we don't clear the navigation stack
-//    if (poppedId != Screen.SEARCH) {
-//      clearScreenNavigationStack()
-//    } else {
-//        // Push the search screen back to the navigation stack
-//        pushToScreenNavigationStack(poppedId)
-//    }
+    //    val poppedId = popFromScreenNavigationStack()
+    //    // If we come from search screen, we don't clear the navigation stack
+    //    if (poppedId != Screen.SEARCH) {
+    //      clearScreenNavigationStack()
+    //    } else {
+    //        // Push the search screen back to the navigation stack
+    //        pushToScreenNavigationStack(poppedId)
+    //    }
   }
 
   /**
-   * Navigate to the specified screen and clear the navigation stack when
-   * navigating to search screen.
+   * Navigate to the specified screen and clear the navigation stack when navigating to search
+   * screen.
    *
    * @param screen The screen to navigate to
    */

@@ -175,11 +175,11 @@ fun SearchScreen(
       },
       bottomBar = {
         BottomNavigationMenu(
-            onTabSelect = {
-                route -> navigationActions.navigateTo(route)
-                if (route == TopLevelDestinations.SEARCH) {
-                    navigationActions.pushToScreenNavigationStack(Screen.SEARCH)
-                }
+            onTabSelect = { route ->
+              navigationActions.navigateTo(route)
+              if (route == TopLevelDestinations.SEARCH) {
+                navigationActions.pushToScreenNavigationStack(Screen.SEARCH)
+              }
             },
             tabList = LIST_TOP_LEVEL_DESTINATION,
             selectedItem = navigationActions.currentRoute())
@@ -238,10 +238,10 @@ fun SearchScreen(
                   UserItem(filteredUsers.value[index]) {
                     userViewModel.setProfileUser(filteredUsers.value[index])
                     // Push search screen to stack to allow back navigation
-                    //navigationActions.pushToScreenNavigationStack(Screen.SEARCH)
+                    // navigationActions.pushToScreenNavigationStack(Screen.SEARCH)
                     // Navigate to profile screen and register it in navigation stack
                     switchProfileTo(filteredUsers.value[index], userViewModel, navigationActions)
-                    //navigationActions.navigateTo(Screen.PUBLIC_PROFILE)
+                    // navigationActions.navigateTo(Screen.PUBLIC_PROFILE)
                   }
                 }
               }

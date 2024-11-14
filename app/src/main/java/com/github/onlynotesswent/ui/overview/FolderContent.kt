@@ -135,17 +135,19 @@ fun FolderContentScreen(
                 onDismiss = { showRenameDialog = false },
                 onConfirm = { name, vis ->
                   if (currentUser.value!!.uid == folder.value?.userId) {
-                      folderViewModel.updateFolder(
-                          Folder(
-                              id = folder.value!!.id,
-                              name = name,
-                              userId = folder.value!!.userId,
-                              parentFolderId = folder.value!!.parentFolderId,
-                              visibility = vis),
-                          folder.value!!.userId)
-                      updatedName = name
+                    folderViewModel.updateFolder(
+                        Folder(
+                            id = folder.value!!.id,
+                            name = name,
+                            userId = folder.value!!.userId,
+                            parentFolderId = folder.value!!.parentFolderId,
+                            visibility = vis),
+                        folder.value!!.userId)
+                    updatedName = name
                   } else {
-                      Toast.makeText(context, "You are not the owner of this folder", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                            context, "You are not the owner of this folder", Toast.LENGTH_SHORT)
+                        .show()
                   }
                   showRenameDialog = false
                 },
@@ -159,21 +161,23 @@ fun FolderContentScreen(
                 onDismiss = { showCreateDialog = false },
                 onConfirm = { name, visibility ->
                   if (currentUser.value!!.uid == folder.value?.userId) {
-                      folderViewModel.addFolder(
-                          Folder(
-                              id = folderViewModel.getNewFolderId(),
-                              name = name,
-                              userId = currentUser.value!!.uid,
-                              parentFolderId = parentFolderId.value,
-                              visibility = visibility),
-                          userViewModel.currentUser.value!!.uid)
-                      if (parentFolderId.value != null) {
-                          navigationActions.navigateTo(Screen.FOLDER_CONTENTS)
-                      } else {
-                          navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
-                      }
+                    folderViewModel.addFolder(
+                        Folder(
+                            id = folderViewModel.getNewFolderId(),
+                            name = name,
+                            userId = currentUser.value!!.uid,
+                            parentFolderId = parentFolderId.value,
+                            visibility = visibility),
+                        userViewModel.currentUser.value!!.uid)
+                    if (parentFolderId.value != null) {
+                      navigationActions.navigateTo(Screen.FOLDER_CONTENTS)
+                    } else {
+                      navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
+                    }
                   } else {
-                      Toast.makeText(context, "You are not the owner of this folder", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                            context, "You are not the owner of this folder", Toast.LENGTH_SHORT)
+                        .show()
                   }
                   showCreateDialog = false
                 },
@@ -237,8 +241,8 @@ fun FolderContentTopBar(
               var previousFolderId = navigationActions.popFromScreenNavigationStack()
               // If we pop from the stack the current folder, we call pop twice to get the
               // previous folder
-              if(previousFolderId == Screen.SEARCH){
-                  navigationActions.navigateTo(Screen.SEARCH)
+              if (previousFolderId == Screen.SEARCH) {
+                navigationActions.navigateTo(Screen.SEARCH)
               } else if (previousFolderId != null && previousFolderId == folder?.id) {
                 // Set the selected folder state to the previous folder
                 previousFolderId = navigationActions.popFromScreenNavigationStack()
@@ -246,7 +250,7 @@ fun FolderContentTopBar(
                   if (previousFolderId == Screen.SEARCH) {
                     navigationActions.navigateTo(Screen.SEARCH)
                   } else {
-                      folderViewModel.getFolderById(previousFolderId)
+                    folderViewModel.getFolderById(previousFolderId)
                   }
                 } else {
                   navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
@@ -289,22 +293,26 @@ fun FolderContentTopBar(
                           // Clear the folder navigation stack as we go back to overview
                           // screen
                           if (currentUser.value!!.uid == folder?.userId) {
-                              navigationActions.clearScreenNavigationStack()
-                              folderViewModel.deleteFolderById(folder.id, folder.userId)
+                            navigationActions.clearScreenNavigationStack()
+                            folderViewModel.deleteFolderById(folder.id, folder.userId)
 
-                              handleSubFoldersAndNotes(
-                                  folder = folder,
-                                  userFolderSubFolders = userFolderSubFolders.value,
-                                  userFolderNotes = userFolderNotes.value,
-                                  folderViewModel = folderViewModel,
-                                  noteViewModel = noteViewModel)
-                              navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
-                              // TODO for now we just delete the folder directly and set the
-                              // folderId field of sub elements to null, later on we will
-                              // implement a recursive delete to delete all elements of a folder
-                              // (folders and notes)
+                            handleSubFoldersAndNotes(
+                                folder = folder,
+                                userFolderSubFolders = userFolderSubFolders.value,
+                                userFolderNotes = userFolderNotes.value,
+                                folderViewModel = folderViewModel,
+                                noteViewModel = noteViewModel)
+                            navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
+                            // TODO for now we just delete the folder directly and set the
+                            // folderId field of sub elements to null, later on we will
+                            // implement a recursive delete to delete all elements of a folder
+                            // (folders and notes)
                           } else {
-                                Toast.makeText(context, "You are not the owner of this folder", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(
+                                    context,
+                                    "You are not the owner of this folder",
+                                    Toast.LENGTH_SHORT)
+                                .show()
                           }
                         },
                         modifier = Modifier.testTag("deleteFolderButton"))),
@@ -391,10 +399,12 @@ fun CreateSubItemFab(
                   onClick = {
                     onExpandedFolderChange(false)
                     if (currentUser.value!!.uid == folder?.userId) {
-                        noteViewModel.selectedFolderId(folder.id)
-                        navigationActions.navigateTo(Screen.ADD_NOTE)
+                      noteViewModel.selectedFolderId(folder.id)
+                      navigationActions.navigateTo(Screen.ADD_NOTE)
                     } else {
-                        Toast.makeText(context, "You are not the owner of this folder", Toast.LENGTH_SHORT).show()
+                      Toast.makeText(
+                              context, "You are not the owner of this folder", Toast.LENGTH_SHORT)
+                          .show()
                     }
                   },
                   modifier = Modifier.testTag("createNote")),
@@ -409,7 +419,7 @@ fun CreateSubItemFab(
                     onExpandedFolderChange(false)
                     showCreateDialog(true)
                     if (currentUser.value!!.uid == folder?.userId) {
-                        folderViewModel.selectedParentFolderId(folder.id)
+                      folderViewModel.selectedParentFolderId(folder.id)
                     }
                   },
                   modifier = Modifier.testTag("createFolder"))),

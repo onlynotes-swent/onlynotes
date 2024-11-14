@@ -103,18 +103,20 @@ fun NoteItem(
         confirmButton = {
           Button(
               onClick = {
-                if (currentUser.value!!.uid == note.userId)   {
-                    // Move out will move the given note to the overview menu
-                    noteViewModel.updateNote(note.copy(folderId = null), note.userId)
-                    // Clear the screen navigation stack as we navigate to the overview screen
-                    navigationActions.clearScreenNavigationStack()
-                    navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
+                if (currentUser.value!!.uid == note.userId) {
+                  // Move out will move the given note to the overview menu
+                  noteViewModel.updateNote(note.copy(folderId = null), note.userId)
+                  // Clear the screen navigation stack as we navigate to the overview screen
+                  navigationActions.clearScreenNavigationStack()
+                  navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
                 } else {
-                    Toast.makeText(context, "You can't move out a note that you didn't create", Toast.LENGTH_SHORT).show()
+                  Toast.makeText(
+                          context,
+                          "You can't move out a note that you didn't create",
+                          Toast.LENGTH_SHORT)
+                      .show()
                 }
                 showMoveOutDialog = false
-
-
               }) {
                 Text("Move")
               }
