@@ -144,18 +144,7 @@ fun EditMarkdownScreen(
                     .testTag("editMarkdownColumn")
                     .verticalScroll(rememberScrollState()),
         ) {
-          EditorControls(
-              modifier = Modifier.testTag("EditorControl"),
-              state = state,
-              onBoldClick = { state.toggleSpanStyle(SpanStyle(fontWeight = FontWeight.Bold)) },
-              onItalicClick = { state.toggleSpanStyle(SpanStyle(fontStyle = FontStyle.Italic)) },
-              onUnderlineClick = {
-                state.toggleSpanStyle(SpanStyle(textDecoration = TextDecoration.Underline))
-              },
-              onStrikethroughClick = {
-                state.toggleSpanStyle(SpanStyle(textDecoration = TextDecoration.LineThrough))
-              })
-
+          EditorControls(modifier = Modifier.testTag("EditorControl"), state = state)
           RichTextEditor(
               modifier = Modifier.fillMaxWidth().weight(2f).testTag("RichTextEditor"),
               state = state,
@@ -180,39 +169,40 @@ fun EditMarkdownScreen(
  * @param onStrikethroughClick Callback function to handle strikethrough style toggle.
  */
 @Composable
-fun EditorControls(
-    modifier: Modifier,
-    state: RichTextState,
-    onBoldClick: () -> Unit,
-    onItalicClick: () -> Unit,
-    onUnderlineClick: () -> Unit,
-    onStrikethroughClick: () -> Unit
-) {
+fun EditorControls(modifier: Modifier, state: RichTextState) {
   var boldSelected by rememberSaveable { mutableStateOf(false) }
   var italicSelected by rememberSaveable { mutableStateOf(false) }
   var underlineSelected by rememberSaveable { mutableStateOf(false) }
   var strikethroughSelected by rememberSaveable { mutableStateOf(false) }
   var previousMarkdown by rememberSaveable { mutableStateOf("") }
+  // fix as using a state.toggleSpanStyle() seems to be broken now need to manually set the
+  // SpanStyle
   LaunchedEffect(Unit) {
     while (true) {
       val currentMarkdown = state.toMarkdown()
       previousMarkdown = currentMarkdown
-      if (boldSelected && !(state.currentSpanStyle.fontWeight?.equals(FontWeight.Bold) ?: false)) {
-        onBoldClick()
+      if (!boldSelected) {
+        state.removeSpanStyle(SpanStyle(fontWeight = FontWeight.Bold))
+      } else {
+        state.addSpanStyle(SpanStyle(fontWeight = FontWeight.Bold))
       }
-      if (italicSelected &&
-          !(state.currentSpanStyle.fontStyle?.equals(FontStyle.Italic) ?: false)) {
-        onItalicClick()
+
+      if (italicSelected) {
+        state.addSpanStyle(SpanStyle(fontStyle = FontStyle.Italic))
+      } else {
+        state.removeSpanStyle(SpanStyle(fontStyle = FontStyle.Italic))
       }
-      if (underlineSelected &&
-          !(state.currentSpanStyle.textDecoration?.equals(TextDecoration.Underline) ?: false)) {
-        onUnderlineClick()
+      if (underlineSelected) {
+        state.addSpanStyle(SpanStyle(textDecoration = TextDecoration.Underline))
+      } else {
+        state.removeSpanStyle(SpanStyle(textDecoration = TextDecoration.Underline))
       }
-      if (strikethroughSelected &&
-          !(state.currentSpanStyle.textDecoration?.equals(TextDecoration.LineThrough) ?: false)) {
-        onStrikethroughClick()
+      if (strikethroughSelected) {
+        state.addSpanStyle(SpanStyle(textDecoration = TextDecoration.LineThrough))
+      } else {
+        state.removeSpanStyle(SpanStyle(textDecoration = TextDecoration.LineThrough))
       }
-      delay(200)
+      delay(20)
     }
   }
 
@@ -224,28 +214,28 @@ fun EditorControls(
         modifier = Modifier.testTag("BoldControl"),
         selected = boldSelected,
         onChangeClick = { boldSelected = it },
-        onClick = onBoldClick) {
+        onClick = {}) {
           Icon(imageVector = Icons.Filled.FormatBold, contentDescription = "Bold")
         }
     ControlWrapper(
         modifier = Modifier.testTag("ItalicControl"),
         selected = italicSelected,
         onChangeClick = { italicSelected = it },
-        onClick = onItalicClick) {
+        onClick = {}) {
           Icon(imageVector = Icons.Filled.FormatItalic, contentDescription = "Italic")
         }
     ControlWrapper(
         modifier = Modifier.testTag("UnderlinedControl"),
         selected = underlineSelected,
         onChangeClick = { underlineSelected = it },
-        onClick = onUnderlineClick) {
+        onClick = {}) {
           Icon(imageVector = Icons.Filled.FormatUnderlined, contentDescription = "Underlined")
         }
     ControlWrapper(
         modifier = Modifier.testTag("StrikethroughControl"),
         selected = strikethroughSelected,
         onChangeClick = { strikethroughSelected = it },
-        onClick = onStrikethroughClick) {
+        onClick = {}) {
           Icon(imageVector = Icons.Filled.FormatStrikethrough, contentDescription = "Strikethrough")
         }
   }
