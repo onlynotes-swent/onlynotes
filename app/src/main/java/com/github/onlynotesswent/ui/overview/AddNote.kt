@@ -42,6 +42,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
+import com.github.onlynotesswent.model.file.FileType
+import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.note.Note
 import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.model.users.UserViewModel
@@ -70,7 +72,8 @@ fun AddNoteScreen(
     navigationActions: NavigationActions,
     scanner: Scanner,
     noteViewModel: NoteViewModel,
-    userViewModel: UserViewModel
+    userViewModel: UserViewModel,
+    fileViewModel: FileViewModel
 ) {
   val templateInitialText = "Choose mode"
 
@@ -178,14 +181,15 @@ fun AddNoteScreen(
 
               Button(
                   onClick = {
+                    val noteUid = noteViewModel.getNewUid()
                     if (template == scanNoteText) {
                       // call scan image API or functions. Once scanned, add the note to database
-                      scanner.scan()
+                      scanner.scan { fileViewModel.uploadFile(noteUid, it, FileType.NOTE_PDF) }
                     }
                     // provisional note, we will have to change this later
                     val note =
                         Note(
-                            id = noteViewModel.getNewUid(),
+                            id = noteUid,
                             title = title,
                             content = "",
                             date = Timestamp.now(),

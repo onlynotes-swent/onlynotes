@@ -4,6 +4,8 @@ import android.content.Context
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
 import com.google.firebase.Firebase
 import com.google.firebase.storage.storage
 import java.io.File
@@ -33,14 +35,11 @@ class FileViewModel(private val repository: FileRepository) : ViewModel() {
     repository.init {}
   }
 
+  /** Factory for creating a FileViewModel. */
   companion object {
-    val Factory: ViewModelProvider.Factory =
-        object : ViewModelProvider.Factory {
-          @Suppress("UNCHECKED_CAST")
-          override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            return FileViewModel(FileRepositoryFirebaseStorage(Firebase.storage)) as T
-          }
-        }
+    val Factory: ViewModelProvider.Factory = viewModelFactory {
+      initializer { FileViewModel(FileRepositoryFirebaseStorage(Firebase.storage)) }
+    }
   }
 
   /**
@@ -66,6 +65,7 @@ class FileViewModel(private val repository: FileRepository) : ViewModel() {
    * @param context The context used to access the cache directory.
    * @param onSuccess The function to call when the download is successful, where the file is
    *   downloaded to the File.
+   * @param onFileNotFound The function to call when the file is not found.
    * @param onFailure The function to call when the download fails.
    */
   fun downloadFile(
@@ -73,9 +73,10 @@ class FileViewModel(private val repository: FileRepository) : ViewModel() {
       fileType: FileType,
       context: Context,
       onSuccess: (File) -> Unit,
+      onFileNotFound: () -> Unit,
       onFailure: (Exception) -> Unit
   ) {
-    repository.downloadFile(uid, fileType, context.cacheDir, onSuccess, onFailure)
+    repository.downloadFile(uid, fileType, context.cacheDir, onSuccess, onFileNotFound, onFailure)
   }
 
   /**
@@ -87,7 +88,7 @@ class FileViewModel(private val repository: FileRepository) : ViewModel() {
    *   PNG) or a note file (PDF or MD).
    */
   fun deleteFile(uid: String, fileType: FileType) {
-    repository.deleteFile(uid, fileType, {}, {})
+    repository.deleteFile(uid, fileType, {}, {}, {})
   }
 
   /**
@@ -112,14 +113,16 @@ class FileViewModel(private val repository: FileRepository) : ViewModel() {
    *   PNG) or a note file (PDF or MD).
    * @param onSuccess The function to call when the retrieval is successful, with the file data in
    *   the ByteArray.
+   * @param onFileNotFound The function to call when the file is not found.
    * @param onFailure The function to call when the retrieval fails.
    */
   fun getFile(
       uid: String,
       fileType: FileType,
       onSuccess: (ByteArray) -> Unit,
+      onFileNotFound: () -> Unit,
       onFailure: (Exception) -> Unit
   ) {
-    repository.getFile(uid, fileType, onSuccess, onFailure)
+    repository.getFile(uid, fileType, onSuccess, onFileNotFound, onFailure)
   }
 }
