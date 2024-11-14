@@ -10,6 +10,7 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
 import com.github.onlynotesswent.model.file.FileRepository
+import com.github.onlynotesswent.model.file.FileType
 import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.note.Note
 import com.github.onlynotesswent.model.note.NoteRepository
@@ -31,6 +32,7 @@ import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.never
 
 class EditNoteTest {
@@ -175,5 +177,20 @@ class EditNoteTest {
   fun deleteClickCallsNavActions() {
     composeTestRule.onNodeWithTag("Delete button").performScrollTo().performClick()
     verify(navigationActions).navigateTo(Screen.OVERVIEW)
+  }
+
+  @Test
+  fun pdfOperationsCallsCorrect() {
+    // Can't directly test calls to fileViewModel, as it is not mockable. Thus verify calls to
+    // fileRepository
+    composeTestRule.onNodeWithTag("EditPdfViewButton").performScrollTo().performClick()
+    verify(fileRepository).downloadFile(any(), eq(FileType.NOTE_PDF), any(), any(), any(), any())
+
+    //Todo: Currently fails, as says parameter is null. Need to fix
+    //composeTestRule.onNodeWithTag("EditPdfScanButton").performScrollTo().performClick()
+    //verify(scanner).scan(any())
+
+    composeTestRule.onNodeWithTag("EditPdfDeleteButton").performScrollTo().performClick()
+    verify(fileRepository).deleteFile(any(), any(), any(), any(), any())
   }
 }

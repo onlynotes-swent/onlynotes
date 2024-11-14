@@ -236,12 +236,7 @@ fun EditNoteScreen(
                     modifier = Modifier.fillMaxWidth(),
                     testTagBase = "EditPdf",
                     onViewClick = {
-                      // Download the file, then open it with a 3rd party PDF Viewer
-                      // TODO: Implement a PDF viewer in the app, possible, though maybe not
-                      // necessary as our pdfs will be view only,
-                      //  you can modify the text
-
-                      fileViewModel.openPdf(
+                        fileViewModel.openPdf(
                           uid = note?.id ?: "errorNoId",
                           context = context,
                           onSuccess = {},
@@ -249,7 +244,7 @@ fun EditNoteScreen(
                             Toast.makeText(context, "No stored Pdf", Toast.LENGTH_SHORT).show()
                           },
                           onFailure = {
-                            Toast.makeText(context, "Failed to download Pdf", Toast.LENGTH_SHORT)
+                            Toast.makeText(context, "Failed to open Pdf", Toast.LENGTH_SHORT)
                                 .show()
                           })
                     },
@@ -393,15 +388,6 @@ fun EditNoteScreen(
         })
   }
 }
-
-// Write a composable that is a horizontal Card, with two buttons in a row at the right end of the
-// card, one that opens a view to a pdf, one that allows to edit the pdf
-// Use the following parameters:
-// - pdfTitle: The title of the pdf
-// - onEditClick: A lambda that is called when the edit button is clicked
-// - onOpenClick: A lambda that is called when the open button is clicked
-// - modifier: The modifier for the card
-// - testTag: The test tag for the card
 
 /**
  * Card to encompass operations on a note's PDF file. The card includes buttons to view, scan and

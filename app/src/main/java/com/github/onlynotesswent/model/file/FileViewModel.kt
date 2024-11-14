@@ -34,7 +34,7 @@ val fileProviderAuthority = "com.github.onlynotesswent.provider"
  *
  * @property repository The repository used for file operations.
  */
-class FileViewModel(private val repository: FileRepository) : ViewModel() {
+open class FileViewModel(private val repository: FileRepository) : ViewModel() {
 
   init {
     repository.init {}

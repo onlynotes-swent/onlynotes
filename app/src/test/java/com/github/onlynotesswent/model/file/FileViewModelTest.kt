@@ -1,16 +1,25 @@
 package com.github.onlynotesswent.model.file
 
 import android.content.Context
+import android.content.Intent
 import android.net.Uri
+import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
+import androidx.core.content.FileProvider.getUriForFile
 import java.io.File
+import junit.framework.TestCase.assertEquals
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mock
+import org.mockito.Mockito.mock
+import org.mockito.Mockito.mockStatic
 import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
+import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.eq
+import org.mockito.kotlin.isNull
 import org.mockito.kotlin.verify
 import org.robolectric.RobolectricTestRunner
 
@@ -81,31 +90,47 @@ class FileViewModelTest {
   }
 
   @Test
-  fun openPdfTest() {
-
+  fun openPdfSuccessTest() {
     val uid = "testUid"
     val cacheDir = File("cacheDir")
+    val onSuccessCaptor = argumentCaptor<(File) -> Unit>()
+    val intentCaptor = argumentCaptor<Intent>()
+
+    val onFileNotFound = {}
+    val onFailure = { e: Exception -> }
 
     `when`(mockContext.cacheDir).thenReturn(cacheDir)
 
-    fileViewModel.openPdf(uid, mockContext, {}, {}, {})
+    fileViewModel.openPdf(uid, mockContext, {}, onFileNotFound, onFailure)
     verify(mockFileRepository)
-        .downloadFile(eq(uid), eq(FileType.NOTE_PDF), eq(cacheDir), any(), any(), any())
+        .downloadFile(
+            eq(uid),
+            eq(FileType.NOTE_PDF),
+            eq(cacheDir),
+            onSuccessCaptor.capture(),
+            eq(onFileNotFound),
+            eq(onFailure))
 
-    //    mockStatic(ContextCompat::class.java).use { MockContextCompat ->
-    //
-    //      fileViewModel.openPdf("testUid", mockContext, {}, {}, {})
-    //
-    //      verify(mockFileRepository).downloadFile(eq("testUid"), eq(FileType.NOTE_PDF),
-    // eq(mockContext.cacheDir), any(), any(), any())
-    //
-    //      MockContextCompat.verify {
-    //        ContextCompat.startActivity(
-    //          any(),
-    //          eq(Intent(Intent.ACTION_VIEW)),
-    //          isNull()
-    //        )
-    //      }
-    //    }
+    val MockContextCompat = mockStatic(ContextCompat::class.java)
+    val MockFileProvider = mockStatic(FileProvider::class.java)
+
+    val mockUri = mock(Uri::class.java)
+    MockFileProvider.`when`<Uri> { getUriForFile(eq(mockContext), any(), any()) }
+        .thenReturn(mockUri)
+
+    onSuccessCaptor.firstValue(File("testFile"))
+
+    MockContextCompat.verify {
+      ContextCompat.startActivity(any(), intentCaptor.capture(), isNull())
+    }
+
+    val intent = intentCaptor.firstValue
+    assertEquals(Intent.ACTION_VIEW, intent.action)
+    assertEquals(mockUri, intent.data)
+    assertEquals("application/pdf", intent.type)
+    assertEquals(
+        Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_ACTIVITY_NO_HISTORY, intent.flags)
+    MockContextCompat.close()
+    MockFileProvider.close()
   }
 }
