@@ -33,14 +33,11 @@ data class TopLevelDestination(val route: String, val icon: ImageVector, val tex
 
 object TopLevelDestinations {
   val OVERVIEW =
-      TopLevelDestination(
-          route = Route.OVERVIEW, icon = Icons.Outlined.Home, textId = "Notes")
+      TopLevelDestination(route = Route.OVERVIEW, icon = Icons.Outlined.Home, textId = "Notes")
   val SEARCH =
-      TopLevelDestination(
-          route = Route.SEARCH, icon = Icons.Outlined.Search, textId = "Search")
+      TopLevelDestination(route = Route.SEARCH, icon = Icons.Outlined.Search, textId = "Search")
   val PROFILE =
-      TopLevelDestination(
-          route = Route.PROFILE, icon = Icons.Outlined.Person, textId = "Profile")
+      TopLevelDestination(route = Route.PROFILE, icon = Icons.Outlined.Person, textId = "Profile")
 }
 
 val LIST_TOP_LEVEL_DESTINATION =
