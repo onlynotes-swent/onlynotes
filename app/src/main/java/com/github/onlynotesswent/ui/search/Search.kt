@@ -33,6 +33,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -45,6 +46,8 @@ import com.github.onlynotesswent.ui.navigation.BottomNavigationMenu
 import com.github.onlynotesswent.ui.navigation.LIST_TOP_LEVEL_DESTINATION
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
+import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
+import com.github.onlynotesswent.ui.user.switchProfileTo
 import com.github.onlynotesswent.utils.CustomLazyGrid
 import com.github.onlynotesswent.utils.NoteItem
 import kotlinx.coroutines.delay
@@ -82,6 +85,8 @@ fun SearchScreen(
   val folders = folderViewModel.publicFolders.collectAsState()
   val filteredFolders = remember { mutableStateOf(folders.value) }
   filteredFolders.value = folders.value.filter { textMatchesSearch(it.name, searchWords.value) }
+
+  val context = LocalContext.current
 
   // Refresh the list of notes, users, and folders periodically.
   RefreshPeriodically(searchQuery, noteViewModel, userViewModel, folderViewModel)
@@ -170,7 +175,12 @@ fun SearchScreen(
       },
       bottomBar = {
         BottomNavigationMenu(
-            onTabSelect = { route -> navigationActions.navigateTo(route) },
+            onTabSelect = {
+                route -> navigationActions.navigateTo(route)
+                if (route == TopLevelDestinations.SEARCH) {
+                    navigationActions.pushToScreenNavigationStack(Screen.SEARCH)
+                }
+            },
             tabList = LIST_TOP_LEVEL_DESTINATION,
             selectedItem = navigationActions.currentRoute())
       }) { padding ->
@@ -208,6 +218,8 @@ fun SearchScreen(
                           users.value
                               .first { it.uid == filteredNotes.value[index].userId }
                               .userHandle(),
+                      currentUser = userViewModel.currentUser.collectAsState(),
+                      context = context,
                       noteViewModel = noteViewModel,
                       showDialog = false,
                       navigationActions = navigationActions,
@@ -225,7 +237,11 @@ fun SearchScreen(
                 items(filteredUsers.value.size) { index ->
                   UserItem(filteredUsers.value[index]) {
                     userViewModel.setProfileUser(filteredUsers.value[index])
-                    navigationActions.navigateTo(Screen.PUBLIC_PROFILE)
+                    // Push search screen to stack to allow back navigation
+                    //navigationActions.pushToScreenNavigationStack(Screen.SEARCH)
+                    // Navigate to profile screen and register it in navigation stack
+                    switchProfileTo(filteredUsers.value[index], userViewModel, navigationActions)
+                    //navigationActions.navigateTo(Screen.PUBLIC_PROFILE)
                   }
                 }
               }
@@ -240,6 +256,8 @@ fun SearchScreen(
                   Modifier.fillMaxWidth().padding(horizontal = 16.dp).testTag("filteredFolderList"),
               folderViewModel = folderViewModel,
               noteViewModel = noteViewModel,
+              userViewModel = userViewModel,
+              context = context,
               navigationActions = navigationActions,
               paddingValues = padding,
               columnContent = {})

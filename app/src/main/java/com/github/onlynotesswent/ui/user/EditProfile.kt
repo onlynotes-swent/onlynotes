@@ -58,6 +58,7 @@ import com.github.onlynotesswent.model.users.UserViewModel
 import com.github.onlynotesswent.ui.navigation.BottomNavigationMenu
 import com.github.onlynotesswent.ui.navigation.LIST_TOP_LEVEL_DESTINATION
 import com.github.onlynotesswent.ui.navigation.NavigationActions
+import com.github.onlynotesswent.ui.navigation.Screen
 import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
 import com.github.onlynotesswent.utils.ProfilePictureTaker
 
@@ -105,7 +106,12 @@ fun EditProfileScreen(
           modifier = Modifier.testTag("ProfileScreen"),
           bottomBar = {
             BottomNavigationMenu(
-                onTabSelect = { route -> navigationActions.navigateTo(route) },
+                onTabSelect = {
+                    route -> navigationActions.navigateTo(route)
+                    if (route == TopLevelDestinations.SEARCH) {
+                        navigationActions.pushToScreenNavigationStack(Screen.SEARCH)
+                    }
+                },
                 tabList = LIST_TOP_LEVEL_DESTINATION,
                 selectedItem = navigationActions.currentRoute())
           },

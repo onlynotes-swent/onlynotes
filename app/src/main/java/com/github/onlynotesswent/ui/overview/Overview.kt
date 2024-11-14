@@ -1,5 +1,6 @@
 package com.github.onlynotesswent.ui.overview
 
+import android.content.Context
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -23,6 +24,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -67,6 +69,8 @@ fun OverviewScreen(
 
   val parentFolderId = folderViewModel.parentFolderId.collectAsState()
 
+  val context = LocalContext.current
+
   var expanded by remember { mutableStateOf(false) }
   var showCreateDialog by remember { mutableStateOf(false) }
 
@@ -83,7 +87,13 @@ fun OverviewScreen(
       },
       bottomBar = {
         BottomNavigationMenu(
-            onTabSelect = { route -> navigationActions.navigateTo(route) },
+            onTabSelect = {
+                route -> navigationActions.navigateTo(route)
+                // Keep track of navigation to search screen to allow for back navigation
+                if (route == TopLevelDestinations.SEARCH) {
+                    navigationActions.pushToScreenNavigationStack(Screen.SEARCH)
+                }
+            },
             tabList = LIST_TOP_LEVEL_DESTINATION,
             selectedItem = navigationActions.currentRoute())
       }) { paddingValues ->
@@ -94,6 +104,7 @@ fun OverviewScreen(
             folderViewModel = folderViewModel,
             noteViewModel = noteViewModel,
             userViewModel = userViewModel,
+            context = context,
             navigationActions = navigationActions)
         // Logic to show the dialog to create a folder
         if (showCreateDialog) {
@@ -197,6 +208,7 @@ fun OverviewScreenGrid(
     folderViewModel: FolderViewModel,
     noteViewModel: NoteViewModel,
     userViewModel: UserViewModel,
+    context: Context,
     navigationActions: NavigationActions
 ) {
   CustomLazyGrid(
@@ -212,6 +224,8 @@ fun OverviewScreenGrid(
               .testTag("noteAndFolderList"),
       folderViewModel = folderViewModel,
       noteViewModel = noteViewModel,
+      userViewModel = userViewModel,
+      context = context,
       navigationActions = navigationActions,
       paddingValues = paddingValues,
       columnContent = {

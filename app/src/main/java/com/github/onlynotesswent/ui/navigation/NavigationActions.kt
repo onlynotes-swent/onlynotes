@@ -23,7 +23,7 @@ object Screen {
   const val ADD_NOTE = "Add Note Screen"
   const val EDIT_NOTE = "Edit Note Screen"
   const val EDIT_MARKDOWN = "Edit Note Markdown Screen"
-  const val SEARCH_NOTE = "Search Note Screen"
+  const val SEARCH = "Search Screen"
   const val USER_PROFILE = "User Profile Screen"
   const val PUBLIC_PROFILE = "Public Profile Screen"
   const val EDIT_PROFILE = "Edit Profile Screen"
@@ -50,7 +50,7 @@ open class NavigationActions(
 
   private val screenNavigationStack = Stack<String>()
   /**
-   * Navigate to the specified [TopLevelDestination]
+   * Navigate to the specified [TopLevelDestination] and clear the navigation stack.
    *
    * @param destination The top level destination to navigate to Clear the back stack when
    *   navigating to a new destination This is useful when navigating to a new screen from the
@@ -74,15 +74,29 @@ open class NavigationActions(
         restoreState = true
       }
     }
+    clearScreenNavigationStack()
+//    val poppedId = popFromScreenNavigationStack()
+//    // If we come from search screen, we don't clear the navigation stack
+//    if (poppedId != Screen.SEARCH) {
+//      clearScreenNavigationStack()
+//    } else {
+//        // Push the search screen back to the navigation stack
+//        pushToScreenNavigationStack(poppedId)
+//    }
   }
 
   /**
-   * Navigate to the specified screen.
+   * Navigate to the specified screen and clear the navigation stack when
+   * navigating to search screen.
    *
    * @param screen The screen to navigate to
    */
   open fun navigateTo(screen: String) {
     navController.navigate(screen)
+    if (screen == Screen.SEARCH) {
+      clearScreenNavigationStack()
+      pushToScreenNavigationStack(screen)
+    }
   }
 
   /** Navigate back to the previous screen. */

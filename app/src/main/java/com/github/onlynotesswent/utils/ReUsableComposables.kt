@@ -1,5 +1,7 @@
 package com.github.onlynotesswent.utils
 
+import android.content.Context
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -39,6 +41,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -55,6 +58,8 @@ import com.github.onlynotesswent.model.folder.Folder
 import com.github.onlynotesswent.model.folder.FolderViewModel
 import com.github.onlynotesswent.model.note.Note
 import com.github.onlynotesswent.model.note.NoteViewModel
+import com.github.onlynotesswent.model.users.User
+import com.github.onlynotesswent.model.users.UserViewModel
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
 import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
@@ -77,6 +82,8 @@ import java.util.Locale
 fun NoteItem(
     note: Note,
     author: String? = null,
+    currentUser: State<User?>,
+    context: Context,
     noteViewModel: NoteViewModel,
     showDialog: Boolean,
     navigationActions: NavigationActions,
@@ -96,12 +103,18 @@ fun NoteItem(
         confirmButton = {
           Button(
               onClick = {
-                // Move out will move the given note to the overview menu
-                noteViewModel.updateNote(note.copy(folderId = null), note.userId)
+                if (currentUser.value!!.uid == note.userId)   {
+                    // Move out will move the given note to the overview menu
+                    noteViewModel.updateNote(note.copy(folderId = null), note.userId)
+                    // Clear the screen navigation stack as we navigate to the overview screen
+                    navigationActions.clearScreenNavigationStack()
+                    navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
+                } else {
+                    Toast.makeText(context, "You can't move out a note that you didn't create", Toast.LENGTH_SHORT).show()
+                }
                 showMoveOutDialog = false
-                // Clear the screen navigation stack as we navigate to the overview screen
-                navigationActions.clearScreenNavigationStack()
-                navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
+
+
               }) {
                 Text("Move")
               }
@@ -318,6 +331,8 @@ fun CustomLazyGrid(
     gridModifier: Modifier,
     folderViewModel: FolderViewModel,
     noteViewModel: NoteViewModel,
+    userViewModel: UserViewModel,
+    context: Context,
     navigationActions: NavigationActions,
     paddingValues: PaddingValues,
     columnContent: @Composable (ColumnScope.() -> Unit)
@@ -340,6 +355,8 @@ fun CustomLazyGrid(
             items(notes.value.size) { index ->
               NoteItem(
                   note = notes.value[index],
+                  currentUser = userViewModel.currentUser.collectAsState(),
+                  context = context,
                   noteViewModel = noteViewModel,
                   showDialog = false,
                   navigationActions = navigationActions) {
