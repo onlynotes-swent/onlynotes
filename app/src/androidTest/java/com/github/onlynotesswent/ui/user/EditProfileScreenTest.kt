@@ -104,7 +104,7 @@ class EditProfileScreenTest {
       onSuccess()
     }
 
-    `when`(mockFileRepository.downloadFile(any(), any(), any(), any(), any())).thenAnswer {}
+    `when`(mockFileRepository.downloadFile(any(), any(), any(), any(), any(), any())).thenAnswer {}
   }
 
   @Test
@@ -286,7 +286,7 @@ class EditProfileScreenTest {
           folderViewModel)
     }
     composeTestRule.onNodeWithTag("profilePicture").assertIsDisplayed()
-    verify(mockFileRepository).downloadFile(any(), any(), any(), any(), any())
+    verify(mockFileRepository).downloadFile(any(), any(), any(), any(), any(), any())
   }
 
   @Test

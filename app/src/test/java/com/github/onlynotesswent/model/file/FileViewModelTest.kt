@@ -47,8 +47,9 @@ class FileViewModelTest {
 
     `when`(mockContext.cacheDir).thenReturn(cacheDir)
 
-    fileViewModel.downloadFile(uid, fileType, mockContext, {}, {})
-    verify(mockFileRepository).downloadFile(eq(uid), eq(fileType), eq(cacheDir), any(), any())
+    fileViewModel.downloadFile(uid, fileType, mockContext, {}, {}, {})
+    verify(mockFileRepository)
+        .downloadFile(eq(uid), eq(fileType), eq(cacheDir), any(), any(), any())
   }
 
   @Test
@@ -57,7 +58,7 @@ class FileViewModelTest {
     val fileType = FileType.PROFILE_PIC_JPEG
 
     fileViewModel.deleteFile(uid, fileType)
-    verify(mockFileRepository).deleteFile(eq(uid), eq(fileType), any(), any())
+    verify(mockFileRepository).deleteFile(eq(uid), eq(fileType), any(), any(), any())
   }
 
   @Test
@@ -75,7 +76,7 @@ class FileViewModelTest {
     val uid = "testUid"
     val fileType = FileType.PROFILE_PIC_JPEG
 
-    fileViewModel.getFile(uid, fileType, {}, {})
-    verify(mockFileRepository).getFile(eq(uid), eq(fileType), any(), any())
+    fileViewModel.getFile(uid, fileType, {}, {}, {})
+    verify(mockFileRepository).getFile(eq(uid), eq(fileType), any(), any(), any())
   }
 }

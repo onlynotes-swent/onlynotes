@@ -101,7 +101,7 @@ fun EditNoteScreen(
           // Update the UI with the downloaded file reference
           state.setMarkdown(downloadedFile.readText())
         },
-        onFailure = { _ ->
+        onFileNotFound = {
           attemptedMarkdownDownloads += 1
           if (attemptedMarkdownDownloads < 2) {
             val file = File(context.cacheDir, "${note?.id ?: "errorNoId"}.md")
@@ -113,12 +113,14 @@ fun EditNoteScreen(
             val fileUri = Uri.fromFile(file)
 
             fileViewModel.uploadFile(note?.id ?: "errorNoId", fileUri, FileType.NOTE_TEXT)
-            Log.d(
-                "MarkdownAttachment",
-                "No markdown associated. Attempting to attach a Markdown to this note.")
             downloadMarkdownFile()
           }
-          Log.e("MarkdownAttachment", "Failed to attach a Markdown to this note.")
+        },
+        onFailure = { _ ->
+          attemptedMarkdownDownloads += 1
+          if (attemptedMarkdownDownloads < 2) {
+            downloadMarkdownFile()
+          }
         })
   }
   LaunchedEffect(Unit) { downloadMarkdownFile() }
