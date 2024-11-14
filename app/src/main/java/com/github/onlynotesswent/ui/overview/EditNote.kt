@@ -1,8 +1,12 @@
 package com.github.onlynotesswent.ui.overview
 
+import android.content.Intent
 import android.graphics.Bitmap
 import android.net.Uri
+import android.os.Environment
+import android.provider.DocumentsContract
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -15,9 +19,14 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.OpenInBrowser
+import androidx.compose.material.icons.filled.Upload
+import androidx.compose.material.icons.filled.UploadFile
 import androidx.compose.material.icons.outlined.Clear
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -38,7 +47,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat.startActivity
+import androidx.core.content.FileProvider
+import androidx.core.net.toUri
 import com.github.onlynotesswent.model.file.FileType
 import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.note.Note
@@ -47,14 +60,17 @@ import com.github.onlynotesswent.model.users.UserViewModel
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
 import com.github.onlynotesswent.utils.Course
+import com.github.onlynotesswent.utils.Scanner
 import com.github.onlynotesswent.utils.Visibility
 import com.google.firebase.Timestamp
+import com.google.mlkit.vision.documentscanner.GmsDocumentScanningResult.Pdf
 import com.mohamedrejeb.richeditor.model.rememberRichTextState
 import com.mohamedrejeb.richeditor.ui.material3.RichTextEditor
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
+
 
 /**
  * Displays the edit note screen, where users can update the title and content of an existing note.
@@ -69,6 +85,7 @@ import java.util.Locale
 @Composable
 fun EditNoteScreen(
     navigationActions: NavigationActions,
+    scanner: Scanner,
     noteViewModel: NoteViewModel,
     userViewModel: UserViewModel,
     fileViewModel: FileViewModel
@@ -87,7 +104,10 @@ fun EditNoteScreen(
   var expandedVisibility by remember { mutableStateOf(false) }
   var updatedComments by remember { mutableStateOf(note?.comments ?: Note.CommentCollection()) }
   var attemptedMarkdownDownloads = 0
-  /**
+
+    val fileProviderAuthority = "com.github.onlynotesswent.provider"
+
+    /**
    * Downloads a markdown file associated with the note. If no file exists, it attempts once to
    * create and upload an empty markdown file, then re-download it.
    */
@@ -171,11 +191,12 @@ fun EditNoteScreen(
         content = { paddingValues ->
           Column(
               modifier =
-                  Modifier.fillMaxSize()
-                      .padding(16.dp)
-                      .padding(paddingValues)
-                      .testTag("editNoteColumn")
-                      .verticalScroll(rememberScrollState()),
+              Modifier
+                  .fillMaxSize()
+                  .padding(16.dp)
+                  .padding(paddingValues)
+                  .testTag("editNoteColumn")
+                  .verticalScroll(rememberScrollState()),
               verticalArrangement = Arrangement.spacedBy(8.dp),
               horizontalAlignment = Alignment.CenterHorizontally) {
                 NoteDataTextField(
@@ -183,7 +204,9 @@ fun EditNoteScreen(
                     onValueChange = { noteTitle = it },
                     label = "Note Title",
                     placeholder = "Enter the new title here",
-                    modifier = Modifier.fillMaxWidth().testTag("EditTitle textField"),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag("EditTitle textField"),
                     trailingIcon = {
                       IconButton(onClick = { noteTitle = "" }) {
                         Icon(Icons.Outlined.Clear, contentDescription = "Clear Title")
@@ -204,26 +227,77 @@ fun EditNoteScreen(
                     onValueChange = { courseName = Course.formatCourseName(it) },
                     label = "Course Name",
                     placeholder = "Set the course name for the note",
-                    modifier = Modifier.fillMaxWidth().testTag("EditCourseName textField"))
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag("EditCourseName textField"))
 
                 NoteDataTextField(
                     value = courseCode,
                     onValueChange = { courseCode = Course.formatCourseCode(it) },
                     label = "Course Code",
                     placeholder = "Set the course code for the note",
-                    modifier = Modifier.fillMaxWidth().testTag("EditCourseCode textField"))
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag("EditCourseCode textField"))
 
                 NoteDataTextField(
                     value = courseYear.toString(),
                     onValueChange = { courseYear = it.toIntOrNull() ?: currentYear },
                     label = "Course Year",
                     placeholder = "Set the course year for the note",
-                    modifier = Modifier.fillMaxWidth().testTag("EditCourseYear textField"))
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag("EditCourseYear textField"))
 
                 RichTextEditor(
-                    modifier = Modifier.fillMaxWidth().pointerInput(Unit) {},
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .pointerInput(Unit) {},
                     state = state,
                     readOnly = true)
+
+              PdfCard(
+                  modifier = Modifier.fillMaxWidth(),
+                  testTagBase = "EditPdf",
+                  onViewClick = {
+                      // Download the file, then open it with a 3rd party PDF Viewer
+                      // TODO: Implement a PDF viewer in the app, possible, though maybe not necessary as our pdfs will be view only,
+                      //  you can modify the textx
+
+                      fileViewModel.downloadFile(
+                          uid = note?.id ?: "errorNoId",
+                          fileType = FileType.NOTE_PDF,
+                          context = context,
+                          onSuccess = {
+                              // Create an intent to open the pdf with a 3rd party app
+                              val intent = Intent(Intent.ACTION_VIEW).apply {
+                                  val uri = FileProvider.getUriForFile(context, fileProviderAuthority, it)
+                                  setDataAndType(uri, "application/pdf")
+                                  flags = Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_ACTIVITY_NO_HISTORY
+                              }
+                              startActivity(context, intent, null)
+                          },
+                          onFileNotFound = {
+                              Toast.makeText(context, "No stored Pdf for this note", Toast.LENGTH_SHORT).show()
+                          },
+                          onFailure = {
+                              Toast.makeText(context, "Failed to download Pdf", Toast.LENGTH_SHORT).show()
+                          })
+                  },
+                  onScanClick = {
+                      //Todo: Could show error to user, not possible with current functions
+                      // (logs but no toasts for updateFile)
+                      scanner.scan {
+                          fileViewModel.updateFile(note?.id ?: "errorNoId", it, FileType.NOTE_PDF)
+                      }
+                  },
+                  onDeleteClick = {
+                      //Todo: Could show error to user, not possible with current functions
+                      fileViewModel.deleteFile(
+                          uid = note?.id ?: "errorNoId",
+                          fileType = FileType.NOTE_PDF,)
+                  }
+              )
 
                 Button(
                     colors =
@@ -303,12 +377,16 @@ fun EditNoteScreen(
                   Text(
                       text = "No comments yet. Add a comment to start the discussion.",
                       color = Color.Gray,
-                      modifier = Modifier.padding(8.dp).testTag("NoCommentsText"))
+                      modifier = Modifier
+                          .padding(8.dp)
+                          .testTag("NoCommentsText"))
                 } else {
 
                   updatedComments.commentsList.forEachIndexed { _, comment ->
                     Row(
-                        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp),
                         verticalAlignment = Alignment.CenterVertically) {
                           OutlinedTextField(
                               value = comment.content,
@@ -330,7 +408,9 @@ fun EditNoteScreen(
                                 Text(displayedText)
                               },
                               placeholder = { Text("Enter comment here") },
-                              modifier = Modifier.weight(1f).testTag("EditCommentTextField"))
+                              modifier = Modifier
+                                  .weight(1f)
+                                  .testTag("EditCommentTextField"))
 
                           IconButton(
                               onClick = {
@@ -351,3 +431,60 @@ fun EditNoteScreen(
         })
   }
 }
+
+// Write a composable that is a horizontal Card, with two buttons in a row at the right end of the card, one that opens a view to a pdf, one that allows to edit the pdf
+// Use the following parameters:
+// - pdfTitle: The title of the pdf
+// - onEditClick: A lambda that is called when the edit button is clicked
+// - onOpenClick: A lambda that is called when the open button is clicked
+// - modifier: The modifier for the card
+// - testTag: The test tag for the card
+@Composable
+fun PdfCard(
+    modifier: Modifier,
+    testTagBase: String,
+    onViewClick: () -> Unit,
+    onScanClick: () -> Unit,
+    onDeleteClick: () -> Unit,
+) {
+    Card(
+        modifier = modifier,
+        content = {
+            Row(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(6.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween) {
+                Text("Note PDF")
+
+                Row {
+                    IconButton(
+                        onClick = onViewClick,
+                        modifier = Modifier.testTag("${testTagBase}ViewButton")) {
+                        Icon(
+                            imageVector = Icons.Default.OpenInBrowser,
+                            contentDescription = "Open PDF",)
+                    }
+
+                    IconButton(
+                        onClick = onScanClick,
+                        modifier = Modifier.testTag("${testTagBase}ScanButton")) {
+                        Icon(
+                            imageVector = Icons.Default.UploadFile,
+                            contentDescription = "Scan and replace PDF",)
+                    }
+
+                    IconButton(
+                        onClick = onDeleteClick,
+                        modifier = Modifier.testTag("${testTagBase}DeleteButton")) {
+                        Icon(
+                            imageVector = Icons.Default.Delete,
+                            contentDescription = "Delete PDF",)
+                    }
+                }
+            }
+        })
+}
+
+
