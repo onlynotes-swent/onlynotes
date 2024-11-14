@@ -395,8 +395,8 @@ fun ScreenTopBar(
       colors =
           TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface),
       title = {
-        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-          Spacer(modifier = Modifier.weight(1f))
+        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
+          Spacer(modifier = Modifier.weight(1.4f))
           Text(
               title,
               color = MaterialTheme.colorScheme.onSurface,

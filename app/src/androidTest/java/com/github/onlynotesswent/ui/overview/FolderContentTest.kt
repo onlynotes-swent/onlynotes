@@ -106,7 +106,7 @@ class FolderContentTest {
   fun displayBaseComponents() {
     composeTestRule.onNodeWithTag("folderContentScreen").assertIsDisplayed()
     composeTestRule.onNodeWithTag("folderContentTitle").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("clearButton").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("goBackButton").assertIsDisplayed()
     composeTestRule.onNodeWithTag("folderSettingsButton").assertIsDisplayed()
     composeTestRule.onNodeWithTag("createSubNoteOrSubFolder").assertIsDisplayed()
     composeTestRule.onNodeWithTag("emptyFolderPrompt").assertIsDisplayed()

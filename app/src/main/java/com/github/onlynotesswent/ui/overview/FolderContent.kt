@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Edit
@@ -228,8 +229,8 @@ fun FolderContentTopBar(
                 navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
               }
             },
-            modifier = Modifier.testTag("clearButton")) {
-              Icon(imageVector = Icons.Default.Clear, contentDescription = "Clear")
+            modifier = Modifier.testTag("goBackButton")) {
+              Icon(imageVector = Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "Back")
             }
       },
       actions = {
