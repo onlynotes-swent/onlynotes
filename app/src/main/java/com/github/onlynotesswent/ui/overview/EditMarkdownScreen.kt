@@ -164,10 +164,6 @@ fun EditMarkdownScreen(
  *
  * @param modifier Modifier to be applied to the Row layout containing the controls.
  * @param state The current state of the rich text editor, used to apply styles.
- * @param onBoldClick Callback function to handle bold style toggle.
- * @param onItalicClick Callback function to handle italic style toggle.
- * @param onUnderlineClick Callback function to handle underline style toggle.
- * @param onStrikethroughClick Callback function to handle strikethrough style toggle.
  */
 @Composable
 fun EditorControls(modifier: Modifier, state: RichTextState) {
