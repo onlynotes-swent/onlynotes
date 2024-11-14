@@ -110,6 +110,11 @@ class EditNoteTest {
 
     composeTestRule.onNodeWithTag("visibilityEditButton").performClick()
     composeTestRule.onNodeWithTag("visibilityEditMenu").assertIsDisplayed()
+
+    composeTestRule.onNodeWithTag("EditPdfCard").performScrollTo().assertIsDisplayed()
+    composeTestRule.onNodeWithTag("EditPdfViewButton").performScrollTo().assertIsDisplayed()
+    composeTestRule.onNodeWithTag("EditPdfScanButton").performScrollTo().assertIsDisplayed()
+    composeTestRule.onNodeWithTag("EditPdfDeleteButton").performScrollTo().assertIsDisplayed()
   }
 
   @Test

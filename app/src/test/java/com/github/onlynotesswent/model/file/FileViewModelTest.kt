@@ -79,4 +79,33 @@ class FileViewModelTest {
     fileViewModel.getFile(uid, fileType, {}, {}, {})
     verify(mockFileRepository).getFile(eq(uid), eq(fileType), any(), any(), any())
   }
+
+  @Test
+  fun openPdfTest() {
+
+    val uid = "testUid"
+    val cacheDir = File("cacheDir")
+
+    `when`(mockContext.cacheDir).thenReturn(cacheDir)
+
+    fileViewModel.openPdf(uid, mockContext, {}, {}, {})
+    verify(mockFileRepository)
+        .downloadFile(eq(uid), eq(FileType.NOTE_PDF), eq(cacheDir), any(), any(), any())
+
+    //    mockStatic(ContextCompat::class.java).use { MockContextCompat ->
+    //
+    //      fileViewModel.openPdf("testUid", mockContext, {}, {}, {})
+    //
+    //      verify(mockFileRepository).downloadFile(eq("testUid"), eq(FileType.NOTE_PDF),
+    // eq(mockContext.cacheDir), any(), any(), any())
+    //
+    //      MockContextCompat.verify {
+    //        ContextCompat.startActivity(
+    //          any(),
+    //          eq(Intent(Intent.ACTION_VIEW)),
+    //          isNull()
+    //        )
+    //      }
+    //    }
+  }
 }

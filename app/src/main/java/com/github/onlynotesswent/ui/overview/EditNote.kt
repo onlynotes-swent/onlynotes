@@ -1,6 +1,5 @@
 package com.github.onlynotesswent.ui.overview
 
-import android.content.Intent
 import android.graphics.Bitmap
 import android.net.Uri
 import android.util.Log
@@ -18,7 +17,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.OpenInNew
 import androidx.compose.material.icons.filled.UploadFile
 import androidx.compose.material.icons.outlined.Clear
 import androidx.compose.material3.Button
@@ -45,8 +43,6 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
-import androidx.core.content.ContextCompat.startActivity
-import androidx.core.content.FileProvider
 import com.github.onlynotesswent.model.file.FileType
 import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.note.Note
@@ -97,8 +93,6 @@ fun EditNoteScreen(
   var expandedVisibility by remember { mutableStateOf(false) }
   var updatedComments by remember { mutableStateOf(note?.comments ?: Note.CommentCollection()) }
   var attemptedMarkdownDownloads = 0
-
-  val fileProviderAuthority = "com.github.onlynotesswent.provider"
 
   /**
    * Downloads a markdown file associated with the note. If no file exists, it attempts once to
@@ -245,29 +239,14 @@ fun EditNoteScreen(
                       // Download the file, then open it with a 3rd party PDF Viewer
                       // TODO: Implement a PDF viewer in the app, possible, though maybe not
                       // necessary as our pdfs will be view only,
-                      //  you can modify the textx
+                      //  you can modify the text
 
-                      fileViewModel.downloadFile(
+                      fileViewModel.openPdf(
                           uid = note?.id ?: "errorNoId",
-                          fileType = FileType.NOTE_PDF,
                           context = context,
-                          onSuccess = {
-                            // Create an intent to open the pdf with a 3rd party app
-                            val intent =
-                                Intent(Intent.ACTION_VIEW).apply {
-                                  val uri =
-                                      FileProvider.getUriForFile(context, fileProviderAuthority, it)
-                                  setDataAndType(uri, "application/pdf")
-                                  flags =
-                                      Intent.FLAG_GRANT_READ_URI_PERMISSION or
-                                          Intent.FLAG_ACTIVITY_NO_HISTORY
-                                }
-                            startActivity(context, intent, null)
-                          },
+                          onSuccess = {},
                           onFileNotFound = {
-                            Toast.makeText(
-                                    context, "No stored Pdf for this note", Toast.LENGTH_SHORT)
-                                .show()
+                            Toast.makeText(context, "No stored Pdf", Toast.LENGTH_SHORT).show()
                           },
                           onFailure = {
                             Toast.makeText(context, "Failed to download Pdf", Toast.LENGTH_SHORT)
@@ -276,7 +255,6 @@ fun EditNoteScreen(
                     },
                     onScanClick = {
                       // Todo: Could show error to user, not possible with current functions
-                      // (logs but no toasts for updateFile)
                       scanner.scan {
                         fileViewModel.updateFile(note?.id ?: "errorNoId", it, FileType.NOTE_PDF)
                       }
@@ -424,6 +402,17 @@ fun EditNoteScreen(
 // - onOpenClick: A lambda that is called when the open button is clicked
 // - modifier: The modifier for the card
 // - testTag: The test tag for the card
+
+/**
+ * Card to encompass operations on a note's PDF file. The card includes buttons to view, scan and
+ * replace, and delete the PDF file.
+ *
+ * @param modifier The modifier to apply to the card.
+ * @param testTagBase The base test tag for the card and its buttons.
+ * @param onViewClick The lambda to call when the view button is clicked.
+ * @param onScanClick The lambda to call when the scan button is clicked.
+ * @param onDeleteClick The lambda to call when the delete button is clicked.
+ */
 @Composable
 fun PdfCard(
     modifier: Modifier,
@@ -433,7 +422,7 @@ fun PdfCard(
     onDeleteClick: () -> Unit,
 ) {
   Card(
-      modifier = modifier,
+      modifier = modifier.testTag("${testTagBase}Card"),
       content = {
         Row(
             modifier = Modifier.fillMaxSize().padding(6.dp),
