@@ -75,14 +75,6 @@ open class NavigationActions(
       }
     }
     clearScreenNavigationStack()
-    //    val poppedId = popFromScreenNavigationStack()
-    //    // If we come from search screen, we don't clear the navigation stack
-    //    if (poppedId != Screen.SEARCH) {
-    //      clearScreenNavigationStack()
-    //    } else {
-    //        // Push the search screen back to the navigation stack
-    //        pushToScreenNavigationStack(poppedId)
-    //    }
   }
 
   /**

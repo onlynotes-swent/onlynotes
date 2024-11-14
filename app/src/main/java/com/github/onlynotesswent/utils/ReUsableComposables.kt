@@ -349,9 +349,15 @@ fun CustomLazyGrid(
             items(folders.value.size) { index ->
               FolderItem(folder = folders.value[index]) {
                 folderViewModel.selectedFolder(folders.value[index])
-                // Add the folder ID to the screen navigation stack
-                navigationActions.pushToScreenNavigationStack(folders.value[index].id)
-                navigationActions.navigateTo(Screen.FOLDER_CONTENTS)
+
+                if (folders.value[index].parentFolderId == null) {
+                    // Don't add to the screen navigation stack as we are at the root folder
+                    navigationActions.navigateTo(Screen.FOLDER_CONTENTS)
+                } else {
+                    // Add the previously visited folder Id (parent) to the screen navigation stack
+                    navigationActions.pushToScreenNavigationStack(folders.value[index].parentFolderId!!)
+                    navigationActions.navigateTo(Screen.FOLDER_CONTENTS)
+                }
               }
             }
             items(notes.value.size) { index ->
