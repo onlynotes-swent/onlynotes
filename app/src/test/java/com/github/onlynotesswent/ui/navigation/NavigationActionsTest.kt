@@ -3,6 +3,7 @@ package com.github.onlynotesswent.ui.navigation
 import androidx.navigation.NavDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.NavOptionsBuilder
+import java.util.EmptyStackException
 import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertNull
 import org.hamcrest.CoreMatchers.`is`
@@ -15,7 +16,6 @@ import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
-import java.util.EmptyStackException
 
 class NavigationActionsTest {
 

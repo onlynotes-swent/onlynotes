@@ -126,9 +126,12 @@ fun NoteItem(
                   Icon(
                       // Show move out menu when clicking on the Icon
                       modifier =
-                          Modifier.clickable(enabled = note.folderId != null && navigationActions.currentRoute() == Screen.FOLDER_CONTENTS) {
-                            showMoveOutDialog = true
-                          },
+                          Modifier.clickable(
+                              enabled =
+                                  note.folderId != null &&
+                                      navigationActions.currentRoute() == Screen.FOLDER_CONTENTS) {
+                                showMoveOutDialog = true
+                              },
                       imageVector = Icons.Filled.MoreVert,
                       contentDescription = null,
                       tint = MaterialTheme.colorScheme.onPrimaryContainer)

@@ -217,12 +217,13 @@ fun CreateNoteButton(
     className: String,
     classYear: Int
 ) {
-    Button(
-        onClick = {
-            if (template == scanNoteText) {
-                scanner.scan()
-            }
-            val note = Note(
+  Button(
+      onClick = {
+        if (template == scanNoteText) {
+          scanner.scan()
+        }
+        val note =
+            Note(
                 id = noteViewModel.getNewUid(),
                 title = title,
                 content = "",
@@ -231,24 +232,22 @@ fun CreateNoteButton(
                 noteClass = Note.Class(classCode, className, classYear, "path"),
                 userId = currentUser.value!!.uid,
                 image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888),
-                folderId = folderId
-            )
-            noteViewModel.addNote(note, currentUser.value!!.uid)
+                folderId = folderId)
+        noteViewModel.addNote(note, currentUser.value!!.uid)
 
-            if (template == createNoteText) {
-                noteViewModel.selectedNote(note)
-                navigationActions.navigateTo(Screen.EDIT_NOTE)
-            } else {
-                navigationActions.goBack()
-            }
-        },
-        colors = ButtonDefaults.buttonColors(
-            containerColor = MaterialTheme.colorScheme.primary,
-            contentColor = MaterialTheme.colorScheme.onPrimary
-        ),
-        enabled = title.isNotEmpty() && visibility != null && template != templateInitialText,
-        modifier = Modifier.fillMaxWidth().testTag("createNoteButton")
-    ) {
+        if (template == createNoteText) {
+          noteViewModel.selectedNote(note)
+          navigationActions.navigateTo(Screen.EDIT_NOTE)
+        } else {
+          navigationActions.goBack()
+        }
+      },
+      colors =
+          ButtonDefaults.buttonColors(
+              containerColor = MaterialTheme.colorScheme.primary,
+              contentColor = MaterialTheme.colorScheme.onPrimary),
+      enabled = title.isNotEmpty() && visibility != null && template != templateInitialText,
+      modifier = Modifier.fillMaxWidth().testTag("createNoteButton")) {
         Text(text = template)
-    }
+      }
 }

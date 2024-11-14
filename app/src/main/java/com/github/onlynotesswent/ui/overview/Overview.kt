@@ -97,23 +97,23 @@ fun OverviewScreen(
             navigationActions = navigationActions)
         // Logic to show the dialog to create a folder
         if (showCreateDialog) {
-            CreateFolderDialog(
-                onDismiss = { showCreateDialog = false },
-                onConfirm = { newName ->
-                    folderViewModel.addFolder(
-                        Folder(
-                            id = folderViewModel.getNewFolderId(),
-                            name = newName,
-                            userId = userViewModel.currentUser.value!!.uid,
-                            parentFolderId = parentFolderId.value),
-                        userViewModel.currentUser.value!!.uid)
-                    showCreateDialog = false
-                    if (parentFolderId.value != null) {
-                        navigationActions.navigateTo(Screen.FOLDER_CONTENTS)
-                    } else {
-                        navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
-                    }
-                })
+          CreateFolderDialog(
+              onDismiss = { showCreateDialog = false },
+              onConfirm = { newName ->
+                folderViewModel.addFolder(
+                    Folder(
+                        id = folderViewModel.getNewFolderId(),
+                        name = newName,
+                        userId = userViewModel.currentUser.value!!.uid,
+                        parentFolderId = parentFolderId.value),
+                    userViewModel.currentUser.value!!.uid)
+                showCreateDialog = false
+                if (parentFolderId.value != null) {
+                  navigationActions.navigateTo(Screen.FOLDER_CONTENTS)
+                } else {
+                  navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
+                }
+              })
         }
       }
 }
@@ -121,7 +121,8 @@ fun OverviewScreen(
 /**
  * Displays a floating action button that expands to show options to create a note or a folder.
  *
- * @param expandedFab The state of the floating action button. True if the button is expanded, false otherwise.
+ * @param expandedFab The state of the floating action button. True if the button is expanded, false
+ *   otherwise.
  * @param onExpandedFabChange The callback to change the state of the floating action button.
  * @param showCreateDialog The callback to show the dialog to create a folder.
  * @param noteViewModel The ViewModel that provides the list of publicNotes to display.
@@ -137,40 +138,40 @@ fun CreateItemFab(
     folderViewModel: FolderViewModel,
     navigationActions: NavigationActions
 ) {
-    CustomDropDownMenu(
-        modifier = Modifier.testTag("createNoteOrFolder"),
-        menuItems =
-        listOf(
-            CustomDropDownMenuItem(
-                text = { Text("Create note") },
-                icon = {
+  CustomDropDownMenu(
+      modifier = Modifier.testTag("createNoteOrFolder"),
+      menuItems =
+          listOf(
+              CustomDropDownMenuItem(
+                  text = { Text("Create note") },
+                  icon = {
                     Icon(
                         painter = painterResource(id = R.drawable.add_note_icon),
                         contentDescription = "AddNote")
-                },
-                onClick = {
+                  },
+                  onClick = {
                     onExpandedFabChange(false)
                     navigationActions.navigateTo(Screen.ADD_NOTE)
                     noteViewModel.selectedFolderId(null)
-                },
-                modifier = Modifier.testTag("createNote")),
-            CustomDropDownMenuItem(
-                text = { Text("Create folder") },
-                icon = {
+                  },
+                  modifier = Modifier.testTag("createNote")),
+              CustomDropDownMenuItem(
+                  text = { Text("Create folder") },
+                  icon = {
                     Icon(
                         painter = painterResource(id = R.drawable.folder_create_icon),
                         contentDescription = "createFolder")
-                },
-                onClick = {
+                  },
+                  onClick = {
                     onExpandedFabChange(false)
                     showCreateDialog(true)
                     folderViewModel.selectedParentFolderId(null)
-                },
-                modifier = Modifier.testTag("createFolder"))),
-        fabIcon = { Icon(imageVector = Icons.Default.Add, contentDescription = "AddNote") },
-        expanded = expandedFab,
-        onFabClick = { onExpandedFabChange(true) },
-        onDismissRequest = { onExpandedFabChange(false) })
+                  },
+                  modifier = Modifier.testTag("createFolder"))),
+      fabIcon = { Icon(imageVector = Icons.Default.Add, contentDescription = "AddNote") },
+      expanded = expandedFab,
+      onFabClick = { onExpandedFabChange(true) },
+      onDismissRequest = { onExpandedFabChange(false) })
 }
 
 /**
@@ -195,51 +196,49 @@ fun OverviewScreenGrid(
     noteViewModel: NoteViewModel,
     userViewModel: UserViewModel,
     navigationActions: NavigationActions
-    ) {
-    CustomLazyGrid(
-        modifier = Modifier.fillMaxSize().padding(paddingValues),
-        notes = userRootNotes,
-        folders = userRootFolders,
-        gridModifier =
-        Modifier.fillMaxWidth()
-            .padding(horizontal = 16.dp)
-            .padding(paddingValues)
-            .testTag("noteAndFolderList"),
-        folderViewModel = folderViewModel,
-        noteViewModel = noteViewModel,
-        navigationActions = navigationActions,
-        paddingValues = paddingValues,
-        columnContent = {
-            Text(
-                modifier = Modifier.testTag("emptyNoteAndFolderPrompt"),
-                text = "You have no notes or folders yet.",
-                color = MaterialTheme.colorScheme.onBackground)
-            Spacer(modifier = Modifier.height(50.dp))
-            RefreshButton {
-                userViewModel.currentUser.value?.let { noteViewModel.getRootNotesFrom(it.uid) }
-                userViewModel.currentUser.value?.let {
-                    folderViewModel.getRootFoldersFromUid(it.uid)
-                }
-            }
-            Spacer(modifier = Modifier.height(20.dp))
-        })
+) {
+  CustomLazyGrid(
+      modifier = Modifier.fillMaxSize().padding(paddingValues),
+      notes = userRootNotes,
+      folders = userRootFolders,
+      gridModifier =
+          Modifier.fillMaxWidth()
+              .padding(horizontal = 16.dp)
+              .padding(paddingValues)
+              .testTag("noteAndFolderList"),
+      folderViewModel = folderViewModel,
+      noteViewModel = noteViewModel,
+      navigationActions = navigationActions,
+      paddingValues = paddingValues,
+      columnContent = {
+        Text(
+            modifier = Modifier.testTag("emptyNoteAndFolderPrompt"),
+            text = "You have no notes or folders yet.",
+            color = MaterialTheme.colorScheme.onBackground)
+        Spacer(modifier = Modifier.height(50.dp))
+        RefreshButton {
+          userViewModel.currentUser.value?.let { noteViewModel.getRootNotesFrom(it.uid) }
+          userViewModel.currentUser.value?.let { folderViewModel.getRootFoldersFromUid(it.uid) }
+        }
+        Spacer(modifier = Modifier.height(20.dp))
+      })
 }
 
 /**
-* A composable function that displays a refresh button.
-*
-* @param onClick A lambda function to be invoked when the button is clicked.
-*/
+ * A composable function that displays a refresh button.
+ *
+ * @param onClick A lambda function to be invoked when the button is clicked.
+ */
 @Composable
 fun RefreshButton(onClick: () -> Unit) {
-    ElevatedButton(
-        onClick = onClick,
-        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surface),
-        modifier = Modifier.testTag("refreshButton")) {
+  ElevatedButton(
+      onClick = onClick,
+      colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surface),
+      modifier = Modifier.testTag("refreshButton")) {
         Text("Refresh", color = MaterialTheme.colorScheme.onSurface)
         Icon(
             imageVector = Icons.Default.Refresh,
             contentDescription = "Refresh",
             tint = MaterialTheme.colorScheme.onSurface)
-    }
+      }
 }
