@@ -7,6 +7,7 @@ import androidx.compose.material.icons.outlined.Search
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
+import java.util.Stack
 
 object Route {
   const val OVERVIEW = "Overview"
@@ -48,7 +49,7 @@ open class NavigationActions(
     private val navController: NavHostController,
 ) {
 
-  private val screenNavigationStack = mutableListOf<String>()
+  private val screenNavigationStack = Stack<String>()
   /**
    * Navigate to the specified [TopLevelDestination]
    *
@@ -104,8 +105,8 @@ open class NavigationActions(
    *
    * @param id The Id to push.
    */
-  fun pushToScreenNavigationStack(id: String) {
-    screenNavigationStack.add(id)
+  open fun pushToScreenNavigationStack(id: String) {
+    screenNavigationStack.push(id)
   }
 
   /**
@@ -113,18 +114,17 @@ open class NavigationActions(
    *
    * @return The popped Id.
    */
-  fun popFromScreenNavigationStack(): String? {
-    return screenNavigationStack.removeLastOrNull()
+  open fun popFromScreenNavigationStack(): String? {
+    return if (screenNavigationStack.isEmpty()) null else screenNavigationStack.pop()
   }
 
   /** Clears the screen navigation stack. */
-  fun clearScreenNavigationStack() {
+  open fun clearScreenNavigationStack() {
     screenNavigationStack.clear()
   }
 
-  /** Returns the screen navigation stack. */
-  fun getScreenNavigationStack(): MutableList<String> {
-    // Copy of the navigation stack to prevent modification
-    return screenNavigationStack.toMutableList()
+  /** Returns the top of the screen navigation stack. */
+  open fun retrieveTopElementOfScreenNavigationStack(): String {
+    return screenNavigationStack.peek()
   }
 }

@@ -222,7 +222,7 @@ fun TopProfileBar(
         } else {
           navigationActions.navigateTo(TopLevelDestinations.PROFILE)
         }
-      } else if (userProfileId != null && userProfileId != userViewModel.profileUser.value?.uid) {
+      } else if (userProfileId != null) {
         userViewModel.getUserById(
             userProfileId,
             { userViewModel.setProfileUser(it) },
