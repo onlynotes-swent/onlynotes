@@ -207,44 +207,45 @@ fun TopProfileBar(
     userViewModel: UserViewModel,
     includeBackButton: Boolean = true,
     onBackButtonClick: () -> Unit = {
-        var userProfileId = navigationActions.popFromScreenNavigationStack()
-        when {
-            userProfileId == Screen.SEARCH -> {
-                // If we come from search screen, we go back to search screen
-                navigationActions.navigateTo(Screen.SEARCH)
-            }
-            userProfileId != null && userProfileId == userViewModel.profileUser.value?.uid -> {
-                userProfileId = navigationActions.popFromScreenNavigationStack()
-                if (userProfileId == Screen.SEARCH) {
-                    navigationActions.navigateTo(Screen.SEARCH)
-                } else if (userProfileId != null) {
-                    // set profile user to userProfileId and navigate to public profile screen
-                    // If we pop from stack and the profile id corresponds to profile user (we will navigate to
-                    // the current screen), so we pop twice to get to previous visited public profile
-                    userViewModel.getUserById(
-                        userProfileId,
-                        { userViewModel.setProfileUser(it) },
-                        { navigationActions.navigateTo(TopLevelDestinations.PROFILE) },
-                        {})
-                    navigationActions.navigateTo(Screen.PUBLIC_PROFILE)
-                } else {
-                    navigationActions.navigateTo(TopLevelDestinations.PROFILE)
-                }
-            }
-            userProfileId != null -> {
-                userViewModel.getUserById(
-                    userProfileId,
-                    { userViewModel.setProfileUser(it) },
-                    { navigationActions.navigateTo(TopLevelDestinations.PROFILE) },
-                    {})
-                navigationActions.navigateTo(Screen.PUBLIC_PROFILE)
-            }
-            else -> {
-                // If no user profile id is found, navigate to profile screen
-                navigationActions.navigateTo(TopLevelDestinations.PROFILE)
-            }
+      var userProfileId = navigationActions.popFromScreenNavigationStack()
+      when {
+        userProfileId == Screen.SEARCH -> {
+          // If we come from search screen, we go back to search screen
+          navigationActions.navigateTo(Screen.SEARCH)
+        }
+        userProfileId != null && userProfileId == userViewModel.profileUser.value?.uid -> {
+          userProfileId = navigationActions.popFromScreenNavigationStack()
+          if (userProfileId == Screen.SEARCH) {
+            navigationActions.navigateTo(Screen.SEARCH)
+          } else if (userProfileId != null) {
+            // set profile user to userProfileId and navigate to public profile screen
+            // If we pop from stack and the profile id corresponds to profile user (we will navigate
+            // to
+            // the current screen), so we pop twice to get to previous visited public profile
+            userViewModel.getUserById(
+                userProfileId,
+                { userViewModel.setProfileUser(it) },
+                { navigationActions.navigateTo(TopLevelDestinations.PROFILE) },
+                {})
+            navigationActions.navigateTo(Screen.PUBLIC_PROFILE)
+          } else {
+            navigationActions.navigateTo(TopLevelDestinations.PROFILE)
+          }
+        }
+        userProfileId != null -> {
+          userViewModel.getUserById(
+              userProfileId,
+              { userViewModel.setProfileUser(it) },
+              { navigationActions.navigateTo(TopLevelDestinations.PROFILE) },
+              {})
+          navigationActions.navigateTo(Screen.PUBLIC_PROFILE)
+        }
+        else -> {
+          // If no user profile id is found, navigate to profile screen
+          navigationActions.navigateTo(TopLevelDestinations.PROFILE)
+        }
+      }
     }
-}
 ) {
   TopAppBar(
       title = { Text(title) },
@@ -459,10 +460,10 @@ fun switchProfileTo(
   if (user.uid == userViewModel.currentUser.value?.uid) {
     navigationActions.navigateTo(TopLevelDestinations.PROFILE) // clears backstack
   } else {
-      userViewModel.setProfileUser(user)
-      // Add the visited user profile to the screen navigation stack
-      navigationActions.pushToScreenNavigationStack(user.uid)
-      navigationActions.navigateTo(Screen.PUBLIC_PROFILE)
+    userViewModel.setProfileUser(user)
+    // Add the visited user profile to the screen navigation stack
+    navigationActions.pushToScreenNavigationStack(user.uid)
+    navigationActions.navigateTo(Screen.PUBLIC_PROFILE)
   }
 }
 

@@ -242,12 +242,12 @@ fun FolderContentTopBar(
               // If we pop from the stack the current folder, we call pop twice to get the
               // previous folder
               if (previousFolderId == Screen.SEARCH) {
-                  navigationActions.navigateTo(Screen.SEARCH)
+                navigationActions.navigateTo(Screen.SEARCH)
               } else if (previousFolderId != null) {
-                  // Set the selected folder state to the previous folder
-                  folderViewModel.getFolderById(previousFolderId)
+                // Set the selected folder state to the previous folder
+                folderViewModel.getFolderById(previousFolderId)
               } else {
-                  navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
+                navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
               }
             },
             modifier = Modifier.testTag("goBackButton")) {

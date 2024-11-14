@@ -351,12 +351,13 @@ fun CustomLazyGrid(
                 folderViewModel.selectedFolder(folders.value[index])
 
                 if (folders.value[index].parentFolderId == null) {
-                    // Don't add to the screen navigation stack as we are at the root folder
-                    navigationActions.navigateTo(Screen.FOLDER_CONTENTS)
+                  // Don't add to the screen navigation stack as we are at the root folder
+                  navigationActions.navigateTo(Screen.FOLDER_CONTENTS)
                 } else {
-                    // Add the previously visited folder Id (parent) to the screen navigation stack
-                    navigationActions.pushToScreenNavigationStack(folders.value[index].parentFolderId!!)
-                    navigationActions.navigateTo(Screen.FOLDER_CONTENTS)
+                  // Add the previously visited folder Id (parent) to the screen navigation stack
+                  navigationActions.pushToScreenNavigationStack(
+                      folders.value[index].parentFolderId!!)
+                  navigationActions.navigateTo(Screen.FOLDER_CONTENTS)
                 }
               }
             }
@@ -462,10 +463,12 @@ fun ScreenTopBar(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center) {
               Spacer(modifier = Modifier.weight(1.4f))
+
               Text(
                   title,
                   color = MaterialTheme.colorScheme.onSurface,
                   modifier = Modifier.testTag(titleTestTag))
+
               Spacer(modifier = Modifier.weight(2f))
             }
       },
