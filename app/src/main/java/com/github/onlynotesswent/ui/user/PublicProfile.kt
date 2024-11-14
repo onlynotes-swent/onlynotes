@@ -24,12 +24,16 @@ import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.outlined.ExitToApp
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Scaffold
@@ -39,7 +43,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -68,6 +71,7 @@ import com.github.onlynotesswent.ui.navigation.LIST_TOP_LEVEL_DESTINATION
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
 import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
+import com.google.firebase.auth.FirebaseAuth
 
 // User Profile Home screen:
 /**
@@ -86,7 +90,7 @@ fun UserProfileScreen(
   val user = userViewModel.currentUser.collectAsState()
   // Display the user's profile information
   ProfileScaffold(
-      navigationActions,
+      navigationActions = navigationActions,
       includeBackButton = false,
       topBarTitle = "    My Profile",
       floatingActionButton = {
@@ -201,6 +205,12 @@ fun TopProfileBar(
           IconButton(onClick = onBackButtonClick, Modifier.testTag("goBackButton")) {
             Icon(imageVector = Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "Back")
           }
+        }
+      },
+      actions = {
+        LogoutButton {
+          FirebaseAuth.getInstance().signOut()
+          navigationActions.navigateTo(Screen.AUTH)
         }
       })
 }
@@ -472,4 +482,20 @@ fun NonModifiableProfilePicture(
                 .border(2.dp, Color.Gray, CircleShape),
         contentScale = ContentScale.Crop)
   }
+}
+
+/**
+ * Displays a logout button.
+ *
+ * @param onClick The action to be performed when the button is clicked.
+ */
+@Composable
+fun LogoutButton(onClick: () -> Unit) {
+  Button(
+      onClick = onClick,
+      modifier = Modifier.testTag("logoutButton"),
+      colors =
+          ButtonDefaults.buttonColors(
+              containerColor = Color.Transparent, contentColor = MaterialTheme.colorScheme.error),
+      content = { Icon(imageVector = Icons.Outlined.ExitToApp, contentDescription = "Logout") })
 }
