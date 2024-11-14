@@ -4,19 +4,25 @@ import android.graphics.Bitmap
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
+import androidx.compose.ui.test.assertIsNotDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.filter
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onChildren
 import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollToNode
+import androidx.compose.ui.test.performTextClearance
 import androidx.compose.ui.test.performTextInput
+import androidx.compose.ui.test.performTextReplacement
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -30,6 +36,7 @@ import com.github.onlynotesswent.model.folder.FolderViewModel
 import com.github.onlynotesswent.model.note.Note
 import com.github.onlynotesswent.model.note.NoteRepository
 import com.github.onlynotesswent.model.note.NoteViewModel
+import com.github.onlynotesswent.model.users.Friends
 import com.github.onlynotesswent.model.users.User
 import com.github.onlynotesswent.model.users.UserRepository
 import com.github.onlynotesswent.model.users.UserViewModel
@@ -41,6 +48,7 @@ import com.github.onlynotesswent.ui.overview.EditMarkdownScreen
 import com.github.onlynotesswent.ui.overview.EditNoteScreen
 import com.github.onlynotesswent.ui.overview.FolderContentScreen
 import com.github.onlynotesswent.ui.overview.OverviewScreen
+import com.github.onlynotesswent.ui.search.SearchScreen
 import com.github.onlynotesswent.ui.theme.AppTheme
 import com.github.onlynotesswent.ui.user.CreateUserScreen
 import com.github.onlynotesswent.ui.user.EditProfileScreen
@@ -80,15 +88,35 @@ class EndToEndTest {
 
   // Sample user and note data for testing
   private val testUid = "testUid123"
-  private val testUser =
+  private var testUser1 =
       User(
-          firstName = "testFirstName",
-          lastName = "testLastName",
-          userName = "testUserName",
+          firstName = "testFirstName1",
+          lastName = "testLastName1",
+          userName = "testUserName1",
           email = "testEmail",
           uid = testUid,
           dateOfJoining = Timestamp.now(),
           rating = 0.0)
+
+  private var testUser2 =
+      User(
+          firstName = "testFirstName2",
+          lastName = "testLastName2",
+          userName = "testUserName2",
+          email = "testEmail",
+          uid = "testUid2",
+          dateOfJoining = Timestamp.now(),
+          rating = 0.0)
+
+  private val testUsers = listOf(testUser1, testUser2)
+
+  private val uidToUser = { s: String ->
+    when (s) {
+      testUser1.uid -> testUser1
+      testUser2.uid -> testUser2
+      else -> null
+    }
+  }
 
   private val testNote =
       Note(
@@ -113,16 +141,6 @@ class EndToEndTest {
     noteViewModel = NoteViewModel(noteRepository)
     folderViewModel = FolderViewModel(folderRepository)
     fileViewModel = FileViewModel(fileRepository)
-
-    // Set up mock behavior for user and note repository methods
-    `when`(userViewModel.getNewUid()).thenReturn(testUid)
-
-    `when`(userRepository.addUser(any(), any(), any())).thenAnswer { invocation ->
-      val onSuccess = invocation.getArgument<() -> Unit>(1)
-      onSuccess()
-    }
-
-    `when`(noteRepository.getNewUid()).thenReturn(testNote.id)
 
     // Initialize Intents for handling navigation intents in the test
     Intents.init()
@@ -171,6 +189,14 @@ class EndToEndTest {
                   }
                 }
                 navigation(
+                    startDestination = Screen.SEARCH_NOTE,
+                    route = Route.SEARCH,
+                ) {
+                  composable(Screen.SEARCH_NOTE) {
+                    SearchScreen(navigationActions, noteViewModel, userViewModel, folderViewModel)
+                  }
+                }
+                navigation(
                     startDestination = Screen.USER_PROFILE,
                     route = Route.PROFILE,
                 ) {
@@ -197,13 +223,29 @@ class EndToEndTest {
     Intents.release()
   }
 
+  // Creates the mock behavior needed for the end-to-end flow of creating a user, adding a note, and
+  // editing the note
+  private fun testEndToEndFlow1_init() {
+    // Set up mock behavior for user and note repository methods
+    `when`(userViewModel.getNewUid()).thenReturn(testUid)
+
+    `when`(userRepository.addUser(any(), any(), any())).thenAnswer { invocation ->
+      val onSuccess = invocation.getArgument<() -> Unit>(1)
+      onSuccess()
+    }
+
+    `when`(noteRepository.getNewUid()).thenReturn(testNote.id)
+  }
+
   // Test the end-to-end flow of creating a user, adding a note, and editing the note
   @Test
   fun testEndToEndFlow1() {
+    testEndToEndFlow1_init()
+
     // Interact with the input fields for creating a user
-    composeTestRule.onNodeWithTag("inputFirstName").performTextInput(testUser.firstName)
-    composeTestRule.onNodeWithTag("inputLastName").performTextInput(testUser.lastName)
-    composeTestRule.onNodeWithTag("inputUserName").performTextInput(testUser.userName)
+    composeTestRule.onNodeWithTag("inputFirstName").performTextInput(testUser1.firstName)
+    composeTestRule.onNodeWithTag("inputLastName").performTextInput(testUser1.lastName)
+    composeTestRule.onNodeWithTag("inputUserName").performTextInput(testUser1.userName)
 
     // Verify that the "Create User" button is enabled and then click it
     composeTestRule.onNodeWithTag("saveButton").assertIsEnabled()
@@ -251,17 +293,193 @@ class EndToEndTest {
     composeTestRule.onNodeWithTag("Save button").performClick()
 
     // Mock retrieval of notes
-    `when`(noteRepository.getRootNotesFrom(eq(testUser.uid), any(), any())).thenAnswer { invocation
+    `when`(noteRepository.getRootNotesFrom(eq(testUser1.uid), any(), any())).thenAnswer { invocation
       ->
       val onSuccess = invocation.getArgument<(List<Note>) -> Unit>(1)
       onSuccess(listOf(testNote))
     }
 
     // Trigger note retrieval and verify the notes are displayed
-    noteViewModel.getRootNotesFrom(testUser.uid)
+    noteViewModel.getRootNotesFrom(testUser1.uid)
     composeTestRule.onNodeWithTag("noteAndFolderList").assertIsDisplayed()
 
     // Verify that the note card is displayed
     composeTestRule.onNodeWithTag("noteCard").assertIsDisplayed()
+  }
+
+  // Creates the mock behavior needed for the end-to-end flow of searching for testUser2 and viewing
+  // their profile and following them and then going to profile screen to unfollow and modify
+  // profile
+  private fun testEndToEndFlow2_init() {
+    `when`(userRepository.getAllUsers(any(), any())).thenAnswer { invocation ->
+      val onSuccess = invocation.getArgument<(List<User>) -> Unit>(0)
+      onSuccess(testUsers)
+    }
+
+    // Mock the user repository to return the specified user
+    `when`(userRepository.getUserById(any(), any(), any(), any())).thenAnswer {
+      val onSuccess = it.arguments[1] as (User) -> Unit
+      val onNotFound = it.arguments[2] as () -> Unit
+      val uid = it.arguments[0] as String
+
+      uidToUser(uid)?.let { it1 -> onSuccess(it1) } ?: onNotFound()
+    }
+
+    `when`(userRepository.getUsersById(any(), any(), any())).thenAnswer {
+      val onSuccess = it.arguments[1] as (List<User>) -> Unit
+      val userIds = it.arguments[0] as List<String>
+
+      onSuccess(userIds.mapNotNull(uidToUser))
+    }
+
+    // Mock add user to initialize current user
+    `when`(userRepository.addUser(any(), any(), any())).thenAnswer {
+      val onSuccess = it.arguments[1] as () -> Unit
+      onSuccess()
+    }
+    // Initialize current user
+    userViewModel.addUser(testUser1, {}, {})
+
+    `when`(userRepository.addFollowerTo(any(), any(), any(), any())).thenAnswer {
+      val onSuccess = it.arguments[2] as () -> Unit
+      val userId = it.arguments[0] as String // testUser2
+      val followerId = it.arguments[1] as String // testUser
+      testUser2 =
+          testUser2.copy(
+              friends =
+                  Friends(
+                      testUser2.friends.following, testUser2.friends.followers.plus(followerId)))
+      testUser1 =
+          testUser1.copy(
+              friends =
+                  Friends(testUser1.friends.following.plus(userId), testUser1.friends.followers))
+
+      onSuccess()
+    }
+
+    `when`(userRepository.removeFollowerFrom(any(), any(), any(), any())).thenAnswer {
+      val onSuccess = it.arguments[2] as () -> Unit
+      val userId = it.arguments[0] as String // testUser2
+      val followerId = it.arguments[1] as String // testUser
+      testUser2 =
+          testUser2.copy(
+              friends =
+                  Friends(
+                      testUser2.friends.following, testUser2.friends.followers.minus(followerId)))
+      testUser1 =
+          testUser1.copy(
+              friends =
+                  Friends(testUser1.friends.following.minus(userId), testUser1.friends.followers))
+      onSuccess()
+    }
+
+    `when`(userRepository.updateUser(any(), any(), any())).thenAnswer {
+      val onSuccess = it.arguments[1] as () -> Unit
+      onSuccess()
+    }
+
+    // Start at overview screen
+    composeTestRule.runOnUiThread { navController.navigate(Route.OVERVIEW) }
+  }
+
+  // Test the end-to-end flow of searching for testUser2 and viewing their profile and following
+  // them and then going to profile screen to unfollow and modify profile
+  @Test
+  fun testEndToEndFlow2() {
+    testEndToEndFlow2_init()
+
+    // Go to search screen
+    composeTestRule.onNodeWithTag("Search Notes").performClick()
+
+    // Search for testUser2
+    composeTestRule.onNodeWithTag("searchTextField").performTextReplacement("User")
+    composeTestRule.onNodeWithTag("userFilterChip").performClick()
+
+    composeTestRule.onNodeWithTag("filteredUserList").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("noSearchResults").assertIsNotDisplayed()
+
+    composeTestRule
+        .onAllNodesWithTag("userCard")
+        .filter(hasText(testUser1.fullName()))
+        .onFirst()
+        .assertIsDisplayed()
+
+    composeTestRule
+        .onAllNodesWithTag("userCard")
+        .filter(hasText(testUser2.fullName()))
+        .onFirst()
+        .assertIsDisplayed()
+
+    composeTestRule.onAllNodesWithTag("userCard").assertCountEquals(2)
+
+    // Click on testUser2
+    composeTestRule
+        .onAllNodesWithTag("userCard")
+        .filter(hasText(testUser2.fullName()))
+        .onFirst()
+        .assertIsDisplayed()
+        .performClick()
+
+    // Verify that the user profile screen is displayed and you can follow the user
+    composeTestRule.onNodeWithTag("followUnfollowButton").assertIsDisplayed()
+    composeTestRule
+        .onNodeWithTag("followUnfollowButtonText", useUnmergedTree = true)
+        .assertIsDisplayed()
+        .assertTextContains("Follow")
+        .performClick()
+        .assertTextContains("Unfollow")
+
+    // Go to profile screen
+    composeTestRule.onNodeWithTag("My Profile").performClick()
+
+    // Verify that the following button is displayed and the person the user is following is
+    // displayed
+    composeTestRule.onNodeWithTag("followingButton").assertIsDisplayed().performClick()
+    composeTestRule.onNodeWithTag("item--${testUser2.userName}").assertIsDisplayed().performClick()
+    composeTestRule.onNodeWithTag("followingDropdownMenu").assertIsNotDisplayed()
+
+    // Verify that the unfollow button is displayed and the person the user is following is
+    // displayed
+    composeTestRule.onNodeWithTag("followUnfollowButton").assertIsDisplayed()
+    composeTestRule
+        .onNodeWithTag("followUnfollowButtonText", useUnmergedTree = true)
+        .assertIsDisplayed()
+        .assertTextContains("Unfollow")
+        .performClick()
+        .assertTextContains("Follow")
+
+    // Go to profile screen
+    composeTestRule.onNodeWithTag("My Profile").performClick()
+
+    // Verify that the following button is displayed and no one is displayed in the following list
+    composeTestRule.onNodeWithTag("followingButton").assertIsDisplayed().performClick()
+    composeTestRule.onNodeWithTag("followingAbsent").assertIsDisplayed()
+
+    // Go to edit profile screen
+    composeTestRule.onNodeWithTag("editProfileButton").assertIsDisplayed().performClick()
+
+    composeTestRule.onNodeWithTag("inputUserName").performTextClearance()
+    composeTestRule.onNodeWithTag("inputUserName").performTextInput("newUserName")
+    assert(userViewModel.currentUser.value?.userName == testUser1.userName)
+    composeTestRule.onNodeWithTag("saveButton").performClick()
+    assert(userViewModel.currentUser.value?.userName == "newUserName")
+
+    // Go to edit profile screen
+    composeTestRule.onNodeWithTag("editProfileButton").assertIsDisplayed().performClick()
+
+    composeTestRule.onNodeWithTag("inputFirstName").performTextClearance()
+    composeTestRule.onNodeWithTag("inputFirstName").performTextInput("New First Name")
+    assert(userViewModel.currentUser.value?.firstName == testUser1.firstName)
+    composeTestRule.onNodeWithTag("saveButton").performClick()
+    assert(userViewModel.currentUser.value?.firstName == "New First Name")
+
+    // Go to edit profile screen
+    composeTestRule.onNodeWithTag("editProfileButton").assertIsDisplayed().performClick()
+
+    composeTestRule.onNodeWithTag("inputLastName").performTextClearance()
+    composeTestRule.onNodeWithTag("inputLastName").performTextInput("New Last Name")
+    assert(userViewModel.currentUser.value?.lastName == testUser1.lastName)
+    composeTestRule.onNodeWithTag("saveButton").performClick()
+    assert(userViewModel.currentUser.value?.lastName == "New Last Name")
   }
 }
