@@ -100,7 +100,7 @@ class SearchScreenTest {
   fun setUp() {
     MockitoAnnotations.openMocks(this)
 
-    `when`(navigationActions.currentRoute()).thenReturn(Screen.SEARCH_NOTE)
+    `when`(navigationActions.currentRoute()).thenReturn(Screen.SEARCH)
     `when`(noteRepository.getPublicNotes(any(), any())).thenAnswer { invocation ->
       val onSuccess = invocation.getArgument<(List<Note>) -> Unit>(0)
       onSuccess(testNotes)
