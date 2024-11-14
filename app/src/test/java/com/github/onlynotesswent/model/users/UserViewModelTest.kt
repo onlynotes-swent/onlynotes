@@ -178,10 +178,9 @@ class UserViewModelTest {
 
   @Test
   fun `getAllUsers should call repository getAllUsers`() {
-    var returnedUsers: List<User> = emptyList()
-    userViewModel.getAllUsers({ returnedUsers = it }, { assert(false) })
+    userViewModel.getAllUsers()
     verify(mockRepositoryFirestore, timeout(1000)).getAllUsers(anyOrNull(), anyOrNull())
-    assert(returnedUsers.isNotEmpty())
+    assert(userViewModel.allUsers.value.isNotEmpty())
   }
 
   @Test

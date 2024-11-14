@@ -2,9 +2,13 @@ package com.github.onlynotesswent.ui.overview
 
 import android.graphics.Bitmap
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsEnabled
+import androidx.compose.ui.test.assertIsNotDisplayed
+import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTextInput
 import com.github.onlynotesswent.model.folder.Folder
 import com.github.onlynotesswent.model.folder.FolderRepository
 import com.github.onlynotesswent.model.folder.FolderViewModel
@@ -16,6 +20,8 @@ import com.github.onlynotesswent.model.users.UserRepository
 import com.github.onlynotesswent.model.users.UserViewModel
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
+import com.github.onlynotesswent.utils.Course
+import com.github.onlynotesswent.utils.Visibility
 import com.google.firebase.Timestamp
 import org.junit.Before
 import org.junit.Rule
@@ -43,9 +49,9 @@ class OverviewTest {
               title = "Sample Title",
               content = "This is a sample content.",
               date = Timestamp.now(), // Use current timestamp
-              visibility = Note.Visibility.DEFAULT,
+              visibility = Visibility.DEFAULT,
               userId = "1",
-              noteClass = Note.Class("CS-100", "Sample Class", 2024, "path"),
+              noteCourse = Course("CS-100", "Sample Course", 2024, "path"),
               image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888) // Placeholder Bitmap
               ))
 
@@ -64,6 +70,9 @@ class OverviewTest {
     noteViewModel = NoteViewModel(noteRepository)
     folderRepository = mock(FolderRepository::class.java)
     folderViewModel = FolderViewModel(folderRepository)
+
+    // Mock folder repository to return new folder id
+    `when`(folderRepository.getNewFolderId()).thenReturn("2")
 
     // Mock the addUser method to call the onSuccess callback
     `when`(userRepository.addUser(any(), any(), any())).thenAnswer { invocation ->
@@ -210,6 +219,25 @@ class OverviewTest {
     composeTestRule.onNodeWithTag("createNoteOrFolder").performClick()
     composeTestRule.onNodeWithTag("createFolder").assertIsDisplayed()
     composeTestRule.onNodeWithTag("createFolder").performClick()
-    composeTestRule.onNodeWithTag("createFolderDialog").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("folderDialog").assertIsDisplayed()
+  }
+
+  @Test
+  fun createFolderDialogWorks() {
+    composeTestRule.onNodeWithTag("createNoteOrFolder").performClick()
+    composeTestRule.onNodeWithTag("createFolder").performClick()
+
+    composeTestRule.onNodeWithTag("confirmFolderAction").assertIsNotEnabled()
+    composeTestRule.onNodeWithTag("inputFolderName").performTextInput("Folder Name")
+    composeTestRule.onNodeWithTag("confirmFolderAction").assertIsNotEnabled()
+
+    composeTestRule.onNodeWithTag("visibilityDropDown").assertIsNotDisplayed()
+    composeTestRule.onNodeWithTag("visibilityButton").assertIsDisplayed().performClick()
+
+    composeTestRule.onNodeWithTag("item--Public").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("item--Friends Only").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("item--Private").assertIsDisplayed().performClick()
+    composeTestRule.onNodeWithTag("confirmFolderAction").assertIsEnabled().assertIsDisplayed()
+    composeTestRule.onNodeWithTag("confirmFolderAction").performClick()
   }
 }

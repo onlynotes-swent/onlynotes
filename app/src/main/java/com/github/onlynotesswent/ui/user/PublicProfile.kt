@@ -458,6 +458,7 @@ fun NonModifiableProfilePicture(
           FileType.PROFILE_PIC_JPEG,
           context = LocalContext.current,
           onSuccess = { file -> profilePictureUri.value = file.absolutePath },
+          onFileNotFound = { Log.e("ProfilePicture", "Profile picture not found") },
           onFailure = { e -> Log.e("ProfilePicture", "Error downloading profile picture", e) })
     }
 

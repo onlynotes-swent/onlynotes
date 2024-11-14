@@ -3,7 +3,8 @@ agp = "8.4.0"
 firebaseBom = "33.5.1"
 coilCompose = "2.1.0"
 imagepicker = "2.1"
-kotlin = "1.8.10"
+gson = "2.10.1"
+kotlin = "1.9.0" #"1.8.10"
 coreKtx = "1.12.0"
 ktfmt = "0.17.0"
 junit = "4.13.2"
@@ -20,6 +21,7 @@ mockitoCore = "5.13.0"
 mockitoKotlin = "5.4.0"
 mockitoInline = "4.0.0"
 mockitoAndroid = "5.14.1"
+okhttp = "4.10.0"
 robolectric = "4.11.1"
 sonar = "4.4.1.3373"
 
@@ -48,6 +50,7 @@ firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "fir
 firebase-storage = { module = "com.google.firebase:firebase-storage", version.ref = "firebaseStorage" }
 coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coilCompose" }
 imagepicker = { module = "com.github.dhaval2404:imagepicker", version.ref = "imagepicker" }
+gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
@@ -73,6 +76,7 @@ mockito-core = { module = "org.mockito:mockito-core", version.ref = "mockitoCore
 mockito-kotlin = { module = "org.mockito.kotlin:mockito-kotlin", version.ref = "mockitoKotlin" }
 mockito-inline = { module = "org.mockito:mockito-inline", version.ref = "mockitoInline" }
 mockito-android = { module = "org.mockito:mockito-android", version.ref = "mockitoAndroid" }
+okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
 robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric" }
 
 firebase-auth = { module = "com.google.firebase:firebase-auth", version.ref = "firebaseAuth" }

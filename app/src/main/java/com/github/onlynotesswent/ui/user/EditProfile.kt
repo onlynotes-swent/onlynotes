@@ -149,9 +149,9 @@ fun EditProfileScreen(
                       onClick = {
                         val updatedUser =
                             user.value!!.copy(
-                                firstName = newFirstName.value,
-                                lastName = newLastName.value,
-                                userName = newUserName.value,
+                                firstName = newFirstName.value.trim(),
+                                lastName = newLastName.value.trim(),
+                                userName = newUserName.value.trim(),
                                 hasProfilePicture = profilePictureUri.value.isNotBlank())
 
                         userViewModel.updateUser(
@@ -228,7 +228,13 @@ fun EditableProfilePicture(
             // Now the current profile picture is the same as the one in the database
             hasProfilePictureBeenChanged.value = false
           },
-          onFailure = { e -> Log.e("ProfilePicture", "Error downloading profile picture", e) })
+          onFileNotFound = {
+            // Shouldn't happen if correctly implemented
+          },
+          onFailure = {
+            Toast.makeText(localContext, "Error downloading profile picture", Toast.LENGTH_SHORT)
+                .show()
+          })
     }
 
     // Profile Picture Painter
