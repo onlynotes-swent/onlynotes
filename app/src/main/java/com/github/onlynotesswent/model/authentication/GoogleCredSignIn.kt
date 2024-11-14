@@ -61,8 +61,6 @@ class GoogleCredSignIn(
       try {
         // Attempt to get the Google ID credential
         val result = credentialManager.getCredential(context = ctx, request = request)
-
-        // Pass the result to handleSignIn with the callback
         handleSignIn(callback, result)
       } catch (e: Exception) {
         Log.e(TAG, "Error getting credential", e)
@@ -98,15 +96,12 @@ class GoogleCredSignIn(
         // Use googleIdTokenCredential and extract the ID to validate and authenticate on the server
         val googleIdTokenCredential = GoogleIdTokenCredential.createFrom(credential.data)
         val googleIdToken = googleIdTokenCredential.idToken
-
-        // Invoke the callback with the Google ID token
         callback(googleIdToken)
       } catch (e: GoogleIdTokenParsingException) {
         Log.e(TAG, "Received an invalid google id token response", e)
       }
     } else {
-      // Catch any unrecognized custom credential type
-      Log.e(TAG, "Unexpected type of credential")
+      Log.e(TAG, "Unexpected type of credential: ${credential.type}")
     }
   }
 }

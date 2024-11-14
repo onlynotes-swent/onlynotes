@@ -69,9 +69,7 @@ fun SignInScreen(
   val launcher =
       rememberFirebaseAuthLauncher(
           onAuthComplete = { result ->
-            authSuccessHandler(result, navigationActions, userViewModel) { s ->
-              Toast.makeText(context, s, Toast.LENGTH_LONG).show()
-            }
+            authSuccessHandler(result, navigationActions, userViewModel, context)
           },
           onAuthError = { e ->
             Toast.makeText(context, "Login Failed!", Toast.LENGTH_LONG).show()
@@ -113,9 +111,7 @@ internal fun signInWithFirebase(
   CoroutineScope(Dispatchers.Main).launch {
     try {
       val authResult: AuthResult = Firebase.auth.signInWithCredential(credential).await()
-      authSuccessHandler(authResult, navigationActions, userViewModel) { s ->
-        Toast.makeText(context, s, Toast.LENGTH_LONG).show()
-      }
+      authSuccessHandler(authResult, navigationActions, userViewModel, context)
     } catch (e: Exception) {
       Log.e("SignInScreen", "Firebase sign-in failed", e)
       Toast.makeText(context, "Login Failed!", Toast.LENGTH_LONG).show()
@@ -127,23 +123,25 @@ internal fun authSuccessHandler(
     result: AuthResult,
     navigationActions: NavigationActions,
     userViewModel: UserViewModel,
-    showMessage: (String) -> Unit
+    context: Context
 ) {
   if (result.user == null || result.user?.email == null) {
-    showMessage("Login Failed!")
+    Toast.makeText(context, "Login Failed!", Toast.LENGTH_LONG).show()
     return
   }
   userViewModel.getCurrentUserByEmail(
-      result.user!!.email!!,
+      email = result.user!!.email!!,
       onSuccess = { user ->
-        showMessage("Welcome ${user.userName}!")
+        Toast.makeText(context, "Welcome ${user.userName}!", Toast.LENGTH_LONG).show()
         navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
       },
       onUserNotFound = {
-        showMessage("Welcome to OnlyNotes!")
+        Toast.makeText(context, "Welcome to OnlyNotes!", Toast.LENGTH_LONG).show()
         navigationActions.navigateTo(Screen.CREATE_USER)
       },
-      { showMessage("Error while fetching user: $it") })
+      onFailure = {
+        Toast.makeText(context, "Error while fetching user: $it", Toast.LENGTH_LONG).show()
+      })
 }
 
 @Composable
