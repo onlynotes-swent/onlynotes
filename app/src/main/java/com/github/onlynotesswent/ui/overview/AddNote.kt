@@ -206,7 +206,8 @@ fun AddNoteScreen(
  * @param currentUser The current user.
  * @param noteViewModel The ViewModel that provides the current note to be edited and handles note
  *   updates.
- * @param fileViewModel The ViewModel that provides the current file to be uploaded and handles file.
+ * @param fileViewModel The ViewModel that provides the current file to be uploaded and handles
+ *   file.
  * @param navigationActions The navigation view model used to transition between different screens.
  * @param scanner The scanner used to scan images and create notes.
  * @param courseCode The code of the course for which the note is created.
