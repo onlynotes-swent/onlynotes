@@ -42,7 +42,7 @@ class GoogleCredSignIn(
       GetGoogleIdOption.Builder()
           .setFilterByAuthorizedAccounts(false)
           .setServerClientId(serverClientId)
-          .setAutoSelectEnabled(true) // enable automatic sign-in for returning users
+          .setAutoSelectEnabled(false) // disable automatic account selection
           .setNonce(generateNonce()) // add a nonce for security
           .build()
 
