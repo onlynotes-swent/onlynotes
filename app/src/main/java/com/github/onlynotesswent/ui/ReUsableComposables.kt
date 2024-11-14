@@ -18,16 +18,13 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.outlined.ArrowDropDown
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -62,25 +59,6 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 
 /**
- * A composable function that displays a refresh button.
- *
- * @param onClick A lambda function to be invoked when the button is clicked.
- */
-@Composable
-fun RefreshButton(onClick: () -> Unit) {
-  ElevatedButton(
-      onClick = onClick,
-      colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surface),
-      modifier = Modifier.testTag("refreshButton")) {
-        Text("Refresh", color = MaterialTheme.colorScheme.onSurface)
-        Icon(
-            imageVector = Icons.Default.Refresh,
-            contentDescription = "Refresh",
-            tint = MaterialTheme.colorScheme.onSurface)
-      }
-}
-
-/**
  * Displays a single note item in a card format. The card contains the note's date, name, and user
  * ID. When clicked, it triggers the provided [onClick] action, which can be used for navigation or
  * other interactions.
@@ -88,7 +66,7 @@ fun RefreshButton(onClick: () -> Unit) {
  * @param note The note data that will be displayed in this card.
  * @param noteViewModel The ViewModel that provides the list of notes to display.
  * @param showDialog A boolean indicating whether the move out dialog should be displayed.
- * @param navigationActions The navigation view model used to transition between different screens.
+ * @param navigationActions The navigation instance used to transition between different screens.
  * @param onClick The lambda function to be invoked when the note card is clicked.
  */
 @Composable
@@ -148,7 +126,7 @@ fun NoteItem(
                   Icon(
                       // Show move out menu when clicking on the Icon
                       modifier =
-                          Modifier.clickable(enabled = note.folderId != null) {
+                          Modifier.clickable(enabled = note.folderId != null && navigationActions.currentRoute() == Screen.FOLDER_CONTENTS) {
                             showMoveOutDialog = true
                           },
                       imageVector = Icons.Filled.MoreVert,
@@ -355,45 +333,6 @@ data class CustomDropDownMenuItem(
     val onClick: () -> Unit,
     val modifier: Modifier = Modifier
 )
-
-/**
- * Dialog that allows the user to rename a folder.
- *
- * @param currentName the current name of the folder
- * @param onDismiss callback to be invoked when the dialog is dismissed
- * @param onConfirm callback to be invoked when the user confirms the new name
- */
-@Composable
-fun RenameFolderDialog(currentName: String, onDismiss: () -> Unit, onConfirm: (String) -> Unit) {
-
-  var newName by remember { mutableStateOf(currentName) }
-
-  AlertDialog(
-      modifier = Modifier.testTag("renameFolderDialog"),
-      onDismissRequest = onDismiss,
-      title = {
-        Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-          Text("Rename folder")
-        }
-      },
-      text = {
-        OutlinedTextField(
-            value = newName, onValueChange = { newName = it }, label = { Text("New Folder Name") })
-      },
-      confirmButton = {
-        Button(
-            enabled = newName.isNotEmpty(),
-            onClick = { onConfirm(newName) },
-            modifier = Modifier.testTag("confirmRenameButton")) {
-              Text("Confirm")
-            }
-      },
-      dismissButton = {
-        Button(onClick = onDismiss, modifier = Modifier.testTag("dismissRenameButton")) {
-          Text("Cancel")
-        }
-      })
-}
 
 /**
  * A composable function that displays an `OutlinedTextField` with an optional trailing icon.

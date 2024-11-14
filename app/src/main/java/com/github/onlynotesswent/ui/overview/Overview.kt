@@ -8,6 +8,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -33,7 +36,6 @@ import com.github.onlynotesswent.ui.CreateFolderDialog
 import com.github.onlynotesswent.ui.CustomDropDownMenu
 import com.github.onlynotesswent.ui.CustomDropDownMenuItem
 import com.github.onlynotesswent.ui.CustomLazyGrid
-import com.github.onlynotesswent.ui.RefreshButton
 import com.github.onlynotesswent.ui.navigation.BottomNavigationMenu
 import com.github.onlynotesswent.ui.navigation.LIST_TOP_LEVEL_DESTINATION
 import com.github.onlynotesswent.ui.navigation.NavigationActions
@@ -221,4 +223,23 @@ fun OverviewScreenGrid(
             }
             Spacer(modifier = Modifier.height(20.dp))
         })
+}
+
+/**
+* A composable function that displays a refresh button.
+*
+* @param onClick A lambda function to be invoked when the button is clicked.
+*/
+@Composable
+fun RefreshButton(onClick: () -> Unit) {
+    ElevatedButton(
+        onClick = onClick,
+        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surface),
+        modifier = Modifier.testTag("refreshButton")) {
+        Text("Refresh", color = MaterialTheme.colorScheme.onSurface)
+        Icon(
+            imageVector = Icons.Default.Refresh,
+            contentDescription = "Refresh",
+            tint = MaterialTheme.colorScheme.onSurface)
+    }
 }

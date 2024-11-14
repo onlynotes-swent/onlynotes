@@ -381,7 +381,7 @@ fun DeleteButton(
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.error),
         onClick = {
             noteViewModel.deleteNoteById(note?.id ?: "", note?.userId ?: currentUser!!.uid)
-            navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
+            navigationActions.navigateTo(Screen.OVERVIEW)
         },
         modifier = Modifier.testTag("Delete button")
     ) {
