@@ -1,5 +1,6 @@
 package com.github.onlynotesswent.ui.overview
 
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -12,6 +13,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -24,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import com.github.onlynotesswent.R
 import com.github.onlynotesswent.model.folder.Folder
 import com.github.onlynotesswent.model.folder.FolderViewModel
+import com.github.onlynotesswent.model.note.Note
 import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.model.users.UserViewModel
 import com.github.onlynotesswent.ui.CreateFolderDialog
@@ -68,60 +71,13 @@ fun OverviewScreen(
   Scaffold(
       modifier = Modifier.testTag("overviewScreen"),
       floatingActionButton = {
-        CustomDropDownMenu(
-            modifier = Modifier.testTag("createNoteOrFolder"),
-            menuItems =
-                listOf(
-                    CustomDropDownMenuItem(
-                        text = { Text("Create note") },
-                        icon = {
-                          Icon(
-                              painter = painterResource(id = R.drawable.add_note_icon),
-                              contentDescription = "AddNote")
-                        },
-                        onClick = {
-                          expanded = false
-                          navigationActions.navigateTo(Screen.ADD_NOTE)
-                          noteViewModel.selectedFolderId(null)
-                        },
-                        modifier = Modifier.testTag("createNote")),
-                    CustomDropDownMenuItem(
-                        text = { Text("Create folder") },
-                        icon = {
-                          Icon(
-                              painter = painterResource(id = R.drawable.folder_create_icon),
-                              contentDescription = "createFolder")
-                        },
-                        onClick = {
-                          expanded = false
-                          showCreateDialog = true
-                          folderViewModel.selectedParentFolderId(null)
-                        },
-                        modifier = Modifier.testTag("createFolder"))),
-            fabIcon = { Icon(imageVector = Icons.Default.Add, contentDescription = "AddNote") },
-            expanded = expanded,
-            onFabClick = { expanded = true },
-            onDismissRequest = { expanded = false })
-        // Logic to show the dialog to create a folder
-        if (showCreateDialog) {
-          CreateFolderDialog(
-              onDismiss = { showCreateDialog = false },
-              onConfirm = { newName ->
-                folderViewModel.addFolder(
-                    Folder(
-                        id = folderViewModel.getNewFolderId(),
-                        name = newName,
-                        userId = userViewModel.currentUser.value!!.uid,
-                        parentFolderId = parentFolderId.value),
-                    userViewModel.currentUser.value!!.uid)
-                showCreateDialog = false
-                if (parentFolderId.value != null) {
-                  navigationActions.navigateTo(Screen.FOLDER_CONTENTS)
-                } else {
-                  navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
-                }
-              })
-        }
+        CreateItemFab(
+            expandedFab = expanded,
+            onExpandedFabChange = { expanded = it },
+            showCreateDialog = { showCreateDialog = it },
+            noteViewModel = noteViewModel,
+            folderViewModel = folderViewModel,
+            navigationActions = navigationActions)
       },
       bottomBar = {
         BottomNavigationMenu(
@@ -129,32 +85,140 @@ fun OverviewScreen(
             tabList = LIST_TOP_LEVEL_DESTINATION,
             selectedItem = navigationActions.currentRoute())
       }) { paddingValues ->
-        CustomLazyGrid(
-            modifier = Modifier.fillMaxSize().padding(paddingValues),
-            notes = userRootNotes,
-            folders = userRootFolders,
-            gridModifier =
-                Modifier.fillMaxWidth()
-                    .padding(horizontal = 16.dp)
-                    .padding(paddingValues)
-                    .testTag("noteAndFolderList"),
+        OverviewScreenGrid(
+            paddingValues = paddingValues,
+            userRootNotes = userRootNotes,
+            userRootFolders = userRootFolders,
             folderViewModel = folderViewModel,
             noteViewModel = noteViewModel,
-            navigationActions = navigationActions,
-            paddingValues = paddingValues,
-            columnContent = {
-              Text(
-                  modifier = Modifier.testTag("emptyNoteAndFolderPrompt"),
-                  text = "You have no notes or folders yet.",
-                  color = MaterialTheme.colorScheme.onBackground)
-              Spacer(modifier = Modifier.height(50.dp))
-              RefreshButton {
+            userViewModel = userViewModel,
+            navigationActions = navigationActions)
+        // Logic to show the dialog to create a folder
+        if (showCreateDialog) {
+            CreateFolderDialog(
+                onDismiss = { showCreateDialog = false },
+                onConfirm = { newName ->
+                    folderViewModel.addFolder(
+                        Folder(
+                            id = folderViewModel.getNewFolderId(),
+                            name = newName,
+                            userId = userViewModel.currentUser.value!!.uid,
+                            parentFolderId = parentFolderId.value),
+                        userViewModel.currentUser.value!!.uid)
+                    showCreateDialog = false
+                    if (parentFolderId.value != null) {
+                        navigationActions.navigateTo(Screen.FOLDER_CONTENTS)
+                    } else {
+                        navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
+                    }
+                })
+        }
+      }
+}
+
+/**
+ * Displays a floating action button that expands to show options to create a note or a folder.
+ *
+ * @param expandedFab The state of the floating action button. True if the button is expanded, false otherwise.
+ * @param onExpandedFabChange The callback to change the state of the floating action button.
+ * @param showCreateDialog The callback to show the dialog to create a folder.
+ * @param noteViewModel The ViewModel that provides the list of publicNotes to display.
+ * @param folderViewModel The ViewModel that provides the list of folders to display.
+ * @param navigationActions The navigation view model used to transition between different screens.
+ */
+@Composable
+fun CreateItemFab(
+    expandedFab: Boolean,
+    onExpandedFabChange: (Boolean) -> Unit,
+    showCreateDialog: (Boolean) -> Unit,
+    noteViewModel: NoteViewModel,
+    folderViewModel: FolderViewModel,
+    navigationActions: NavigationActions
+) {
+    CustomDropDownMenu(
+        modifier = Modifier.testTag("createNoteOrFolder"),
+        menuItems =
+        listOf(
+            CustomDropDownMenuItem(
+                text = { Text("Create note") },
+                icon = {
+                    Icon(
+                        painter = painterResource(id = R.drawable.add_note_icon),
+                        contentDescription = "AddNote")
+                },
+                onClick = {
+                    onExpandedFabChange(false)
+                    navigationActions.navigateTo(Screen.ADD_NOTE)
+                    noteViewModel.selectedFolderId(null)
+                },
+                modifier = Modifier.testTag("createNote")),
+            CustomDropDownMenuItem(
+                text = { Text("Create folder") },
+                icon = {
+                    Icon(
+                        painter = painterResource(id = R.drawable.folder_create_icon),
+                        contentDescription = "createFolder")
+                },
+                onClick = {
+                    onExpandedFabChange(false)
+                    showCreateDialog(true)
+                    folderViewModel.selectedParentFolderId(null)
+                },
+                modifier = Modifier.testTag("createFolder"))),
+        fabIcon = { Icon(imageVector = Icons.Default.Add, contentDescription = "AddNote") },
+        expanded = expandedFab,
+        onFabClick = { onExpandedFabChange(true) },
+        onDismissRequest = { onExpandedFabChange(false) })
+}
+
+/**
+ * Displays the overview screen in a grid layout. If there are no notes or folders, it shows a text
+ * to the user indicating that there are no notes or folders. It also provides a button to refresh
+ * the list of notes and folders.
+ *
+ * @param paddingValues The padding values to apply to the grid layout.
+ * @param userRootNotes The list of notes to display.
+ * @param userRootFolders The list of folders to display.
+ * @param folderViewModel The ViewModel that provides the list of folders to display.
+ * @param noteViewModel The ViewModel that provides the list of publicNotes to display.
+ * @param userViewModel The ViewModel that provides the current user.
+ * @param navigationActions The navigation view model used to transition between different screens.
+ */
+@Composable
+fun OverviewScreenGrid(
+    paddingValues: PaddingValues,
+    userRootNotes: State<List<Note>>,
+    userRootFolders: State<List<Folder>>,
+    folderViewModel: FolderViewModel,
+    noteViewModel: NoteViewModel,
+    userViewModel: UserViewModel,
+    navigationActions: NavigationActions
+    ) {
+    CustomLazyGrid(
+        modifier = Modifier.fillMaxSize().padding(paddingValues),
+        notes = userRootNotes,
+        folders = userRootFolders,
+        gridModifier =
+        Modifier.fillMaxWidth()
+            .padding(horizontal = 16.dp)
+            .padding(paddingValues)
+            .testTag("noteAndFolderList"),
+        folderViewModel = folderViewModel,
+        noteViewModel = noteViewModel,
+        navigationActions = navigationActions,
+        paddingValues = paddingValues,
+        columnContent = {
+            Text(
+                modifier = Modifier.testTag("emptyNoteAndFolderPrompt"),
+                text = "You have no notes or folders yet.",
+                color = MaterialTheme.colorScheme.onBackground)
+            Spacer(modifier = Modifier.height(50.dp))
+            RefreshButton {
                 userViewModel.currentUser.value?.let { noteViewModel.getRootNotesFrom(it.uid) }
                 userViewModel.currentUser.value?.let {
-                  folderViewModel.getRootFoldersFromUid(it.uid)
+                    folderViewModel.getRootFoldersFromUid(it.uid)
                 }
-              }
-              Spacer(modifier = Modifier.height(20.dp))
-            })
-      }
+            }
+            Spacer(modifier = Modifier.height(20.dp))
+        })
 }

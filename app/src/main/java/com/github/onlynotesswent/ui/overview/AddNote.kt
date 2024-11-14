@@ -19,6 +19,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -32,6 +33,7 @@ import androidx.compose.ui.unit.dp
 import com.github.onlynotesswent.model.note.Note
 import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.model.scanner.Scanner
+import com.github.onlynotesswent.model.users.User
 import com.github.onlynotesswent.model.users.UserViewModel
 import com.github.onlynotesswent.ui.NoteDataTextField
 import com.github.onlynotesswent.ui.OptionDropDownMenu
@@ -61,7 +63,6 @@ fun AddNoteScreen(
     userViewModel: UserViewModel
 ) {
   val templateInitialText = "Choose mode"
-
   val folderId = noteViewModel.currentFolderId.collectAsState()
   val currentYear = Calendar.getInstance().get(Calendar.YEAR)
   var title by remember { mutableStateOf("") }
@@ -160,43 +161,94 @@ fun AddNoteScreen(
 
               Spacer(modifier = Modifier.height(70.dp))
 
-              Button(
-                  onClick = {
-                    if (template == scanNoteText) {
-                      // call scan image API or functions. Once scanned, add the note to database
-                      scanner.scan()
-                    }
-                    // provisional note, we will have to change this later
-                    val note =
-                        Note(
-                            id = noteViewModel.getNewUid(),
-                            title = title,
-                            content = "",
-                            date = Timestamp.now(),
-                            visibility = visibility!!,
-                            noteClass = Note.Class(classCode, className, classYear, "path"),
-                            userId = userViewModel.currentUser.value!!.uid,
-                            image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888),
-                            folderId = folderId.value)
-                    // create the note and add it to database
-                    noteViewModel.addNote(note, userViewModel.currentUser.value!!.uid)
-
-                    if (template == createNoteText) {
-                      noteViewModel.selectedNote(note)
-                      navigationActions.navigateTo(Screen.EDIT_NOTE)
-                    } else {
-                      navigationActions.goBack()
-                    }
-                  },
-                  colors =
-                      ButtonDefaults.buttonColors(
-                          containerColor = MaterialTheme.colorScheme.primary,
-                          contentColor = MaterialTheme.colorScheme.onPrimary),
-                  enabled =
-                      title.isNotEmpty() && visibility != null && template != templateInitialText,
-                  modifier = Modifier.fillMaxWidth().testTag("createNoteButton")) {
-                    Text(text = template)
-                  }
+              CreateNoteButton(
+                  title = title,
+                  visibility = visibility,
+                  template = template,
+                  templateInitialText = templateInitialText,
+                  scanNoteText = scanNoteText,
+                  createNoteText = createNoteText,
+                  folderId = folderId.value,
+                  currentUser = userViewModel.currentUser.collectAsState(),
+                  noteViewModel = noteViewModel,
+                  navigationActions = navigationActions,
+                  scanner = scanner,
+                  classCode = classCode,
+                  className = className,
+                  classYear = classYear)
             }
       })
+}
+
+/**
+ * Displays a button that creates a new note when clicked. The button is enabled when the title is
+ * not empty, the visibility is selected, and the template is not the initial text.
+ *
+ * @param title The title of the note.
+ * @param visibility The visibility of the note.
+ * @param template The template of the note.
+ * @param templateInitialText The initial text of the template dropdown menu.
+ * @param scanNoteText The text for the "Scan Note" template.
+ * @param createNoteText The text for the "Create Note" template.
+ * @param folderId The ID of the folder containing the note.
+ * @param currentUser The current user.
+ * @param noteViewModel The ViewModel that provides the current note to be edited and handles note
+ *   updates.
+ * @param navigationActions The navigation view model used to transition between different screens.
+ * @param scanner The scanner used to scan images and create notes.
+ * @param classCode The code of the class for which the note is created.
+ * @param className The name of the class for which the note is created.
+ * @param classYear The year of the class for which the note is created.
+ */
+@Composable
+fun CreateNoteButton(
+    title: String,
+    visibility: Note.Visibility?,
+    template: String,
+    templateInitialText: String,
+    scanNoteText: String,
+    createNoteText: String,
+    folderId: String?,
+    currentUser: State<User?>,
+    noteViewModel: NoteViewModel,
+    navigationActions: NavigationActions,
+    scanner: Scanner,
+    classCode: String,
+    className: String,
+    classYear: Int
+) {
+    Button(
+        onClick = {
+            if (template == scanNoteText) {
+                scanner.scan()
+            }
+            val note = Note(
+                id = noteViewModel.getNewUid(),
+                title = title,
+                content = "",
+                date = Timestamp.now(),
+                visibility = visibility!!,
+                noteClass = Note.Class(classCode, className, classYear, "path"),
+                userId = currentUser.value!!.uid,
+                image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888),
+                folderId = folderId
+            )
+            noteViewModel.addNote(note, currentUser.value!!.uid)
+
+            if (template == createNoteText) {
+                noteViewModel.selectedNote(note)
+                navigationActions.navigateTo(Screen.EDIT_NOTE)
+            } else {
+                navigationActions.goBack()
+            }
+        },
+        colors = ButtonDefaults.buttonColors(
+            containerColor = MaterialTheme.colorScheme.primary,
+            contentColor = MaterialTheme.colorScheme.onPrimary
+        ),
+        enabled = title.isNotEmpty() && visibility != null && template != templateInitialText,
+        modifier = Modifier.fillMaxWidth().testTag("createNoteButton")
+    ) {
+        Text(text = template)
+    }
 }
