@@ -39,7 +39,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -448,6 +447,7 @@ fun NonModifiableProfilePicture(
           FileType.PROFILE_PIC_JPEG,
           context = LocalContext.current,
           onSuccess = { file -> profilePictureUri.value = file.absolutePath },
+          onFileNotFound = { Log.e("ProfilePicture", "Profile picture not found") },
           onFailure = { e -> Log.e("ProfilePicture", "Error downloading profile picture", e) })
     }
 

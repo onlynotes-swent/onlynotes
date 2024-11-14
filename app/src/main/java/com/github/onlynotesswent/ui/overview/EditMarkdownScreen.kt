@@ -100,10 +100,10 @@ fun EditMarkdownScreen(
           markdownContent = downloadedFile
           state.setMarkdown(markdownContent?.readText() ?: "")
         },
+        onFileNotFound = {},
         onFailure = { exception ->
           Toast.makeText(context, "Error downloading file: ${exception.message}", Toast.LENGTH_LONG)
               .show()
-          Log.e("FileDownload", "Error downloading file: ${exception.message}")
         })
   }
   @Suppress("kotlin:S6300") // as there is no need to encrypt file
