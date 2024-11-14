@@ -40,6 +40,7 @@ interface FileRepository {
    *   PNG) or a note file (PDF or MD).
    * @param cacheDir The directory to cache the downloaded file.
    * @param onSuccess The function to call when the download is successful.
+   * @param onFileNotFound The function to call when the file is not found.
    * @param onFailure The function to call when the download fails.
    */
   fun downloadFile(
@@ -47,6 +48,7 @@ interface FileRepository {
       fileType: FileType,
       cacheDir: File,
       onSuccess: (File) -> Unit,
+      onFileNotFound: () -> Unit,
       onFailure: (Exception) -> Unit
   )
 
@@ -58,12 +60,14 @@ interface FileRepository {
    * @param fileType The type of the file. This type determines if it is a profile picture (JPEG or
    *   PNG) or a note file (PDF or MD).
    * @param onSuccess The function to call when the deletion is successful.
+   * @param onFileNotFound The function to call when the file is not found.
    * @param onFailure The function to call when the deletion fails.
    */
   fun deleteFile(
       uid: String,
       fileType: FileType,
       onSuccess: () -> Unit,
+      onFileNotFound: () -> Unit,
       onFailure: (Exception) -> Unit
   )
 
@@ -94,12 +98,14 @@ interface FileRepository {
    * @param fileType The type of the file. This type determines if it is a profile picture (JPEG or
    *   PNG) or a note file (PDF or MD).
    * @param onSuccess The function to call when the retrieval is successful.
+   * @param onFileNotFound The function to call when the file is not found.
    * @param onFailure The function to call when the retrieval fails.
    */
   fun getFile(
       uid: String,
       fileType: FileType,
       onSuccess: (ByteArray) -> Unit,
+      onFileNotFound: () -> Unit,
       onFailure: (Exception) -> Unit
   )
 }
