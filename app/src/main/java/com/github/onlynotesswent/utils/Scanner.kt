@@ -7,6 +7,7 @@ package com.github.onlynotesswent.utils
 
 import android.app.Activity
 import android.content.ActivityNotFoundException
+import android.net.Uri
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -45,6 +46,8 @@ open class Scanner(
                 .build())
 ) {
 
+  private var onScanSuccess: ((Uri) -> Unit)? = null
+
   private lateinit var scannerLauncher: ActivityResultLauncher<IntentSenderRequest>
 
   private val fileProviderAuthority = "com.github.onlynotesswent.provider"
@@ -61,8 +64,25 @@ open class Scanner(
         }
   }
 
-  /** Starts the scanning activity */
-  fun scan() {
+  /**
+   * Initiates a scan, which returns a uri to the scanned pdf file.
+   *
+   * @param onSuccess the callback to be invoked if the user is not found. the function to be called
+   *   when the scanning is successful, with the uri of the scanned pdf file
+   */
+  fun scan(onSuccess: (Uri) -> Unit) {
+    if (!::scannerLauncher.isInitialized) {
+      // Shouldn't happen if code is correct, so no toast is shown
+      Log.e(TAG, "Error: scannerLauncher is not initialized")
+      return
+    }
+    if (onScanSuccess != null) {
+      Toast.makeText(activity, "Scan already in progress", Toast.LENGTH_SHORT).show()
+      Log.e(TAG, "Error: scan already in progress")
+      return
+    }
+    onScanSuccess = onSuccess
+
     scanner
         .getStartScanIntent(activity)
         .addOnSuccessListener { intentSender ->
@@ -83,8 +103,6 @@ open class Scanner(
    * Handles the result of the scanning activity
    *
    * @param activityResult the result of the scanning activity
-   *
-   * TODO: Once we know what to do with the pdf file, this function will be updated
    */
   private fun handleActivityResult(activityResult: ActivityResult) {
     val resultCode = activityResult.resultCode
@@ -92,17 +110,41 @@ open class Scanner(
     // Get the GmsDocumentScanningResult from the activity result
     // If the result is correctly returned, share the pdf file
     val result = GmsDocumentScanningResult.fromActivityResultIntent(activityResult.data)
+
+    //    when {
+    //      resultCode == Activity.RESULT_OK && result != null -> {
+    //        val path = result.pdf?.uri?.path
+    //        if (path != null) {
+    //          try {
+    //            // Calls the stored callback with the safe content uri of the scanned pdf file.
+    //            onScanSuccess?.invoke(
+    //                FileProvider.getUriForFile(activity, fileProviderAuthority, File(path)))
+    //          } catch (e: IllegalArgumentException) {
+    //            // Shouldn't happen, so no toast is shown
+    //            Log.e(TAG, "$path is outside the paths supported by the File provider.")
+    //          }
+    //        } else {
+    //          Log.e(TAG, "Path to pdf file is null")
+    //          Toast.makeText(activity, "Scanned pdf not found", Toast.LENGTH_SHORT).show()
+    //        }
+    //      }
+    //      resultCode == Activity.RESULT_CANCELED -> {
+    //        Log.d(TAG, "Scanner cancelled")
+    //        Toast.makeText(activity, "Scanner cancelled", Toast.LENGTH_SHORT).show()
+    //      }
+    //      else -> {
+    //        Log.e(TAG, "Scanner failed with resultCode: $resultCode")
+    //        Toast.makeText(activity, "Scanner failed", Toast.LENGTH_SHORT).show()
+    //      }
+    //    }
+
     if (resultCode == Activity.RESULT_OK && result != null) {
       val path = result.pdf?.uri?.path
       if (path != null) {
         try {
-          val externalUri = FileProvider.getUriForFile(activity, fileProviderAuthority, File(path))
-          // TODO Currently only showing the pdf file returned Uri in toast, to change later
-          Toast.makeText(
-                  activity,
-                  "Scanner success, pdf handling not implemented: $externalUri",
-                  Toast.LENGTH_LONG)
-              .show()
+          // Calls the stored callback with the safe content uri of the scanned pdf file.
+          onScanSuccess?.invoke(
+              FileProvider.getUriForFile(activity, fileProviderAuthority, File(path)))
         } catch (e: IllegalArgumentException) {
           // Shouldn't happen, so no toast is shown
           Log.e(TAG, "$path is outside the paths supported by the File provider.")
@@ -112,12 +154,16 @@ open class Scanner(
         Toast.makeText(activity, "Scanned pdf not found", Toast.LENGTH_SHORT).show()
       }
     } else if (resultCode == Activity.RESULT_CANCELED) {
-      Log.d(TAG, "Scanner cancelled")
+      Log.e(TAG, "Scanner cancelled")
       Toast.makeText(activity, "Scanner cancelled", Toast.LENGTH_SHORT).show()
     } else {
       Log.e(TAG, "Scanner failed with resultCode: $resultCode")
       Toast.makeText(activity, "Scanner failed", Toast.LENGTH_SHORT).show()
     }
+
+    // Resets the callback, to avoid calling the same one multiple times in case of problems with
+    // the scan
+    onScanSuccess = null
   }
 
   companion object {
