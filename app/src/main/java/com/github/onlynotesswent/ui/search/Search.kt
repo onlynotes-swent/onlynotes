@@ -241,7 +241,6 @@ fun SearchScreen(
                     // navigationActions.pushToScreenNavigationStack(Screen.SEARCH)
                     // Navigate to profile screen and register it in navigation stack
                     switchProfileTo(filteredUsers.value[index], userViewModel, navigationActions)
-                    // navigationActions.navigateTo(Screen.PUBLIC_PROFILE)
                   }
                 }
               }

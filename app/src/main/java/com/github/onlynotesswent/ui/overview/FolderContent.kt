@@ -394,6 +394,7 @@ fun CreateSubItemFab(
                       Toast.makeText(
                               context, "You are not the owner of this folder", Toast.LENGTH_SHORT)
                           .show()
+                      Log.e("FolderContentScreen", "User not the owner of the folder")
                     }
                   },
                   modifier = Modifier.testTag("createNote")),
