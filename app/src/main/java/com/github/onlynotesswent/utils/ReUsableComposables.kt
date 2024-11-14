@@ -354,9 +354,18 @@ fun CustomLazyGrid(
                   // Don't add to the screen navigation stack as we are at the root folder
                   navigationActions.navigateTo(Screen.FOLDER_CONTENTS)
                 } else {
-                  // Add the previously visited folder Id (parent) to the screen navigation stack
-                  navigationActions.pushToScreenNavigationStack(
-                      folders.value[index].parentFolderId!!)
+                  val poppedId = navigationActions.popFromScreenNavigationStack()
+                  if (poppedId == Screen.SEARCH) {
+                    // If we come from search, don't push the folderId to the stack
+                    navigationActions.pushToScreenNavigationStack(poppedId)
+                  } else {
+                    if (poppedId != null) {
+                      navigationActions.pushToScreenNavigationStack(poppedId)
+                    }
+                    // Add the previously visited folder Id (parent) to the screen navigation stack
+                    navigationActions.pushToScreenNavigationStack(
+                        folders.value[index].parentFolderId!!)
+                  }
                   navigationActions.navigateTo(Screen.FOLDER_CONTENTS)
                 }
               }
