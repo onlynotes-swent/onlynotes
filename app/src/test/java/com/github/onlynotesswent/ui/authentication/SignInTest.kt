@@ -11,21 +11,32 @@ import com.google.firebase.Timestamp
 import com.google.firebase.auth.AuthResult
 import com.google.firebase.auth.FirebaseUser
 import org.junit.Assert.assertEquals
+import org.junit.Before
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.mockito.Mock
 import org.mockito.Mockito.anyString
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
 import org.mockito.kotlin.any
 import org.mockito.kotlin.verify
+import org.robolectric.RobolectricTestRunner
 import org.robolectric.shadows.ShadowToast
 
 @Suppress("UNCHECKED_CAST")
+@RunWith(RobolectricTestRunner::class)
 class SignInTest {
+  @Mock private lateinit var context: Context
+
   private val navigationActions = mock(NavigationActions::class.java)
   private val userViewModel = mock(UserViewModel::class.java)
   private val authResult = mock(AuthResult::class.java)
   private val firebaseUser = mock(FirebaseUser::class.java)
-  private val context = ApplicationProvider.getApplicationContext<Context>()
+
+  @Before
+  fun setup() {
+    context = ApplicationProvider.getApplicationContext()
+  }
 
   @Test
   fun authSuccessHandler_navigatesToOverview() {
