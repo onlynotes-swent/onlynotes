@@ -79,9 +79,9 @@ class EditNoteTest {
     }
 
     noteViewModel.getNoteById("mockNoteId")
-    `when`(fileRepository.downloadFile(any(), any(), any(), any(), any())).thenAnswer { invocation
-      ->
-      val onFailure = invocation.getArgument<(Exception) -> Unit>(4)
+    `when`(fileRepository.downloadFile(any(), any(), any(), any(), any(), any())).thenAnswer {
+        invocation ->
+      val onFailure = invocation.getArgument<(Exception) -> Unit>(5)
       onFailure(Exception("Simulated failure"))
     }
     `when`(fileRepository.uploadFile(any(), any(), any(), any(), any())).thenAnswer { invocation ->
