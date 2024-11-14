@@ -1,4 +1,4 @@
-package com.github.onlynotesswent.model.scanner
+package com.github.onlynotesswent.utils
 
 /* Using the Google ML Kit Document Scanner API to scan documents:
    https://developers.google.com/ml-kit/vision/doc-scanner/android
