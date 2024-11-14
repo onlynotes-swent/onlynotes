@@ -1,5 +1,6 @@
 package com.github.onlynotesswent.model.users
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.initializer
@@ -18,6 +19,9 @@ import kotlinx.coroutines.flow.asStateFlow
  */
 class UserViewModel(private val repository: UserRepository) : ViewModel() {
 
+  private val _allUsers = MutableStateFlow<List<User>>(emptyList())
+  val allUsers: StateFlow<List<User>> = _allUsers.asStateFlow()
+
   private val _currentUser = MutableStateFlow<User?>(null)
   val currentUser: StateFlow<User?> = _currentUser.asStateFlow()
 
@@ -29,7 +33,7 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
 
   /** Initializes the UserViewModel and the repository. */
   init {
-    repository.init(FirebaseAuth.getInstance()) {}
+    repository.init(FirebaseAuth.getInstance()) { getAllUsers() }
   }
 
   // Create factory
@@ -120,13 +124,11 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
   }
 
   /**
-   * Retrieves all users from the repository.
-   *
-   * @param onSuccess Callback to be invoked with the list of retrieved users.
-   * @param onFailure Callback to be invoked if an error occurs.
+   * Retrieves all users from the repository and sets the all users state to the retrieved users.
    */
-  fun getAllUsers(onSuccess: (List<User>) -> Unit, onFailure: (Exception) -> Unit) {
-    repository.getAllUsers(onSuccess, onFailure)
+  fun getAllUsers() {
+    repository.getAllUsers(
+        { _allUsers.value = it }, { Log.e("UserViewModel", "Failed to get all users", it) })
   }
 
   /**

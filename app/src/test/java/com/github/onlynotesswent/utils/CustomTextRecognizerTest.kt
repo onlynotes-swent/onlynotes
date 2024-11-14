@@ -1,4 +1,4 @@
-package com.github.onlynotesswent.model.ocr
+package com.github.onlynotesswent.utils
 
 import android.content.ActivityNotFoundException
 import android.content.Context

@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Clear
@@ -32,23 +34,25 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.github.onlynotesswent.model.note.Note
 import com.github.onlynotesswent.model.note.NoteViewModel
-import com.github.onlynotesswent.model.scanner.Scanner
 import com.github.onlynotesswent.model.users.User
 import com.github.onlynotesswent.model.users.UserViewModel
-import com.github.onlynotesswent.ui.NoteDataTextField
-import com.github.onlynotesswent.ui.OptionDropDownMenu
-import com.github.onlynotesswent.ui.ScreenTopBar
+import com.github.onlynotesswent.utils.NoteDataTextField
+import com.github.onlynotesswent.utils.OptionDropDownMenu
+import com.github.onlynotesswent.utils.ScreenTopBar
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
+import com.github.onlynotesswent.utils.Course
+import com.github.onlynotesswent.utils.Scanner
+import com.github.onlynotesswent.utils.Visibility
 import com.google.firebase.Timestamp
 import java.util.Calendar
 
 /**
  * Displays the add note screen, where users can create a new note. The screen includes text fields
- * for entering the note's title, class name, class code, and class year, as well as dropdown menus
- * for selecting the note's visibility and template. The screen also includes a button to create the
- * note, which navigates to the edit note screen if the template is "Create Note", or navigates back
- * to the overview screen if the template is "Upload Note" or "Scan Note".
+ * for entering the note's title, course name, course code, and course year, as well as dropdown
+ * menus for selecting the note's visibility and template. The screen also includes a button to
+ * create the note, which navigates to the edit note screen if the template is "Create Note", or
+ * navigates back to the overview screen if the template is "Upload Note" or "Scan Note".
  *
  * @param navigationActions The navigation view model used to transition between different screens.
  * @param scanner The scanner used to scan images and create notes.
@@ -66,11 +70,11 @@ fun AddNoteScreen(
   val folderId = noteViewModel.currentFolderId.collectAsState()
   val currentYear = Calendar.getInstance().get(Calendar.YEAR)
   var title by remember { mutableStateOf("") }
-  var className by remember { mutableStateOf("") }
-  var classCode by remember { mutableStateOf("") }
-  var classYear by remember { mutableIntStateOf(currentYear) }
+  var courseName by remember { mutableStateOf("") }
+  var courseCode by remember { mutableStateOf("") }
+  var courseYear by remember { mutableIntStateOf(currentYear) }
   var template by remember { mutableStateOf(templateInitialText) }
-  var visibility: Note.Visibility? by remember { mutableStateOf(null) }
+  var visibility: Visibility? by remember { mutableStateOf(null) }
   var expandedVisibility by remember { mutableStateOf(false) }
   var expandedTemplate by remember { mutableStateOf(false) }
 
@@ -91,7 +95,11 @@ fun AddNoteScreen(
       },
       content = { paddingValues ->
         Column(
-            modifier = Modifier.fillMaxSize().padding(16.dp).padding(paddingValues),
+            modifier =
+                Modifier.fillMaxSize()
+                    .padding(16.dp)
+                    .padding(paddingValues)
+                    .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(8.dp)) {
               Spacer(modifier = Modifier.height(30.dp))
@@ -116,35 +124,35 @@ fun AddNoteScreen(
                   buttonTag = "visibilityButton",
                   menuTag = "visibilityMenu",
                   onExpandedChange = { expandedVisibility = it },
-                  items = Note.Visibility.READABLE_STRINGS,
-                  onItemClick = { visibility = Note.Visibility.fromReadableString(it) })
+                  items = Visibility.READABLE_STRINGS,
+                  onItemClick = { visibility = Visibility.fromReadableString(it) })
 
               Spacer(modifier = Modifier.height(10.dp))
 
               NoteDataTextField(
-                  value = className,
-                  onValueChange = { className = it },
-                  label = "Class Name",
-                  placeholder = "Set the class name for the note",
-                  modifier = Modifier.fillMaxWidth().testTag("ClassNameTextField"))
+                  value = courseName,
+                  onValueChange = { courseName = Course.formatCourseName(it) },
+                  label = "Course Name",
+                  placeholder = "Set the course name for the note",
+                  modifier = Modifier.fillMaxWidth().testTag("CourseNameTextField"))
 
               Spacer(modifier = Modifier.height(5.dp))
 
               NoteDataTextField(
-                  value = classCode,
-                  onValueChange = { classCode = it },
-                  label = "Class Code",
-                  placeholder = "Set the class code for the note",
-                  modifier = Modifier.fillMaxWidth().testTag("ClassCodeTextField"))
+                  value = courseCode,
+                  onValueChange = { courseCode = Course.formatCourseCode(it) },
+                  label = "Course Code",
+                  placeholder = "Set the course code for the note",
+                  modifier = Modifier.fillMaxWidth().testTag("CourseCodeTextField"))
 
               Spacer(modifier = Modifier.height(5.dp))
 
               NoteDataTextField(
-                  value = classYear.toString(),
-                  onValueChange = { classYear = it.toIntOrNull() ?: currentYear },
-                  label = "Class Year",
-                  placeholder = "Set the class year for the note",
-                  modifier = Modifier.fillMaxWidth().testTag("ClassYearTextField"))
+                  value = courseYear.toString(),
+                  onValueChange = { courseYear = it.toIntOrNull() ?: currentYear },
+                  label = "Course Year",
+                  placeholder = "Set the course year for the note",
+                  modifier = Modifier.fillMaxWidth().testTag("CourseYearTextField"))
 
               Spacer(modifier = Modifier.height(10.dp))
 
@@ -173,9 +181,9 @@ fun AddNoteScreen(
                   noteViewModel = noteViewModel,
                   navigationActions = navigationActions,
                   scanner = scanner,
-                  classCode = classCode,
-                  className = className,
-                  classYear = classYear)
+                  courseCode = courseCode,
+                  courseName = courseName,
+                  courseYear = courseYear)
             }
       })
 }
@@ -196,14 +204,14 @@ fun AddNoteScreen(
  *   updates.
  * @param navigationActions The navigation view model used to transition between different screens.
  * @param scanner The scanner used to scan images and create notes.
- * @param classCode The code of the class for which the note is created.
- * @param className The name of the class for which the note is created.
- * @param classYear The year of the class for which the note is created.
+ * @param courseCode The code of the course for which the note is created.
+ * @param courseName The name of the course for which the note is created.
+ * @param courseYear The year of the course for which the note is created.
  */
 @Composable
 fun CreateNoteButton(
     title: String,
-    visibility: Note.Visibility?,
+    visibility: Visibility?,
     template: String,
     templateInitialText: String,
     scanNoteText: String,
@@ -213,9 +221,9 @@ fun CreateNoteButton(
     noteViewModel: NoteViewModel,
     navigationActions: NavigationActions,
     scanner: Scanner,
-    classCode: String,
-    className: String,
-    classYear: Int
+    courseCode: String,
+    courseName: String,
+    courseYear: Int
 ) {
   Button(
       onClick = {
@@ -229,7 +237,7 @@ fun CreateNoteButton(
                 content = "",
                 date = Timestamp.now(),
                 visibility = visibility!!,
-                noteClass = Note.Class(classCode, className, classYear, "path"),
+                noteCourse = Course(courseCode, courseName, courseYear, "path"),
                 userId = currentUser.value!!.uid,
                 image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888),
                 folderId = folderId)

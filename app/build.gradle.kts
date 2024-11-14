@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsKotlinAndroid)
@@ -5,6 +7,7 @@ plugins {
     alias(libs.plugins.sonar)
     id("jacoco")
     id("com.google.gms.google-services")
+
 }
 
 jacoco {
@@ -25,6 +28,18 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
+        }
+
+        val openAiApiKey = project.rootProject.file("apikeys.properties").takeIf { it.exists() }?.let { keystoreFile ->
+            val properties = Properties()
+            properties.load(keystoreFile.inputStream())
+            properties.getProperty("OPEN_AI_API_KEY")
+        } ?: System.getenv("OPEN_AI_API_KEY") ?: ""
+
+        buildConfigField("String", "OPEN_AI_API_KEY", "\"$openAiApiKey\"")
+
+        buildFeatures {
+            buildConfig = true
         }
     }
 
@@ -52,7 +67,7 @@ android {
     }
 
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.4.2"
+        kotlinCompilerExtensionVersion = "1.5.2"//"1.4.2"
     }
 
     compileOptions {
@@ -196,9 +211,12 @@ dependencies {
 
 
     //Image Library
+    implementation("androidx.compose.material:material-icons-extended:<version>")
     implementation("io.coil-kt:coil-compose:2.1.0")
     implementation(libs.imagepicker)
 
+    //Rich text editor
+    implementation("com.mohamedrejeb.richeditor:richeditor-compose:1.0.0-rc10")
 
     // --------- Kaspresso test framework ----------
     globalTestImplementation(libs.kaspresso)
@@ -210,6 +228,12 @@ dependencies {
     // ----------         ML Kit        ------------
     implementation(libs.mlkit.document.scanner)
     implementation(libs.mlkit.text.recognition)
+
+    // ----------      Json handling   ------------
+    implementation(libs.gson)
+
+    // ----------      HTTP client     ------------
+    implementation(libs.okhttp)
 }
 
 tasks.withType<Test> {

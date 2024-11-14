@@ -2,7 +2,6 @@ package com.github.onlynotesswent.ui.overview
 
 import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -15,13 +14,10 @@ import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -45,10 +41,10 @@ import com.github.onlynotesswent.model.folder.FolderViewModel
 import com.github.onlynotesswent.model.note.Note
 import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.model.users.UserViewModel
-import com.github.onlynotesswent.ui.CreateFolderDialog
-import com.github.onlynotesswent.ui.CustomDropDownMenu
-import com.github.onlynotesswent.ui.CustomDropDownMenuItem
-import com.github.onlynotesswent.ui.CustomLazyGrid
+import com.github.onlynotesswent.utils.CustomDropDownMenu
+import com.github.onlynotesswent.utils.CustomDropDownMenuItem
+import com.github.onlynotesswent.utils.CustomLazyGrid
+import com.github.onlynotesswent.utils.FolderDialog
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
 import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
@@ -123,32 +119,36 @@ fun FolderContentScreen(
               navigationActions = navigationActions)
           // Logic to show the dialog to rename a folder
           if (showRenameDialog) {
-            RenameFolderDialog(
-                currentName = updatedName,
+            FolderDialog(
                 onDismiss = { showRenameDialog = false },
-                onConfirm = { newName ->
+                onConfirm = { name, vis ->
                   folderViewModel.updateFolder(
                       Folder(
                           id = folder.value!!.id,
-                          name = newName,
+                          name = name,
                           userId = folder.value!!.userId,
-                          parentFolderId = folder.value!!.parentFolderId),
+                          parentFolderId = folder.value!!.parentFolderId,
+                          visibility = vis),
                       folder.value!!.userId)
-                  updatedName = newName
+                  updatedName = name
                   showRenameDialog = false
-                })
+                },
+                  action = "Rename",
+                  oldName = updatedName,
+                  oldVis = folder.value!!.visibility)
           }
           // Logic to show the dialog to create a folder
           if (showCreateDialog) {
-            CreateFolderDialog(
+            FolderDialog(
                 onDismiss = { showCreateDialog = false },
-                onConfirm = { name ->
+                onConfirm = { name, visibility ->
                   folderViewModel.addFolder(
                       Folder(
                           id = folderViewModel.getNewFolderId(),
                           name = name,
                           userId = currentUser.value!!.uid,
-                          parentFolderId = parentFolderId.value),
+                          parentFolderId = parentFolderId.value,
+                          visibility = visibility),
                       userViewModel.currentUser.value!!.uid)
                   showCreateDialog = false
                   if (parentFolderId.value != null) {
@@ -156,7 +156,8 @@ fun FolderContentScreen(
                   } else {
                     navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
                   }
-                })
+                },
+                action = "Create")
           }
         }
   }
@@ -274,7 +275,8 @@ fun FolderContentTopBar(
                           // implement a recursive delete to delete all elements of a folder
                           // (folders and notes)
                         },
-                        modifier = Modifier.testTag("deleteFolderButton"))),
+                        modifier = Modifier.testTag("deleteFolderButton"))
+                ),
             fabIcon = {
               Icon(imageVector = Icons.Default.MoreVert, contentDescription = "settings")
             },
@@ -371,7 +373,8 @@ fun CreateSubItemFab(
                     showCreateDialog(true)
                     folderViewModel.selectedParentFolderId(folder!!.id)
                   },
-                  modifier = Modifier.testTag("createFolder"))),
+                  modifier = Modifier.testTag("createFolder"))
+          ),
       fabIcon = { Icon(imageVector = Icons.Default.Add, contentDescription = "AddNote") },
       expanded = expandedFolder,
       onFabClick = { onExpandedFolderChange(true) },
@@ -403,8 +406,7 @@ fun FolderContentScreenGrid(
       folders = userFolderSubFolders,
       gridModifier =
           Modifier.fillMaxWidth()
-              .padding(horizontal = 16.dp)
-              .padding(paddingValues)
+              .padding(horizontal = 20.dp)
               .testTag("noteAndFolderList"),
       folderViewModel = folderViewModel,
       noteViewModel = noteViewModel,
@@ -412,44 +414,5 @@ fun FolderContentScreenGrid(
       paddingValues = paddingValues,
       columnContent = {
         Text(modifier = Modifier.testTag("emptyFolderPrompt"), text = "This folder is empty.")
-      })
-}
-
-/**
- * Dialog that allows the user to rename a folder.
- *
- * @param currentName the current name of the folder
- * @param onDismiss callback to be invoked when the dialog is dismissed
- * @param onConfirm callback to be invoked when the user confirms the new name
- */
-@Composable
-fun RenameFolderDialog(currentName: String, onDismiss: () -> Unit, onConfirm: (String) -> Unit) {
-
-  var newName by remember { mutableStateOf(currentName) }
-
-  AlertDialog(
-      modifier = Modifier.testTag("renameFolderDialog"),
-      onDismissRequest = onDismiss,
-      title = {
-        Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-          Text("Rename folder")
-        }
-      },
-      text = {
-        OutlinedTextField(
-            value = newName, onValueChange = { newName = it }, label = { Text("New Folder Name") })
-      },
-      confirmButton = {
-        Button(
-            enabled = newName.isNotEmpty(),
-            onClick = { onConfirm(newName) },
-            modifier = Modifier.testTag("confirmRenameButton")) {
-              Text("Confirm")
-            }
-      },
-      dismissButton = {
-        Button(onClick = onDismiss, modifier = Modifier.testTag("dismissRenameButton")) {
-          Text("Cancel")
-        }
       })
 }

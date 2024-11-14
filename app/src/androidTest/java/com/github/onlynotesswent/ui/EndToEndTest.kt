@@ -24,12 +24,13 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navigation
 import androidx.test.espresso.intent.Intents
+import com.github.onlynotesswent.model.file.FileRepository
+import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.folder.FolderRepository
 import com.github.onlynotesswent.model.folder.FolderViewModel
 import com.github.onlynotesswent.model.note.Note
 import com.github.onlynotesswent.model.note.NoteRepository
 import com.github.onlynotesswent.model.note.NoteViewModel
-import com.github.onlynotesswent.model.scanner.Scanner
 import com.github.onlynotesswent.model.users.User
 import com.github.onlynotesswent.model.users.UserRepository
 import com.github.onlynotesswent.model.users.UserViewModel
@@ -41,6 +42,9 @@ import com.github.onlynotesswent.ui.overview.EditNoteScreen
 import com.github.onlynotesswent.ui.overview.OverviewScreen
 import com.github.onlynotesswent.ui.theme.AppTheme
 import com.github.onlynotesswent.ui.user.CreateUserScreen
+import com.github.onlynotesswent.utils.Course
+import com.github.onlynotesswent.utils.Scanner
+import com.github.onlynotesswent.utils.Visibility
 import com.google.firebase.Timestamp
 import org.junit.After
 import org.junit.Before
@@ -62,6 +66,8 @@ class EndToEndTest {
   private lateinit var noteViewModel: NoteViewModel
   private lateinit var folderRepository: FolderRepository
   private lateinit var folderViewModel: FolderViewModel
+  private lateinit var fileRepository: FileRepository
+  private lateinit var fileViewModel: FileViewModel
 
   private lateinit var context: Context
   private lateinit var scanner: Scanner
@@ -85,8 +91,8 @@ class EndToEndTest {
           content = "",
           date = Timestamp.now(),
           userId = testUid,
-          visibility = Note.Visibility.DEFAULT,
-          noteClass = Note.Class("classCode", "className", 2024, "publicPath"),
+          visibility = Visibility.DEFAULT,
+          noteCourse = Course("courseCode", "courseName", 2024, "publicPath"),
           image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888))
 
   // Setup Compose test rule for UI testing
@@ -101,6 +107,9 @@ class EndToEndTest {
     noteViewModel = NoteViewModel(noteRepository)
     folderRepository = mock(FolderRepository::class.java)
     folderViewModel = FolderViewModel(folderRepository)
+    fileRepository = mock(FileRepository::class.java)
+    fileViewModel = FileViewModel(fileRepository)
+
     context = mock(Context::class.java)
     scanner = mock(Scanner::class.java)
 
@@ -148,7 +157,7 @@ class EndToEndTest {
                     AddNoteScreen(navigationActions, scanner, noteViewModel, userViewModel)
                   }
                   composable(Screen.EDIT_NOTE) {
-                    EditNoteScreen(navigationActions, noteViewModel, userViewModel)
+                    EditNoteScreen(navigationActions, noteViewModel, userViewModel, fileViewModel)
                   }
                 }
               }

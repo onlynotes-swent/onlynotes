@@ -22,6 +22,7 @@ object Screen {
   const val CREATE_USER = "Create User Screen"
   const val ADD_NOTE = "Add Note Screen"
   const val EDIT_NOTE = "Edit Note Screen"
+  const val EDIT_MARKDOWN = "Edit Note Markdown Screen"
   const val SEARCH_NOTE = "Search Note Screen"
   const val USER_PROFILE = "User Profile Screen"
   const val PUBLIC_PROFILE = "Public Profile Screen"

@@ -32,10 +32,10 @@ import com.github.onlynotesswent.model.folder.FolderViewModel
 import com.github.onlynotesswent.model.note.Note
 import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.model.users.UserViewModel
-import com.github.onlynotesswent.ui.CreateFolderDialog
-import com.github.onlynotesswent.ui.CustomDropDownMenu
-import com.github.onlynotesswent.ui.CustomDropDownMenuItem
-import com.github.onlynotesswent.ui.CustomLazyGrid
+import com.github.onlynotesswent.utils.CustomDropDownMenu
+import com.github.onlynotesswent.utils.CustomDropDownMenuItem
+import com.github.onlynotesswent.utils.CustomLazyGrid
+import com.github.onlynotesswent.utils.FolderDialog
 import com.github.onlynotesswent.ui.navigation.BottomNavigationMenu
 import com.github.onlynotesswent.ui.navigation.LIST_TOP_LEVEL_DESTINATION
 import com.github.onlynotesswent.ui.navigation.NavigationActions
@@ -97,15 +97,16 @@ fun OverviewScreen(
             navigationActions = navigationActions)
         // Logic to show the dialog to create a folder
         if (showCreateDialog) {
-          CreateFolderDialog(
+          FolderDialog(
               onDismiss = { showCreateDialog = false },
-              onConfirm = { newName ->
+              onConfirm = { newName, visibility ->
                 folderViewModel.addFolder(
                     Folder(
                         id = folderViewModel.getNewFolderId(),
                         name = newName,
                         userId = userViewModel.currentUser.value!!.uid,
-                        parentFolderId = parentFolderId.value),
+                        parentFolderId = parentFolderId.value,
+                        visibility = visibility),
                     userViewModel.currentUser.value!!.uid)
                 showCreateDialog = false
                 if (parentFolderId.value != null) {
@@ -113,7 +114,8 @@ fun OverviewScreen(
                 } else {
                   navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
                 }
-              })
+              },
+              action = "Create")
         }
       }
 }
@@ -167,7 +169,8 @@ fun CreateItemFab(
                     showCreateDialog(true)
                     folderViewModel.selectedParentFolderId(null)
                   },
-                  modifier = Modifier.testTag("createFolder"))),
+                  modifier = Modifier.testTag("createFolder"))
+          ),
       fabIcon = { Icon(imageVector = Icons.Default.Add, contentDescription = "AddNote") },
       expanded = expandedFab,
       onFabClick = { onExpandedFabChange(true) },
@@ -198,7 +201,7 @@ fun OverviewScreenGrid(
     navigationActions: NavigationActions
 ) {
   CustomLazyGrid(
-      modifier = Modifier.fillMaxSize().padding(paddingValues),
+      modifier = Modifier.fillMaxSize().padding(top = 20.dp, bottom = paddingValues.calculateBottomPadding()),
       notes = userRootNotes,
       folders = userRootFolders,
       gridModifier =

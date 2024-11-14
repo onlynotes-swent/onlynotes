@@ -17,6 +17,9 @@ import com.github.onlynotesswent.model.users.UserRepository
 import com.github.onlynotesswent.model.users.UserViewModel
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
+import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
+import com.github.onlynotesswent.utils.Course
+import com.github.onlynotesswent.utils.Visibility
 import com.google.firebase.Timestamp
 import org.junit.Before
 import org.junit.Rule
@@ -45,9 +48,9 @@ class FolderContentTest {
               title = "Sample Title",
               content = "This is a sample content.",
               date = Timestamp.now(),
-              visibility = Note.Visibility.DEFAULT,
+              visibility = Visibility.DEFAULT,
               userId = "1",
-              noteClass = Note.Class("CS-100", "Sample Class", 2024, "path"),
+              noteCourse = Course("CS-100", "Sample Course", 2024, "path"),
               image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)))
 
   private val folderList =
@@ -119,12 +122,12 @@ class FolderContentTest {
     composeTestRule.onNodeWithTag("createNote").assertIsDisplayed()
     composeTestRule.onNodeWithTag("createFolder").assertIsDisplayed()
     composeTestRule.onNodeWithTag("createFolder").performClick()
-    composeTestRule.onNodeWithTag("createFolderDialog").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("folderDialog").assertIsDisplayed()
     composeTestRule.onNodeWithTag("inputFolderName").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("confirmFolderCreation").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("dismissFolderCreation").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("confirmFolderAction").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("dismissFolderAction").assertIsDisplayed()
     composeTestRule.onNodeWithTag("inputFolderName").performTextInput("Sample Folder Name")
-    composeTestRule.onNodeWithTag("confirmFolderCreation").performClick()
+    composeTestRule.onNodeWithTag("confirmFolderAction").performClick()
   }
 
   @Test
@@ -133,10 +136,10 @@ class FolderContentTest {
     composeTestRule.onNodeWithTag("renameFolderButton").assertIsDisplayed()
     composeTestRule.onNodeWithTag("deleteFolderButton").assertIsDisplayed()
     composeTestRule.onNodeWithTag("renameFolderButton").performClick()
-    composeTestRule.onNodeWithTag("renameFolderDialog").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("dismissRenameButton").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("confirmRenameButton").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("confirmRenameButton").performClick()
+    composeTestRule.onNodeWithTag("folderDialog").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("dismissFolderAction").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("confirmFolderAction").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("confirmFolderAction").performClick()
   }
 
   @Test
