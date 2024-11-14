@@ -20,6 +20,7 @@ import com.github.onlynotesswent.model.users.UserViewModel
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
 import com.github.onlynotesswent.utils.Course
+import com.github.onlynotesswent.utils.Scanner
 import com.github.onlynotesswent.utils.Visibility
 import com.google.firebase.Timestamp
 import org.junit.Before
@@ -37,6 +38,7 @@ class EditNoteTest {
   @Mock private lateinit var noteRepository: NoteRepository
   @Mock private lateinit var fileRepository: FileRepository
   @Mock private lateinit var navigationActions: NavigationActions
+  @Mock private lateinit var scanner: Scanner
   private lateinit var userViewModel: UserViewModel
   private lateinit var noteViewModel: NoteViewModel
   private lateinit var fileViewModel: FileViewModel
@@ -89,7 +91,7 @@ class EditNoteTest {
       onSuccess()
     }
     composeTestRule.setContent {
-      EditNoteScreen(navigationActions, noteViewModel, userViewModel, fileViewModel)
+      EditNoteScreen(navigationActions, scanner, noteViewModel, userViewModel, fileViewModel)
     }
   }
 
