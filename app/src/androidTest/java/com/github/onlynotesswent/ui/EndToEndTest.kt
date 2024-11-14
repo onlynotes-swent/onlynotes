@@ -43,6 +43,7 @@ import com.github.onlynotesswent.ui.overview.OverviewScreen
 import com.github.onlynotesswent.ui.theme.AppTheme
 import com.github.onlynotesswent.ui.user.CreateUserScreen
 import com.github.onlynotesswent.utils.Course
+import com.github.onlynotesswent.utils.ProfilePictureTaker
 import com.github.onlynotesswent.utils.Scanner
 import com.github.onlynotesswent.utils.Visibility
 import com.google.firebase.Timestamp
@@ -50,8 +51,9 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.mockito.Mockito.mock
+import org.mockito.Mock
 import org.mockito.Mockito.`when`
+import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
 
@@ -60,17 +62,19 @@ class EndToEndTest {
   // Mock repositories, view models, and other dependencies
   private lateinit var navController: NavHostController
   private lateinit var navigationActions: NavigationActions
-  private lateinit var userRepository: UserRepository
+  @Mock private lateinit var userRepository: UserRepository
   private lateinit var userViewModel: UserViewModel
-  private lateinit var noteRepository: NoteRepository
+  @Mock private lateinit var noteRepository: NoteRepository
   private lateinit var noteViewModel: NoteViewModel
-  private lateinit var folderRepository: FolderRepository
+  @Mock private lateinit var folderRepository: FolderRepository
   private lateinit var folderViewModel: FolderViewModel
-  private lateinit var fileRepository: FileRepository
+  @Mock private lateinit var fileRepository: FileRepository
   private lateinit var fileViewModel: FileViewModel
 
   private lateinit var context: Context
   private lateinit var scanner: Scanner
+  @Mock private lateinit var profilePictureTaker: ProfilePictureTaker
+  @Mock private lateinit var scanner: Scanner
 
   // Sample user and note data for testing
   private val testUid = "testUid123"
@@ -101,17 +105,12 @@ class EndToEndTest {
   @Before
   fun setUp() {
     // Mock objects for dependencies
-    userRepository = mock(UserRepository::class.java)
-    userViewModel = UserViewModel(userRepository)
-    noteRepository = mock(NoteRepository::class.java)
-    noteViewModel = NoteViewModel(noteRepository)
-    folderRepository = mock(FolderRepository::class.java)
-    folderViewModel = FolderViewModel(folderRepository)
-    fileRepository = mock(FileRepository::class.java)
-    fileViewModel = FileViewModel(fileRepository)
+    MockitoAnnotations.openMocks(this)
 
-    context = mock(Context::class.java)
-    scanner = mock(Scanner::class.java)
+    userViewModel = UserViewModel(userRepository)
+    noteViewModel = NoteViewModel(noteRepository)
+    folderViewModel = FolderViewModel(folderRepository)
+    fileViewModel = FileViewModel(fileRepository)
 
     // Set up mock behavior for user and note repository methods
     `when`(userViewModel.getNewUid()).thenReturn(testUid)
