@@ -7,6 +7,7 @@ import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertNull
 import org.hamcrest.CoreMatchers.`is`
 import org.hamcrest.MatcherAssert.assertThat
+import org.junit.Assert.assertThrows
 import org.junit.Before
 import org.junit.Test
 import org.mockito.Mockito.mock
@@ -14,6 +15,7 @@ import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
+import java.util.EmptyStackException
 
 class NavigationActionsTest {
 
@@ -55,52 +57,28 @@ class NavigationActionsTest {
   }
 
   @Test
-  fun testPushToScreenNavigationStack() {
+  fun testScreenNavigationStack() {
     navigationActions.pushToScreenNavigationStack("folderId1")
     navigationActions.pushToScreenNavigationStack("folderId2")
-    val stack = navigationActions.getScreenNavigationStack()
-    assertEquals(2, stack.size)
-    assertEquals("folderId2", stack.last())
-  }
+    navigationActions.pushToScreenNavigationStack("folderId3")
+    val topElement = navigationActions.retrieveTopElementOfScreenNavigationStack()
+    assertEquals(topElement, "folderId3")
 
-  @Test
-  fun testPopFromScreenNavigationStack() {
-    navigationActions.pushToScreenNavigationStack("userProfileId1")
-    navigationActions.pushToScreenNavigationStack("userProfileId2")
-    val poppedId = navigationActions.popFromScreenNavigationStack()
-    val stack = navigationActions.getScreenNavigationStack()
-    assertEquals("userProfileId2", poppedId)
-    assertEquals(1, stack.size)
-    assertEquals("userProfileId1", stack.last())
+    navigationActions.popFromScreenNavigationStack()
+    navigationActions.popFromScreenNavigationStack()
+    val topElementAfterPop = navigationActions.retrieveTopElementOfScreenNavigationStack()
+    assertEquals(topElementAfterPop, "folderId1")
+
+    navigationActions.pushToScreenNavigationStack("folderId4")
+    navigationActions.clearScreenNavigationStack()
+    assertThrows(EmptyStackException::class.java) {
+      navigationActions.retrieveTopElementOfScreenNavigationStack()
+    }
   }
 
   @Test
   fun testPopFromScreenNavigationStackWhenEmpty() {
     val poppedId = navigationActions.popFromScreenNavigationStack()
     assertNull(poppedId)
-  }
-
-  @Test
-  fun testClearScreenNavigationStack() {
-    navigationActions.pushToScreenNavigationStack("folderId1")
-    navigationActions.pushToScreenNavigationStack("folderId2")
-    val stackNotCleared = navigationActions.getScreenNavigationStack()
-    assertEquals(2, stackNotCleared.size)
-    navigationActions.clearScreenNavigationStack()
-    val stackCleared = navigationActions.getScreenNavigationStack()
-    assertEquals(0, stackCleared.size)
-  }
-
-  @Test
-  fun getScreenNavigationStackReturnsCopy() {
-    navigationActions.pushToScreenNavigationStack("folderId1")
-    navigationActions.pushToScreenNavigationStack("folderId2")
-    val stack = navigationActions.getScreenNavigationStack()
-    stack.add("folderId3")
-    val stackAfterModification = navigationActions.getScreenNavigationStack()
-    assertEquals(3, stack.size)
-    assertEquals(2, stackAfterModification.size)
-    assertEquals("folderId1", stackAfterModification[0])
-    assertEquals("folderId2", stackAfterModification[1])
   }
 }

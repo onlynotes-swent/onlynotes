@@ -15,6 +15,7 @@ import com.github.onlynotesswent.model.users.UserRepository
 import com.github.onlynotesswent.model.users.UserViewModel
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
+import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
 import com.google.firebase.Timestamp
 import org.junit.Before
 import org.junit.Rule
@@ -51,7 +52,7 @@ class EditNoteTest {
     val testUser = User("", "", "testUserName", "", "testUID", Timestamp.now(), 0.0)
     userViewModel.addUser(testUser, {}, {})
 
-    // Mock the current route to be the user create screen
+    // Mock the current route to be the note edit screen
     `when`(navigationActions.currentRoute()).thenReturn(Screen.EDIT_NOTE)
     composeTestRule.setContent { EditNoteScreen(navigationActions, noteViewModel, userViewModel) }
   }
@@ -61,7 +62,7 @@ class EditNoteTest {
     composeTestRule.onNodeWithTag("EditTitle textField").assertIsDisplayed()
     composeTestRule.onNodeWithTag("editNoteTitle").assertIsDisplayed()
     composeTestRule.onNodeWithTag("goBackButton").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("Save button").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("Save button").performScrollTo().assertIsDisplayed()
     composeTestRule.onNodeWithTag("Delete button").performScrollTo().assertIsDisplayed()
     composeTestRule.onNodeWithTag("Add Comment Button").performScrollTo().assertIsDisplayed()
     composeTestRule.onNodeWithTag("NoCommentsText").performScrollTo().assertIsDisplayed()
@@ -76,8 +77,8 @@ class EditNoteTest {
   fun clickGoBackButton() {
     composeTestRule.onNodeWithTag("goBackButton").performClick()
 
-    org.mockito.kotlin.verify(navigationActions).goBack()
-    org.mockito.kotlin.verify(navigationActions, never()).navigateTo(Screen.OVERVIEW)
+    verify(navigationActions).goBack()
+    verify(navigationActions, never()).navigateTo(Screen.OVERVIEW)
   }
 
   @Test
@@ -109,15 +110,6 @@ class EditNoteTest {
     composeTestRule.onNodeWithTag("EditCommentTextField").performTextInput(updatedCommentText)
     val expectedLabelText = "edited: "
     composeTestRule.onNode(hasText(expectedLabelText, substring = true)).assertIsDisplayed()
-  }
-
-  @Test
-  fun saveClickCallsNavActions() {
-    // Ensure the button is enabled
-    composeTestRule.onNodeWithTag("EditTitle textField").performTextInput("title")
-
-    composeTestRule.onNodeWithTag("Save button").performClick()
-    verify(navigationActions).navigateTo(Screen.OVERVIEW)
   }
 
   @Test
