@@ -1,6 +1,5 @@
 package com.github.onlynotesswent.ui
 
-import android.content.Context
 import android.graphics.Bitmap
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
@@ -38,10 +37,15 @@ import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Route
 import com.github.onlynotesswent.ui.navigation.Screen
 import com.github.onlynotesswent.ui.overview.AddNoteScreen
+import com.github.onlynotesswent.ui.overview.EditMarkdownScreen
 import com.github.onlynotesswent.ui.overview.EditNoteScreen
+import com.github.onlynotesswent.ui.overview.FolderContentScreen
 import com.github.onlynotesswent.ui.overview.OverviewScreen
 import com.github.onlynotesswent.ui.theme.AppTheme
 import com.github.onlynotesswent.ui.user.CreateUserScreen
+import com.github.onlynotesswent.ui.user.EditProfileScreen
+import com.github.onlynotesswent.ui.user.PublicProfileScreen
+import com.github.onlynotesswent.ui.user.UserProfileScreen
 import com.github.onlynotesswent.utils.Course
 import com.github.onlynotesswent.utils.ProfilePictureTaker
 import com.github.onlynotesswent.utils.Scanner
@@ -71,8 +75,6 @@ class EndToEndTest {
   @Mock private lateinit var fileRepository: FileRepository
   private lateinit var fileViewModel: FileViewModel
 
-  private lateinit var context: Context
-  private lateinit var scanner: Scanner
   @Mock private lateinit var profilePictureTaker: ProfilePictureTaker
   @Mock private lateinit var scanner: Scanner
 
@@ -159,6 +161,29 @@ class EndToEndTest {
                   composable(Screen.EDIT_NOTE) {
                     EditNoteScreen(navigationActions, noteViewModel, userViewModel, fileViewModel)
                   }
+                  composable(Screen.FOLDER_CONTENTS) {
+                    FolderContentScreen(
+                        navigationActions, folderViewModel, noteViewModel, userViewModel)
+                  }
+                  composable(Screen.EDIT_MARKDOWN) {
+                    EditMarkdownScreen(
+                        navigationActions, noteViewModel, userViewModel, fileViewModel)
+                  }
+                }
+                navigation(
+                    startDestination = Screen.USER_PROFILE,
+                    route = Route.PROFILE,
+                ) {
+                  composable(Screen.USER_PROFILE) {
+                    UserProfileScreen(navigationActions, userViewModel, fileViewModel)
+                  }
+                  composable(Screen.PUBLIC_PROFILE) {
+                    PublicProfileScreen(navigationActions, userViewModel, fileViewModel)
+                  }
+                  composable(Screen.EDIT_PROFILE) {
+                    EditProfileScreen(
+                        navigationActions, userViewModel, profilePictureTaker, fileViewModel)
+                  }
                 }
               }
         }
@@ -174,7 +199,7 @@ class EndToEndTest {
 
   // Test the end-to-end flow of creating a user, adding a note, and editing the note
   @Test
-  fun testEndToEndFlow() {
+  fun testEndToEndFlow1() {
     // Interact with the input fields for creating a user
     composeTestRule.onNodeWithTag("inputFirstName").performTextInput(testUser.firstName)
     composeTestRule.onNodeWithTag("inputLastName").performTextInput(testUser.lastName)
