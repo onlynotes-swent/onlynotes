@@ -47,11 +47,16 @@ import com.github.onlynotesswent.model.file.FileType
 import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.note.Note
 import com.github.onlynotesswent.model.note.NoteViewModel
+import com.github.onlynotesswent.model.users.User
 import com.github.onlynotesswent.model.users.UserViewModel
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
+import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
 import com.github.onlynotesswent.utils.Course
 import com.github.onlynotesswent.utils.Scanner
+import com.github.onlynotesswent.utils.NoteDataTextField
+import com.github.onlynotesswent.utils.OptionDropDownMenu
+import com.github.onlynotesswent.utils.ScreenTopBar
 import com.github.onlynotesswent.utils.Visibility
 import com.google.firebase.Timestamp
 import com.mohamedrejeb.richeditor.model.rememberRichTextState
@@ -84,7 +89,7 @@ fun EditNoteScreen(
   val note by noteViewModel.selectedNote.collectAsState()
   val currentUser by userViewModel.currentUser.collectAsState()
   val currentYear = Calendar.getInstance().get(Calendar.YEAR)
-  var noteText by remember { mutableStateOf(note?.content ?: "") }
+  val noteText by remember { mutableStateOf(note?.content ?: "") }
   var noteTitle by remember { mutableStateOf(note?.title ?: "") }
   var courseName by remember { mutableStateOf(note?.noteCourse?.courseName ?: "") }
   var courseCode by remember { mutableStateOf(note?.noteCourse?.courseCode ?: "") }
@@ -151,14 +156,7 @@ fun EditNoteScreen(
   }
 
   if (currentUser == null) {
-    // If the user is null, display an error message
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally) {
-          Text("User not found ...")
-        }
-    Log.e("EditNoteScreen", "User not found")
+    UserNotFoundEditScreen()
   } else {
     Scaffold(
         modifier = Modifier.testTag("editNoteScreen"),
@@ -277,119 +275,34 @@ fun EditNoteScreen(
                     modifier = Modifier.testTag("Edit Markdown button")) {
                       Text("Edit Markdown")
                     }
-                Button(
-                    enabled = noteTitle.isNotEmpty(),
-                    onClick = {
-                      noteViewModel.updateNote(
-                          Note(
-                              id = note?.id ?: "1",
-                              title = noteTitle,
-                              content = noteText,
-                              date = Timestamp.now(), // Use current timestamp
-                              visibility = visibility ?: Visibility.DEFAULT,
-                              noteCourse = Course(courseCode, courseName, courseYear, "path"),
-                              userId = note?.userId ?: currentUser!!.uid,
-                              folderId = note?.folderId,
-                              image =
-                                  note?.image
-                                      ?: Bitmap.createBitmap(
-                                          1, 1, Bitmap.Config.ARGB_8888), // Placeholder Bitmap
-                              comments = updatedComments),
-                          currentUser!!.uid)
-                      if (note?.folderId != null) {
-                        navigationActions.navigateTo(Screen.FOLDER_CONTENTS)
-                      } else {
-                        navigationActions.navigateTo(Screen.OVERVIEW)
-                      }
-                    },
-                    colors =
-                        ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.primary,
-                            contentColor = MaterialTheme.colorScheme.onPrimary),
-                    modifier = Modifier.testTag("Save button")) {
-                      Text("Update note")
-                    }
 
-                Button(
-                    colors =
-                        ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.background,
-                            contentColor = MaterialTheme.colorScheme.error),
-                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.error),
-                    onClick = {
-                      noteViewModel.deleteNoteById(
-                          note?.id ?: "", note?.userId ?: currentUser!!.uid)
-                      navigationActions.navigateTo(Screen.OVERVIEW)
-                    },
-                    modifier = Modifier.testTag("Delete button")) {
-                      Text("Delete note")
-                    }
+                SaveButton(
+                    noteTitle = noteTitle,
+                    note = note,
+                    updatedNoteText = noteText,
+                    visibility = visibility,
+                    courseCode = courseCode,
+                    courseName = courseName,
+                    courseYear = courseYear,
+                    updatedComments = updatedComments,
+                    currentUser = currentUser,
+                    navigationActions = navigationActions,
+                    noteViewModel = noteViewModel)
 
-                Button(
-                    colors =
-                        ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.primary,
-                            contentColor = MaterialTheme.colorScheme.onPrimary),
-                    onClick = {
-                      updatedComments =
-                          updatedComments.addCommentByUser(
-                              currentUser?.uid ?: "1",
-                              currentUser?.userName ?: "Invalid username",
-                              "")
-                      updateOnlyNoteCommentAndDate()
-                    },
-                    modifier = Modifier.testTag("Add Comment Button")) {
-                      Text("Add Comment")
-                    }
+                DeleteButton(
+                    note = note,
+                    currentUser = currentUser,
+                    navigationActions = navigationActions,
+                    noteViewModel = noteViewModel)
 
-                if (updatedComments.commentsList.isEmpty()) {
-                  Text(
-                      text = "No comments yet. Add a comment to start the discussion.",
-                      color = Color.Gray,
-                      modifier = Modifier.padding(8.dp).testTag("NoCommentsText"))
-                } else {
+                AddCommentButton(
+                    currentUser = currentUser,
+                    updatedComments = updatedComments,
+                    onCommentsChange = { updatedComments = it },
+                    updateOnlyNoteCommentAndDate = { updateOnlyNoteCommentAndDate() })
 
-                  updatedComments.commentsList.forEachIndexed { _, comment ->
-                    Row(
-                        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
-                        verticalAlignment = Alignment.CenterVertically) {
-                          OutlinedTextField(
-                              value = comment.content,
-                              onValueChange = {
-                                updatedComments =
-                                    updatedComments.editCommentByCommentId(comment.commentId, it)
-                                updateOnlyNoteCommentAndDate()
-                              },
-                              label = {
-                                val formatter =
-                                    SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
-                                val formatedDate = formatter.format(comment.editedDate.toDate())
-                                val displayedText =
-                                    if (comment.isUnedited()) {
-                                      "${comment.userName} : $formatedDate"
-                                    } else {
-                                      "${comment.userName} edited: $formatedDate"
-                                    }
-                                Text(displayedText)
-                              },
-                              placeholder = { Text("Enter comment here") },
-                              modifier = Modifier.weight(1f).testTag("EditCommentTextField"))
-
-                          IconButton(
-                              onClick = {
-                                updatedComments =
-                                    updatedComments.deleteCommentByCommentId(comment.commentId)
-                                updateOnlyNoteCommentAndDate()
-                              },
-                              modifier = Modifier.testTag("DeleteCommentButton")) {
-                                Icon(
-                                    imageVector = Icons.Default.Delete,
-                                    contentDescription = "Delete Comment",
-                                    tint = Color.Red)
-                              }
-                        }
-                  }
-                }
+                CommentsSection(
+                    updatedComments, { updatedComments = it }, { updateOnlyNoteCommentAndDate() })
               }
         })
   }
@@ -452,4 +365,207 @@ fun PdfCard(
               }
             }
       })
+
+/** Displays a screen indicating that the user was not found. */
+@Composable
+fun UserNotFoundEditScreen() {
+  Column(
+      modifier = Modifier.fillMaxSize(),
+      verticalArrangement = Arrangement.Center,
+      horizontalAlignment = Alignment.CenterHorizontally) {
+        Text("User not found ...")
+      }
+  Log.e("EditNoteScreen", "User not found")
+}
+
+/**
+ * Displays the comments section of the edit note screen. The section includes a list of comments
+ * with text fields for editing each comment, and buttons for deleting comments and adding new
+ * comments.
+ *
+ * @param updatedComments The collection of comments to be displayed and edited.
+ * @param onCommentsChange The callback function to update the comments collection.
+ * @param updateOnlyNoteCommentAndDate The callback function to update only the note's comments and
+ *   date.
+ */
+@Composable
+fun CommentsSection(
+    updatedComments: Note.CommentCollection,
+    onCommentsChange: (Note.CommentCollection) -> Unit,
+    updateOnlyNoteCommentAndDate: () -> Unit
+) {
+  if (updatedComments.commentsList.isEmpty()) {
+    Text(
+        text = "No comments yet. Add a comment to start the discussion.",
+        color = Color.Gray,
+        modifier = Modifier.padding(8.dp).testTag("NoCommentsText"))
+  } else {
+    updatedComments.commentsList.forEachIndexed { _, comment ->
+      Row(
+          modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+          verticalAlignment = Alignment.CenterVertically) {
+            OutlinedTextField(
+                value = comment.content,
+                onValueChange = {
+                  onCommentsChange(updatedComments.editCommentByCommentId(comment.commentId, it))
+                  updateOnlyNoteCommentAndDate()
+                },
+                label = {
+                  val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
+                  val formattedDate = formatter.format(comment.editedDate.toDate())
+                  val displayedText =
+                      if (comment.isUnedited()) {
+                        "${comment.userName} : $formattedDate"
+                      } else {
+                        "${comment.userName} edited: $formattedDate"
+                      }
+                  Text(displayedText)
+                },
+                placeholder = { Text("Enter comment here") },
+                modifier = Modifier.weight(1f).testTag("EditCommentTextField"))
+
+            IconButton(
+                onClick = {
+                  onCommentsChange(updatedComments.deleteCommentByCommentId(comment.commentId))
+                  updateOnlyNoteCommentAndDate()
+                },
+                modifier = Modifier.testTag("DeleteCommentButton")) {
+                  Icon(
+                      imageVector = Icons.Default.Delete,
+                      contentDescription = "Delete Comment",
+                      tint = Color.Red)
+                }
+          }
+    }
+  }
+}
+
+/**
+ * Displays a button that saves the updated note. The button is enabled only if the note title is
+ * not empty. When clicked, the button updates the note in the ViewModel and navigates back to the
+ * overview screen.
+ *
+ * @param noteTitle The updated title of the note.
+ * @param note The note to be updated.
+ * @param updatedNoteText The updated content of the note.
+ * @param visibility The updated visibility of the note.
+ * @param courseCode The updated course code of the note.
+ * @param courseName The updated course name of the note.
+ * @param courseYear The updated course year of the note.
+ * @param updatedComments The updated collection of comments for the note.
+ * @param currentUser The current user.
+ * @param navigationActions The navigation view model used to transition between different screens.
+ * @param noteViewModel The ViewModel that provides the current note to be edited and handles note
+ *   updates.
+ */
+@Composable
+fun SaveButton(
+    noteTitle: String,
+    note: Note?,
+    updatedNoteText: String,
+    visibility: Visibility?,
+    courseCode: String,
+    courseName: String,
+    courseYear: Int,
+    updatedComments: Note.CommentCollection,
+    currentUser: User?,
+    navigationActions: NavigationActions,
+    noteViewModel: NoteViewModel
+) {
+  Button(
+      enabled = noteTitle.isNotEmpty(),
+      onClick = {
+        noteViewModel.updateNote(
+            Note(
+                id = note?.id ?: "1",
+                title = noteTitle,
+                content = updatedNoteText,
+                date = Timestamp.now(), // Use current timestamp
+                visibility = visibility ?: Visibility.DEFAULT,
+                noteCourse = Course(courseCode, courseName, courseYear, "path"),
+                userId = note?.userId ?: currentUser!!.uid,
+                folderId = note?.folderId,
+                image =
+                    note?.image
+                        ?: Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888), // Placeholder Bitmap
+                comments = updatedComments),
+            currentUser!!.uid)
+        if (note?.folderId != null) {
+          navigationActions.navigateTo(Screen.FOLDER_CONTENTS)
+        } else {
+          navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
+        }
+      },
+      colors =
+          ButtonDefaults.buttonColors(
+              containerColor = MaterialTheme.colorScheme.primary,
+              contentColor = MaterialTheme.colorScheme.onPrimary),
+      modifier = Modifier.testTag("Save button")) {
+        Text("Update note")
+      }
+}
+
+/**
+ * Displays a button that deletes the note. When clicked, the button deletes the note from the
+ * ViewModel and navigates back to the overview screen.
+ *
+ * @param note The note to be deleted.
+ * @param currentUser The current user.
+ * @param navigationActions The navigation view model used to transition between different screens.
+ * @param noteViewModel The ViewModel that provides the current note to be edited and handles note
+ *   updates.
+ */
+@Composable
+fun DeleteButton(
+    note: Note?,
+    currentUser: User?,
+    navigationActions: NavigationActions,
+    noteViewModel: NoteViewModel
+) {
+  Button(
+      colors =
+          ButtonDefaults.buttonColors(
+              containerColor = MaterialTheme.colorScheme.background,
+              contentColor = MaterialTheme.colorScheme.error),
+      border = BorderStroke(1.dp, MaterialTheme.colorScheme.error),
+      onClick = {
+        noteViewModel.deleteNoteById(note?.id ?: "", note?.userId ?: currentUser!!.uid)
+        navigationActions.navigateTo(Screen.OVERVIEW)
+      },
+      modifier = Modifier.testTag("Delete button")) {
+        Text("Delete note")
+      }
+}
+
+/**
+ * Displays a button that adds a new comment to the note. When clicked, the button adds a new
+ * comment to the note in the ViewModel and updates the note's comments and date.
+ *
+ * @param currentUser The current user.
+ * @param updatedComments The updated collection of comments for the note.
+ * @param onCommentsChange The callback function to update the comments collection.
+ * @param updateOnlyNoteCommentAndDate The callback function to update only the note's comments and
+ *   date.
+ */
+@Composable
+fun AddCommentButton(
+    currentUser: User?,
+    updatedComments: Note.CommentCollection,
+    onCommentsChange: (Note.CommentCollection) -> Unit,
+    updateOnlyNoteCommentAndDate: () -> Unit
+) {
+  Button(
+      colors =
+          ButtonDefaults.buttonColors(
+              containerColor = MaterialTheme.colorScheme.primary,
+              contentColor = MaterialTheme.colorScheme.onPrimary),
+      onClick = {
+        onCommentsChange(
+            updatedComments.addCommentByUser(
+                currentUser?.uid ?: "1", currentUser?.userName ?: "Invalid username", ""))
+        updateOnlyNoteCommentAndDate()
+      },
+      modifier = Modifier.testTag("Add Comment Button")) {
+        Text("Add Comment")
+      }
 }
