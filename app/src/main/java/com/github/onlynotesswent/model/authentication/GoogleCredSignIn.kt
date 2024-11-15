@@ -21,8 +21,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-private const val TAG = "GoogleCredSignIn"
-
 /**
  * A class to handle Google sign-in and retrieve a Google ID token credential
  *
@@ -63,7 +61,7 @@ class GoogleCredSignIn(
         val result = credentialManager.getCredential(context = ctx, request = request)
         handleSignIn(callback, result)
       } catch (e: Exception) {
-        Log.e(TAG, "Error getting credential", e)
+        Log.e(GoogleCredSignIn::class.java.simpleName, "Error getting credential", e)
         // Exception can happen when the device has never had a Google account before
         // In this case, reattempt the sign-in using traditional Google sign-in
         withContext(Dispatchers.Main) {
@@ -98,10 +96,10 @@ class GoogleCredSignIn(
         val googleIdToken = googleIdTokenCredential.idToken
         callback(googleIdToken)
       } catch (e: GoogleIdTokenParsingException) {
-        Log.e(TAG, "Received an invalid google id token response", e)
+        Log.e(GoogleCredSignIn::class.java.simpleName, "Received an invalid google id token response", e)
       }
     } else {
-      Log.e(TAG, "Unexpected type of credential: ${credential.type}")
+      Log.e(GoogleCredSignIn::class.java.simpleName, "Unexpected type of credential: ${credential.type}")
     }
   }
 }
