@@ -1,5 +1,7 @@
 package com.github.onlynotesswent.ui.authentication
 
+import android.content.Context
+import androidx.test.core.app.ApplicationProvider
 import com.github.onlynotesswent.model.users.User
 import com.github.onlynotesswent.model.users.UserViewModel
 import com.github.onlynotesswent.ui.navigation.NavigationActions
@@ -9,21 +11,35 @@ import com.google.firebase.Timestamp
 import com.google.firebase.auth.AuthResult
 import com.google.firebase.auth.FirebaseUser
 import org.junit.Assert.assertEquals
+import org.junit.Before
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.mockito.Mock
 import org.mockito.Mockito.anyString
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
 import org.mockito.kotlin.any
 import org.mockito.kotlin.verify
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.shadows.ShadowToast
 
+@Suppress("UNCHECKED_CAST")
+@RunWith(RobolectricTestRunner::class)
 class SignInTest {
+  @Mock private lateinit var context: Context
+
+  private val navigationActions = mock(NavigationActions::class.java)
+  private val userViewModel = mock(UserViewModel::class.java)
+  private val authResult = mock(AuthResult::class.java)
+  private val firebaseUser = mock(FirebaseUser::class.java)
+
+  @Before
+  fun setup() {
+    context = ApplicationProvider.getApplicationContext()
+  }
+
   @Test
   fun authSuccessHandler_navigatesToOverview() {
-    val navigationActions = mock(NavigationActions::class.java)
-    val userViewModel = mock(UserViewModel::class.java)
-    val authResult = mock(AuthResult::class.java)
-    val firebaseUser = mock(FirebaseUser::class.java)
-
     val user = User("First name", "Last name", "username", "email", "uid", Timestamp.now(), 0.0)
 
     `when`(authResult.user).thenReturn(firebaseUser)
@@ -40,24 +56,17 @@ class SignInTest {
       }
     }
 
-    var messageShown = ""
     // Call the function
-    authSuccessHandler(authResult, navigationActions, userViewModel) { message ->
-      messageShown = message
-    }
+    authSuccessHandler(authResult, navigationActions, userViewModel, context)
+
     // Verify the message and navigation actions
-    assert(messageShown == "Welcome ${user.userName}!")
+    assertEquals("Welcome ${user.userName}!", ShadowToast.getTextOfLatestToast())
     verify(navigationActions).navigateTo(TopLevelDestinations.OVERVIEW)
     verify(userViewModel).getCurrentUserByEmail(anyString(), any(), any(), any())
   }
 
   @Test
   fun authSuccessHandler_navigatesToCreateUserScreen() {
-    val navigationActions = mock(NavigationActions::class.java)
-    val userViewModel = mock(UserViewModel::class.java)
-    val authResult = mock(AuthResult::class.java)
-    val firebaseUser = mock(FirebaseUser::class.java)
-
     val user = User("First name", "Last name", "username", "email", "uid", Timestamp.now(), 0.0)
 
     `when`(authResult.user).thenReturn(firebaseUser)
@@ -68,24 +77,17 @@ class SignInTest {
       onNotFound()
     }
 
-    var messageShown = ""
     // Call the function
-    authSuccessHandler(authResult, navigationActions, userViewModel) { message ->
-      messageShown = message
-    }
+    authSuccessHandler(authResult, navigationActions, userViewModel, context)
+
     // Verify the message and navigation actions
-    assert(messageShown == "Welcome to OnlyNotes!")
+    assertEquals("Welcome to OnlyNotes!", ShadowToast.getTextOfLatestToast())
     verify(navigationActions).navigateTo(Screen.CREATE_USER)
     verify(userViewModel).getCurrentUserByEmail(anyString(), any(), any(), any())
   }
 
   @Test
   fun authSuccessHandler_catches_exception() {
-    val navigationActions = mock(NavigationActions::class.java)
-    val userViewModel = mock(UserViewModel::class.java)
-    val authResult = mock(AuthResult::class.java)
-    val firebaseUser = mock(FirebaseUser::class.java)
-
     val user = User("First name", "Last name", "username", "email", "uid", Timestamp.now(), 0.0)
 
     `when`(authResult.user).thenReturn(firebaseUser)
@@ -96,45 +98,36 @@ class SignInTest {
       onFailure(Exception("TestError"))
     }
 
-    var messageShown = ""
     // Call the function
-    authSuccessHandler(authResult, navigationActions, userViewModel) { message ->
-      messageShown = message
-    }
+    authSuccessHandler(authResult, navigationActions, userViewModel, context)
+
     // Verify the message
-    assertEquals(messageShown, "Error while fetching user: ${Exception("TestError")}")
+    assertEquals(
+        "Error while fetching user: ${Exception("TestError")}", ShadowToast.getTextOfLatestToast())
     verify(userViewModel).getCurrentUserByEmail(anyString(), any(), any(), any())
   }
 
   @Test
   fun authSuccessHandler_catches_null_exceptions() {
-    val navigationActions = mock(NavigationActions::class.java)
-    val userViewModel = mock(UserViewModel::class.java)
-    val authResult = mock(AuthResult::class.java)
-    val firebaseUser = mock(FirebaseUser::class.java)
-
     // -----------------------------------------
     // Test the case where the email is null
     `when`(authResult.user).thenReturn(firebaseUser)
     `when`(firebaseUser.email).thenReturn(null)
 
-    var messageShown = ""
     // Call the function
-    authSuccessHandler(authResult, navigationActions, userViewModel) { message ->
-      messageShown = message
-    }
+    authSuccessHandler(authResult, navigationActions, userViewModel, context)
+
     // Verify the message
-    assertEquals(messageShown, "Login Failed!")
+    assertEquals("Login Failed!", ShadowToast.getTextOfLatestToast())
 
     // -----------------------------------------
     // Test the case where the user is null
     `when`(authResult.user).thenReturn(null)
-    messageShown = ""
+
     // Call the function
-    authSuccessHandler(authResult, navigationActions, userViewModel) { message ->
-      messageShown = message
-    }
+    authSuccessHandler(authResult, navigationActions, userViewModel, context)
+
     // Verify the message
-    assertEquals(messageShown, "Login Failed!")
+    assertEquals("Login Failed!", ShadowToast.getTextOfLatestToast())
   }
 }

@@ -37,19 +37,29 @@ import com.github.onlynotesswent.utils.Scanner
 class MainActivity : ComponentActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
+
+    // Retrieve the server client ID from resources
+    val serverClientId = getString(R.string.default_web_client_id)
+
     val scanner = Scanner(this).apply { init() }
     val profilePictureTaker = ProfilePictureTaker(this).apply { init() }
 
     setContent {
       AppTheme {
-        Surface(modifier = Modifier.fillMaxSize()) { OnlyNotesApp(scanner, profilePictureTaker) }
+        Surface(modifier = Modifier.fillMaxSize()) {
+          OnlyNotesApp(scanner, profilePictureTaker, serverClientId)
+        }
       }
     }
   }
 }
 
 @Composable
-fun OnlyNotesApp(scanner: Scanner, profilePictureTaker: ProfilePictureTaker) {
+fun OnlyNotesApp(
+    scanner: Scanner,
+    profilePictureTaker: ProfilePictureTaker,
+    serverClientId: String
+) {
   val navController = rememberNavController()
   val navigationActions = NavigationActions(navController)
   val userViewModel: UserViewModel = viewModel(factory = UserViewModel.Factory)
@@ -62,7 +72,7 @@ fun OnlyNotesApp(scanner: Scanner, profilePictureTaker: ProfilePictureTaker) {
         startDestination = Screen.AUTH,
         route = Route.AUTH,
     ) {
-      composable(Screen.AUTH) { SignInScreen(navigationActions, userViewModel) }
+      composable(Screen.AUTH) { SignInScreen(navigationActions, userViewModel, serverClientId) }
       composable(Screen.CREATE_USER) { CreateUserScreen(navigationActions, userViewModel) }
     }
 

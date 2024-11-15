@@ -7,7 +7,6 @@ plugins {
     alias(libs.plugins.sonar)
     id("jacoco")
     id("com.google.gms.google-services")
-
 }
 
 jacoco {
@@ -79,7 +78,6 @@ android {
         jvmTarget = "11"
     }
 
-
     android {
         compileOptions {
             sourceCompatibility = JavaVersion.VERSION_11
@@ -148,7 +146,6 @@ dependencies {
         }
     }
 
-
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
@@ -161,11 +158,9 @@ dependencies {
     testImplementation(libs.junit)
     globalTestImplementation(libs.androidx.junit)
     globalTestImplementation(libs.androidx.espresso.core)
-
-
-
-
-
+    implementation(libs.androidx.credentials)
+    implementation(libs.androidx.credentials.play.services.auth)
+    implementation(libs.google.id)
 
     // -------------- Firebase ---------------------
     implementation(libs.firebase.database.ktx)
@@ -173,14 +168,11 @@ dependencies {
     implementation(libs.firebase.ui.auth)
     implementation(libs.firebase.auth.ktx)
     implementation(libs.firebase.auth)
-    // Import the BoM for the Firebase platform TODO implement for better version managing, but need
-    //  Todo to update google sign in
-    //implementation(libs.firebase.bom)
+    // Import the BoM for the Firebase platform TODO implement for better version managing
+    // implementation(libs.firebase.bom)
     // Add the dependency for the Cloud Storage library
     // When using the BoM, you don't specify versions in Firebase library dependencies
     implementation(libs.firebase.storage)
-
-
 
     // ------------- Jetpack Compose ------------------
     val composeBom = platform(libs.compose.bom)
@@ -203,16 +195,16 @@ dependencies {
     debugImplementation(libs.compose.test.manifest)
 
     // Mockito
-    testImplementation("org.mockito:mockito-core:5.13.0")
-    testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
-    testImplementation("org.mockito:mockito-inline:4.0.0")
+    testImplementation(libs.mockito.core)
+    testImplementation(libs.mockito.kotlin)
+    testImplementation(libs.mockito.inline)
     androidTestImplementation(libs.mockito.kotlin)
-    androidTestImplementation("org.mockito:mockito-android:5.14.1")
-
+    androidTestImplementation(libs.mockito.android)
 
     //Image Library
+
     implementation("androidx.compose.material:material-icons-extended:<version>")
-    implementation("io.coil-kt:coil-compose:2.1.0")
+    implementation(libs.coil.compose)
     implementation(libs.imagepicker)
 
     //Rich text editor
@@ -243,7 +235,6 @@ tasks.withType<Test> {
         excludes = listOf("jdk.internal.*")
     }
 }
-
 
 tasks.register("jacocoTestReport", JacocoReport::class) {
     mustRunAfter("testDebugUnitTest", "connectedDebugAndroidTest")

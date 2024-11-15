@@ -148,6 +148,7 @@ class ProfileScreenTest {
     composeTestRule.onNodeWithTag("followingText", useUnmergedTree = true).assertExists()
     composeTestRule.onNodeWithTag("followersText", useUnmergedTree = true).assertExists()
     composeTestRule.onNodeWithTag("editProfileButton").assertExists()
+    composeTestRule.onNodeWithTag("logoutButton").assertExists()
   }
 
   @Test
@@ -281,5 +282,15 @@ class ProfileScreenTest {
     composeTestRule.onNodeWithTag("goBackButton").assertIsDisplayed().performClick()
     // Verify that a pop operation was performed
     verify(mockNavigationActions).popFromScreenNavigationStack()
+  }
+
+  @Test
+  fun logoutButtonWorksCorrectly() {
+    composeTestRule.setContent {
+      UserProfileScreen(mockNavigationActions, userViewModel, fileViewModel)
+    }
+
+    composeTestRule.onNodeWithTag("logoutButton").assertIsDisplayed().performClick()
+    verify(mockNavigationActions).navigateTo(Screen.AUTH)
   }
 }
