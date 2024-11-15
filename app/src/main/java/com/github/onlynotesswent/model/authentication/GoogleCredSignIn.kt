@@ -9,6 +9,7 @@ import androidx.credentials.CredentialManager
 import androidx.credentials.CustomCredential
 import androidx.credentials.GetCredentialRequest
 import androidx.credentials.GetCredentialResponse
+import androidx.credentials.exceptions.GetCredentialException
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
@@ -64,14 +65,16 @@ class GoogleCredSignIn(
         Log.e(GoogleCredSignIn::class.java.simpleName, "Error getting credential", e)
         // Exception can happen when the device has never had a Google account before
         // In this case, reattempt the sign-in using traditional Google sign-in
-        withContext(Dispatchers.Main) {
-          val gso =
-              GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                  .requestIdToken(serverClientId)
-                  .requestEmail()
-                  .build()
-          val googleSignInClient = GoogleSignIn.getClient(ctx, gso)
-          launcher.launch(googleSignInClient.signInIntent)
+        if (e is GetCredentialException) {
+          withContext(Dispatchers.Main) {
+            val gso =
+                GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                    .requestIdToken(serverClientId)
+                    .requestEmail()
+                    .build()
+            val googleSignInClient = GoogleSignIn.getClient(ctx, gso)
+            launcher.launch(googleSignInClient.signInIntent)
+          }
         }
       }
     }
@@ -83,7 +86,7 @@ class GoogleCredSignIn(
    * @param callback The callback to handle the Google ID token credential
    * @param result The GetCredentialResponse containing the credential
    */
-  private fun handleSignIn(callback: (String) -> Unit, result: GetCredentialResponse) {
+  internal fun handleSignIn(callback: (String) -> Unit, result: GetCredentialResponse) {
     // Retrieve the credential from the response
     val credential = result.credential
 
