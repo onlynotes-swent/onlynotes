@@ -12,11 +12,11 @@ import kotlinx.coroutines.flow.asStateFlow
 
 class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
 
-  // Left here for possible future use cases
+  // TODO Left here for possible future use cases
   private val _publicFolders = MutableStateFlow<List<Folder>>(emptyList())
   val publicFolders: StateFlow<List<Folder>> = _publicFolders.asStateFlow()
 
-  // Left here for possible future use cases
+  // TODO Left here for possible future use cases
   private val _userFolders = MutableStateFlow<List<Folder>>(emptyList())
   val userFolders: StateFlow<List<Folder>> = _userFolders.asStateFlow()
 
@@ -24,9 +24,9 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
   private val _userRootFolders = MutableStateFlow<List<Folder>>(emptyList())
   val userRootFolders: StateFlow<List<Folder>> = _userRootFolders.asStateFlow()
 
-  // Sub folders from a user
-  private val _userSubFolders = MutableStateFlow<List<Folder>>(emptyList())
-  val userSubFolders: StateFlow<List<Folder>> = _userSubFolders.asStateFlow()
+  // Sub folders of a folder
+  private val _folderSubFolders = MutableStateFlow<List<Folder>>(emptyList())
+  val folderSubFolders: StateFlow<List<Folder>> = _folderSubFolders.asStateFlow()
 
   // Parent folder Id
   private val _parentFolderId = MutableStateFlow<String?>(null)
@@ -134,7 +134,8 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
    * @param parentId The ID of the parent folder.
    */
   fun getSubFoldersOf(parentId: String) {
-    repository.getSubFoldersOf(parentId, onSuccess = { _userSubFolders.value = it }, onFailure = {})
+    repository.getSubFoldersOf(
+        parentId, onSuccess = { _folderSubFolders.value = it }, onFailure = {})
   }
 
   /** Retrieves all public folders. */

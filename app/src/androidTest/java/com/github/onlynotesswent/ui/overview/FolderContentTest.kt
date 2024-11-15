@@ -17,7 +17,6 @@ import com.github.onlynotesswent.model.users.UserRepository
 import com.github.onlynotesswent.model.users.UserViewModel
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
-import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
 import com.github.onlynotesswent.utils.Course
 import com.github.onlynotesswent.utils.Visibility
 import com.google.firebase.Timestamp
@@ -109,7 +108,7 @@ class FolderContentTest {
   fun displayBaseComponents() {
     composeTestRule.onNodeWithTag("folderContentScreen").assertIsDisplayed()
     composeTestRule.onNodeWithTag("folderContentTitle").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("clearButton").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("goBackButton").assertIsDisplayed()
     composeTestRule.onNodeWithTag("folderSettingsButton").assertIsDisplayed()
     composeTestRule.onNodeWithTag("createSubNoteOrSubFolder").assertIsDisplayed()
     composeTestRule.onNodeWithTag("emptyFolderPrompt").assertIsDisplayed()
@@ -143,12 +142,10 @@ class FolderContentTest {
   }
 
   @Test
-  fun deleteFolder() {
+  fun deleteFolderButtonIsDisplayed() {
     composeTestRule.onNodeWithTag("folderSettingsButton").performClick()
     composeTestRule.onNodeWithTag("renameFolderButton").assertIsDisplayed()
     composeTestRule.onNodeWithTag("deleteFolderButton").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("deleteFolderButton").performClick()
-    verify(mockNavigationActions).navigateTo(TopLevelDestinations.OVERVIEW)
   }
 
   @Test

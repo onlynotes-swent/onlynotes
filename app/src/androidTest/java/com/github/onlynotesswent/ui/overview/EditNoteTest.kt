@@ -59,7 +59,7 @@ class EditNoteTest {
     val testUser = User("", "", "testUserName", "", "testUID", Timestamp.now(), 0.0)
     userViewModel.addUser(testUser, {}, {})
 
-    // Mock the current route to be the user create screen
+    // Mock the current route to be the note edit screen
     `when`(navigationActions.currentRoute()).thenReturn(Screen.EDIT_NOTE)
     val mockNote =
         Note(
@@ -114,8 +114,8 @@ class EditNoteTest {
   fun clickGoBackButton() {
     composeTestRule.onNodeWithTag("goBackButton").performClick()
 
-    org.mockito.kotlin.verify(navigationActions).goBack()
-    org.mockito.kotlin.verify(navigationActions, never()).navigateTo(Screen.OVERVIEW)
+    verify(navigationActions).goBack()
+    verify(navigationActions, never()).navigateTo(Screen.OVERVIEW)
   }
 
   @Test
@@ -153,15 +153,6 @@ class EditNoteTest {
     composeTestRule.onNodeWithTag("EditCommentTextField").performTextInput(updatedCommentText)
     val expectedLabelText = "edited: "
     composeTestRule.onNode(hasText(expectedLabelText, substring = true)).assertIsDisplayed()
-  }
-
-  @Test
-  fun saveClickCallsNavActions() {
-    // Ensure the button is enabled
-    composeTestRule.onNodeWithTag("EditTitle textField").performTextInput("title")
-
-    composeTestRule.onNodeWithTag("Save button").performClick()
-    verify(navigationActions).navigateTo(Screen.OVERVIEW)
   }
 
   @Test

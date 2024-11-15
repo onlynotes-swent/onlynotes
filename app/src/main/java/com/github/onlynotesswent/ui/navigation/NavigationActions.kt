@@ -7,6 +7,7 @@ import androidx.compose.material.icons.outlined.Search
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
+import java.util.Stack
 
 object Route {
   const val OVERVIEW = "Overview"
@@ -22,7 +23,7 @@ object Screen {
   const val ADD_NOTE = "Add Note Screen"
   const val EDIT_NOTE = "Edit Note Screen"
   const val EDIT_MARKDOWN = "Edit Note Markdown Screen"
-  const val SEARCH_NOTE = "Search Note Screen"
+  const val SEARCH = "Search Screen"
   const val USER_PROFILE = "User Profile Screen"
   const val PUBLIC_PROFILE = "Public Profile Screen"
   const val EDIT_PROFILE = "Edit Profile Screen"
@@ -33,13 +34,11 @@ data class TopLevelDestination(val route: String, val icon: ImageVector, val tex
 
 object TopLevelDestinations {
   val OVERVIEW =
-      TopLevelDestination(route = Route.OVERVIEW, icon = Icons.Outlined.Home, textId = "My Notes")
+      TopLevelDestination(route = Route.OVERVIEW, icon = Icons.Outlined.Home, textId = "Notes")
   val SEARCH =
-      TopLevelDestination(
-          route = Route.SEARCH, icon = Icons.Outlined.Search, textId = "Search Notes")
+      TopLevelDestination(route = Route.SEARCH, icon = Icons.Outlined.Search, textId = "Search")
   val PROFILE =
-      TopLevelDestination(
-          route = Route.PROFILE, icon = Icons.Outlined.Person, textId = "My Profile")
+      TopLevelDestination(route = Route.PROFILE, icon = Icons.Outlined.Person, textId = "Profile")
 }
 
 val LIST_TOP_LEVEL_DESTINATION =
@@ -48,8 +47,10 @@ val LIST_TOP_LEVEL_DESTINATION =
 open class NavigationActions(
     private val navController: NavHostController,
 ) {
+
+  private val screenNavigationStack = Stack<String>()
   /**
-   * Navigate to the specified [TopLevelDestination]
+   * Navigate to the specified [TopLevelDestination] and clear the navigation stack.
    *
    * @param destination The top level destination to navigate to Clear the back stack when
    *   navigating to a new destination This is useful when navigating to a new screen from the
@@ -73,15 +74,21 @@ open class NavigationActions(
         restoreState = true
       }
     }
+    clearScreenNavigationStack()
   }
 
   /**
-   * Navigate to the specified screen.
+   * Navigate to the specified screen and clear the navigation stack when navigating to search
+   * screen.
    *
    * @param screen The screen to navigate to
    */
   open fun navigateTo(screen: String) {
     navController.navigate(screen)
+    if (screen == Screen.SEARCH) {
+      clearScreenNavigationStack()
+      pushToScreenNavigationStack(screen)
+    }
   }
 
   /** Navigate back to the previous screen. */
@@ -96,5 +103,33 @@ open class NavigationActions(
    */
   open fun currentRoute(): String {
     return navController.currentDestination?.route ?: ""
+  }
+
+  /**
+   * Pushes an Id to the screen navigation stack (either folder id or user id)
+   *
+   * @param id The Id to push.
+   */
+  open fun pushToScreenNavigationStack(id: String) {
+    screenNavigationStack.push(id)
+  }
+
+  /**
+   * Pops an Id from the screen navigation stack.
+   *
+   * @return The popped Id.
+   */
+  open fun popFromScreenNavigationStack(): String? {
+    return if (screenNavigationStack.isEmpty()) null else screenNavigationStack.pop()
+  }
+
+  /** Clears the screen navigation stack. */
+  open fun clearScreenNavigationStack() {
+    screenNavigationStack.clear()
+  }
+
+  /** Returns the top of the screen navigation stack. */
+  open fun retrieveTopElementOfScreenNavigationStack(): String {
+    return screenNavigationStack.peek()
   }
 }
