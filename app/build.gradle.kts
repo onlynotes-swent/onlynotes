@@ -209,8 +209,7 @@ dependencies {
     implementation(libs.imagepicker)
 
     //Rich text editor
-    implementation(libs.richeditor.compose)
-
+    implementation("com.mohamedrejeb.richeditor:richeditor-compose:1.0.0-rc10")
     // --------- Kaspresso test framework ----------
     globalTestImplementation(libs.kaspresso)
     globalTestImplementation(libs.kaspresso.compose)
