@@ -35,23 +35,23 @@ import com.github.onlynotesswent.utils.ProfilePictureTaker
 import com.github.onlynotesswent.utils.Scanner
 
 class MainActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+  override fun onCreate(savedInstanceState: Bundle?) {
+    super.onCreate(savedInstanceState)
 
-        // Retrieve the server client ID from resources
-        val serverClientId = getString(R.string.default_web_client_id)
+    // Retrieve the server client ID from resources
+    val serverClientId = getString(R.string.default_web_client_id)
 
-        val scanner = Scanner(this).apply { init() }
-        val profilePictureTaker = ProfilePictureTaker(this).apply { init() }
+    val scanner = Scanner(this).apply { init() }
+    val profilePictureTaker = ProfilePictureTaker(this).apply { init() }
 
-        setContent {
-            AppTheme {
-                Surface(modifier = Modifier.fillMaxSize()) {
-                    OnlyNotesApp(scanner, profilePictureTaker, serverClientId)
-                }
-            }
+    setContent {
+      AppTheme {
+        Surface(modifier = Modifier.fillMaxSize()) {
+          OnlyNotesApp(scanner, profilePictureTaker, serverClientId)
         }
+      }
     }
+  }
 }
 
 @Composable
@@ -60,71 +60,71 @@ fun OnlyNotesApp(
     profilePictureTaker: ProfilePictureTaker,
     serverClientId: String
 ) {
-    val navController = rememberNavController()
-    val navigationActions = NavigationActions(navController)
-    val userViewModel: UserViewModel = viewModel(factory = UserViewModel.Factory)
-    val noteViewModel: NoteViewModel = viewModel(factory = NoteViewModel.Factory)
-    val fileViewModel: FileViewModel = viewModel(factory = FileViewModel.Factory)
-    val folderViewModel: FolderViewModel = viewModel(factory = FolderViewModel.Factory)
+  val navController = rememberNavController()
+  val navigationActions = NavigationActions(navController)
+  val userViewModel: UserViewModel = viewModel(factory = UserViewModel.Factory)
+  val noteViewModel: NoteViewModel = viewModel(factory = NoteViewModel.Factory)
+  val fileViewModel: FileViewModel = viewModel(factory = FileViewModel.Factory)
+  val folderViewModel: FolderViewModel = viewModel(factory = FolderViewModel.Factory)
 
-    NavHost(navController = navController, startDestination = Route.AUTH) {
-        navigation(
-            startDestination = Screen.AUTH,
-            route = Route.AUTH,
-        ) {
-            composable(Screen.AUTH) { SignInScreen(navigationActions, userViewModel, serverClientId) }
-            composable(Screen.CREATE_USER) { CreateUserScreen(navigationActions, userViewModel) }
-        }
-
-        navigation(
-            startDestination = Screen.OVERVIEW,
-            route = Route.OVERVIEW,
-        ) {
-            composable(Screen.OVERVIEW) {
-                OverviewScreen(navigationActions, noteViewModel, userViewModel, folderViewModel)
-            }
-            composable(Screen.ADD_NOTE) {
-                AddNoteScreen(navigationActions, scanner, noteViewModel, userViewModel, fileViewModel)
-            }
-            composable(Screen.EDIT_NOTE) {
-                EditNoteScreen(navigationActions, scanner, noteViewModel, userViewModel, fileViewModel)
-            }
-            composable(Screen.FOLDER_CONTENTS) {
-                FolderContentScreen(navigationActions, folderViewModel, noteViewModel, userViewModel)
-            }
-            composable(Screen.EDIT_MARKDOWN) {
-                EditMarkdownScreen(navigationActions, noteViewModel, userViewModel, fileViewModel)
-            }
-        }
-
-        navigation(
-            startDestination = Screen.SEARCH,
-            route = Route.SEARCH,
-        ) {
-            composable(Screen.SEARCH) {
-                SearchScreen(navigationActions, noteViewModel, userViewModel, folderViewModel)
-            }
-        }
-
-        navigation(
-            startDestination = Screen.USER_PROFILE,
-            route = Route.PROFILE,
-        ) {
-            composable(Screen.USER_PROFILE) {
-                UserProfileScreen(navigationActions, userViewModel, fileViewModel)
-            }
-            composable(Screen.PUBLIC_PROFILE) {
-                PublicProfileScreen(navigationActions, userViewModel, fileViewModel)
-            }
-            composable(Screen.EDIT_PROFILE) {
-                EditProfileScreen(
-                    navigationActions,
-                    userViewModel,
-                    profilePictureTaker,
-                    fileViewModel,
-                    noteViewModel,
-                    folderViewModel)
-            }
-        }
+  NavHost(navController = navController, startDestination = Route.AUTH) {
+    navigation(
+        startDestination = Screen.AUTH,
+        route = Route.AUTH,
+    ) {
+      composable(Screen.AUTH) { SignInScreen(navigationActions, userViewModel, serverClientId) }
+      composable(Screen.CREATE_USER) { CreateUserScreen(navigationActions, userViewModel) }
     }
+
+    navigation(
+        startDestination = Screen.OVERVIEW,
+        route = Route.OVERVIEW,
+    ) {
+      composable(Screen.OVERVIEW) {
+        OverviewScreen(navigationActions, noteViewModel, userViewModel, folderViewModel)
+      }
+      composable(Screen.ADD_NOTE) {
+        AddNoteScreen(navigationActions, scanner, noteViewModel, userViewModel, fileViewModel)
+      }
+      composable(Screen.EDIT_NOTE) {
+        EditNoteScreen(navigationActions, scanner, noteViewModel, userViewModel, fileViewModel)
+      }
+      composable(Screen.FOLDER_CONTENTS) {
+        FolderContentScreen(navigationActions, folderViewModel, noteViewModel, userViewModel)
+      }
+      composable(Screen.EDIT_MARKDOWN) {
+        EditMarkdownScreen(navigationActions, noteViewModel, userViewModel, fileViewModel)
+      }
+    }
+
+    navigation(
+        startDestination = Screen.SEARCH,
+        route = Route.SEARCH,
+    ) {
+      composable(Screen.SEARCH) {
+        SearchScreen(navigationActions, noteViewModel, userViewModel, folderViewModel)
+      }
+    }
+
+    navigation(
+        startDestination = Screen.USER_PROFILE,
+        route = Route.PROFILE,
+    ) {
+      composable(Screen.USER_PROFILE) {
+        UserProfileScreen(navigationActions, userViewModel, fileViewModel)
+      }
+      composable(Screen.PUBLIC_PROFILE) {
+        PublicProfileScreen(navigationActions, userViewModel, fileViewModel)
+      }
+      composable(Screen.EDIT_PROFILE) {
+        EditProfileScreen(
+            navigationActions,
+            userViewModel,
+            profilePictureTaker,
+            fileViewModel,
+            noteViewModel,
+            folderViewModel)
+      }
+    }
+  }
 }
