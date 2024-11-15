@@ -270,9 +270,10 @@ fun EditProfileScreen(
                               modifier = Modifier.testTag("confirmGoingBack"),
                               onClick = {
                                 showGoingBackWithoutSavingChanges.value = false
-                                // When we go back we will need to fetch again the old profile
-                                // picture (if the
-                                // picture was changed), because the user didn't save the changes
+                                // When we go back we will need to fetch
+                                // again the old profile picture if the picture
+                                // was changed, because the user didn't
+                                // save the changes
                                 isProfilePictureUpToDate.value = !hasProfilePictureBeenChanged.value
                                 navigationActions.goBack()
                               },
