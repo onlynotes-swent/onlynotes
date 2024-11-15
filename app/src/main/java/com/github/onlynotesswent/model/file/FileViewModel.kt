@@ -1,7 +1,10 @@
 package com.github.onlynotesswent.model.file
 
 import android.content.Context
+import android.content.Intent
 import android.net.Uri
+import androidx.core.content.ContextCompat.startActivity
+import androidx.core.content.FileProvider
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.initializer
@@ -24,12 +27,14 @@ enum class FileType(val fileExtension: String) {
   NOTE_TEXT(".md")
 }
 
+val fileProviderAuthority = "com.github.onlynotesswent.provider"
+
 /**
  * ViewModel for managing file operations using a FileRepository.
  *
  * @property repository The repository used for file operations.
  */
-class FileViewModel(private val repository: FileRepository) : ViewModel() {
+open class FileViewModel(private val repository: FileRepository) : ViewModel() {
 
   init {
     repository.init {}
@@ -124,5 +129,45 @@ class FileViewModel(private val repository: FileRepository) : ViewModel() {
       onFailure: (Exception) -> Unit
   ) {
     repository.getFile(uid, fileType, onSuccess, onFileNotFound, onFailure)
+  }
+
+  /**
+   * Opens the pdf file attached to a note
+   *
+   * @param uid The For documents/texts of a note, it's the note's UID.
+   * @param context The context used to access the cache directory.
+   * @param onSuccess The function to call when the opening is successful
+   * @param onFileNotFound The function to call when the pdf is not found.
+   * @param onFailure The function to call when the pdf opening fails.
+   */
+  fun openPdf(
+      uid: String,
+      context: Context,
+      onSuccess: () -> Unit,
+      onFileNotFound: () -> Unit,
+      onFailure: (Exception) -> Unit
+  ) {
+    // Download the file, then open it with a 3rd party PDF Viewer
+    // TODO: Implement a PDF viewer in the app, possible, though maybe not
+    // necessary as our pdfs will be view only,
+    //  you can modify the text
+
+    repository.downloadFile(
+        uid = uid,
+        fileType = FileType.NOTE_PDF,
+        cacheDir = context.cacheDir,
+        onSuccess = {
+          onSuccess()
+          // Create an intent to open the pdf with a 3rd party app
+          val intent =
+              Intent(Intent.ACTION_VIEW).apply {
+                val uri = FileProvider.getUriForFile(context, fileProviderAuthority, it)
+                setDataAndType(uri, "application/pdf")
+                flags = Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_ACTIVITY_NO_HISTORY
+              }
+          startActivity(context, intent, null)
+        },
+        onFileNotFound = onFileNotFound,
+        onFailure = onFailure)
   }
 }
