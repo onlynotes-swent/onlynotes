@@ -136,7 +136,7 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
   /**
    * Deletes all Note documents from a user, specified by their userId.
    *
-   * @param userId The user id.
+   * @param userId The user ID.
    */
   fun deleteNotesByUserId(userId: String) {
     repository.deleteNotesByUserId(userId, onSuccess = { getRootNotesFrom(userId) }, onFailure = {})

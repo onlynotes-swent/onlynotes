@@ -1,6 +1,5 @@
 package com.github.onlynotesswent.model.users
 
-import android.util.Log
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentSnapshot
@@ -102,14 +101,12 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore) : UserRepositor
         { user ->
           // for each of the current user follower remove them from their following list
           user.friends.followers.forEach { follower ->
-            Log.e("RemovingMyselfFromFollower", follower)
             db.collection(collectionPath)
                 .document(follower)
                 .update("friends.following", FieldValue.arrayRemove(id))
           }
           // for each of the current user following remove them from their follower list
           user.friends.following.forEach { following ->
-            Log.e("RemovingMyselfFromFollowing", following)
             db.collection(collectionPath)
                 .document(following)
                 .update("friends.followers", FieldValue.arrayRemove(id))

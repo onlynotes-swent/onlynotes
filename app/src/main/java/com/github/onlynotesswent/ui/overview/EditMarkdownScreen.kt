@@ -100,10 +100,10 @@ fun EditMarkdownScreen(
           markdownContent = downloadedFile
           state.setMarkdown(markdownContent?.readText() ?: "")
         },
+        onFileNotFound = {},
         onFailure = { exception ->
           Toast.makeText(context, "Error downloading file: ${exception.message}", Toast.LENGTH_LONG)
               .show()
-          Log.e("FileDownload", "Error downloading file: ${exception.message}")
         })
   }
   @Suppress("kotlin:S6300") // as there is no need to encrypt file
@@ -144,18 +144,7 @@ fun EditMarkdownScreen(
                     .testTag("editMarkdownColumn")
                     .verticalScroll(rememberScrollState()),
         ) {
-          EditorControls(
-              modifier = Modifier.testTag("EditorControl"),
-              state = state,
-              onBoldClick = { state.toggleSpanStyle(SpanStyle(fontWeight = FontWeight.Bold)) },
-              onItalicClick = { state.toggleSpanStyle(SpanStyle(fontStyle = FontStyle.Italic)) },
-              onUnderlineClick = {
-                state.toggleSpanStyle(SpanStyle(textDecoration = TextDecoration.Underline))
-              },
-              onStrikethroughClick = {
-                state.toggleSpanStyle(SpanStyle(textDecoration = TextDecoration.LineThrough))
-              })
-
+          EditorControls(modifier = Modifier.testTag("EditorControl"), state = state)
           RichTextEditor(
               modifier = Modifier.fillMaxWidth().weight(2f).testTag("RichTextEditor"),
               state = state,
@@ -171,48 +160,46 @@ fun EditMarkdownScreen(
 }
 /**
  * A composable component that provides a set of text formatting controls for the rich text editor.
+ * It manually controls the state SpanStyle depending on the selected toggles.
  *
  * @param modifier Modifier to be applied to the Row layout containing the controls.
  * @param state The current state of the rich text editor, used to apply styles.
- * @param onBoldClick Callback function to handle bold style toggle.
- * @param onItalicClick Callback function to handle italic style toggle.
- * @param onUnderlineClick Callback function to handle underline style toggle.
- * @param onStrikethroughClick Callback function to handle strikethrough style toggle.
  */
 @Composable
-fun EditorControls(
-    modifier: Modifier,
-    state: RichTextState,
-    onBoldClick: () -> Unit,
-    onItalicClick: () -> Unit,
-    onUnderlineClick: () -> Unit,
-    onStrikethroughClick: () -> Unit
-) {
+fun EditorControls(modifier: Modifier, state: RichTextState) {
   var boldSelected by rememberSaveable { mutableStateOf(false) }
   var italicSelected by rememberSaveable { mutableStateOf(false) }
   var underlineSelected by rememberSaveable { mutableStateOf(false) }
   var strikethroughSelected by rememberSaveable { mutableStateOf(false) }
   var previousMarkdown by rememberSaveable { mutableStateOf("") }
+  // fix as using a state.toggleSpanStyle() seems to be broken now need to manually set the
+  // SpanStyle
   LaunchedEffect(Unit) {
     while (true) {
       val currentMarkdown = state.toMarkdown()
       previousMarkdown = currentMarkdown
-      if (boldSelected && !(state.currentSpanStyle.fontWeight?.equals(FontWeight.Bold) ?: false)) {
-        onBoldClick()
+      if (!boldSelected) {
+        state.removeSpanStyle(SpanStyle(fontWeight = FontWeight.Bold))
+      } else {
+        state.addSpanStyle(SpanStyle(fontWeight = FontWeight.Bold))
       }
-      if (italicSelected &&
-          !(state.currentSpanStyle.fontStyle?.equals(FontStyle.Italic) ?: false)) {
-        onItalicClick()
+
+      if (italicSelected) {
+        state.addSpanStyle(SpanStyle(fontStyle = FontStyle.Italic))
+      } else {
+        state.removeSpanStyle(SpanStyle(fontStyle = FontStyle.Italic))
       }
-      if (underlineSelected &&
-          !(state.currentSpanStyle.textDecoration?.equals(TextDecoration.Underline) ?: false)) {
-        onUnderlineClick()
+      if (underlineSelected) {
+        state.addSpanStyle(SpanStyle(textDecoration = TextDecoration.Underline))
+      } else {
+        state.removeSpanStyle(SpanStyle(textDecoration = TextDecoration.Underline))
       }
-      if (strikethroughSelected &&
-          !(state.currentSpanStyle.textDecoration?.equals(TextDecoration.LineThrough) ?: false)) {
-        onStrikethroughClick()
+      if (strikethroughSelected) {
+        state.addSpanStyle(SpanStyle(textDecoration = TextDecoration.LineThrough))
+      } else {
+        state.removeSpanStyle(SpanStyle(textDecoration = TextDecoration.LineThrough))
       }
-      delay(200)
+      delay(20)
     }
   }
 
@@ -223,29 +210,25 @@ fun EditorControls(
     ControlWrapper(
         modifier = Modifier.testTag("BoldControl"),
         selected = boldSelected,
-        onChangeClick = { boldSelected = it },
-        onClick = onBoldClick) {
+        onChangeClick = { boldSelected = it }) {
           Icon(imageVector = Icons.Filled.FormatBold, contentDescription = "Bold")
         }
     ControlWrapper(
         modifier = Modifier.testTag("ItalicControl"),
         selected = italicSelected,
-        onChangeClick = { italicSelected = it },
-        onClick = onItalicClick) {
+        onChangeClick = { italicSelected = it }) {
           Icon(imageVector = Icons.Filled.FormatItalic, contentDescription = "Italic")
         }
     ControlWrapper(
         modifier = Modifier.testTag("UnderlinedControl"),
         selected = underlineSelected,
-        onChangeClick = { underlineSelected = it },
-        onClick = onUnderlineClick) {
+        onChangeClick = { underlineSelected = it }) {
           Icon(imageVector = Icons.Filled.FormatUnderlined, contentDescription = "Underlined")
         }
     ControlWrapper(
         modifier = Modifier.testTag("StrikethroughControl"),
         selected = strikethroughSelected,
-        onChangeClick = { strikethroughSelected = it },
-        onClick = onStrikethroughClick) {
+        onChangeClick = { strikethroughSelected = it }) {
           Icon(imageVector = Icons.Filled.FormatStrikethrough, contentDescription = "Strikethrough")
         }
   }
@@ -261,7 +244,6 @@ fun EditorControls(
  *   primary color.
  * @param onChangeClick Callback function to update the `selected` state when the control is
  *   clicked.
- * @param onClick Callback function to handle additional actions when the control is clicked.
  * @param content Composable lambda representing the visual content of the chip, typically an icon.
  */
 @Composable
@@ -271,17 +253,13 @@ fun ControlWrapper(
     selectedColor: Color = MaterialTheme.colorScheme.primary,
     unselectedColor: Color = MaterialTheme.colorScheme.inversePrimary,
     onChangeClick: (Boolean) -> Unit,
-    onClick: () -> Unit,
     content: @Composable () -> Unit
 ) {
   FilterChip(
       modifier =
           modifier.semantics { contentDescription = if (selected) "Selected" else "Unselected" },
       selected = selected,
-      onClick = {
-        onChangeClick(!selected)
-        onClick()
-      },
+      onClick = { onChangeClick(!selected) },
       shape = RoundedCornerShape(6.dp),
       colors =
           FilterChipDefaults.filterChipColors(
