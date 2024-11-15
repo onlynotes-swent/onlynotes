@@ -117,8 +117,7 @@ class GoogleCredSignIn(
 fun generateNonce(): String {
   val ranNonce: String = UUID.randomUUID().toString()
   val bytes: ByteArray = ranNonce.toByteArray()
-  val md: MessageDigest = MessageDigest.getInstance("SHA-256")
-  val digest: ByteArray = md.digest(bytes)
-  val hashedNonce: String = digest.fold("") { str, it -> str + "%02x".format(it) }
+  val shaDigest: ByteArray = MessageDigest.getInstance("SHA-256").digest(bytes)
+  val hashedNonce: String = shaDigest.joinToString("") { "%02x".format(it) }
   return hashedNonce
 }
