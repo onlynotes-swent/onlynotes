@@ -354,6 +354,6 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
   }
 
   companion object {
-    const val TAG = "NoteRepositoryFirestore"
+    private const val TAG = "NoteRepositoryFirestore"
   }
 }

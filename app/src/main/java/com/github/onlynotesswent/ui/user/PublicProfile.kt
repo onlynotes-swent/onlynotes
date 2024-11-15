@@ -86,6 +86,7 @@ fun UserProfileScreen(
   // Display the user's profile information
   ProfileScaffold(
       navigationActions,
+      userViewModel,
       includeBackButton = false,
       topBarTitle = "    My Profile",
       floatingActionButton = {
@@ -122,7 +123,7 @@ fun PublicProfileScreen(
   val followButtonText = remember { mutableStateOf("Follow") }
 
   // Display the user's profile information
-  ProfileScaffold(navigationActions) {
+  ProfileScaffold(navigationActions, userViewModel) {
     ProfileContent(profileUser, navigationActions, userViewModel, fileViewModel)
     if (profileUser.value != null && currentUser.value != null) {
       followButtonText.value =
@@ -137,6 +138,7 @@ fun PublicProfileScreen(
  * Displays the scaffold for the profile screen.
  *
  * @param navigationActions The navigation actions.
+ * @param userViewModel The ViewModel for the user.
  * @param includeBackButton Whether to include the back button in the app bar.
  * @param topBarTitle The title to be displayed on the app bar.
  * @param floatingActionButton The floating action button to be displayed on the screen.
@@ -145,6 +147,7 @@ fun PublicProfileScreen(
 @Composable
 private fun ProfileScaffold(
     navigationActions: NavigationActions,
+    userViewModel: UserViewModel,
     includeBackButton: Boolean = true,
     topBarTitle: String = "Public Profile",
     floatingActionButton: @Composable () -> Unit = {},
@@ -155,12 +158,22 @@ private fun ProfileScaffold(
       floatingActionButton = floatingActionButton,
       bottomBar = {
         BottomNavigationMenu(
-            onTabSelect = { route -> navigationActions.navigateTo(route) },
+            onTabSelect = { route ->
+              // Navigate to route will clear navigation stack
+              navigationActions.navigateTo(route)
+              if (route == TopLevelDestinations.SEARCH) {
+                navigationActions.pushToScreenNavigationStack(Screen.SEARCH)
+              }
+            },
             tabList = LIST_TOP_LEVEL_DESTINATION,
             selectedItem = navigationActions.currentRoute())
       },
       topBar = {
-        TopProfileBar(title = topBarTitle, navigationActions = navigationActions, includeBackButton)
+        TopProfileBar(
+            title = topBarTitle,
+            navigationActions = navigationActions,
+            userViewModel = userViewModel,
+            includeBackButton)
       },
       content = { paddingValues ->
         Column(
@@ -182,6 +195,7 @@ private fun ProfileScaffold(
  *
  * @param title The title to be displayed on the app bar.
  * @param navigationActions The navigation actions.
+ * @param userViewModel The ViewModel for the user.
  * @param includeBackButton Whether to include the back button in the app bar.
  * @param onBackButtonClick The action to be performed when the back button is clicked.
  */
@@ -190,8 +204,48 @@ private fun ProfileScaffold(
 fun TopProfileBar(
     title: String,
     navigationActions: NavigationActions,
+    userViewModel: UserViewModel,
     includeBackButton: Boolean = true,
-    onBackButtonClick: () -> Unit = { navigationActions.goBack() }
+    onBackButtonClick: () -> Unit = {
+      var userProfileId = navigationActions.popFromScreenNavigationStack()
+      when {
+        userProfileId == Screen.SEARCH -> {
+          // If we come from search screen, we go back to search screen
+          navigationActions.navigateTo(Screen.SEARCH)
+        }
+        userProfileId != null && userProfileId == userViewModel.profileUser.value?.uid -> {
+          userProfileId = navigationActions.popFromScreenNavigationStack()
+          if (userProfileId == Screen.SEARCH) {
+            navigationActions.navigateTo(Screen.SEARCH)
+          } else if (userProfileId != null) {
+            // set profile user to userProfileId and navigate to public profile screen
+            // If we pop from stack and the profile id corresponds to profile user (we will navigate
+            // to
+            // the current screen), so we pop twice to get to previous visited public profile
+            userViewModel.getUserById(
+                userProfileId,
+                { userViewModel.setProfileUser(it) },
+                { navigationActions.navigateTo(TopLevelDestinations.PROFILE) },
+                {})
+            navigationActions.navigateTo(Screen.PUBLIC_PROFILE)
+          } else {
+            navigationActions.navigateTo(TopLevelDestinations.PROFILE)
+          }
+        }
+        userProfileId != null -> {
+          userViewModel.getUserById(
+              userProfileId,
+              { userViewModel.setProfileUser(it) },
+              { navigationActions.navigateTo(TopLevelDestinations.PROFILE) },
+              {})
+          navigationActions.navigateTo(Screen.PUBLIC_PROFILE)
+        }
+        else -> {
+          // If no user profile id is found, navigate to profile screen
+          navigationActions.navigateTo(TopLevelDestinations.PROFILE)
+        }
+      }
+    }
 ) {
   TopAppBar(
       title = { Text(title) },
@@ -407,6 +461,8 @@ fun switchProfileTo(
     navigationActions.navigateTo(TopLevelDestinations.PROFILE) // clears backstack
   } else {
     userViewModel.setProfileUser(user)
+    // Add the visited user profile to the screen navigation stack
+    navigationActions.pushToScreenNavigationStack(user.uid)
     navigationActions.navigateTo(Screen.PUBLIC_PROFILE)
   }
 }
@@ -453,7 +509,7 @@ fun NonModifiableProfilePicture(
 
     // Profile Picture Painter
     val painter =
-        if (profilePictureUri.value.isNotBlank()) {
+        if (user.value!!.hasProfilePicture && profilePictureUri.value.isNotBlank()) {
           // Load the profile picture if it exists
           rememberAsyncImagePainter(profilePictureUri.value)
         } else {

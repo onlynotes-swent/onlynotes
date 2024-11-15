@@ -279,6 +279,7 @@ class ProfileScreenTest {
     }
 
     composeTestRule.onNodeWithTag("goBackButton").assertIsDisplayed().performClick()
-    verify(mockNavigationActions).goBack()
+    // Verify that a pop operation was performed
+    verify(mockNavigationActions).popFromScreenNavigationStack()
   }
 }
