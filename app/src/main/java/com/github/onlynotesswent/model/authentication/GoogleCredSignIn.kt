@@ -96,10 +96,15 @@ class GoogleCredSignIn(
         val googleIdToken = googleIdTokenCredential.idToken
         callback(googleIdToken)
       } catch (e: GoogleIdTokenParsingException) {
-        Log.e(GoogleCredSignIn::class.java.simpleName, "Received an invalid google id token response", e)
+        Log.e(
+            GoogleCredSignIn::class.java.simpleName,
+            "Received an invalid google id token response",
+            e)
       }
     } else {
-      Log.e(GoogleCredSignIn::class.java.simpleName, "Unexpected type of credential: ${credential.type}")
+      Log.e(
+          GoogleCredSignIn::class.java.simpleName,
+          "Unexpected type of credential: ${credential.type}")
     }
   }
 }

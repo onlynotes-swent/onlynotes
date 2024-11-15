@@ -208,9 +208,11 @@ fun TopProfileBar(
         }
       },
       actions = {
-        LogoutButton {
-          FirebaseAuth.getInstance().signOut()
-          navigationActions.navigateTo(Screen.AUTH)
+        if (!includeBackButton) {
+          LogoutButton {
+            FirebaseAuth.getInstance().signOut()
+            navigationActions.navigateTo(Screen.AUTH)
+          }
         }
       })
 }
