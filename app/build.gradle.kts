@@ -3,12 +3,11 @@ import java.util.Properties
 plugins {
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.androidApplication)
-    //alias(libs.plugins.jetbrainsKotlinAndroid)
+    alias(libs.plugins.jetbrainsKotlinAndroid)
     alias(libs.plugins.ktfmt)
     alias(libs.plugins.sonar)
     id("jacoco")
     id("com.google.gms.google-services")
-
     //id("org.jetbrains.kotlin.plugin.compose") version "2.0.0" // this version matches your Kotlin version
 }
 
@@ -16,11 +15,6 @@ jacoco {
     toolVersion = "0.8.11"  // Set the JaCoCo version globally here
 }
 
-composeCompiler{
-    enableStrongSkippingMode = true
-    reportsDestination = layout.buildDirectory.dir("compose_compiler")
-    stabilityConfigurationFile = rootProject.layout.projectDirectory.file("stability_config.conf")
-}
 
 android {
     namespace = "com.github.onlynotesswent"
@@ -75,15 +69,15 @@ android {
     }
 
 
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
-    /*
 
     kotlinOptions {
         jvmTarget = "11"
-    }*/
+    }
 
     android {
         compileOptions {
@@ -152,8 +146,6 @@ dependencies {
             }
         }
     }
-    //implementation("org.jetbrains.kotlin:kotlin-compose-compiler-plugin-embeddable:2.0.0")
-    //implementation("org.jetbrains.kotlin:kotlin-compose-compiler-plugin:2.0.0")
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
