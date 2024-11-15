@@ -189,10 +189,10 @@ class EndToEndTest {
                   }
                 }
                 navigation(
-                    startDestination = Screen.SEARCH_NOTE,
+                    startDestination = Screen.SEARCH,
                     route = Route.SEARCH,
                 ) {
-                  composable(Screen.SEARCH_NOTE) {
+                  composable(Screen.SEARCH) {
                     SearchScreen(navigationActions, noteViewModel, userViewModel, folderViewModel)
                   }
                 }
@@ -208,7 +208,7 @@ class EndToEndTest {
                   }
                   composable(Screen.EDIT_PROFILE) {
                     EditProfileScreen(
-                        navigationActions, userViewModel, profilePictureTaker, fileViewModel)
+                        navigationActions, userViewModel, profilePictureTaker, fileViewModel, noteViewModel, folderViewModel)
                   }
                 }
               }
