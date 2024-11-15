@@ -394,7 +394,7 @@ class EndToEndTest {
     testEndToEndFlow2_init()
 
     // Go to search screen
-    composeTestRule.onNodeWithTag("Search Notes").performClick()
+    composeTestRule.onNodeWithTag("Search").performClick()
 
     // Search for testUser2
     composeTestRule.onNodeWithTag("searchTextField").performTextReplacement("User")
@@ -435,7 +435,7 @@ class EndToEndTest {
         .assertTextContains("Unfollow")
 
     // Go to profile screen
-    composeTestRule.onNodeWithTag("My Profile").performClick()
+    composeTestRule.onNodeWithTag("Profile").performClick()
 
     // Verify that the following button is displayed and the person the user is following is
     // displayed
@@ -454,7 +454,7 @@ class EndToEndTest {
         .assertTextContains("Follow")
 
     // Go to profile screen
-    composeTestRule.onNodeWithTag("My Profile").performClick()
+    composeTestRule.onNodeWithTag("Profile").performClick()
 
     // Verify that the following button is displayed and no one is displayed in the following list
     composeTestRule.onNodeWithTag("followingButton").assertIsDisplayed().performClick()
