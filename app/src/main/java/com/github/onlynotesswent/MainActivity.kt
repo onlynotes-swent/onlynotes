@@ -47,7 +47,7 @@ class MainActivity : ComponentActivity() {
     setContent {
       AppTheme {
         Surface(modifier = Modifier.fillMaxSize()) {
-          //OnlyNotesApp(scanner, profilePictureTaker, serverClientId)
+          OnlyNotesApp(scanner, profilePictureTaker, serverClientId)
         }
       }
     }
