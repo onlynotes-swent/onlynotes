@@ -53,9 +53,9 @@ import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
 import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
 import com.github.onlynotesswent.utils.Course
-import com.github.onlynotesswent.utils.Scanner
 import com.github.onlynotesswent.utils.NoteDataTextField
 import com.github.onlynotesswent.utils.OptionDropDownMenu
+import com.github.onlynotesswent.utils.Scanner
 import com.github.onlynotesswent.utils.ScreenTopBar
 import com.github.onlynotesswent.utils.Visibility
 import com.google.firebase.Timestamp
@@ -365,6 +365,7 @@ fun PdfCard(
               }
             }
       })
+}
 
 /** Displays a screen indicating that the user was not found. */
 @Composable
