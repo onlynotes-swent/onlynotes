@@ -96,11 +96,30 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore) : UserRepositor
   }
 
   override fun deleteUserById(id: String, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) {
-    db.collection(collectionPath)
-        .document(id)
-        .delete()
-        .addOnSuccessListener { onSuccess() }
-        .addOnFailureListener { exception -> onFailure(exception) }
+    getUserById(
+        id,
+        { user ->
+          // for each of the current user follower remove them from their following list
+          user.friends.followers.forEach { follower ->
+            db.collection(collectionPath)
+                .document(follower)
+                .update("friends.following", FieldValue.arrayRemove(id))
+          }
+          // for each of the current user following remove them from their follower list
+          user.friends.following.forEach { following ->
+            db.collection(collectionPath)
+                .document(following)
+                .update("friends.followers", FieldValue.arrayRemove(id))
+          }
+
+          db.collection(collectionPath)
+              .document(id)
+              .delete()
+              .addOnSuccessListener { onSuccess() }
+              .addOnFailureListener { exception -> onFailure(exception) }
+        },
+        { onFailure(Exception("User not found")) },
+        { exception -> onFailure(exception) })
   }
 
   override fun addUser(user: User, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) {

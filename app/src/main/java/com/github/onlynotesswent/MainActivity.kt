@@ -107,7 +107,13 @@ fun OnlyNotesApp(scanner: Scanner, profilePictureTaker: ProfilePictureTaker) {
         PublicProfileScreen(navigationActions, userViewModel, fileViewModel)
       }
       composable(Screen.EDIT_PROFILE) {
-        EditProfileScreen(navigationActions, userViewModel, profilePictureTaker, fileViewModel)
+        EditProfileScreen(
+            navigationActions,
+            userViewModel,
+            profilePictureTaker,
+            fileViewModel,
+            noteViewModel,
+            folderViewModel)
       }
     }
   }

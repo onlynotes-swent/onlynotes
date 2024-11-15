@@ -209,7 +209,7 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
   }
 
   /**
-   * Make current user follow the specified user. The method changes both the current user's
+   * Make current user unfollow the specified user. The method changes both the current user's
    * following list and the specified user's followers list. If the current user is not logged in,
    * the onFailure callback is invoked with a UserNotLoggedInException.
    *

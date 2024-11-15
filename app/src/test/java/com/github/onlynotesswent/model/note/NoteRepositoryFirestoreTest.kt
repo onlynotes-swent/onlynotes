@@ -16,6 +16,7 @@ import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.QuerySnapshot
 import junit.framework.TestCase.assertNotNull
+import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -310,6 +311,36 @@ class NoteRepositoryFirestoreTest {
     shadowOf(Looper.getMainLooper()).idle()
 
     verify(mockDocumentReference).delete()
+  }
+
+  @Test
+  fun deleteNotesByUserId_callsDocuments() {
+    `when`(mockQuerySnapshot.documents)
+        .thenReturn(listOf(mockDocumentSnapshot3, mockDocumentSnapshot4))
+
+    noteRepositoryFirestore.deleteNotesByUserId("1", onSuccess = {}, onFailure = {})
+
+    verify(timeout(100)) { (mockQuerySnapshot).documents }
+  }
+
+  @Test
+  fun deleteNotesByUserId_fail() {
+    val errorMessage = "TestError"
+    `when`(mockQuerySnapshotTask.isSuccessful).thenReturn(false)
+    `when`(mockQuerySnapshotTask.exception).thenReturn(Exception(errorMessage))
+    `when`(mockQuerySnapshotTask.addOnCompleteListener(any())).thenAnswer { invocation ->
+      val listener = invocation.getArgument<OnCompleteListener<QuerySnapshot>>(0)
+      // Simulate a result being passed to the listener
+      listener.onComplete(mockQuerySnapshotTask)
+      mockQuerySnapshotTask
+    }
+    `when`(mockQuerySnapshot.documents)
+        .thenReturn(listOf(mockDocumentSnapshot3, mockDocumentSnapshot4))
+    var exceptionThrown: Exception? = null
+    noteRepositoryFirestore.deleteNotesByUserId(
+        "1", onSuccess = {}, onFailure = { e -> exceptionThrown = e })
+    assertNotNull(exceptionThrown)
+    assertEquals(errorMessage, exceptionThrown?.message)
   }
 
   @Test

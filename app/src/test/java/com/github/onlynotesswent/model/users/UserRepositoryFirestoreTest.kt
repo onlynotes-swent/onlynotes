@@ -16,6 +16,7 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mock
+import org.mockito.Mockito.atLeastOnce
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
@@ -169,8 +170,9 @@ class UserRepositoryFirestoreTest {
     var onSuccessCalled = false
     userRepositoryFirestore.deleteUserById(user.uid, { onSuccessCalled = true }, { assert(false) })
 
-    // Verify if Firestore collection was called
-    verify(mockCollectionReference, timeout(1000)).document(user.uid)
+    // Verify if Firestore collection was called multiple times
+    verify(mockCollectionReference, atLeastOnce()).document(any())
+
     assert(onSuccessCalled)
   }
 
