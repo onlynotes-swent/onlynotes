@@ -259,6 +259,13 @@ fun EditNoteScreen(
                           uid = note?.id ?: "errorNoId",
                           fileType = FileType.NOTE_PDF,
                       )
+                      // Todo: temporary toast to show the button does something.
+                      //  Adapt to work with onSucces/onFailure when refactor is done.
+                      Toast.makeText(
+                              context,
+                              "Pdf delete started, TODO notify if worked",
+                              Toast.LENGTH_SHORT)
+                          .show()
                     })
 
                 Button(
