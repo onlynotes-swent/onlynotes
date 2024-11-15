@@ -93,6 +93,12 @@ class NoteViewModelTest {
   }
 
   @Test
+  fun deleteNotesFromUser() {
+    noteViewModel.deleteNotesByUserId("1")
+    verify(noteRepository).deleteNotesByUserId(eq("1"), any(), any())
+  }
+
+  @Test
   fun getNotesFromFolderCallsRepository() {
     noteViewModel.getNotesFromFolder("1")
     verify(noteRepository).getNotesFromFolder(eq("1"), any(), any())

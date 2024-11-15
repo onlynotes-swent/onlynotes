@@ -34,6 +34,15 @@ interface FolderRepository {
    */
   fun deleteFolderById(folderId: String, onSuccess: () -> Unit, onFailure: (Exception) -> Unit)
 
+  /**
+   * Deletes all folders belonging to a user.
+   *
+   * @param userId The ID of the user that owns the folders.
+   * @param onSuccess Callback to be invoked if the folders are deleted successfully.
+   * @param onFailure Callback to be invoked if an error occurs.
+   */
+  fun deleteFoldersByUserId(userId: String, onSuccess: () -> Unit, onFailure: (Exception) -> Unit)
+
   // TODO not sure if this is needed
   /**
    * Retrieves a folder by its ID.

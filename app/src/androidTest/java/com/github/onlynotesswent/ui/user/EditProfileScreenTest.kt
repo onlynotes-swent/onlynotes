@@ -6,6 +6,7 @@ import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
+import androidx.compose.ui.test.assertIsNotDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
@@ -15,6 +16,8 @@ import androidx.compose.ui.test.performTextInput
 import androidx.core.net.toUri
 import com.github.onlynotesswent.model.file.FileRepository
 import com.github.onlynotesswent.model.file.FileViewModel
+import com.github.onlynotesswent.model.folder.FolderRepository
+import com.github.onlynotesswent.model.folder.FolderViewModel
 import com.github.onlynotesswent.model.note.NoteRepository
 import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.model.users.User
@@ -22,6 +25,7 @@ import com.github.onlynotesswent.model.users.UserRepository
 import com.github.onlynotesswent.model.users.UserRepositoryFirestore
 import com.github.onlynotesswent.model.users.UserViewModel
 import com.github.onlynotesswent.ui.navigation.NavigationActions
+import com.github.onlynotesswent.ui.navigation.Route
 import com.github.onlynotesswent.ui.navigation.Screen
 import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
 import com.github.onlynotesswent.utils.ProfilePictureTaker
@@ -35,6 +39,7 @@ import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
 import org.mockito.kotlin.doNothing
+import org.mockito.kotlin.eq
 
 class EditProfileScreenTest {
   @Mock private lateinit var mockUserRepository: UserRepository
@@ -42,9 +47,11 @@ class EditProfileScreenTest {
   @Mock private lateinit var profilePictureTaker: ProfilePictureTaker
   @Mock private lateinit var mockNoteRepository: NoteRepository
   @Mock private lateinit var mockFileRepository: FileRepository
+  @Mock private lateinit var mockFolderRepository: FolderRepository
   private lateinit var noteViewModel: NoteViewModel
   private lateinit var userViewModel: UserViewModel
   private lateinit var fileViewModel: FileViewModel
+  private lateinit var folderViewModel: FolderViewModel
   private val testUid = "testUid123"
   private val testUser =
       User(
@@ -67,6 +74,7 @@ class EditProfileScreenTest {
     userViewModel = UserViewModel(mockUserRepository)
     noteViewModel = NoteViewModel(mockNoteRepository)
     fileViewModel = FileViewModel(mockFileRepository)
+    folderViewModel = FolderViewModel(mockFolderRepository)
 
     // Mock the current route to be the user create screen
     `when`(mockNavigationActions.currentRoute()).thenReturn(Screen.EDIT_PROFILE)
@@ -91,6 +99,10 @@ class EditProfileScreenTest {
         onSuccess()
       }
     }
+    `when`(mockUserRepository.deleteUserById(any(), any(), any())).thenAnswer {
+      val onSuccess = it.arguments[1] as () -> Unit
+      onSuccess()
+    }
 
     `when`(mockFileRepository.downloadFile(any(), any(), any(), any(), any(), any())).thenAnswer {}
   }
@@ -98,7 +110,13 @@ class EditProfileScreenTest {
   @Test
   fun displayAllComponents() {
     composeTestRule.setContent {
-      EditProfileScreen(mockNavigationActions, userViewModel, profilePictureTaker, fileViewModel)
+      EditProfileScreen(
+          mockNavigationActions,
+          userViewModel,
+          profilePictureTaker,
+          fileViewModel,
+          noteViewModel,
+          folderViewModel)
     }
 
     composeTestRule.onNodeWithTag("ProfileScreen").assertExists()
@@ -109,6 +127,7 @@ class EditProfileScreenTest {
     composeTestRule.onNodeWithTag("saveButton").assertExists()
     composeTestRule.onNodeWithTag("profilePicture").assertExists()
     composeTestRule.onNodeWithTag("displayBottomSheet").assertExists()
+    composeTestRule.onNodeWithTag("deleteAccountButton").assertExists()
   }
 
   private fun hasError(): SemanticsMatcher {
@@ -118,7 +137,13 @@ class EditProfileScreenTest {
   @Test
   fun submitNavigatesToHomeProfile() {
     composeTestRule.setContent {
-      EditProfileScreen(mockNavigationActions, userViewModel, profilePictureTaker, fileViewModel)
+      EditProfileScreen(
+          mockNavigationActions,
+          userViewModel,
+          profilePictureTaker,
+          fileViewModel,
+          noteViewModel,
+          folderViewModel)
     }
 
     composeTestRule.onNodeWithTag("saveButton").performClick()
@@ -128,7 +153,13 @@ class EditProfileScreenTest {
   @Test
   fun modifyProfile() {
     composeTestRule.setContent {
-      EditProfileScreen(mockNavigationActions, userViewModel, profilePictureTaker, fileViewModel)
+      EditProfileScreen(
+          mockNavigationActions,
+          userViewModel,
+          profilePictureTaker,
+          fileViewModel,
+          noteViewModel,
+          folderViewModel)
     }
 
     composeTestRule.onNodeWithTag("inputUserName").performTextClearance()
@@ -153,7 +184,13 @@ class EditProfileScreenTest {
   @Test
   fun userNameFieldDisplaysError() {
     composeTestRule.setContent {
-      EditProfileScreen(mockNavigationActions, userViewModel, profilePictureTaker, fileViewModel)
+      EditProfileScreen(
+          mockNavigationActions,
+          userViewModel,
+          profilePictureTaker,
+          fileViewModel,
+          noteViewModel,
+          folderViewModel)
     }
 
     composeTestRule.onNodeWithTag("inputFirstName").performTextClearance()
@@ -172,7 +209,13 @@ class EditProfileScreenTest {
   @Test
   fun saveButtonDisabledWhenUserNameIsEmpty() {
     composeTestRule.setContent {
-      EditProfileScreen(mockNavigationActions, userViewModel, profilePictureTaker, fileViewModel)
+      EditProfileScreen(
+          mockNavigationActions,
+          userViewModel,
+          profilePictureTaker,
+          fileViewModel,
+          noteViewModel,
+          folderViewModel)
     }
 
     composeTestRule.onNodeWithTag("saveButton").assertIsEnabled()
@@ -185,7 +228,13 @@ class EditProfileScreenTest {
   @Test
   fun goBackButtonWork() {
     composeTestRule.setContent {
-      EditProfileScreen(mockNavigationActions, userViewModel, profilePictureTaker, fileViewModel)
+      EditProfileScreen(
+          mockNavigationActions,
+          userViewModel,
+          profilePictureTaker,
+          fileViewModel,
+          noteViewModel,
+          folderViewModel)
     }
 
     composeTestRule.onNodeWithTag("goBackButton").performClick()
@@ -196,7 +245,13 @@ class EditProfileScreenTest {
   fun addProfilePicture() {
     doNothing().`when`(profilePictureTaker).pickImage()
     composeTestRule.setContent {
-      EditProfileScreen(mockNavigationActions, userViewModel, profilePictureTaker, fileViewModel)
+      EditProfileScreen(
+          mockNavigationActions,
+          userViewModel,
+          profilePictureTaker,
+          fileViewModel,
+          noteViewModel,
+          folderViewModel)
     }
     composeTestRule.onNodeWithTag("displayBottomSheet").assertIsEnabled()
     composeTestRule.onNodeWithTag("displayBottomSheet").performClick()
@@ -222,7 +277,13 @@ class EditProfileScreenTest {
         {})
 
     composeTestRule.setContent {
-      EditProfileScreen(mockNavigationActions, userViewModel, profilePictureTaker, fileViewModel)
+      EditProfileScreen(
+          mockNavigationActions,
+          userViewModel,
+          profilePictureTaker,
+          fileViewModel,
+          noteViewModel,
+          folderViewModel)
     }
     composeTestRule.onNodeWithTag("profilePicture").assertIsDisplayed()
     verify(mockFileRepository).downloadFile(any(), any(), any(), any(), any(), any())
@@ -237,7 +298,13 @@ class EditProfileScreenTest {
     }
 
     composeTestRule.setContent {
-      EditProfileScreen(mockNavigationActions, userViewModel, profilePictureTaker, fileViewModel)
+      EditProfileScreen(
+          mockNavigationActions,
+          userViewModel,
+          profilePictureTaker,
+          fileViewModel,
+          noteViewModel,
+          folderViewModel)
     }
 
     composeTestRule.onNodeWithTag("displayBottomSheet").assertIsEnabled()
@@ -255,7 +322,13 @@ class EditProfileScreenTest {
     }
 
     composeTestRule.setContent {
-      EditProfileScreen(mockNavigationActions, userViewModel, profilePictureTaker, fileViewModel)
+      EditProfileScreen(
+          mockNavigationActions,
+          userViewModel,
+          profilePictureTaker,
+          fileViewModel,
+          noteViewModel,
+          folderViewModel)
     }
 
     composeTestRule.onNodeWithTag("displayBottomSheet").assertIsEnabled()
@@ -282,5 +355,73 @@ class EditProfileScreenTest {
 
     composeTestRule.onNodeWithTag("editProfilePicture").performClick()
     composeTestRule.onNodeWithTag("profilePicture").assertIsDisplayed()
+  }
+
+  @Test
+  fun testCancelDeleteAccount() {
+    composeTestRule.setContent {
+      EditProfileScreen(
+          mockNavigationActions,
+          userViewModel,
+          profilePictureTaker,
+          fileViewModel,
+          noteViewModel,
+          folderViewModel)
+    }
+
+    composeTestRule.onNodeWithTag("deleteAccountButton").assertIsEnabled()
+    composeTestRule.onNodeWithTag("deleteAccountButton").performClick()
+
+    composeTestRule.onNodeWithTag("deleteAccountAlert").assertIsDisplayed()
+
+    composeTestRule.onNodeWithTag("dismissDeleteButton").assertIsEnabled()
+    composeTestRule.onNodeWithTag("dismissDeleteButton").performClick()
+
+    composeTestRule.onNodeWithTag("deleteAccountAlert").assertIsNotDisplayed()
+  }
+
+  @Test
+  fun testCancelGoBack() {
+    composeTestRule.setContent {
+      EditProfileScreen(
+          mockNavigationActions,
+          userViewModel,
+          profilePictureTaker,
+          fileViewModel,
+          noteViewModel,
+          folderViewModel)
+    }
+
+    composeTestRule.onNodeWithTag("inputUserName").performTextInput("testForGoBack")
+    composeTestRule.onNodeWithTag("goBackButton").assertIsEnabled()
+    composeTestRule.onNodeWithTag("goBackButton").performClick()
+    composeTestRule.onNodeWithTag("goingBackAlert").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("dismissGoingBack").assertIsEnabled()
+    composeTestRule.onNodeWithTag("dismissGoingBack").performClick()
+    composeTestRule.onNodeWithTag("goingBackAlert").assertIsNotDisplayed()
+  }
+
+  @Test
+  fun testDeletAccount() {
+    composeTestRule.setContent {
+      EditProfileScreen(
+          mockNavigationActions,
+          userViewModel,
+          profilePictureTaker,
+          fileViewModel,
+          noteViewModel,
+          folderViewModel)
+    }
+
+    composeTestRule.onNodeWithTag("deleteAccountButton").assertIsEnabled()
+    composeTestRule.onNodeWithTag("deleteAccountButton").performClick()
+    composeTestRule.onNodeWithTag("confirmDeleteButton").assertIsEnabled()
+    composeTestRule.onNodeWithTag("confirmDeleteButton").performClick()
+
+    verify(mockUserRepository).deleteUserById(eq(testUid), any(), any())
+    verify(mockNoteRepository).deleteNotesByUserId(eq(testUid), any(), any())
+    verify(mockFolderRepository).deleteFoldersByUserId(eq(testUid), any(), any())
+    verify(mockFileRepository).deleteFile(eq(testUid), any(), any(), any(), any())
+    verify(mockNavigationActions).navigateTo(Route.AUTH)
   }
 }
