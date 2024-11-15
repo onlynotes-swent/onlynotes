@@ -3,6 +3,7 @@ package com.github.onlynotesswent.ui.overview
 import android.graphics.Bitmap
 import android.net.Uri
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -13,11 +14,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.UploadFile
 import androidx.compose.material.icons.outlined.Clear
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -51,6 +55,7 @@ import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
 import com.github.onlynotesswent.utils.Course
 import com.github.onlynotesswent.utils.NoteDataTextField
 import com.github.onlynotesswent.utils.OptionDropDownMenu
+import com.github.onlynotesswent.utils.Scanner
 import com.github.onlynotesswent.utils.ScreenTopBar
 import com.github.onlynotesswent.utils.Visibility
 import com.google.firebase.Timestamp
@@ -74,6 +79,7 @@ import java.util.Locale
 @Composable
 fun EditNoteScreen(
     navigationActions: NavigationActions,
+    scanner: Scanner,
     noteViewModel: NoteViewModel,
     userViewModel: UserViewModel,
     fileViewModel: FileViewModel
@@ -92,6 +98,7 @@ fun EditNoteScreen(
   var expandedVisibility by remember { mutableStateOf(false) }
   var updatedComments by remember { mutableStateOf(note?.comments ?: Note.CommentCollection()) }
   var attemptedMarkdownDownloads = 0
+
   /**
    * Downloads a markdown file associated with the note. If no file exists, it attempts once to
    * create and upload an empty markdown file, then re-download it.
@@ -223,6 +230,42 @@ fun EditNoteScreen(
                     state = state,
                     readOnly = true)
 
+                PdfCard(
+                    modifier = Modifier.fillMaxWidth(),
+                    testTagBase = "EditPdf",
+                    onViewClick = {
+                      fileViewModel.openPdf(
+                          uid = note?.id ?: "errorNoId",
+                          context = context,
+                          onSuccess = {},
+                          onFileNotFound = {
+                            Toast.makeText(context, "No stored Pdf", Toast.LENGTH_SHORT).show()
+                          },
+                          onFailure = {
+                            Toast.makeText(context, "Failed to open Pdf", Toast.LENGTH_SHORT).show()
+                          })
+                    },
+                    onScanClick = {
+                      // Todo: Could show error to user, not possible with current functions
+                      scanner.scan {
+                        fileViewModel.updateFile(note?.id ?: "errorNoId", it, FileType.NOTE_PDF)
+                      }
+                    },
+                    onDeleteClick = {
+                      // Todo: Could show error to user, not possible with current functions
+                      fileViewModel.deleteFile(
+                          uid = note?.id ?: "errorNoId",
+                          fileType = FileType.NOTE_PDF,
+                      )
+                      // Todo: temporary toast to show the button does something.
+                      //  Adapt to work with onSucces/onFailure when refactor is done.
+                      Toast.makeText(
+                              context,
+                              "Pdf delete started, TODO notify if worked",
+                              Toast.LENGTH_SHORT)
+                          .show()
+                    })
+
                 Button(
                     colors =
                         ButtonDefaults.buttonColors(
@@ -263,6 +306,65 @@ fun EditNoteScreen(
               }
         })
   }
+}
+
+/**
+ * Card to encompass operations on a note's PDF file. The card includes buttons to view, scan and
+ * replace, and delete the PDF file.
+ *
+ * @param modifier The modifier to apply to the card.
+ * @param testTagBase The base test tag for the card and its buttons.
+ * @param onViewClick The lambda to call when the view button is clicked.
+ * @param onScanClick The lambda to call when the scan button is clicked.
+ * @param onDeleteClick The lambda to call when the delete button is clicked.
+ */
+@Composable
+fun PdfCard(
+    modifier: Modifier,
+    testTagBase: String,
+    onViewClick: () -> Unit,
+    onScanClick: () -> Unit,
+    onDeleteClick: () -> Unit,
+) {
+  Card(
+      modifier = modifier.testTag("${testTagBase}Card"),
+      content = {
+        Row(
+            modifier = Modifier.fillMaxSize().padding(6.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween) {
+              Text("Note PDF")
+
+              Row {
+                IconButton(
+                    onClick = onViewClick,
+                    modifier = Modifier.testTag("${testTagBase}ViewButton")) {
+                      Icon(
+                          imageVector = Icons.AutoMirrored.Filled.OpenInNew,
+                          contentDescription = "Open PDF",
+                      )
+                    }
+
+                IconButton(
+                    onClick = onScanClick,
+                    modifier = Modifier.testTag("${testTagBase}ScanButton")) {
+                      Icon(
+                          imageVector = Icons.Default.UploadFile,
+                          contentDescription = "Scan and replace PDF",
+                      )
+                    }
+
+                IconButton(
+                    onClick = onDeleteClick,
+                    modifier = Modifier.testTag("${testTagBase}DeleteButton")) {
+                      Icon(
+                          imageVector = Icons.Default.Delete,
+                          contentDescription = "Delete PDF",
+                      )
+                    }
+              }
+            }
+      })
 }
 
 /** Displays a screen indicating that the user was not found. */

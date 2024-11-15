@@ -77,7 +77,7 @@ fun OnlyNotesApp(scanner: Scanner, profilePictureTaker: ProfilePictureTaker) {
         AddNoteScreen(navigationActions, scanner, noteViewModel, userViewModel, fileViewModel)
       }
       composable(Screen.EDIT_NOTE) {
-        EditNoteScreen(navigationActions, noteViewModel, userViewModel, fileViewModel)
+        EditNoteScreen(navigationActions, scanner, noteViewModel, userViewModel, fileViewModel)
       }
       composable(Screen.FOLDER_CONTENTS) {
         FolderContentScreen(navigationActions, folderViewModel, noteViewModel, userViewModel)
