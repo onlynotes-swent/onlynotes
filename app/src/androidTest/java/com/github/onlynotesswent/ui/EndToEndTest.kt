@@ -208,7 +208,12 @@ class EndToEndTest {
                   }
                   composable(Screen.EDIT_PROFILE) {
                     EditProfileScreen(
-                        navigationActions, userViewModel, profilePictureTaker, fileViewModel, noteViewModel, folderViewModel)
+                        navigationActions,
+                        userViewModel,
+                        profilePictureTaker,
+                        fileViewModel,
+                        noteViewModel,
+                        folderViewModel)
                   }
                 }
               }
