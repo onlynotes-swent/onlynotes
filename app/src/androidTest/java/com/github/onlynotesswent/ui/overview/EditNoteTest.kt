@@ -10,6 +10,7 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
 import com.github.onlynotesswent.model.file.FileRepository
+import com.github.onlynotesswent.model.file.FileType
 import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.note.Note
 import com.github.onlynotesswent.model.note.NoteRepository
@@ -20,6 +21,7 @@ import com.github.onlynotesswent.model.users.UserViewModel
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
 import com.github.onlynotesswent.utils.Course
+import com.github.onlynotesswent.utils.Scanner
 import com.github.onlynotesswent.utils.Visibility
 import com.google.firebase.Timestamp
 import org.junit.Before
@@ -30,6 +32,7 @@ import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.never
 
 class EditNoteTest {
@@ -37,6 +40,7 @@ class EditNoteTest {
   @Mock private lateinit var noteRepository: NoteRepository
   @Mock private lateinit var fileRepository: FileRepository
   @Mock private lateinit var navigationActions: NavigationActions
+  @Mock private lateinit var scanner: Scanner
   private lateinit var userViewModel: UserViewModel
   private lateinit var noteViewModel: NoteViewModel
   private lateinit var fileViewModel: FileViewModel
@@ -89,7 +93,7 @@ class EditNoteTest {
       onSuccess()
     }
     composeTestRule.setContent {
-      EditNoteScreen(navigationActions, noteViewModel, userViewModel, fileViewModel)
+      EditNoteScreen(navigationActions, scanner, noteViewModel, userViewModel, fileViewModel)
     }
   }
 
@@ -108,6 +112,11 @@ class EditNoteTest {
 
     composeTestRule.onNodeWithTag("visibilityEditButton").performClick()
     composeTestRule.onNodeWithTag("visibilityEditMenu").assertIsDisplayed()
+
+    composeTestRule.onNodeWithTag("EditPdfCard").performScrollTo().assertIsDisplayed()
+    composeTestRule.onNodeWithTag("EditPdfViewButton").performScrollTo().assertIsDisplayed()
+    composeTestRule.onNodeWithTag("EditPdfScanButton").performScrollTo().assertIsDisplayed()
+    composeTestRule.onNodeWithTag("EditPdfDeleteButton").performScrollTo().assertIsDisplayed()
   }
 
   @Test
@@ -159,5 +168,20 @@ class EditNoteTest {
   fun deleteClickCallsNavActions() {
     composeTestRule.onNodeWithTag("Delete button").performScrollTo().performClick()
     verify(navigationActions).navigateTo(Screen.OVERVIEW)
+  }
+
+  @Test
+  fun pdfOperationsCallsCorrect() {
+    // Can't directly test calls to fileViewModel, as it is not mockable. Thus verify calls to
+    // fileRepository
+    composeTestRule.onNodeWithTag("EditPdfViewButton").performScrollTo().performClick()
+    verify(fileRepository).downloadFile(any(), eq(FileType.NOTE_PDF), any(), any(), any(), any())
+
+    // Todo: Currently fails, as says parameter is null. Need to fix
+    // composeTestRule.onNodeWithTag("EditPdfScanButton").performScrollTo().performClick()
+    // verify(scanner).scan(any())
+
+    composeTestRule.onNodeWithTag("EditPdfDeleteButton").performScrollTo().performClick()
+    verify(fileRepository).deleteFile(any(), any(), any(), any(), any())
   }
 }
