@@ -1,13 +1,15 @@
 import java.util.Properties
 
 plugins {
-    alias(libs.plugins.compose.compiler)
+    id("org.jetbrains.kotlin.plugin.compose") version "2.0.0" // this version matches your Kotlin version
+    //alias(libs.plugins.compose.compiler)
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsKotlinAndroid)
     alias(libs.plugins.ktfmt)
     alias(libs.plugins.sonar)
     id("jacoco")
     id("com.google.gms.google-services")
+
     //id("org.jetbrains.kotlin.plugin.compose") version "2.0.0" // this version matches your Kotlin version
 }
 
@@ -63,7 +65,10 @@ android {
     testCoverage {
         jacocoVersion = "0.8.11"
     }
-
+    composeCompiler{
+        reportsDestination = layout.buildDirectory.dir("compose_compiler")
+        stabilityConfigurationFile = rootProject.layout.projectDirectory.file("stability_config.conf")
+    }
     buildFeatures {
         compose = true
     }

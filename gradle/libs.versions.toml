@@ -98,7 +98,6 @@ mlkit-document-scanner = { group = "com.google.android.gms", name = "play-servic
 mlkit-text-recognition = { group = "com.google.mlkit", name = "text-recognition", version.ref = "textRecognition" }
 
 [plugins]
-
 jetbrainsKotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
