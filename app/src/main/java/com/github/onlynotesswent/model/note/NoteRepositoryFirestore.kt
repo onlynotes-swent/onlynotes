@@ -233,6 +233,28 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
         db.collection(collectionPath).document(id).delete(), onSuccess, onFailure)
   }
 
+  override fun deleteNotesByUserId(
+      userId: String,
+      onSuccess: () -> Unit,
+      onFailure: (Exception) -> Unit
+  ) {
+    db.collection(collectionPath).get().addOnCompleteListener { task ->
+      if (task.isSuccessful) {
+        val userNotes =
+            task.result.documents
+                .mapNotNull { document -> documentSnapshotToNote(document) }
+                .filter { it.userId == userId }
+        userNotes.forEach { note -> db.collection(collectionPath).document(note.id).delete() }
+        onSuccess()
+      } else {
+        task.exception?.let { e ->
+          Log.e(TAG, "Error getting user documents", e)
+          onFailure(e)
+        }
+      }
+    }
+  }
+
   override fun getNotesFromFolder(
       folderId: String,
       onSuccess: (List<Note>) -> Unit,
@@ -332,6 +354,6 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
   }
 
   companion object {
-    const val TAG = "NoteRepositoryFirestore"
+    private const val TAG = "NoteRepositoryFirestore"
   }
 }

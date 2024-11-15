@@ -73,6 +73,15 @@ interface NoteRepository {
   fun deleteNoteById(id: String, onSuccess: () -> Unit, onFailure: (Exception) -> Unit)
 
   /**
+   * Deletes all notes from a user.
+   *
+   * @param userId The ID of the user to delete notes for.
+   * @param onSuccess Callback to be invoked if the notes are deleted successfully.
+   * @param onFailure Callback to be invoked if an error occurs.
+   */
+  fun deleteNotesByUserId(userId: String, onSuccess: () -> Unit, onFailure: (Exception) -> Unit)
+
+  /**
    * Retrieves all notes from a folder.
    *
    * @param folderId The ID of the folder to retrieve notes for.
