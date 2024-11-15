@@ -74,6 +74,12 @@ class FolderViewModelTest {
   }
 
   @Test
+  fun deleteFoldersByUserIdCallsRepository() {
+    folderViewModel.deleteFoldersByUserId("1")
+    verify(folderRepository).deleteFoldersByUserId(eq("1"), any(), any())
+  }
+
+  @Test
   fun getSubFoldersOfCallsRepository() {
     folderViewModel.getSubFoldersOf("pid")
     verify(folderRepository).getSubFoldersOf(eq("pid"), any(), any())
