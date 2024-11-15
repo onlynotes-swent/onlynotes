@@ -4,7 +4,7 @@ firebaseBom = "33.5.1"
 coilCompose = "2.1.0"
 imagepicker = "2.1"
 gson = "2.10.1"
-kotlin = "1.9.0" #"1.8.10"
+kotlin = "2.0.0" # "1.9.0" #"1.8.10"
 coreKtx = "1.12.0"
 ktfmt = "0.17.0"
 junit = "4.13.2"
@@ -22,6 +22,7 @@ mockitoKotlin = "5.4.0"
 mockitoInline = "4.0.0"
 mockitoAndroid = "5.14.1"
 okhttp = "4.10.0"
+richeditorCompose = "1.0.0-rc10"
 robolectric = "4.11.1"
 sonar = "4.4.1.3373"
 
@@ -77,6 +78,7 @@ mockito-kotlin = { module = "org.mockito.kotlin:mockito-kotlin", version.ref = "
 mockito-inline = { module = "org.mockito:mockito-inline", version.ref = "mockitoInline" }
 mockito-android = { module = "org.mockito:mockito-android", version.ref = "mockitoAndroid" }
 okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
+richeditor-compose = { module = "com.mohamedrejeb.richeditor:richeditor-compose", version.ref = "richeditorCompose" }
 robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric" }
 
 firebase-auth = { module = "com.google.firebase:firebase-auth", version.ref = "firebaseAuth" }
@@ -96,7 +98,10 @@ mlkit-document-scanner = { group = "com.google.android.gms", name = "play-servic
 mlkit-text-recognition = { group = "com.google.mlkit", name = "text-recognition", version.ref = "textRecognition" }
 
 [plugins]
-androidApplication = { id = "com.android.application", version.ref = "agp" }
+
 jetbrainsKotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+androidApplication = { id = "com.android.application", version.ref = "agp" }
 ktfmt = { id = "com.ncorti.ktfmt.gradle", version.ref = "ktfmt" }
 sonar = { id = "org.sonarqube", version.ref = "sonar" }

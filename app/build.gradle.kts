@@ -1,17 +1,20 @@
 import java.util.Properties
 
 plugins {
+    alias(libs.plugins.compose.compiler)
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsKotlinAndroid)
     alias(libs.plugins.ktfmt)
     alias(libs.plugins.sonar)
     id("jacoco")
     id("com.google.gms.google-services")
+    //id("org.jetbrains.kotlin.plugin.compose") version "2.0.0" // this version matches your Kotlin version
 }
 
 jacoco {
     toolVersion = "0.8.11"  // Set the JaCoCo version globally here
 }
+
 
 android {
     namespace = "com.github.onlynotesswent"
@@ -208,7 +211,7 @@ dependencies {
     implementation(libs.imagepicker)
 
     //Rich text editor
-    implementation("com.mohamedrejeb.richeditor:richeditor-compose:1.0.0-rc10")
+    implementation(libs.richeditor.compose)
 
     // --------- Kaspresso test framework ----------
     globalTestImplementation(libs.kaspresso)
