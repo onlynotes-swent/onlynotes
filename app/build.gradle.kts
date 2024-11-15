@@ -1,10 +1,9 @@
 import java.util.Properties
 
 plugins {
-    id("org.jetbrains.kotlin.plugin.compose") version "2.0.0" // this version matches your Kotlin version
-    //alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.compose.compiler)
     alias(libs.plugins.androidApplication)
-    alias(libs.plugins.jetbrainsKotlinAndroid)
+    //alias(libs.plugins.jetbrainsKotlinAndroid)
     alias(libs.plugins.ktfmt)
     alias(libs.plugins.sonar)
     id("jacoco")
@@ -17,6 +16,11 @@ jacoco {
     toolVersion = "0.8.11"  // Set the JaCoCo version globally here
 }
 
+composeCompiler{
+    enableStrongSkippingMode = true
+    reportsDestination = layout.buildDirectory.dir("compose_compiler")
+    stabilityConfigurationFile = rootProject.layout.projectDirectory.file("stability_config.conf")
+}
 
 android {
     namespace = "com.github.onlynotesswent"
@@ -65,26 +69,21 @@ android {
     testCoverage {
         jacocoVersion = "0.8.11"
     }
-    composeCompiler{
-        reportsDestination = layout.buildDirectory.dir("compose_compiler")
-        stabilityConfigurationFile = rootProject.layout.projectDirectory.file("stability_config.conf")
-    }
+
     buildFeatures {
         compose = true
     }
 
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.2"//"1.4.2"
-    }
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+    /*
 
     kotlinOptions {
         jvmTarget = "11"
-    }
+    }*/
 
     android {
         compileOptions {
@@ -153,6 +152,8 @@ dependencies {
             }
         }
     }
+    //implementation("org.jetbrains.kotlin:kotlin-compose-compiler-plugin-embeddable:2.0.0")
+    //implementation("org.jetbrains.kotlin:kotlin-compose-compiler-plugin:2.0.0")
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
