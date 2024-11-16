@@ -1,6 +1,5 @@
 package com.github.onlynotesswent.model.note
 
-import android.graphics.Bitmap
 import android.os.Looper
 import androidx.test.core.app.ApplicationProvider
 import com.github.onlynotesswent.utils.Course
@@ -48,12 +47,10 @@ class NoteRepositoryFirestoreTest {
       Note(
           id = "1",
           title = "title",
-          content = "content",
           date = Timestamp.now(),
           visibility = Visibility.PUBLIC,
           userId = "1",
           noteCourse = Course("CS-100", "Sample Course", 2024, "path"),
-          image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888),
           comments =
               Note.CommentCollection(
                   listOf(Note.Comment("1", "1", "bob", "1", Timestamp.now(), Timestamp.now()))))
@@ -61,12 +58,10 @@ class NoteRepositoryFirestoreTest {
       Note(
           id = "2",
           title = "title",
-          content = "content",
           date = Timestamp.now(),
           visibility = Visibility.PRIVATE,
           userId = "1",
           noteCourse = Course("CS-100", "Sample Course", 2024, "path"),
-          image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888),
           comments =
               Note.CommentCollection(
                   listOf(Note.Comment("1", "1", "bob", "1", Timestamp.now(), Timestamp.now()))))
@@ -75,25 +70,22 @@ class NoteRepositoryFirestoreTest {
       Note(
           id = "1",
           title = "title",
-          content = "content",
           date = Timestamp.now(),
           visibility = Visibility.PUBLIC,
           userId = "1",
           folderId = "1",
           noteCourse = Course("CS-100", "Sample Course", 2024, "path"),
-          image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888))
+      )
 
   private val testSubNotePrivate =
       Note(
           id = "1",
           title = "title",
-          content = "content",
           date = Timestamp.now(),
           visibility = Visibility.PRIVATE,
           userId = "1",
           folderId = "1",
           noteCourse = Course("CS-100", "Sample Course", 2024, "path"),
-          image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888),
           comments =
               Note.CommentCollection(
                   listOf(Note.Comment("1", "1", "bob", "1", Timestamp.now(), Timestamp.now()))))
@@ -133,7 +125,6 @@ class NoteRepositoryFirestoreTest {
 
     `when`(mockDocumentSnapshot.id).thenReturn(testNotePublic.id)
     `when`(mockDocumentSnapshot.getString("title")).thenReturn(testNotePublic.title)
-    `when`(mockDocumentSnapshot.getString("content")).thenReturn(testNotePublic.content)
     `when`(mockDocumentSnapshot.getTimestamp("date")).thenReturn(testNotePublic.date)
     `when`(mockDocumentSnapshot.getString("visibility"))
         .thenReturn(testNotePublic.visibility.toString())
@@ -146,11 +137,9 @@ class NoteRepositoryFirestoreTest {
     `when`(mockDocumentSnapshot.getString("publicPath"))
         .thenReturn(testNotePublic.noteCourse.publicPath)
     `when`(mockDocumentSnapshot.getString("userId")).thenReturn(testNotePublic.userId)
-    `when`(mockDocumentSnapshot.get("image")).thenReturn(testNotePublic.image)
 
     `when`(mockDocumentSnapshot2.id).thenReturn(testNotePrivate.id)
     `when`(mockDocumentSnapshot2.getString("title")).thenReturn(testNotePrivate.title)
-    `when`(mockDocumentSnapshot2.getString("content")).thenReturn(testNotePrivate.content)
     `when`(mockDocumentSnapshot2.getTimestamp("date")).thenReturn(testNotePrivate.date)
     `when`(mockDocumentSnapshot2.getString("visibility"))
         .thenReturn(testNotePrivate.visibility.toString())
@@ -163,12 +152,10 @@ class NoteRepositoryFirestoreTest {
     `when`(mockDocumentSnapshot.getString("publicPath"))
         .thenReturn(testNotePrivate.noteCourse.publicPath)
     `when`(mockDocumentSnapshot2.getString("userId")).thenReturn(testNotePrivate.userId)
-    `when`(mockDocumentSnapshot2.get("image")).thenReturn(testNotePrivate.image)
     `when`(mockDocumentSnapshot2.get("commentsList")).thenReturn(testNotePrivate.comments)
 
     `when`(mockDocumentSnapshot3.id).thenReturn(testSubNotePublic.id)
     `when`(mockDocumentSnapshot3.getString("title")).thenReturn(testSubNotePublic.title)
-    `when`(mockDocumentSnapshot3.getString("content")).thenReturn(testSubNotePublic.content)
     `when`(mockDocumentSnapshot3.getTimestamp("date")).thenReturn(testSubNotePublic.date)
     `when`(mockDocumentSnapshot3.getString("visibility"))
         .thenReturn(testSubNotePublic.visibility.toString())
@@ -182,11 +169,9 @@ class NoteRepositoryFirestoreTest {
         .thenReturn(testSubNotePublic.noteCourse.publicPath)
     `when`(mockDocumentSnapshot3.getString("userId")).thenReturn(testSubNotePublic.userId)
     `when`(mockDocumentSnapshot3.getString("folderId")).thenReturn(testSubNotePublic.folderId)
-    `when`(mockDocumentSnapshot3.get("image")).thenReturn(testSubNotePublic.image)
 
     `when`(mockDocumentSnapshot4.id).thenReturn(testSubNotePrivate.id)
     `when`(mockDocumentSnapshot4.getString("title")).thenReturn(testSubNotePrivate.title)
-    `when`(mockDocumentSnapshot4.getString("content")).thenReturn(testSubNotePrivate.content)
     `when`(mockDocumentSnapshot4.getTimestamp("date")).thenReturn(testSubNotePrivate.date)
     `when`(mockDocumentSnapshot4.getString("visibility"))
         .thenReturn(testSubNotePrivate.visibility.toString())
@@ -200,13 +185,11 @@ class NoteRepositoryFirestoreTest {
         .thenReturn(testSubNotePrivate.noteCourse.publicPath)
     `when`(mockDocumentSnapshot4.getString("userId")).thenReturn(testSubNotePrivate.userId)
     `when`(mockDocumentSnapshot4.getString("folderId")).thenReturn(testSubNotePrivate.folderId)
-    `when`(mockDocumentSnapshot4.get("image")).thenReturn(testSubNotePrivate.image)
   }
 
   private fun compareNotesButNotImage(note1: Note, note2: Note) {
     assert(note1.id == note2.id)
     assert(note1.title == note2.title)
-    assert(note1.content == note2.content)
     assert(note1.date == note2.date)
     assert(note1.visibility == note2.visibility)
     assert(note1.userId == note2.userId)

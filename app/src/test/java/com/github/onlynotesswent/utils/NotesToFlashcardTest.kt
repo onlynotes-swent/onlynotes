@@ -1,6 +1,7 @@
 package com.github.onlynotesswent.utils
 
-import android.graphics.Bitmap
+import android.content.Context
+import com.github.onlynotesswent.model.file.FileType
 import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.flashcard.Flashcard
 import com.github.onlynotesswent.model.flashcard.FlashcardRepository
@@ -9,6 +10,7 @@ import com.github.onlynotesswent.model.note.Note
 import com.google.firebase.FirebaseApp
 import com.google.firebase.Timestamp
 import com.google.gson.JsonSyntaxException
+import java.io.File
 import java.io.IOException
 import org.junit.Assert.assertEquals
 import org.junit.Assert.fail
@@ -25,12 +27,14 @@ import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
+import org.mockito.kotlin.any
+import org.mockito.kotlin.eq
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
 class NotesToFlashcardTest {
   // Function to allow null arguments for Mockito when needed
-  private fun <T> any(): T = Mockito.any()
+  private fun <T> nullableAny(): T = Mockito.any()
 
   // Helper function to capture arguments in Mockito tests, bypassing Kotlin's null-safety checks
   private fun <T> capture(argumentCaptor: ArgumentCaptor<T>): T = argumentCaptor.capture()
@@ -61,13 +65,12 @@ class NotesToFlashcardTest {
       Note(
           id = "1",
           title = "title",
-          content = "content",
           date = Timestamp.now(),
           visibility = Visibility.DEFAULT,
           userId = "1",
           folderId = "1",
           noteCourse = Course("CS-100", "Sample Course", 2024, "path"),
-          image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888))
+      )
 
   private lateinit var notesToFlashcard: NotesToFlashcard
 
@@ -79,6 +82,10 @@ class NotesToFlashcardTest {
   @Mock private lateinit var mockFileViewModel: FileViewModel
 
   @Mock private lateinit var mockOpenAI: OpenAI
+
+  @Mock private lateinit var mockContext: Context
+
+  @Mock private lateinit var mockMd: File
 
   // Argument captor for Flashcard objects
   @Captor private lateinit var flashcardCaptor: ArgumentCaptor<Flashcard>
@@ -92,7 +99,18 @@ class NotesToFlashcardTest {
 
     // Mock FlashcardRepository and set up FlashcardViewModel with it
     flashcardViewModel = FlashcardViewModel(mockFlashcardRepository)
-    notesToFlashcard = NotesToFlashcard(flashcardViewModel, mockFileViewModel, mockOpenAI)
+    notesToFlashcard =
+        NotesToFlashcard(flashcardViewModel, mockFileViewModel, mockOpenAI, mockContext)
+
+    val testFile = File.createTempFile("test", ".md")
+    testFile.deleteOnExit()
+    `when`(
+            mockFileViewModel.downloadFile(
+                any<String>(), eq(FileType.NOTE_TEXT), eq(mockContext), any(), any(), any()))
+        .thenAnswer { invocation ->
+          val onSuccess = invocation.getArgument<(File) -> Unit>(3)
+          onSuccess(testFile)
+        }
 
     // Mock the return value for getNewUid
     `when`(mockFlashcardRepository.getNewUid()).thenReturn("test")
@@ -100,6 +118,7 @@ class NotesToFlashcardTest {
 
   @Test
   fun `convertNoteToFlashcards should parse JSON and create flashcards`() {
+
     // Mocking OpenAI's sendRequest to trigger onSuccess
     doAnswer { invocation ->
           val onSuccess = invocation.getArgument<(String) -> Unit>(1)
@@ -137,6 +156,7 @@ class NotesToFlashcardTest {
     notesToFlashcard.convertNoteToFlashcards(
         note = testNote,
         onSuccess = onSuccess,
+        onFileNotFoundException = { fail("Expected successful conversion") },
         onFailure = { fail("Expected successful conversion") })
 
     // Verify that addFlashcard was called exactly three times with the correct flashcards
@@ -156,7 +176,7 @@ class NotesToFlashcardTest {
           null
         }
         .`when`(mockOpenAI)
-        .sendRequest(anyString(), any(), any(), anyString())
+        .sendRequest(anyString(), nullableAny(), nullableAny(), anyString())
 
     // Set up a flag to ensure the failure callback was called
     var failureCallbackCalled = false
@@ -165,6 +185,7 @@ class NotesToFlashcardTest {
     notesToFlashcard.convertNoteToFlashcards(
         note = testNote,
         onSuccess = { fail("Expected failure but got success") },
+        onFileNotFoundException = { fail("Expected failure but got not found") },
         onFailure = { error ->
           failureCallbackCalled = true
           assert(error is IOException)
@@ -184,13 +205,14 @@ class NotesToFlashcardTest {
           null
         }
         .`when`(mockOpenAI)
-        .sendRequest(anyString(), any(), any(), anyString())
+        .sendRequest(anyString(), nullableAny(), nullableAny(), anyString())
 
     // Set up a flag to ensure the failure callback was called
     var failureCallbackCalled = false
     notesToFlashcard.convertNoteToFlashcards(
         note = testNote,
         onSuccess = { fail("Expected failure but got success") },
+        onFileNotFoundException = { fail("Expected failure but got not found") },
         onFailure = { error ->
           failureCallbackCalled = true
           assertEquals(JsonSyntaxException::class.java, error::class.java)

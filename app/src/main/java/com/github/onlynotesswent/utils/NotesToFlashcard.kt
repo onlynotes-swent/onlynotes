@@ -1,6 +1,8 @@
 package com.github.onlynotesswent.utils
 
+import android.content.Context
 import android.util.Log
+import com.github.onlynotesswent.model.file.FileType
 import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.flashcard.Flashcard
 import com.github.onlynotesswent.model.flashcard.FlashcardViewModel
@@ -11,7 +13,8 @@ import com.google.gson.JsonParser
 class NotesToFlashcard(
     private val flashcardViewModel: FlashcardViewModel,
     private val fileViewModel: FileViewModel,
-    private val openAIClient: OpenAI
+    private val openAIClient: OpenAI,
+    private val context: Context,
 ) {
   companion object {
     private const val TAG = "NotesToFlashcard"
@@ -28,35 +31,22 @@ class NotesToFlashcard(
   fun convertNoteToFlashcards(
       note: Note,
       onSuccess: (List<Flashcard>) -> Unit,
+      onFileNotFoundException: () -> Unit,
       onFailure: (Exception) -> Unit
   ) {
-    try {
-      // TODO: When markdown support is implemented, fetch the markdown file content using
-      // fileViewModel
-      // Example:
-      // var markdownContent = ""
-      // fileViewModel.downloadFile(
-      //         uid = note?.id ?: "errorNoId",
-      //         fileType = FileType.NOTE_TEXT,
-      //         context = context,
-      //         onSuccess = { downloadedFile ->
-      //             markdownContent = downloadedFile?.readText() ?: "" // Read the markdown content
-      //         },
-      //         onFailure = { e ->
-      //         Log.e(TAG, "Error downloading file", e)
-      //         onFailure(e)
-      //         }
-      //     )
-
-      // TODO: modify note.content to markdown format when we implement markdown support
-      openAIClient.sendRequest(
-          promptPrefix + note.content,
-          { parseFlashcardsFromJson(it, note, onSuccess, onFailure) },
-          { onFailure(it) })
-    } catch (e: Exception) {
-      Log.e(TAG, "Unexpected error in convertNoteToFlashcards", e)
-      onFailure(e)
-    }
+    // Download the note text file,
+    fileViewModel.downloadFile(
+        uid = note.id,
+        fileType = FileType.NOTE_TEXT,
+        context = context,
+        onSuccess = { downloadedFile ->
+          openAIClient.sendRequest(
+              promptPrefix + downloadedFile.readText(),
+              { parseFlashcardsFromJson(it, note, onSuccess, onFailure) },
+              { onFailure(it) })
+        },
+        onFileNotFound = onFileNotFoundException,
+        onFailure = onFailure)
   }
 
   /**

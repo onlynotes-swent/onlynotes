@@ -1,6 +1,5 @@
 package com.github.onlynotesswent.model.note
 
-import android.graphics.Bitmap
 import android.util.Log
 import com.github.onlynotesswent.utils.Course
 import com.github.onlynotesswent.utils.Visibility
@@ -17,7 +16,6 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
   private data class FirebaseNote(
       val id: String,
       val title: String,
-      val content: String,
       val date: Timestamp,
       val visibility: Visibility,
       val userId: String,
@@ -26,7 +24,6 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
       val courseYear: Int,
       val publicPath: String,
       val folderId: String?,
-      val image: String,
       val commentsList: List<String>
   )
   /**
@@ -101,7 +98,6 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
     return FirebaseNote(
         note.id,
         note.title,
-        note.content,
         note.date,
         note.visibility,
         note.userId,
@@ -110,7 +106,6 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
         note.noteCourse.courseYear,
         note.noteCourse.publicPath,
         note.folderId,
-        "null",
         convertCommentsList(note.comments.commentsList))
   }
 
@@ -310,7 +305,6 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
     return try {
       val id = document.id
       val title = document.getString("title") ?: ""
-      val content = document.getString("content") ?: ""
       val date = document.getTimestamp("date") ?: Timestamp.now()
       val visibility =
           Visibility.fromString(document.getString("visibility") ?: Visibility.DEFAULT.toString())
@@ -320,11 +314,8 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
       val courseYear = document.getLong("courseYear")?.toInt() ?: 0
       val publicPath = document.getString("publicPath") ?: ""
       val folderId = document.getString("folderId")
-      val image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)
       val comments =
           commentStringToCommentClass(document.get("commentsList") as? List<String> ?: emptyList())
-      // Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888) is the default bitMap, to be changed
-      // when we implement images by URL
 
       val course =
           if (courseYear == 0 ||
@@ -339,13 +330,11 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
       Note(
           id = id,
           title = title,
-          content = content,
           date = date,
           visibility = visibility,
           userId = userId,
           noteCourse = course,
           folderId = folderId,
-          image = image,
           comments = Note.CommentCollection(comments))
     } catch (e: Exception) {
       Log.e(TAG, "Error converting document to Note", e)

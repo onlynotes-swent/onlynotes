@@ -1,21 +1,31 @@
 package com.github.onlynotesswent.model.note
 
-import android.graphics.Bitmap
 import com.github.onlynotesswent.utils.Course
 import com.github.onlynotesswent.utils.Visibility
 import com.google.firebase.Timestamp
 import java.security.MessageDigest
 
+/**
+ * Represents a note stored in the database.
+ *
+ * @property id A unique identifier for this note.
+ * @property title The title of the note.
+ * @property date The timestamp of when the note was created.
+ * @property visibility The visibility setting for the note.
+ * @property noteCourse The [Course] object associated with this note.
+ * @property userId The unique identifier of the user who created the note.
+ * @property folderId The unique identifier of the folder the note is stored in. If the note is not
+ *   assigned to a folder, this value is `null`.
+ * @property comments A collection of comments associated with the note.
+ */
 data class Note(
     val id: String,
     val title: String,
-    val content: String,
     val date: Timestamp,
     val visibility: Visibility = Visibility.DEFAULT,
     val noteCourse: Course,
     val userId: String,
     val folderId: String? = null, // if note not assigned to a folder, folderId is null
-    val image: Bitmap,
     val comments: CommentCollection = CommentCollection()
 ) {
 

@@ -1,6 +1,5 @@
 package com.github.onlynotesswent.ui.overview
 
-import android.graphics.Bitmap
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotDisplayed
 import androidx.compose.ui.test.hasText
@@ -69,13 +68,11 @@ class EditNoteTest {
         Note(
             id = "1",
             title = "Sample Title",
-            content = "This is a sample content.",
             date = Timestamp.now(), // Use current timestamp
             visibility = Visibility.DEFAULT,
             userId = "1",
             noteCourse = Course("CS-100", "Sample Class", 2024, "path"),
-            image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888) // Placeholder Bitmap
-            )
+        )
 
     `when`(noteRepository.getNoteById(any(), any(), any())).thenAnswer { invocation ->
       val onSuccess = invocation.getArgument<(Note) -> Unit>(1)

@@ -1,6 +1,5 @@
 package com.github.onlynotesswent.ui.overview
 
-import android.graphics.Bitmap
 import android.net.Uri
 import android.util.Log
 import android.widget.Toast
@@ -89,7 +88,6 @@ fun EditNoteScreen(
   val note by noteViewModel.selectedNote.collectAsState()
   val currentUser by userViewModel.currentUser.collectAsState()
   val currentYear = Calendar.getInstance().get(Calendar.YEAR)
-  val noteText by remember { mutableStateOf(note?.content ?: "") }
   var noteTitle by remember { mutableStateOf(note?.title ?: "") }
   var courseName by remember { mutableStateOf(note?.noteCourse?.courseName ?: "") }
   var courseCode by remember { mutableStateOf(note?.noteCourse?.courseCode ?: "") }
@@ -142,15 +140,11 @@ fun EditNoteScreen(
         Note(
             id = note?.id ?: "1",
             title = note?.title ?: "",
-            content = note?.content ?: "",
             date = Timestamp.now(), // Use current timestamp
             visibility = note?.visibility ?: Visibility.DEFAULT,
             noteCourse = note?.noteCourse ?: Course.DEFAULT,
             userId = note?.userId ?: "",
             folderId = note?.folderId,
-            image =
-                note?.image
-                    ?: Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888), // Placeholder Bitmap
             comments = updatedComments),
         currentUser!!.uid)
   }
@@ -279,7 +273,6 @@ fun EditNoteScreen(
                 SaveButton(
                     noteTitle = noteTitle,
                     note = note,
-                    updatedNoteText = noteText,
                     visibility = visibility,
                     courseCode = courseCode,
                     courseName = courseName,
@@ -448,7 +441,6 @@ fun CommentsSection(
  *
  * @param noteTitle The updated title of the note.
  * @param note The note to be updated.
- * @param updatedNoteText The updated content of the note.
  * @param visibility The updated visibility of the note.
  * @param courseCode The updated course code of the note.
  * @param courseName The updated course name of the note.
@@ -463,7 +455,6 @@ fun CommentsSection(
 fun SaveButton(
     noteTitle: String,
     note: Note?,
-    updatedNoteText: String,
     visibility: Visibility?,
     courseCode: String,
     courseName: String,
@@ -480,15 +471,11 @@ fun SaveButton(
             Note(
                 id = note?.id ?: "1",
                 title = noteTitle,
-                content = updatedNoteText,
                 date = Timestamp.now(), // Use current timestamp
                 visibility = visibility ?: Visibility.DEFAULT,
                 noteCourse = Course(courseCode, courseName, courseYear, "path"),
                 userId = note?.userId ?: currentUser!!.uid,
                 folderId = note?.folderId,
-                image =
-                    note?.image
-                        ?: Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888), // Placeholder Bitmap
                 comments = updatedComments),
             currentUser!!.uid)
         if (note?.folderId != null) {
