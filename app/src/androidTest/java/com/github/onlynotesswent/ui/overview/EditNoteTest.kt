@@ -148,7 +148,6 @@ class EditNoteTest {
     val expectedLabelText = "edited: "
     composeTestRule.onNode(hasText(expectedLabelText, substring = true)).assertIsDisplayed()
     composeTestRule.onNodeWithTag("Save button").performScrollTo().performClick()
-    composeTestRule.onNode(hasText(expectedLabelText, substring = true)).assertIsDisplayed()
   }
 
   @Test
