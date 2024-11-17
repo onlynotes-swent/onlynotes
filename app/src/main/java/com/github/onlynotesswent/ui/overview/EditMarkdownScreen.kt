@@ -93,7 +93,7 @@ fun EditMarkdownScreen(
   // Function to download and set the Markdown file
   LaunchedEffect(Unit) {
     fileViewModel.downloadFile(
-        uid = selectedNote?.id ?: "errorNoId",
+        uid = selectedNote!!.id,
         fileType = FileType.NOTE_TEXT,
         context = context,
         onSuccess = { downloadedFile: File ->
@@ -135,29 +135,32 @@ fun EditMarkdownScreen(
               Icon(imageVector = Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "Back")
             },
             iconTestTag = "goBackButton")
-      },
-      content = { paddingValues ->
-        Column(
-            modifier =
-                Modifier.fillMaxSize()
-                    .padding(16.dp)
-                    .padding(paddingValues)
-                    .testTag("editMarkdownColumn")
-                    .verticalScroll(rememberScrollState()),
-        ) {
-          EditorControls(modifier = Modifier.testTag("EditorControl"), state = state)
-          RichTextEditor(
-              modifier = Modifier.fillMaxWidth().weight(2f).testTag("RichTextEditor"),
-              state = state,
-          )
+      }) { paddingValues ->
+        if (selectedNote == null) {
+          ErrorScreen("No note is selected")
+        } else {
+          Column(
+              modifier =
+                  Modifier.fillMaxSize()
+                      .padding(16.dp)
+                      .padding(paddingValues)
+                      .testTag("editMarkdownColumn")
+                      .verticalScroll(rememberScrollState()),
+          ) {
+            EditorControls(modifier = Modifier.testTag("EditorControl"), state = state)
+            RichTextEditor(
+                modifier = Modifier.fillMaxWidth().weight(2f).testTag("RichTextEditor"),
+                state = state,
+            )
 
-          Button(
-              modifier = Modifier.fillMaxWidth().testTag("Save button"),
-              onClick = { updateMarkdownFile(context, selectedNote?.id ?: "", fileViewModel) }) {
-                Text("Save")
-              }
+            Button(
+                modifier = Modifier.fillMaxWidth().testTag("Save button"),
+                onClick = { updateMarkdownFile(context, selectedNote!!.id, fileViewModel) }) {
+                  Text("Save")
+                }
+          }
         }
-      })
+      }
 }
 /**
  * A composable component that provides a set of text formatting controls for the rich text editor.

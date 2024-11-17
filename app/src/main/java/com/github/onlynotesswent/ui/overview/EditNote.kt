@@ -104,7 +104,7 @@ fun EditNoteScreen(
   @Suppress("kotlin:S6300") // as there is no need to encrypt file
   fun downloadMarkdownFile() {
     fileViewModel.downloadFile(
-        uid = note?.id ?: "errorNoId",
+        uid = note!!.id,
         fileType = FileType.NOTE_TEXT,
         context = context,
         onSuccess = { downloadedFile: File ->
@@ -114,7 +114,7 @@ fun EditNoteScreen(
         onFileNotFound = {
           attemptedMarkdownDownloads += 1
           if (attemptedMarkdownDownloads < 2) {
-            val file = File(context.cacheDir, "${note?.id ?: "errorNoId"}.md")
+            val file = File(context.cacheDir, "${note!!.id}.md")
             if (!file.exists()) {
               file.createNewFile()
             }
@@ -122,7 +122,7 @@ fun EditNoteScreen(
             // Get the file URI
             val fileUri = Uri.fromFile(file)
 
-            fileViewModel.uploadFile(note?.id ?: "errorNoId", fileUri, FileType.NOTE_TEXT)
+            fileViewModel.uploadFile(note!!.id, fileUri, FileType.NOTE_TEXT)
             downloadMarkdownFile()
           }
         },
@@ -135,39 +135,26 @@ fun EditNoteScreen(
   }
   LaunchedEffect(Unit) { downloadMarkdownFile() }
 
-  fun updateOnlyNoteCommentAndDate() {
-    noteViewModel.updateNote(
-        Note(
-            id = note?.id ?: "1",
-            title = note?.title ?: "",
-            date = Timestamp.now(), // Use current timestamp
-            visibility = note?.visibility ?: Visibility.DEFAULT,
-            noteCourse = note?.noteCourse ?: Course.DEFAULT,
-            userId = note?.userId ?: "",
-            folderId = note?.folderId,
-            comments = updatedComments),
-        currentUser!!.uid)
-  }
-
-  if (currentUser == null) {
-    UserNotFoundEditScreen()
-  } else {
-    Scaffold(
-        modifier = Modifier.testTag("editNoteScreen"),
-        topBar = {
-          ScreenTopBar(
-              title = "Edit note",
-              titleTestTag = "editNoteTitle",
-              onBackClick = { navigationActions.goBack() },
-              icon = {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                    contentDescription = "Back",
-                    tint = MaterialTheme.colorScheme.onSurface)
-              },
-              iconTestTag = "goBackButton")
-        },
-        content = { paddingValues ->
+  Scaffold(
+      modifier = Modifier.testTag("editNoteScreen"),
+      topBar = {
+        ScreenTopBar(
+            title = "Edit note",
+            titleTestTag = "editNoteTitle",
+            onBackClick = { navigationActions.goBack() },
+            icon = {
+              Icon(
+                  imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
+                  contentDescription = "Back",
+                  tint = MaterialTheme.colorScheme.onSurface)
+            },
+            iconTestTag = "goBackButton")
+      }) { paddingValues ->
+        if (currentUser == null) {
+          ErrorScreen("User not found. Please sign out then in again.")
+        } else if (note == null) {
+          ErrorScreen("No note is selected to edit")
+        } else {
           Column(
               modifier =
                   Modifier.fillMaxSize()
@@ -229,7 +216,7 @@ fun EditNoteScreen(
                     testTagBase = "EditPdf",
                     onViewClick = {
                       fileViewModel.openPdf(
-                          uid = note?.id ?: "errorNoId",
+                          uid = note!!.id,
                           context = context,
                           onSuccess = {},
                           onFileNotFound = {
@@ -241,14 +228,12 @@ fun EditNoteScreen(
                     },
                     onScanClick = {
                       // Todo: Could show error to user, not possible with current functions
-                      scanner.scan {
-                        fileViewModel.updateFile(note?.id ?: "errorNoId", it, FileType.NOTE_PDF)
-                      }
+                      scanner.scan { fileViewModel.updateFile(note!!.id, it, FileType.NOTE_PDF) }
                     },
                     onDeleteClick = {
                       // Todo: Could show error to user, not possible with current functions
                       fileViewModel.deleteFile(
-                          uid = note?.id ?: "errorNoId",
+                          uid = note!!.id,
                           fileType = FileType.NOTE_PDF,
                       )
                       // Todo: temporary toast to show the button does something.
@@ -272,33 +257,41 @@ fun EditNoteScreen(
 
                 SaveButton(
                     noteTitle = noteTitle,
-                    note = note,
+                    note = note!!,
                     visibility = visibility,
                     courseCode = courseCode,
                     courseName = courseName,
                     courseYear = courseYear,
                     updatedComments = updatedComments,
-                    currentUser = currentUser,
+                    currentUser = currentUser!!,
                     navigationActions = navigationActions,
                     noteViewModel = noteViewModel)
 
                 DeleteButton(
-                    note = note,
-                    currentUser = currentUser,
+                    note = note!!,
+                    currentUser = currentUser!!,
                     navigationActions = navigationActions,
                     noteViewModel = noteViewModel)
 
                 AddCommentButton(
-                    currentUser = currentUser,
+                    currentUser = currentUser!!,
                     updatedComments = updatedComments,
                     onCommentsChange = { updatedComments = it },
-                    updateOnlyNoteCommentAndDate = { updateOnlyNoteCommentAndDate() })
+                    updateOnlyNoteCommentAndDate = {
+                      noteViewModel.updateNote(
+                          note!!.copy(comments = updatedComments), currentUser!!.uid)
+                    })
 
                 CommentsSection(
-                    updatedComments, { updatedComments = it }, { updateOnlyNoteCommentAndDate() })
+                    updatedComments,
+                    { updatedComments = it },
+                    {
+                      noteViewModel.updateNote(
+                          note!!.copy(comments = updatedComments), currentUser!!.uid)
+                    })
               }
-        })
-  }
+        }
+      }
 }
 
 /**
@@ -360,16 +353,20 @@ fun PdfCard(
       })
 }
 
-/** Displays a screen indicating that the user was not found. */
+/**
+ * Displays a screen indicating that the user was not found.
+ *
+ * @param errorText The error message to display.
+ */
 @Composable
-fun UserNotFoundEditScreen() {
+fun ErrorScreen(errorText: String) {
   Column(
       modifier = Modifier.fillMaxSize(),
       verticalArrangement = Arrangement.Center,
       horizontalAlignment = Alignment.CenterHorizontally) {
-        Text("User not found ...")
+        Text(errorText)
       }
-  Log.e("EditNoteScreen", "User not found")
+  Log.e("EditNoteScreen", errorText)
 }
 
 /**
@@ -454,13 +451,13 @@ fun CommentsSection(
 @Composable
 fun SaveButton(
     noteTitle: String,
-    note: Note?,
+    note: Note,
     visibility: Visibility?,
     courseCode: String,
     courseName: String,
     courseYear: Int,
     updatedComments: Note.CommentCollection,
-    currentUser: User?,
+    currentUser: User,
     navigationActions: NavigationActions,
     noteViewModel: NoteViewModel
 ) {
@@ -469,16 +466,16 @@ fun SaveButton(
       onClick = {
         noteViewModel.updateNote(
             Note(
-                id = note?.id ?: "1",
+                id = note.id,
                 title = noteTitle,
                 date = Timestamp.now(), // Use current timestamp
                 visibility = visibility ?: Visibility.DEFAULT,
                 noteCourse = Course(courseCode, courseName, courseYear, "path"),
-                userId = note?.userId ?: currentUser!!.uid,
-                folderId = note?.folderId,
+                userId = note.userId,
+                folderId = note.folderId,
                 comments = updatedComments),
-            currentUser!!.uid)
-        if (note?.folderId != null) {
+            currentUser.uid)
+        if (note.folderId != null) {
           navigationActions.navigateTo(Screen.FOLDER_CONTENTS)
         } else {
           navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
@@ -505,8 +502,8 @@ fun SaveButton(
  */
 @Composable
 fun DeleteButton(
-    note: Note?,
-    currentUser: User?,
+    note: Note,
+    currentUser: User,
     navigationActions: NavigationActions,
     noteViewModel: NoteViewModel
 ) {
@@ -517,7 +514,7 @@ fun DeleteButton(
               contentColor = MaterialTheme.colorScheme.error),
       border = BorderStroke(1.dp, MaterialTheme.colorScheme.error),
       onClick = {
-        noteViewModel.deleteNoteById(note?.id ?: "", note?.userId ?: currentUser!!.uid)
+        noteViewModel.deleteNoteById(note.id, note.userId)
         navigationActions.navigateTo(Screen.OVERVIEW)
       },
       modifier = Modifier.testTag("Delete button")) {
@@ -537,7 +534,7 @@ fun DeleteButton(
  */
 @Composable
 fun AddCommentButton(
-    currentUser: User?,
+    currentUser: User,
     updatedComments: Note.CommentCollection,
     onCommentsChange: (Note.CommentCollection) -> Unit,
     updateOnlyNoteCommentAndDate: () -> Unit
@@ -549,8 +546,7 @@ fun AddCommentButton(
               contentColor = MaterialTheme.colorScheme.onPrimary),
       onClick = {
         onCommentsChange(
-            updatedComments.addCommentByUser(
-                currentUser?.uid ?: "1", currentUser?.userName ?: "Invalid username", ""))
+            updatedComments.addCommentByUser(currentUser.uid, currentUser.userName, ""))
         updateOnlyNoteCommentAndDate()
       },
       modifier = Modifier.testTag("Add Comment Button")) {
