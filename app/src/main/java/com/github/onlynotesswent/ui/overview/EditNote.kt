@@ -141,7 +141,11 @@ fun EditNoteScreen(
         ScreenTopBar(
             title = "Edit note",
             titleTestTag = "editNoteTitle",
-            onBackClick = { navigationActions.goBack() },
+            onBackClick = {
+                //Unselects the note and navigates back to the previous screen
+                noteViewModel.selectedNote(null)
+                navigationActions.goBack()
+            },
             icon = {
               Icon(
                   imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
@@ -476,8 +480,10 @@ fun SaveButton(
                 comments = updatedComments),
             currentUser.uid)
         if (note.folderId != null) {
+            noteViewModel.selectedNote(null)
           navigationActions.navigateTo(Screen.FOLDER_CONTENTS)
         } else {
+            noteViewModel.selectedNote(null)
           navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
         }
       },
@@ -515,6 +521,7 @@ fun DeleteButton(
       border = BorderStroke(1.dp, MaterialTheme.colorScheme.error),
       onClick = {
         noteViewModel.deleteNoteById(note.id, note.userId)
+          noteViewModel.selectedNote(null)
         navigationActions.navigateTo(Screen.OVERVIEW)
       },
       modifier = Modifier.testTag("Delete button")) {

@@ -58,7 +58,7 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
    *
    * @param selectedNote The selected Note document.
    */
-  fun selectedNote(selectedNote: Note) {
+  fun selectedNote(selectedNote: Note?) {
     _selectedNote.value = selectedNote
   }
 
