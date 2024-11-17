@@ -64,17 +64,16 @@ class EditMarkdownTest {
             0.0)
     userViewModel.addUser(testUser, {}, {})
 
-      val testNote =
-          Note(
-              "testNoteId",
-              "testTitle",
-              Timestamp.now(),
-              Visibility.PUBLIC,
-              Course("CS-311", "SwEnt",
-                  2024, "testCoursePath"),
-                "testUserId")
+    val testNote =
+        Note(
+            "testNoteId",
+            "testTitle",
+            Timestamp.now(),
+            Visibility.PUBLIC,
+            Course("CS-311", "SwEnt", 2024, "testCoursePath"),
+            "testUserId")
 
-      noteViewModel.selectedNote(testNote)
+    noteViewModel.selectedNote(testNote)
 
     // Mock the current route to be the user create screen
     `when`(navigationActions.currentRoute()).thenReturn(Screen.EDIT_NOTE)
