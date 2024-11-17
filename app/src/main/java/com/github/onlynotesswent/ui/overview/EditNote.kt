@@ -505,8 +505,7 @@ fun AddCommentButton(
  *
  * @param updatedComments The collection of comments to be displayed and edited.
  * @param onCommentsChange The callback function to update the comments collection.
- * @param updateNoteComment The callback function to update only the note's comments and
- *   date.
+ * @param updateNoteComment The callback function to update only the note's comments and date.
  */
 @Composable
 fun CommentsSection(
@@ -514,48 +513,48 @@ fun CommentsSection(
     onCommentsChange: (Note.CommentCollection) -> Unit,
     updateNoteComment: () -> Unit
 ) {
-    if (updatedComments.commentsList.isEmpty()) {
-        Text(
-            text = "No comments yet. Add a comment to start the discussion.",
-            color = Color.Gray,
-            modifier = Modifier.padding(8.dp).testTag("NoCommentsText"))
-    } else {
-        updatedComments.commentsList.forEachIndexed { _, comment ->
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
-                verticalAlignment = Alignment.CenterVertically) {
-                OutlinedTextField(
-                    value = comment.content,
-                    onValueChange = {
-                        onCommentsChange(updatedComments.editCommentByCommentId(comment.commentId, it))
-                        updateNoteComment()
-                    },
-                    label = {
-                        val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
-                        val formattedDate = formatter.format(comment.editedDate.toDate())
-                        val displayedText =
-                            if (comment.isUnedited()) {
-                                "${comment.userName} : $formattedDate"
-                            } else {
-                                "${comment.userName} edited: $formattedDate"
-                            }
-                        Text(displayedText)
-                    },
-                    placeholder = { Text("Enter comment here") },
-                    modifier = Modifier.weight(1f).testTag("EditCommentTextField"))
+  if (updatedComments.commentsList.isEmpty()) {
+    Text(
+        text = "No comments yet. Add a comment to start the discussion.",
+        color = Color.Gray,
+        modifier = Modifier.padding(8.dp).testTag("NoCommentsText"))
+  } else {
+    updatedComments.commentsList.forEachIndexed { _, comment ->
+      Row(
+          modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+          verticalAlignment = Alignment.CenterVertically) {
+            OutlinedTextField(
+                value = comment.content,
+                onValueChange = {
+                  onCommentsChange(updatedComments.editCommentByCommentId(comment.commentId, it))
+                  updateNoteComment()
+                },
+                label = {
+                  val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
+                  val formattedDate = formatter.format(comment.editedDate.toDate())
+                  val displayedText =
+                      if (comment.isUnedited()) {
+                        "${comment.userName} : $formattedDate"
+                      } else {
+                        "${comment.userName} edited: $formattedDate"
+                      }
+                  Text(displayedText)
+                },
+                placeholder = { Text("Enter comment here") },
+                modifier = Modifier.weight(1f).testTag("EditCommentTextField"))
 
-                IconButton(
-                    onClick = {
-                        onCommentsChange(updatedComments.deleteCommentByCommentId(comment.commentId))
-                        updateNoteComment()
-                    },
-                    modifier = Modifier.testTag("DeleteCommentButton")) {
-                    Icon(
-                        imageVector = Icons.Default.Delete,
-                        contentDescription = "Delete Comment",
-                        tint = Color.Red)
+            IconButton(
+                onClick = {
+                  onCommentsChange(updatedComments.deleteCommentByCommentId(comment.commentId))
+                  updateNoteComment()
+                },
+                modifier = Modifier.testTag("DeleteCommentButton")) {
+                  Icon(
+                      imageVector = Icons.Default.Delete,
+                      contentDescription = "Delete Comment",
+                      tint = Color.Red)
                 }
-            }
-        }
+          }
     }
+  }
 }
