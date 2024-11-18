@@ -1,6 +1,45 @@
 package com.github.onlynotesswent.utils
 
-/*
+import android.app.Activity
+import android.content.ActivityNotFoundException
+import android.content.Context
+import android.content.Intent
+import android.content.IntentSender
+import android.net.Uri
+import android.util.Log
+import android.widget.Toast
+import android.widget.Toast.makeText
+import androidx.activity.ComponentActivity
+import androidx.activity.result.ActivityResult
+import androidx.activity.result.ActivityResultCallback
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.IntentSenderRequest
+import androidx.activity.result.contract.ActivityResultContract
+import androidx.core.content.FileProvider
+import androidx.core.content.FileProvider.getUriForFile
+import com.google.android.gms.tasks.OnFailureListener
+import com.google.android.gms.tasks.OnSuccessListener
+import com.google.android.gms.tasks.Task
+import com.google.mlkit.vision.documentscanner.GmsDocumentScanner
+import com.google.mlkit.vision.documentscanner.GmsDocumentScanningResult
+import com.google.mlkit.vision.documentscanner.GmsDocumentScanningResult.fromActivityResultIntent
+import junit.framework.TestCase.assertEquals
+import org.junit.Before
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.mockito.ArgumentCaptor
+import org.mockito.Captor
+import org.mockito.Mock
+import org.mockito.Mockito
+import org.mockito.Mockito.mock
+import org.mockito.Mockito.`when`
+import org.mockito.MockitoAnnotations
+import org.mockito.kotlin.any
+import org.mockito.kotlin.eq
+import org.mockito.kotlin.verify
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.shadows.ShadowLog
+
 /**
  * Unit tests for the `Scanner` class which interacts with Google ML Kit's Document Scanner API.
  * These tests cover scenarios like initialization, success, and failure during scanning, as well as
@@ -15,6 +54,7 @@ package com.github.onlynotesswent.utils
  * The tests ensure that the scanner behaves correctly in both success and failure cases, and that
  * logs and UI feedback (like Toast messages) are triggered as expected.
  */
+
 @RunWith(RobolectricTestRunner::class)
 class ScannerTest {
 
@@ -25,8 +65,9 @@ class ScannerTest {
   @Mock private lateinit var mockActivityResultLauncher: ActivityResultLauncher<IntentSenderRequest>
 
   private lateinit var scanner: Scanner
-
   private fun <T> capture(argumentCaptor: ArgumentCaptor<T>): T = argumentCaptor.capture()
+  @Captor
+  private lateinit var intentSenderRequestCaptor: ArgumentCaptor<IntentSenderRequest>
 
   @Before
   fun setUp() {
@@ -129,14 +170,12 @@ class ScannerTest {
     // Verify that the scanning intent was retrieved and launched
     verify(mockDocScanner).getStartScanIntent(mockMainActivity)
     verify(mockTaskIntentSender).addOnSuccessListener(any())
-    verify(mockActivityResultLauncher).launch(capture(captor))
-    assertEquals(mockIntentSender, captor.value.intentSender)
+    verify(mockActivityResultLauncher).launch(capture(intentSenderRequestCaptor))
+    assertEquals(mockIntentSender, intentSenderRequestCaptor.value.intentSender)
   }
 
   @Test
   fun scanLaunchThrowsExceptionTest() {
-    val captor = ArgumentCaptor.forClass(IntentSenderRequest::class.java)
-
     // Simulate a successful call, but an exception thrown by the scanner launcher
     `when`(mockActivityResultLauncher.launch(any())).thenThrow(ActivityNotFoundException("test"))
     `when`(mockDocScanner.getStartScanIntent(mockMainActivity)).thenReturn(mockTaskIntentSender)
@@ -171,8 +210,8 @@ class ScannerTest {
     // Verify that the scanning intent was retrieved and launched
     verify(mockDocScanner).getStartScanIntent(mockMainActivity)
     verify(mockTaskIntentSender).addOnSuccessListener(any())
-    verify(mockActivityResultLauncher).launch(capture(captor))
-    assertEquals(mockIntentSender, captor.value.intentSender)
+    verify(mockActivityResultLauncher).launch(capture(intentSenderRequestCaptor))
+    assertEquals(mockIntentSender, intentSenderRequestCaptor.value.intentSender)
   }
 
   /**
@@ -225,7 +264,8 @@ class ScannerTest {
             as ArgumentCaptor<ActivityResultCallback<ActivityResult>>
     verify(mockMainActivity)
         .registerForActivityResult(
-            any<ActivityResultContract<IntentSenderRequest, ActivityResult>>(), capture(captor))
+            any<ActivityResultContract<IntentSenderRequest, ActivityResult>>(), capture(captor)
+        )
     val handleActivityResult = captor.value
 
     Mockito.mockStatic(Toast::class.java).use { ToastMock ->
@@ -409,4 +449,3 @@ class ScannerTest {
     assert(errorLog != null) { "Expected error log was not found!" }
   }
 }
-*/
