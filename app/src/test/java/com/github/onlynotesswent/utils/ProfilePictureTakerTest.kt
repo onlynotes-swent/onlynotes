@@ -1,18 +1,8 @@
 package com.github.onlynotesswent.utils
 
-import android.content.Intent
-import android.net.Uri
-import androidx.activity.ComponentActivity
-import androidx.activity.result.ActivityResult
-import androidx.activity.result.ActivityResultCallback
-import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.contract.ActivityResultContract
-import androidx.activity.result.contract.ActivityResultContracts
-import org.junit.Before
-import org.junit.Test
-import org.mockito.Mock
 import org.mockito.Mockito.*
-import org.mockito.MockitoAnnotations
+
+
 /*
 class ProfilePictureTakerTest {
   @Mock private lateinit var mockActivity: ComponentActivity

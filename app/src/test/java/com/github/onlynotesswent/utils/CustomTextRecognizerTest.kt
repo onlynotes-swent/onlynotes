@@ -128,48 +128,48 @@ class CustomTextRecognizerTest {
       verify(mockToast).show()
     }
   }
-/*
-  @Test
-  fun extractTextFromImageSuccessTest() {
-    val mockUri = mock(Uri::class.java)
-    val mockInputImage = mock(InputImage::class.java)
-    val mockText = mock(Text::class.java)
-    `when`(mockText.text).thenReturn("Test recognized text")
+  /*
+    @Test
+    fun extractTextFromImageSuccessTest() {
+      val mockUri = mock(Uri::class.java)
+      val mockInputImage = mock(InputImage::class.java)
+      val mockText = mock(Text::class.java)
+      `when`(mockText.text).thenReturn("Test recognized text")
 
-    // Create a task that simulates a successful recognition
-    val successfulTask = mock(Task::class.java) as Task<Text>
-    `when`(successfulTask.addOnSuccessListener(any())).thenAnswer {
-      val listener = it.arguments[0] as OnSuccessListener<Text>
-      listener.onSuccess(mockText)
-      successfulTask
+      // Create a task that simulates a successful recognition
+      val successfulTask = mock(Task::class.java) as Task<Text>
+      `when`(successfulTask.addOnSuccessListener(any())).thenAnswer {
+        val listener = it.arguments[0] as OnSuccessListener<Text>
+        listener.onSuccess(mockText)
+        successfulTask
+      }
+
+      // Mock the text recognizer's processing result
+      `when`(mockTextRecognizer.process(mockInputImage)).thenReturn(successfulTask)
+
+      // Mock the InputImage creation
+      mockStatic(InputImage::class.java).use { inputImageMock ->
+        inputImageMock
+            .`when`<InputImage> { InputImage.fromFilePath(any(), eq(mockUri)) }
+            .thenReturn(mockInputImage)
+
+        // Trigger the text extraction process
+        customTextRecognizer.init()
+        customTextRecognizer.scanImage()
+
+        // Simulate the image selection callback
+        val captor =
+            ArgumentCaptor.forClass(ActivityResultCallback::class.java)
+                as ArgumentCaptor<ActivityResultCallback<Uri?>>
+        verify(mockActivity)
+            .registerForActivityResult(any<ActivityResultContracts.GetContent>(), captor.capture())
+        captor.value.onActivityResult(mockUri)
+
+        // Verify that the text processing was triggered
+        verify(mockTextRecognizer).process(mockInputImage)
+      }
     }
-
-    // Mock the text recognizer's processing result
-    `when`(mockTextRecognizer.process(mockInputImage)).thenReturn(successfulTask)
-
-    // Mock the InputImage creation
-    mockStatic(InputImage::class.java).use { inputImageMock ->
-      inputImageMock
-          .`when`<InputImage> { InputImage.fromFilePath(any(), eq(mockUri)) }
-          .thenReturn(mockInputImage)
-
-      // Trigger the text extraction process
-      customTextRecognizer.init()
-      customTextRecognizer.scanImage()
-
-      // Simulate the image selection callback
-      val captor =
-          ArgumentCaptor.forClass(ActivityResultCallback::class.java)
-              as ArgumentCaptor<ActivityResultCallback<Uri?>>
-      verify(mockActivity)
-          .registerForActivityResult(any<ActivityResultContracts.GetContent>(), captor.capture())
-      captor.value.onActivityResult(mockUri)
-
-      // Verify that the text processing was triggered
-      verify(mockTextRecognizer).process(mockInputImage)
-    }
-  }
-*/
+  */
   @Test
   fun extractTextFromImageIOExceptionTest() {
     val mockUri = mock(Uri::class.java)
