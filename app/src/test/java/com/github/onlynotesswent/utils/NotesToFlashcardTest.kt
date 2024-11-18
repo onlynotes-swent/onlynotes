@@ -20,7 +20,6 @@ import org.junit.runner.RunWith
 import org.mockito.ArgumentCaptor
 import org.mockito.Captor
 import org.mockito.Mock
-import org.mockito.Mockito
 import org.mockito.Mockito.anyString
 import org.mockito.Mockito.doAnswer
 import org.mockito.Mockito.times
@@ -28,14 +27,12 @@ import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.eq
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
 class NotesToFlashcardTest {
-  // Function to allow null arguments for Mockito when needed
-  private fun <T> nullableAny(): T = Mockito.any()
-
   // Helper function to capture arguments in Mockito tests, bypassing Kotlin's null-safety checks
   private fun <T> capture(argumentCaptor: ArgumentCaptor<T>): T = argumentCaptor.capture()
 
@@ -84,8 +81,6 @@ class NotesToFlashcardTest {
   @Mock private lateinit var mockOpenAI: OpenAI
 
   @Mock private lateinit var mockContext: Context
-
-  @Mock private lateinit var mockMd: File
 
   // Argument captor for Flashcard objects
   @Captor private lateinit var flashcardCaptor: ArgumentCaptor<Flashcard>
@@ -176,7 +171,7 @@ class NotesToFlashcardTest {
           null
         }
         .`when`(mockOpenAI)
-        .sendRequest(anyString(), nullableAny(), nullableAny(), anyString())
+        .sendRequest(anyString(), anyOrNull(), anyOrNull(), anyString())
 
     // Set up a flag to ensure the failure callback was called
     var failureCallbackCalled = false
@@ -205,7 +200,7 @@ class NotesToFlashcardTest {
           null
         }
         .`when`(mockOpenAI)
-        .sendRequest(anyString(), nullableAny(), nullableAny(), anyString())
+        .sendRequest(anyString(), anyOrNull(), anyOrNull(), anyString())
 
     // Set up a flag to ensure the failure callback was called
     var failureCallbackCalled = false
