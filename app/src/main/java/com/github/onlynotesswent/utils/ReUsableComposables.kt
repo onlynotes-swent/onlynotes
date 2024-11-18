@@ -58,6 +58,7 @@ import androidx.compose.ui.draganddrop.DragAndDropEvent
 import androidx.compose.ui.draganddrop.DragAndDropTarget
 import androidx.compose.ui.draganddrop.DragAndDropTransferData
 import androidx.compose.ui.draganddrop.toAndroidDragEvent
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -215,6 +216,7 @@ fun NoteItem(
 fun FolderItem(folder: Folder, navigationActions: NavigationActions, noteViewModel: NoteViewModel, folderViewModel: FolderViewModel, onClick: () -> Unit) {
 
   var navigateToOverview by remember { mutableStateOf(false) }
+  val context = LocalContext.current
 
   // LaunchedEffect to navigate to the overview screen when a subfolder is dropped into another
   // subfolder
@@ -258,6 +260,12 @@ fun FolderItem(folder: Folder, navigationActions: NavigationActions, noteViewMod
                                   noteViewModel.updateNote(
                                       selectedNote.copy(folderId = folder.id),
                                       selectedNote.userId)
+                                  // Toast:
+                                    Toast.makeText(
+                                            context,
+                                            "Note moved to ${folder.name}",
+                                            Toast.LENGTH_SHORT)
+                                        .show()
                                   return true
                               }
                               // Get the dragged folder in case a folder is being dragged
@@ -270,6 +278,13 @@ fun FolderItem(folder: Folder, navigationActions: NavigationActions, noteViewMod
                                   // dragged folder
                                   folderViewModel.updateFolder(
                                       draggedFolder.copy(parentFolderId = folder.id), folder.userId)
+                                    // Toast:
+                                    Toast.makeText(
+                                            context,
+                                            "Folder moved to ${folder.name}",
+                                            Toast.LENGTH_SHORT)
+                                        .show()
+
                                   // Allows calling the LaunchedEffect after returning true
                                   navigateToOverview = true
                                   return true
