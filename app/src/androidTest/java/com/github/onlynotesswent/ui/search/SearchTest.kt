@@ -1,6 +1,5 @@
 package com.github.onlynotesswent.ui.search
 
-import android.graphics.Bitmap
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
 import com.github.onlynotesswent.model.folder.Folder
@@ -41,22 +40,20 @@ class SearchScreenTest {
       Note(
           id = "",
           title = "Note 1",
-          content = "",
           date = Timestamp.now(),
           visibility = Visibility.PUBLIC,
           userId = "1",
           noteCourse = Course("CS-100", "Sample Course 1", 2024, "path"),
-          image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888))
+      )
   private val testNote2 =
       Note(
           id = "1",
           title = "Note 2",
-          content = "",
           date = Timestamp.now(),
           visibility = Visibility.PUBLIC,
           userId = "2",
           noteCourse = Course("CS-200", "Sample Course 2", 2024, "path"),
-          image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888))
+      )
 
   private val testNotes = listOf(testNote1, testNote2)
 

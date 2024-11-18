@@ -1,6 +1,5 @@
 package com.github.onlynotesswent.ui.overview
 
-import android.graphics.Bitmap
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -242,12 +241,10 @@ fun CreateNoteButton(
             Note(
                 id = noteUid,
                 title = title,
-                content = "",
                 date = Timestamp.now(),
                 visibility = visibility!!,
                 noteCourse = Course(courseCode, courseName, courseYear, "path"),
                 userId = currentUser.value!!.uid,
-                image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888),
                 folderId = folderId)
         noteViewModel.addNote(note, currentUser.value!!.uid)
 

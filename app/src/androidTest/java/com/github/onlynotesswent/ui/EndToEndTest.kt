@@ -1,6 +1,5 @@
 package com.github.onlynotesswent.ui
 
-import android.graphics.Bitmap
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
@@ -122,12 +121,10 @@ class EndToEndTest {
       Note(
           id = "1",
           title = "title",
-          content = "",
           date = Timestamp.now(),
           userId = testUid,
           visibility = Visibility.DEFAULT,
-          noteCourse = Course("courseCode", "courseName", 2024, "publicPath"),
-          image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888))
+          noteCourse = Course("courseCode", "courseName", 2024, "publicPath"))
 
   // Setup Compose test rule for UI testing
   @get:Rule val composeTestRule = createComposeRule()

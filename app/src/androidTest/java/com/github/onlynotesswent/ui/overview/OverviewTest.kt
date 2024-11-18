@@ -1,6 +1,5 @@
 package com.github.onlynotesswent.ui.overview
 
-import android.graphics.Bitmap
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotDisplayed
@@ -47,13 +46,11 @@ class OverviewTest {
           Note(
               id = "1",
               title = "Sample Title",
-              content = "This is a sample content.",
               date = Timestamp.now(), // Use current timestamp
               visibility = Visibility.DEFAULT,
               userId = "1",
               noteCourse = Course("CS-100", "Sample Course", 2024, "path"),
-              image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888) // Placeholder Bitmap
-              ))
+          ))
 
   private val folderList =
       listOf(Folder(id = "1", name = "name", userId = "1", parentFolderId = null))

@@ -28,6 +28,7 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.ArgumentCaptor
+import org.mockito.Captor
 import org.mockito.Mock
 import org.mockito.Mockito
 import org.mockito.Mockito.mock
@@ -64,8 +65,13 @@ class ScannerTest {
 
   private lateinit var scanner: Scanner
 
+  private fun <T> capture(argumentCaptor: ArgumentCaptor<T>): T = argumentCaptor.capture()
+
+  @Captor private lateinit var intentSenderRequestCaptor: ArgumentCaptor<IntentSenderRequest>
+
   @Before
   fun setUp() {
+
     // Initializes the mocks and sets up the scanner with the mock activity and document scanner
     MockitoAnnotations.openMocks(this)
 
@@ -164,14 +170,12 @@ class ScannerTest {
     // Verify that the scanning intent was retrieved and launched
     verify(mockDocScanner).getStartScanIntent(mockMainActivity)
     verify(mockTaskIntentSender).addOnSuccessListener(any())
-    verify(mockActivityResultLauncher).launch(captor.capture())
-    assertEquals(mockIntentSender, captor.value.intentSender)
+    verify(mockActivityResultLauncher).launch(capture(intentSenderRequestCaptor))
+    assertEquals(mockIntentSender, intentSenderRequestCaptor.value.intentSender)
   }
 
   @Test
   fun scanLaunchThrowsExceptionTest() {
-    val captor = ArgumentCaptor.forClass(IntentSenderRequest::class.java)
-
     // Simulate a successful call, but an exception thrown by the scanner launcher
     `when`(mockActivityResultLauncher.launch(any())).thenThrow(ActivityNotFoundException("test"))
     `when`(mockDocScanner.getStartScanIntent(mockMainActivity)).thenReturn(mockTaskIntentSender)
@@ -206,8 +210,8 @@ class ScannerTest {
     // Verify that the scanning intent was retrieved and launched
     verify(mockDocScanner).getStartScanIntent(mockMainActivity)
     verify(mockTaskIntentSender).addOnSuccessListener(any())
-    verify(mockActivityResultLauncher).launch(captor.capture())
-    assertEquals(mockIntentSender, captor.value.intentSender)
+    verify(mockActivityResultLauncher).launch(capture(intentSenderRequestCaptor))
+    assertEquals(mockIntentSender, intentSenderRequestCaptor.value.intentSender)
   }
 
   /**
@@ -260,7 +264,7 @@ class ScannerTest {
             as ArgumentCaptor<ActivityResultCallback<ActivityResult>>
     verify(mockMainActivity)
         .registerForActivityResult(
-            any<ActivityResultContract<IntentSenderRequest, ActivityResult>>(), captor.capture())
+            any<ActivityResultContract<IntentSenderRequest, ActivityResult>>(), capture(captor))
     val handleActivityResult = captor.value
 
     Mockito.mockStatic(Toast::class.java).use { ToastMock ->
@@ -300,7 +304,7 @@ class ScannerTest {
             as ArgumentCaptor<ActivityResultCallback<ActivityResult>>
     verify(mockMainActivity)
         .registerForActivityResult(
-            any<ActivityResultContract<IntentSenderRequest, ActivityResult>>(), captor.capture())
+            any<ActivityResultContract<IntentSenderRequest, ActivityResult>>(), capture(captor))
     val handleActivityResult = captor.value
 
     Mockito.mockStatic(Toast::class.java).use { ToastMock ->
@@ -329,6 +333,7 @@ class ScannerTest {
    */
   @Test
   fun scanResultPathNotFoundTest() {
+
     // Call the init method
     scanner.init()
 
@@ -339,7 +344,7 @@ class ScannerTest {
             as ArgumentCaptor<ActivityResultCallback<ActivityResult>>
     verify(mockMainActivity)
         .registerForActivityResult(
-            any<ActivityResultContract<IntentSenderRequest, ActivityResult>>(), captor.capture())
+            any<ActivityResultContract<IntentSenderRequest, ActivityResult>>(), capture(captor))
     val handleActivityResult = captor.value
 
     Mockito.mockStatic(Toast::class.java).use { ToastMock ->
@@ -404,7 +409,7 @@ class ScannerTest {
             as ArgumentCaptor<ActivityResultCallback<ActivityResult>>
     verify(mockMainActivity)
         .registerForActivityResult(
-            any<ActivityResultContract<IntentSenderRequest, ActivityResult>>(), captor.capture())
+            any<ActivityResultContract<IntentSenderRequest, ActivityResult>>(), capture(captor))
     val handleActivityResult = captor.value
 
     // Mock the static GmsDocumentScanningResult.fromActivityResultIntent method and return
