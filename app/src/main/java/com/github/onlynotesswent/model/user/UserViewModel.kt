@@ -1,4 +1,4 @@
-package com.github.onlynotesswent.model.users
+package com.github.onlynotesswent.model.user
 
 import android.util.Log
 import androidx.lifecycle.ViewModel

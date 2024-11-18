@@ -1,4 +1,4 @@
-package com.github.onlynotesswent.model.users
+package com.github.onlynotesswent.model.user
 
 import com.google.firebase.Timestamp
 import java.text.SimpleDateFormat
