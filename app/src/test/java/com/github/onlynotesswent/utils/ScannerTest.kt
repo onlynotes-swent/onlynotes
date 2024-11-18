@@ -54,7 +54,6 @@ import org.robolectric.shadows.ShadowLog
  * The tests ensure that the scanner behaves correctly in both success and failure cases, and that
  * logs and UI feedback (like Toast messages) are triggered as expected.
  */
-
 @RunWith(RobolectricTestRunner::class)
 class ScannerTest {
 
@@ -65,9 +64,10 @@ class ScannerTest {
   @Mock private lateinit var mockActivityResultLauncher: ActivityResultLauncher<IntentSenderRequest>
 
   private lateinit var scanner: Scanner
+
   private fun <T> capture(argumentCaptor: ArgumentCaptor<T>): T = argumentCaptor.capture()
-  @Captor
-  private lateinit var intentSenderRequestCaptor: ArgumentCaptor<IntentSenderRequest>
+
+  @Captor private lateinit var intentSenderRequestCaptor: ArgumentCaptor<IntentSenderRequest>
 
   @Before
   fun setUp() {
@@ -264,8 +264,7 @@ class ScannerTest {
             as ArgumentCaptor<ActivityResultCallback<ActivityResult>>
     verify(mockMainActivity)
         .registerForActivityResult(
-            any<ActivityResultContract<IntentSenderRequest, ActivityResult>>(), capture(captor)
-        )
+            any<ActivityResultContract<IntentSenderRequest, ActivityResult>>(), capture(captor))
     val handleActivityResult = captor.value
 
     Mockito.mockStatic(Toast::class.java).use { ToastMock ->
