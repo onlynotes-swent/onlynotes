@@ -14,7 +14,7 @@ class NotificationViewModelTest {
   @Mock private lateinit var mockRepositoryFirestore: NotificationRepositoryFirestore
   private lateinit var notificationViewModel: NotificationViewModel
 
-  val testNotification =
+  private val testNotification =
       Notification(
           id = "1",
           title = "testTitle",
@@ -26,7 +26,7 @@ class NotificationViewModelTest {
 
   @Before
   fun setUp() {
-    MockitoAnnotations.initMocks(this)
+    MockitoAnnotations.openMocks(this)
     notificationViewModel = NotificationViewModel(mockRepositoryFirestore)
   }
 

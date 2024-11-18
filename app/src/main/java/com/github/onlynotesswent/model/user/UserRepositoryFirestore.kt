@@ -187,7 +187,7 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore) : UserRepositor
         .addOnSuccessListener {
           db.collection(collectionPath)
               .document(follower)
-              .update("$type..following", FieldValue.arrayRemove(user))
+              .update("$type.following", FieldValue.arrayRemove(user))
               .addOnSuccessListener { onSuccess() }
               .addOnFailureListener { exception -> onFailure(exception) }
         }
