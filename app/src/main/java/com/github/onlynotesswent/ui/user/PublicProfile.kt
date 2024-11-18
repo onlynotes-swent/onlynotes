@@ -34,6 +34,7 @@ import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Scaffold
@@ -71,7 +72,9 @@ import com.github.onlynotesswent.ui.navigation.LIST_TOP_LEVEL_DESTINATION
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
 import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
+import com.github.onlynotesswent.ui.theme.Typography
 import com.google.firebase.auth.FirebaseAuth
+import java.util.Locale
 
 // User Profile Home screen:
 /**
@@ -295,9 +298,7 @@ fun ProfileContent(
   if (user.value == null) {
     Text("User not found", modifier = Modifier.testTag("userNotFound"))
   } else {
-    // ADD PROFILE PICTURE HERE
     ElevatedCard(
-        // TODO: Aisel - change colors here
         modifier = Modifier.fillMaxSize().padding(40.dp).testTag("profileCard"),
     ) {
       val borderPadding = 20.dp
@@ -306,7 +307,7 @@ fun ProfileContent(
           verticalArrangement = Arrangement.Center,
           horizontalAlignment = Alignment.CenterHorizontally) {
 
-            // Profile picture (change later)
+            // Profile picture
             NonModifiableProfilePicture(user, profilePictureUri, fileViewModel)
 
             Spacer(modifier = Modifier.height(20.dp))
@@ -381,10 +382,10 @@ fun ProfileContent(
                         modifier = Modifier.testTag("followersText"))
                   }
             }
-            // Display the dropdown menus for the user's following and followers
-            UserDropdownMenu(
+            // Display bottom sheets for the user's following and followers
+            UserBottomSheet(
                 isFollowingMenuShown, following, userViewModel, navigationActions, "following")
-            UserDropdownMenu(
+            UserBottomSheet(
                 isFollowerMenuShown, followers, userViewModel, navigationActions, "followers")
           }
     }
@@ -426,15 +427,59 @@ fun FollowUnfollowButton(userViewModel: UserViewModel, followButtonText: Mutable
  * @param navigationActions The navigation actions.
  * @param tag The tag for the dropdown menu (either "following" or "followers"), used for testing.
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun UserDropdownMenu(
+fun UserBottomSheet(
     expanded: MutableState<Boolean>,
     users: State<List<User>>,
     userViewModel: UserViewModel,
     navigationActions: NavigationActions,
     tag: String = ""
 ) {
-  DropdownMenu(
+    if (expanded.value){
+        ModalBottomSheet(
+            onDismissRequest = { expanded.value = false },
+            modifier = Modifier.testTag("${tag}BottomSheet")
+        ) {
+            Column(
+                modifier = Modifier.fillMaxWidth().padding(bottom = 30.dp),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    "List of ${tag.replaceFirstChar { it.uppercase()}}:",
+                    style = Typography.titleMedium,
+                    modifier = Modifier.padding(8.dp).testTag("${tag}Title")
+                )
+                if (users.value.isEmpty()) {
+                    Text(
+                        "No $tag to display",
+                        modifier = Modifier.padding(8.dp).testTag("${tag}Absent")
+                    )
+                }
+                Column(
+                    modifier = Modifier.fillMaxWidth().padding(start = 50.dp,end = 10.dp),
+                    horizontalAlignment = Alignment.Start) {
+                    users.value.forEach { user ->
+                        Row(modifier = Modifier.padding(5.dp), horizontalArrangement = Arrangement.spacedBy(5.dp)) {
+                            Icon(Icons.Default.AccountCircle, "profileIcon")
+                            Text(
+                                "${user.fullName()} — @${user.userName}",
+                                modifier =
+                                Modifier.testTag("item--${user.userName}")
+                                    .clickable {
+                                        expanded.value = false
+                                        switchProfileTo(user, userViewModel, navigationActions)
+                                    }
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+  /*DropdownMenu(
       expanded = expanded.value,
       onDismissRequest = { expanded.value = false },
       modifier =
@@ -459,6 +504,7 @@ fun UserDropdownMenu(
           }
         }
       }
+   */
 }
 
 /**
