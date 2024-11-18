@@ -1,9 +1,35 @@
 package com.github.onlynotesswent.utils
 
+import android.content.ActivityNotFoundException
+import android.content.Context
+import android.net.Uri
+import android.util.Log
+import android.widget.Toast
+import androidx.activity.ComponentActivity
+import androidx.activity.result.ActivityResult
+import androidx.activity.result.ActivityResultCallback
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContract
+import androidx.activity.result.contract.ActivityResultContracts
+import com.google.android.gms.tasks.OnFailureListener
+import com.google.android.gms.tasks.OnSuccessListener
+import com.google.android.gms.tasks.Task
+import com.google.mlkit.vision.common.InputImage
+import com.google.mlkit.vision.text.Text
+import com.google.mlkit.vision.text.TextRecognizer
+import java.io.IOException
+import org.junit.Before
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.mockito.ArgumentCaptor
+import org.mockito.Mock
 import org.mockito.Mockito.*
+import org.mockito.MockitoAnnotations
+import org.mockito.kotlin.any
+import org.mockito.kotlin.verify
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.shadows.ShadowLog
 
-
-/*
 @RunWith(RobolectricTestRunner::class)
 @Suppress("UNCHECKED_CAST")
 class CustomTextRecognizerTest {
@@ -13,6 +39,7 @@ class CustomTextRecognizerTest {
   @Mock private lateinit var mockActivityResultLauncher: ActivityResultLauncher<String>
 
   private lateinit var customTextRecognizer: CustomTextRecognizer
+  private fun <T> capture(argumentCaptor: ArgumentCaptor<T>): T = argumentCaptor.capture()
 
   @Before
   fun setUp() {
@@ -102,48 +129,48 @@ class CustomTextRecognizerTest {
       verify(mockToast).show()
     }
   }
-  /*
-    @Test
-    fun extractTextFromImageSuccessTest() {
-      val mockUri = mock(Uri::class.java)
-      val mockInputImage = mock(InputImage::class.java)
-      val mockText = mock(Text::class.java)
-      `when`(mockText.text).thenReturn("Test recognized text")
 
-      // Create a task that simulates a successful recognition
-      val successfulTask = mock(Task::class.java) as Task<Text>
-      `when`(successfulTask.addOnSuccessListener(any())).thenAnswer {
-        val listener = it.arguments[0] as OnSuccessListener<Text>
-        listener.onSuccess(mockText)
-        successfulTask
-      }
+  @Test
+  fun extractTextFromImageSuccessTest() {
+    val mockUri = mock(Uri::class.java)
+    val mockInputImage = mock(InputImage::class.java)
+    val mockText = mock(Text::class.java)
+    `when`(mockText.text).thenReturn("Test recognized text")
 
-      // Mock the text recognizer's processing result
-      `when`(mockTextRecognizer.process(mockInputImage)).thenReturn(successfulTask)
-
-      // Mock the InputImage creation
-      mockStatic(InputImage::class.java).use { inputImageMock ->
-        inputImageMock
-            .`when`<InputImage> { InputImage.fromFilePath(any(), eq(mockUri)) }
-            .thenReturn(mockInputImage)
-
-        // Trigger the text extraction process
-        customTextRecognizer.init()
-        customTextRecognizer.scanImage()
-
-        // Simulate the image selection callback
-        val captor =
-            ArgumentCaptor.forClass(ActivityResultCallback::class.java)
-                as ArgumentCaptor<ActivityResultCallback<Uri?>>
-        verify(mockActivity)
-            .registerForActivityResult(any<ActivityResultContracts.GetContent>(), captor.capture())
-        captor.value.onActivityResult(mockUri)
-
-        // Verify that the text processing was triggered
-        verify(mockTextRecognizer).process(mockInputImage)
-      }
+    // Create a task that simulates a successful recognition
+    val successfulTask = mock(Task::class.java) as Task<Text>
+    `when`(successfulTask.addOnSuccessListener(any())).thenAnswer {
+      val listener = it.arguments[0] as OnSuccessListener<Text>
+      listener.onSuccess(mockText)
+      successfulTask
     }
-  */
+
+    // Mock the text recognizer's processing result
+    `when`(mockTextRecognizer.process(mockInputImage)).thenReturn(successfulTask)
+
+    // Mock the InputImage creation
+    mockStatic(InputImage::class.java).use { inputImageMock ->
+      inputImageMock
+          .`when`<InputImage> { InputImage.fromFilePath(any(), eq(mockUri)) }
+          .thenReturn(mockInputImage)
+
+      // Trigger the text extraction process
+      customTextRecognizer.init()
+      customTextRecognizer.scanImage()
+
+      // Simulate the image selection callback
+      val captor =
+          ArgumentCaptor.forClass(ActivityResultCallback::class.java)
+              as ArgumentCaptor<ActivityResultCallback<Uri?>>
+      verify(mockActivity)
+          .registerForActivityResult(any<ActivityResultContracts.GetContent>(), capture(captor))
+      captor.value.onActivityResult(mockUri)
+
+      // Verify that the text processing was triggered
+      verify(mockTextRecognizer).process(mockInputImage)
+    }
+  }
+
   @Test
   fun extractTextFromImageIOExceptionTest() {
     val mockUri = mock(Uri::class.java)
@@ -169,7 +196,7 @@ class CustomTextRecognizerTest {
             ArgumentCaptor.forClass(ActivityResultCallback::class.java)
                 as ArgumentCaptor<ActivityResultCallback<Uri?>>
         verify(mockActivity)
-            .registerForActivityResult(any<ActivityResultContracts.GetContent>(), captor.capture())
+            .registerForActivityResult(any<ActivityResultContracts.GetContent>(), capture(captor))
         captor.value.onActivityResult(mockUri)
 
         // Get all the logs
@@ -235,7 +262,7 @@ class CustomTextRecognizerTest {
             ArgumentCaptor.forClass(ActivityResultCallback::class.java)
                 as ArgumentCaptor<ActivityResultCallback<Uri?>>
         verify(mockActivity)
-            .registerForActivityResult(any<ActivityResultContracts.GetContent>(), captor.capture())
+            .registerForActivityResult(any<ActivityResultContracts.GetContent>(), capture(captor))
         captor.value.onActivityResult(mockUri)
 
         // Get all the logs
@@ -300,7 +327,7 @@ class CustomTextRecognizerTest {
             ArgumentCaptor.forClass(ActivityResultCallback::class.java)
                 as ArgumentCaptor<ActivityResultCallback<Uri?>>
         verify(mockActivity)
-            .registerForActivityResult(any<ActivityResultContracts.GetContent>(), captor.capture())
+            .registerForActivityResult(any<ActivityResultContracts.GetContent>(), capture(captor))
         captor.value.onActivityResult(mockUri)
 
         // Get all the logs
@@ -329,5 +356,3 @@ class CustomTextRecognizerTest {
     }
   }
 }
-
-*/
