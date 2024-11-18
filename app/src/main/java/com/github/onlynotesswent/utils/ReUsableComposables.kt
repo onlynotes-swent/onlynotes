@@ -146,7 +146,8 @@ fun NoteItem(
                 detectTapGestures(
                     onTap = { onClick() },
                     onLongPress = {
-                      noteViewModel.selectedNote(note)
+                      noteViewModel.draggedNote(note)
+                      //noteViewModel.selectedNote(note)
                       // Start a drag-and-drop operation to transfer the data which is being dragged
                       startTransfer(
                           // Transfer the note Id as a ClipData object
@@ -221,14 +222,13 @@ fun FolderItem(
     onClick: () -> Unit
 ) {
 
-  var navigateToOverview by remember { mutableStateOf(false) }
+  var navigateToFolder by remember { mutableStateOf(false) }
   val context = LocalContext.current
 
-  // LaunchedEffect to navigate to the overview screen when a subfolder is dropped into another
-  // subfolder
-  LaunchedEffect(navigateToOverview) {
-    if (navigateToOverview) {
-      navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
+  // LaunchedEffect to navigate to the folder content screen when an item is dropped into a folder
+  LaunchedEffect(navigateToFolder) {
+    if (navigateToFolder) {
+      navigationActions.navigateTo(Screen.FOLDER_CONTENTS)
     }
   }
   Card(
@@ -256,23 +256,28 @@ fun FolderItem(
                       remember {
                         object : DragAndDropTarget {
                           override fun onDrop(event: DragAndDropEvent): Boolean {
-                              navigateToOverview = false
+                              //Set launchedEffect to false
+                              navigateToFolder = false
+                              // Set the target folder as the selected folder to navigate to it when dropping on it
+                              folderViewModel.selectedFolder(folder)
                               // Get the dragged object Id
                               val draggedObjectId =
                                   event.toAndroidDragEvent().clipData.getItemAt(0).text.toString()
-                              val selectedNote = noteViewModel.selectedNote.value
-                              Log.e("FolderItem", "selectedNoteId: ${selectedNote?.id} and draggedObjectId: $draggedObjectId")
-                              if (selectedNote != null && selectedNote.id == draggedObjectId) {
+                              val draggedNote = noteViewModel.draggedNote.value
+                              Log.e("FolderItem", "selectedNoteId: ${draggedNote?.id} and draggedObjectId: $draggedObjectId")
+                              if (draggedNote != null && draggedNote.id == draggedObjectId) {
                                   // Update the selected note (dragged) with the new folder Id
                                   noteViewModel.updateNote(
-                                      selectedNote.copy(folderId = folder.id),
-                                      selectedNote.userId)
+                                      draggedNote.copy(folderId = folder.id),
+                                      draggedNote.userId)
 
                                   Log.e("FolderItem", "returning true")
                                   // Toast:
                                   Toast.makeText(
                                       context, "Note moved to ${folder.name}", Toast.LENGTH_SHORT)
                                       .show()
+                                  noteViewModel.draggedNote(null)
+                                  navigateToFolder = true
                                   return true
                               }
                               // Get the dragged folder in case a folder is being dragged
@@ -290,9 +295,9 @@ fun FolderItem(
                                   Toast.makeText(
                                       context, "Folder moved to ${folder.name}", Toast.LENGTH_SHORT)
                                       .show()
-
+                                  folderViewModel.draggedFolder(null)
                                   // Allows calling the LaunchedEffect after returning true
-                                  navigateToOverview = true
+                                  navigateToFolder = true
                                   return true
                               }
                               return false

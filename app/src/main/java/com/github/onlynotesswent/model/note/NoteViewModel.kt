@@ -35,6 +35,10 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
   private val _selectedNote = MutableStateFlow<Note?>(null)
   val selectedNote: StateFlow<Note?> = _selectedNote.asStateFlow()
 
+  // Dragged note
+  private val _draggedNote = MutableStateFlow<Note?>(null)
+  val draggedNote: StateFlow<Note?> = _draggedNote.asStateFlow()
+
   init {
     repository.init { getPublicNotes() }
   }
@@ -52,6 +56,10 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
    */
   fun selectedFolderId(folderId: String?) {
     _currentFolderId.value = folderId
+  }
+
+  fun draggedNote(draggedNote: Note?) {
+    _draggedNote.value = draggedNote
   }
 
   /**
@@ -124,8 +132,8 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
     repository.updateNote(
         note = note,
         onSuccess = {
-          Log.d("NoteViewModel", "Successfully updated note : $note")
           getRootNotesFrom(userID)
+          Log.d("NoteViewModel", "Successfully updated note : $note")
         },
         onFailure = { Log.e("NoteViewModel", "Failed to update note : $it") })
   }
