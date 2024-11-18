@@ -2,6 +2,7 @@ package com.github.onlynotesswent.utils
 
 import android.content.ClipData
 import android.content.Context
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
@@ -255,41 +256,46 @@ fun FolderItem(
                       remember {
                         object : DragAndDropTarget {
                           override fun onDrop(event: DragAndDropEvent): Boolean {
-                            navigateToOverview = false
-                            // Get the dragged object Id
-                            val draggedObjectId =
-                                event.toAndroidDragEvent().clipData.getItemAt(0).text.toString()
-                            val selectedNote = noteViewModel.selectedNote.value
-                            if (selectedNote != null && selectedNote.id == draggedObjectId) {
-                              // Update the selected note (dragged) with the new folder Id
-                              noteViewModel.updateNote(
-                                  selectedNote.copy(folderId = folder.id), selectedNote.userId)
-                              // Toast:
-                              Toast.makeText(
-                                      context, "Note moved to ${folder.name}", Toast.LENGTH_SHORT)
-                                  .show()
-                              return true
-                            }
-                            // Get the dragged folder in case a folder is being dragged
-                            val draggedFolder = folderViewModel.draggedFolder.value
-                            if (draggedFolder != null &&
-                                draggedFolder.id == draggedObjectId &&
-                                draggedFolder.id != folder.id) {
-                              // Update the dragged folder with the new parent folder Id. Folder
-                              // here represents the target folder, so the future parent of the
-                              // dragged folder
-                              folderViewModel.updateFolder(
-                                  draggedFolder.copy(parentFolderId = folder.id), folder.userId)
-                              // Toast:
-                              Toast.makeText(
-                                      context, "Folder moved to ${folder.name}", Toast.LENGTH_SHORT)
-                                  .show()
+                              navigateToOverview = false
+                              // Get the dragged object Id
+                              val draggedObjectId =
+                                  event.toAndroidDragEvent().clipData.getItemAt(0).text.toString()
+                              val selectedNote = noteViewModel.selectedNote.value
+                              Log.e("FolderItem", "selectedNoteId: ${selectedNote?.id} and draggedObjectId: $draggedObjectId")
+                              if (selectedNote != null && selectedNote.id == draggedObjectId) {
+                                  // Update the selected note (dragged) with the new folder Id
+                                  noteViewModel.updateNote(
+                                      selectedNote.copy(folderId = folder.id),
+                                      selectedNote.userId)
 
-                              // Allows calling the LaunchedEffect after returning true
-                              navigateToOverview = true
-                              return true
-                            }
-                            return false
+                                  Log.e("FolderItem", "returning true")
+                                  // Toast:
+                                  Toast.makeText(
+                                      context, "Note moved to ${folder.name}", Toast.LENGTH_SHORT)
+                                      .show()
+                                  return true
+                              }
+                              // Get the dragged folder in case a folder is being dragged
+                              val draggedFolder = folderViewModel.draggedFolder.value
+                              Log.e("FolderItem", "draggedFolderId: ${draggedFolder?.id} and draggedObjectId: $draggedObjectId")
+                              if (draggedFolder != null &&
+                                  draggedFolder.id == draggedObjectId &&
+                                  draggedFolder.id != folder.id) {
+                                  // Update the dragged folder with the new parent folder Id. Folder
+                                  // here represents the target folder, so the future parent of the
+                                  // dragged folder
+                                  folderViewModel.updateFolder(
+                                      draggedFolder.copy(parentFolderId = folder.id), folder.userId)
+                                  // Toast:
+                                  Toast.makeText(
+                                      context, "Folder moved to ${folder.name}", Toast.LENGTH_SHORT)
+                                      .show()
+
+                                  // Allows calling the LaunchedEffect after returning true
+                                  navigateToOverview = true
+                                  return true
+                              }
+                              return false
                           }
                         }
                       }),
