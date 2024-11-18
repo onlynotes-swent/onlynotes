@@ -11,6 +11,7 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mock
+import org.mockito.Mockito.anyBoolean
 import org.mockito.Mockito.anyString
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
@@ -104,7 +105,7 @@ class UserViewModelTest {
     // Mock the addFollowerTo method to call onSuccess
     `when`(
             mockRepositoryFirestore.addFollowerTo(
-                anyString(), anyString(), anyOrNull(), anyOrNull()))
+                anyString(), anyString(), anyBoolean(), anyOrNull(), anyOrNull()))
         .thenAnswer {
           val onSuccess = it.arguments[2] as () -> Unit
           onSuccess()
@@ -112,7 +113,7 @@ class UserViewModelTest {
     // Mock the removeFollowerFrom method to call onSuccess
     `when`(
             mockRepositoryFirestore.removeFollowerFrom(
-                anyString(), anyString(), anyOrNull(), anyOrNull()))
+                anyString(), anyString(), anyBoolean(), anyOrNull(), anyOrNull()))
         .thenAnswer {
           val onSuccess = it.arguments[2] as () -> Unit
           onSuccess()
@@ -225,7 +226,7 @@ class UserViewModelTest {
     var onSuccessCalled = false
     userViewModel.followUser("2", { onSuccessCalled = true }, { assert(false) })
     verify(mockRepositoryFirestore, timeout(1000))
-        .addFollowerTo(eq("2"), eq("1"), anyOrNull(), anyOrNull())
+        .addFollowerTo(eq("2"), eq("1"), anyBoolean(), anyOrNull(), anyOrNull())
     verify(mockRepositoryFirestore, timeout(1000))
         .getUserById(eq("1"), anyOrNull(), anyOrNull(), anyOrNull())
     assert(onSuccessCalled)
@@ -245,7 +246,7 @@ class UserViewModelTest {
     var onSuccessCalled = false
     userViewModel.unfollowUser("2", { onSuccessCalled = true }, { assert(false) })
     verify(mockRepositoryFirestore, timeout(1000))
-        .removeFollowerFrom(eq("2"), eq("1"), anyOrNull(), anyOrNull())
+        .removeFollowerFrom(eq("2"), eq("1"), anyBoolean() ,anyOrNull(), anyOrNull())
     assert(onSuccessCalled)
   }
 

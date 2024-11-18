@@ -3,12 +3,27 @@ package com.github.onlynotesswent.model.notification
 
 
 import com.google.firebase.Firebase
+import com.google.firebase.Timestamp
 import com.google.firebase.auth.auth
+import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 
-class NotifcationRepositoryFirestore(private val db: FirebaseFirestore) : NotificationRepository {
+class NotificationRepositoryFirestore(private val db: FirebaseFirestore) : NotificationRepository {
 
     private val collectionPath = "notifications"
+
+    fun documentSnapshotToNotification(document: DocumentSnapshot): Notification {
+        return Notification(
+            id = document.getString("id") ?: "",
+            title = document.getString("title") ?: "",
+            body = document.getString("body") ?: "",
+            senderId = document.getString("senderId"),
+            receiverId = document.getString("receiverId") ?: "",
+            timestamp = document.getTimestamp("timestamp") ?: Timestamp.now(),
+            read = document.getBoolean("read") ?: false,
+            type = Notification.Type.valueOf(document.getString("type") ?: "DEFAULT")
+        )
+    }
 
     override fun init(onSuccess: () -> Unit) {
         Firebase.auth.addAuthStateListener {
@@ -28,7 +43,7 @@ class NotifcationRepositoryFirestore(private val db: FirebaseFirestore) : Notifi
             .document(id)
             .get()
             .addOnSuccessListener { document ->
-                if (!document.exists()) onNotificationNotFound() else onSuccess(document.toObject(Notification::class.java)!!)
+                if (!document.exists()) onNotificationNotFound() else onSuccess(documentSnapshotToNotification(document))
             }
             .addOnFailureListener(onFailure)
     }
@@ -42,7 +57,7 @@ class NotifcationRepositoryFirestore(private val db: FirebaseFirestore) : Notifi
             .whereEqualTo("receiverId", receiverId)
             .get()
             .addOnSuccessListener { querySnapshot ->
-                onSuccess(querySnapshot.toObjects(Notification::class.java))
+                onSuccess(querySnapshot.documents.map { documentSnapshotToNotification(it) })
             }
             .addOnFailureListener(onFailure)
     }
@@ -53,9 +68,10 @@ class NotifcationRepositoryFirestore(private val db: FirebaseFirestore) : Notifi
         onFailure: (Exception) -> Unit
     ) {
             db.collection(collectionPath)
-            .add(notification)
-            .addOnSuccessListener { onSuccess() }
-            .addOnFailureListener(onFailure)
+                .document(notification.id)
+                .set(notification)
+                .addOnSuccessListener { onSuccess() }
+                .addOnFailureListener(onFailure)
     }
 
     override fun updateNotification(

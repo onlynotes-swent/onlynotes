@@ -246,6 +246,29 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
         onFailure)
   }
 
+
+    fun removeFollower(followerUID: String, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) {
+        if (_currentUser.value == null) {
+            onFailure(UserNotLoggedInException())
+            return
+        }
+        if(_currentUser.value!!.friends.followers.contains(followerUID)) {
+            repository.removeFollowerFrom(
+                user = _currentUser.value!!.uid,
+                follower = followerUID,
+                false,
+                {
+
+                            refreshCurrentUser()
+                            onSuccess()
+                     
+                },
+                onFailure)
+        } else {
+            onFailure(Exception("User is not in followers list"))
+        }
+    }
+
     /**
      * Accepts a follower request from the specified user.
      *
@@ -301,17 +324,10 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
                 follower = followerUID,
                 true,
                 {
-                    refreshCurrentUser()
-                    repository.removeFollowerFrom(
-                        user = followerUID,
-                        follower = _currentUser.value!!.uid,
-                        true,
-                        {
+
                             refreshCurrentUser()
                             onSuccess()
-                        },
-                        onFailure)
-                    onSuccess()
+
                 },
                 onFailure)
         } else {

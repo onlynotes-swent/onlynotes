@@ -1,17 +1,16 @@
 package com.github.onlynotesswent.model.notification
 
-
-
-
-
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import com.google.firebase.Timestamp
 
 data class Notification (
     val id: String,
     val title: String,
     val body: String,
-    val senderId: String,
+    val senderId: String?,
     val receiverId: String,
-    val timestamp: Long,
+    val timestamp: Timestamp,
     val read: Boolean,
     val type: Type = Type.DEFAULT
 ){
@@ -28,4 +27,5 @@ data class Notification (
         SYSTEM,
         DEFAULT;
     }
+
 }
