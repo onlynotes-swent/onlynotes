@@ -96,6 +96,7 @@ interface UserRepository {
   fun addFollowerTo(
       user: String,
       follower: String,
+      isRequest: Boolean,
       onSuccess: () -> Unit,
       onFailure: (Exception) -> Unit
   )
@@ -111,6 +112,7 @@ interface UserRepository {
   fun removeFollowerFrom(
       user: String,
       follower: String,
+      isRequest: Boolean,
       onSuccess: () -> Unit,
       onFailure: (Exception) -> Unit
   )

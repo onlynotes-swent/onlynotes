@@ -201,6 +201,7 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
     repository.addFollowerTo(
         user = followingUID,
         follower = _currentUser.value!!.uid,
+        true,
         {
           refreshCurrentUser()
           onSuccess()
@@ -222,15 +223,102 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
       onFailure(UserNotLoggedInException())
       return
     }
+      val isRequest : Boolean;
+      if(_currentUser.value!!.pendingFriends.following.contains(followingUID)) {
+            isRequest = true;
+        }
+      else if (_currentUser.value!!.friends.following.contains(followingUID)) {
+           isRequest = false;
+      }else{
+            //onFailure(Exception("User is not in following list"))
+            return
+        }
+
+
     repository.removeFollowerFrom(
         user = followingUID,
         follower = _currentUser.value!!.uid,
+        isRequest,
         {
           refreshCurrentUser()
           onSuccess()
         },
         onFailure)
   }
+
+    /**
+     * Accepts a follower request from the specified user.
+     *
+     * @param followerUID The UID of the user who sent the follower request.
+     * @param onSuccess Callback to be invoked when the operation is successful.
+     * @param onFailure Callback to be invoked if an error occurs.
+     */
+
+    fun acceptFollowerRequest(followerUID: String, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) {
+        if (_currentUser.value == null) {
+            onFailure(UserNotLoggedInException())
+            return
+        }
+        if(_currentUser.value!!.pendingFriends.followers.contains(followerUID)) {
+            repository.addFollowerTo(
+                user = _currentUser.value!!.uid,
+                follower = followerUID,
+                false,
+                {
+                    refreshCurrentUser()
+                    repository.removeFollowerFrom(
+                        user = followerUID,
+                        follower = _currentUser.value!!.uid,
+                        true,
+                        {
+                            refreshCurrentUser()
+                            onSuccess()
+                        },
+                        onFailure)
+                    onSuccess()
+                },
+                onFailure)
+        } else {
+            onFailure(Exception("User is not in pending followers list"))
+        }
+    }
+
+    /**
+     * Declines a follower request from the specified user.
+     *
+     * @param followerUID The UID of the user who sent the follower request.
+     * @param onSuccess Callback to be invoked when the operation is successful.
+     * @param onFailure Callback to be invoked if an error occurs.
+     */
+    fun declineFollowerRequest(followerUID: String, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) {
+        if (_currentUser.value == null) {
+            onFailure(UserNotLoggedInException())
+            return
+        }
+        if(_currentUser.value!!.pendingFriends.followers.contains(followerUID)) {
+            repository.removeFollowerFrom(
+                user = _currentUser.value!!.uid,
+                follower = followerUID,
+                true,
+                {
+                    refreshCurrentUser()
+                    repository.removeFollowerFrom(
+                        user = followerUID,
+                        follower = _currentUser.value!!.uid,
+                        true,
+                        {
+                            refreshCurrentUser()
+                            onSuccess()
+                        },
+                        onFailure)
+                    onSuccess()
+                },
+                onFailure)
+        } else {
+            onFailure(Exception("User is not in pending followers list"))
+        }
+
+    }
 
   /**
    * Retrieves the list of followers for a specified user. If only a list of follower IDs of the

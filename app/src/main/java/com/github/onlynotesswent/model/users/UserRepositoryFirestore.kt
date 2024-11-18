@@ -152,38 +152,46 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore) : UserRepositor
     return db.collection(collectionPath).document().id
   }
 
+
+
+
   override fun addFollowerTo(
       user: String,
       follower: String,
+      isRequest: Boolean,
       onSuccess: () -> Unit,
       onFailure: (Exception) -> Unit
   ) {
+      val type: String = if ( isRequest) "pendingFriends" else "friends"
     db.collection(collectionPath)
         .document(user)
-        .update("friends.followers", FieldValue.arrayUnion(follower))
+        .update("$type.followers", FieldValue.arrayUnion(follower))
         .addOnSuccessListener {
           db.collection(collectionPath)
               .document(follower)
-              .update("friends.following", FieldValue.arrayUnion(user))
+              .update("$type.following", FieldValue.arrayUnion(user))
               .addOnSuccessListener { onSuccess() }
               .addOnFailureListener { exception -> onFailure(exception) }
         }
         .addOnFailureListener { exception -> onFailure(exception) }
   }
 
+
   override fun removeFollowerFrom(
       user: String,
       follower: String,
+      isRequest: Boolean,
       onSuccess: () -> Unit,
       onFailure: (Exception) -> Unit
   ) {
+    val type: String = if ( isRequest) "pendingFriends" else "friends"
     db.collection(collectionPath)
         .document(user)
-        .update("friends.followers", FieldValue.arrayRemove(follower))
+        .update("$type.followers", FieldValue.arrayRemove(follower))
         .addOnSuccessListener {
           db.collection(collectionPath)
               .document(follower)
-              .update("friends.following", FieldValue.arrayRemove(user))
+              .update("$type..following", FieldValue.arrayRemove(user))
               .addOnSuccessListener { onSuccess() }
               .addOnFailureListener { exception -> onFailure(exception) }
         }
