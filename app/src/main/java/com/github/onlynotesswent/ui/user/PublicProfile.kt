@@ -27,7 +27,6 @@ import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
@@ -74,7 +73,6 @@ import com.github.onlynotesswent.ui.navigation.Screen
 import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
 import com.github.onlynotesswent.ui.theme.Typography
 import com.google.firebase.auth.FirebaseAuth
-import java.util.Locale
 
 // User Profile Home screen:
 /**
@@ -128,16 +126,12 @@ fun PublicProfileScreen(
 ) {
   val currentUser = userViewModel.currentUser.collectAsState()
   val profileUser = userViewModel.profileUser.collectAsState()
-  val followButtonText = remember { mutableStateOf("Follow") }
 
   // Display the user's profile information
   ProfileScaffold(navigationActions, userViewModel) {
     ProfileContent(profileUser, navigationActions, userViewModel, fileViewModel)
     if (profileUser.value != null && currentUser.value != null) {
-      followButtonText.value =
-          if (profileUser.value!!.friends.followers.contains(currentUser.value!!.uid)) "Unfollow"
-          else "Follow"
-      FollowUnfollowButton(userViewModel, followButtonText)
+      FollowUnfollowButton(userViewModel, profileUser.value!!.uid)
     }
   }
 }
@@ -386,7 +380,12 @@ fun ProfileContent(
             UserBottomSheet(
                 isFollowingMenuShown, following, userViewModel, navigationActions, "following")
             UserBottomSheet(
-                isFollowerMenuShown, followers, userViewModel, navigationActions, "followers")
+                isFollowerMenuShown,
+                followers,
+                userViewModel,
+                navigationActions,
+                "followers",
+                user.value == userViewModel.currentUser.collectAsState().value)
           }
     }
   }
@@ -396,26 +395,37 @@ fun ProfileContent(
  * Displays a button that allows the user to follow or unfollow another user.
  *
  * @param userViewModel The ViewModel for the user.
- * @param followButtonText The text to be displayed on the button.
  */
 @Composable
-fun FollowUnfollowButton(userViewModel: UserViewModel, followButtonText: MutableState<String>) {
+fun FollowUnfollowButton(userViewModel: UserViewModel, otherUserId : String) {
+    val followButtonText = remember { mutableStateOf("") }
+    followButtonText.value =
+        if (userViewModel.currentUser.collectAsState().value!!.friends.following.contains(otherUserId))
+            "Unfollow"
+        else "Follow"
   OutlinedButton(
       modifier = Modifier.testTag("followUnfollowButton"),
       onClick = {
         if (followButtonText.value == "Follow")
             userViewModel.followUser(
-                userViewModel.profileUser.value!!.uid,
-                { userViewModel.refreshProfileUser(userViewModel.profileUser.value!!.uid) },
+                otherUserId,
+                { userViewModel.profileUser.value?.let { userViewModel.refreshProfileUser(it.uid) } },
                 {})
         else
             userViewModel.unfollowUser(
-                userViewModel.profileUser.value!!.uid,
-                { userViewModel.refreshProfileUser(userViewModel.profileUser.value!!.uid) },
+                otherUserId,
+                { userViewModel.profileUser.value?.let { userViewModel.refreshProfileUser(it.uid) } },
                 {})
       }) {
         Text(followButtonText.value, modifier = Modifier.testTag("followUnfollowButtonText"))
       }
+}
+
+@Composable
+fun RemoveFollowerButton(userViewModel: UserViewModel) {
+  OutlinedButton(modifier = Modifier.testTag("removeFollowerButton"), onClick = {}) {
+    Text("Remove", modifier = Modifier.testTag("removeFollowerButtonText"))
+  }
 }
 
 /**
@@ -434,77 +444,94 @@ fun UserBottomSheet(
     users: State<List<User>>,
     userViewModel: UserViewModel,
     navigationActions: NavigationActions,
-    tag: String = ""
+    tag: String = "",
+    isFollowerSheetOfCurrentUser: Boolean = false
 ) {
-    if (expanded.value){
-        ModalBottomSheet(
-            onDismissRequest = { expanded.value = false },
-            modifier = Modifier.testTag("${tag}BottomSheet")
-        ) {
-            Column(
-                modifier = Modifier.fillMaxWidth().padding(bottom = 30.dp),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
+  if (expanded.value) {
+    ModalBottomSheet(
+        onDismissRequest = { expanded.value = false },
+        modifier = Modifier.testTag("${tag}BottomSheet")) {
+          Column(
+              modifier = Modifier.fillMaxWidth().padding(bottom = 30.dp),
+              verticalArrangement = Arrangement.Center,
+              horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
                     "List of ${tag.replaceFirstChar { it.uppercase()}}:",
-                    style = Typography.titleMedium,
-                    modifier = Modifier.padding(8.dp).testTag("${tag}Title")
-                )
+                    style = Typography.headlineMedium,
+                    modifier = Modifier.padding(8.dp).testTag("${tag}Title"))
                 if (users.value.isEmpty()) {
-                    Text(
-                        "No $tag to display",
-                        modifier = Modifier.padding(8.dp).testTag("${tag}Absent")
-                    )
+                  Text(
+                      "No $tag to display",
+                      modifier = Modifier.padding(8.dp).testTag("${tag}Absent"))
                 }
                 Column(
-                    modifier = Modifier.fillMaxWidth().padding(start = 50.dp,end = 10.dp),
+                    modifier = Modifier.fillMaxWidth().padding(start = 30.dp, end = 10.dp),
                     horizontalAlignment = Alignment.Start) {
-                    users.value.forEach { user ->
-                        Row(modifier = Modifier.padding(5.dp), horizontalArrangement = Arrangement.spacedBy(5.dp)) {
-                            Icon(Icons.Default.AccountCircle, "profileIcon")
-                            Text(
-                                "${user.fullName()} — @${user.userName}",
-                                modifier =
-                                Modifier.testTag("item--${user.userName}")
-                                    .clickable {
-                                        expanded.value = false
-                                        switchProfileTo(user, userViewModel, navigationActions)
-                                    }
-                            )
-                        }
+                      users.value.forEach { user ->
+                        Row(
+                            modifier =
+                                Modifier.padding(8.dp).testTag("item--${user.userName}").clickable {
+                                  expanded.value = false
+                                  switchProfileTo(user, userViewModel, navigationActions)
+                                }) {
+                              Icon(
+                                  Icons.Default.AccountCircle,
+                                  "profileIcon",
+                                  modifier = Modifier.size(40.dp))
+                              Column(
+                                  verticalArrangement = Arrangement.Center,
+                                  modifier = Modifier.padding(start = 10.dp)) {
+                                    // Display the user's full name and handle (username)
+                                    Text(
+                                        user.fullName(),
+                                        style = Typography.bodyLarge,
+                                        fontWeight = FontWeight(500),
+                                        modifier = Modifier.alpha(0.9f))
+                                    Text(
+                                        user.userHandle(),
+                                        style = Typography.bodyLarge,
+                                        modifier = Modifier.alpha(0.7f))
+                                  }
+                              Spacer(Modifier.weight(1f))
+                              if (isFollowerSheetOfCurrentUser) {
+                                RemoveFollowerButton(userViewModel)
+                              } else if (user.uid !=
+                                  userViewModel.currentUser.collectAsState().value!!.uid) {
+                                FollowUnfollowButton(userViewModel, user.uid)
+                              }
+                            }
+                      }
                     }
-                }
-            }
+              }
         }
-    }
+  }
 
   /*DropdownMenu(
-      expanded = expanded.value,
-      onDismissRequest = { expanded.value = false },
-      modifier =
-          Modifier.testTag("${tag}DropdownMenu")
-              .fillMaxWidth(0.7f) // Set a fixed width for the dropdown menu
-      ) {
-        Column(modifier = Modifier.fillMaxWidth()) {
-          if (users.value.isEmpty()) {
-            Text("No $tag to display", modifier = Modifier.padding(8.dp).testTag("${tag}Absent"))
-          }
-          users.value.forEach { user ->
-            Text(
-                "${user.fullName()} — @${user.userName}",
-                modifier =
-                    Modifier.testTag("item--${user.userName}")
-                        .clickable {
-                          expanded.value = false
-                          switchProfileTo(user, userViewModel, navigationActions)
-                        }
-                        .padding(8.dp) // Add padding for better UI
-                )
-          }
-        }
-      }
-   */
+     expanded = expanded.value,
+     onDismissRequest = { expanded.value = false },
+     modifier =
+         Modifier.testTag("${tag}DropdownMenu")
+             .fillMaxWidth(0.7f) // Set a fixed width for the dropdown menu
+     ) {
+       Column(modifier = Modifier.fillMaxWidth()) {
+         if (users.value.isEmpty()) {
+           Text("No $tag to display", modifier = Modifier.padding(8.dp).testTag("${tag}Absent"))
+         }
+         users.value.forEach { user ->
+           Text(
+               "${user.fullName()} — @${user.userName}",
+               modifier =
+                   Modifier.testTag("item--${user.userName}")
+                       .clickable {
+                         expanded.value = false
+                         switchProfileTo(user, userViewModel, navigationActions)
+                       }
+                       .padding(8.dp) // Add padding for better UI
+               )
+         }
+       }
+     }
+  */
 }
 
 /**
