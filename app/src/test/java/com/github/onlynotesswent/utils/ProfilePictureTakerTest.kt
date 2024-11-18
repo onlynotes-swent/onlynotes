@@ -19,8 +19,10 @@ class ProfilePictureTakerTest {
   @Mock private lateinit var mockOnImageSelected: (Uri?) -> Unit
   @Mock private lateinit var mockActivityResultLauncher: ActivityResultLauncher<Intent>
   private lateinit var profilePictureTaker: ProfilePictureTaker
+
   private fun <T> nullableAny(type: Class<T>): T = any(type)
-    private inline fun <reified T> nullableAnyReified(): T = any(T::class.java)
+
+  private inline fun <reified T> nullableAnyReified(): T = any(T::class.java)
 
   @Before
   fun setup() {

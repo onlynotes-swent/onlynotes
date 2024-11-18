@@ -39,6 +39,7 @@ class CustomTextRecognizerTest {
   @Mock private lateinit var mockActivityResultLauncher: ActivityResultLauncher<String>
 
   private lateinit var customTextRecognizer: CustomTextRecognizer
+
   private fun <T> capture(argumentCaptor: ArgumentCaptor<T>): T = argumentCaptor.capture()
 
   @Before
