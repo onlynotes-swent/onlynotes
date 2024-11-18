@@ -1,5 +1,6 @@
 package com.github.onlynotesswent.ui.overview
 
+import android.content.Context
 import android.net.Uri
 import android.util.Log
 import android.widget.Toast
@@ -16,6 +17,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.UploadFile
 import androidx.compose.material.icons.outlined.Clear
 import androidx.compose.material3.Button
@@ -26,6 +28,8 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -58,6 +62,7 @@ import com.github.onlynotesswent.utils.Scanner
 import com.github.onlynotesswent.utils.ScreenTopBar
 import com.github.onlynotesswent.utils.Visibility
 import com.google.firebase.Timestamp
+import com.mohamedrejeb.richeditor.model.RichTextState
 import com.mohamedrejeb.richeditor.model.rememberRichTextState
 import com.mohamedrejeb.richeditor.ui.material3.RichTextEditor
 import java.io.File
@@ -87,21 +92,16 @@ fun EditNoteScreen(
   val context = LocalContext.current
   val note by noteViewModel.selectedNote.collectAsState()
   val currentUser by userViewModel.currentUser.collectAsState()
-  val currentYear = Calendar.getInstance().get(Calendar.YEAR)
-  var noteTitle by remember { mutableStateOf(note?.title ?: "") }
-  var courseName by remember { mutableStateOf(note?.noteCourse?.courseName ?: "") }
-  var courseCode by remember { mutableStateOf(note?.noteCourse?.courseCode ?: "") }
-  var courseYear by remember { mutableIntStateOf(note?.noteCourse?.courseYear ?: currentYear) }
-  var visibility by remember { mutableStateOf(note?.visibility) }
-  var expandedVisibility by remember { mutableStateOf(false) }
-  var updatedComments by remember { mutableStateOf(note?.comments ?: Note.CommentCollection()) }
   var attemptedMarkdownDownloads = 0
+  var selectedTabIndex by remember { mutableIntStateOf(0) }
+  val tabTitles = listOf("Note", "Comments")
+  var updatedComments by remember { mutableStateOf(note!!.comments) }
 
   /**
    * Downloads a markdown file associated with the note. If no file exists, it attempts once to
    * create and upload an empty markdown file, then re-download it.
    */
-  @Suppress("kotlin:S6300") // as there is no need to encrypt file
+  @Suppress("kotlin:S6300")
   fun downloadMarkdownFile() {
     fileViewModel.downloadFile(
         uid = note!!.id,
@@ -121,7 +121,6 @@ fun EditNoteScreen(
             file.writeText("")
             // Get the file URI
             val fileUri = Uri.fromFile(file)
-
             fileViewModel.uploadFile(note!!.id, fileUri, FileType.NOTE_TEXT)
             downloadMarkdownFile()
           }
@@ -153,6 +152,19 @@ fun EditNoteScreen(
                   tint = MaterialTheme.colorScheme.onSurface)
             },
             iconTestTag = "goBackButton")
+      },
+      bottomBar = {
+        TabRow(
+            selectedTabIndex = selectedTabIndex,
+            containerColor = MaterialTheme.colorScheme.surface,
+            contentColor = MaterialTheme.colorScheme.onSurface) {
+              tabTitles.forEachIndexed { index, title ->
+                Tab(
+                    selected = selectedTabIndex == index,
+                    onClick = { selectedTabIndex = index },
+                    text = { Text(title) })
+              }
+            }
       }) { paddingValues ->
         if (currentUser == null) {
           ErrorScreen("User not found. Please sign out then in again.")
@@ -168,134 +180,161 @@ fun EditNoteScreen(
                       .verticalScroll(rememberScrollState()),
               verticalArrangement = Arrangement.spacedBy(8.dp),
               horizontalAlignment = Alignment.CenterHorizontally) {
-                NoteDataTextField(
-                    value = noteTitle,
-                    onValueChange = { noteTitle = it },
-                    label = "Note Title",
-                    placeholder = "Enter the new title here",
-                    modifier = Modifier.fillMaxWidth().testTag("EditTitle textField"),
-                    trailingIcon = {
-                      IconButton(onClick = { noteTitle = "" }) {
-                        Icon(Icons.Outlined.Clear, contentDescription = "Clear Title")
-                      }
-                    })
-
-                OptionDropDownMenu(
-                    value = visibility?.toReadableString() ?: Visibility.DEFAULT.toReadableString(),
-                    expanded = expandedVisibility,
-                    buttonTag = "visibilityEditButton",
-                    menuTag = "visibilityEditMenu",
-                    onExpandedChange = { expandedVisibility = it },
-                    items = Visibility.READABLE_STRINGS,
-                    onItemClick = { visibility = Visibility.fromReadableString(it) })
-
-                NoteDataTextField(
-                    value = courseName,
-                    onValueChange = { courseName = Course.formatCourseName(it) },
-                    label = "Course Name",
-                    placeholder = "Set the course name for the note",
-                    modifier = Modifier.fillMaxWidth().testTag("EditCourseName textField"))
-
-                NoteDataTextField(
-                    value = courseCode,
-                    onValueChange = { courseCode = Course.formatCourseCode(it) },
-                    label = "Course Code",
-                    placeholder = "Set the course code for the note",
-                    modifier = Modifier.fillMaxWidth().testTag("EditCourseCode textField"))
-
-                NoteDataTextField(
-                    value = courseYear.toString(),
-                    onValueChange = { courseYear = it.toIntOrNull() ?: currentYear },
-                    label = "Course Year",
-                    placeholder = "Set the course year for the note",
-                    modifier = Modifier.fillMaxWidth().testTag("EditCourseYear textField"))
-
-                RichTextEditor(
-                    modifier = Modifier.fillMaxWidth().pointerInput(Unit) {},
-                    state = state,
-                    readOnly = true)
-
-                PdfCard(
-                    modifier = Modifier.fillMaxWidth(),
-                    testTagBase = "EditPdf",
-                    onViewClick = {
-                      fileViewModel.openPdf(
-                          uid = note!!.id,
-                          context = context,
-                          onSuccess = {},
-                          onFileNotFound = {
-                            Toast.makeText(context, "No stored Pdf", Toast.LENGTH_SHORT).show()
-                          },
-                          onFailure = {
-                            Toast.makeText(context, "Failed to open Pdf", Toast.LENGTH_SHORT).show()
-                          })
-                    },
-                    onScanClick = {
-                      // Todo: Could show error to user, not possible with current functions
-                      scanner.scan { fileViewModel.updateFile(note!!.id, it, FileType.NOTE_PDF) }
-                    },
-                    onDeleteClick = {
-                      // Todo: Could show error to user, not possible with current functions
-                      fileViewModel.deleteFile(
-                          uid = note!!.id,
-                          fileType = FileType.NOTE_PDF,
-                      )
-                      // Todo: temporary toast to show the button does something.
-                      //  Adapt to work with onSucces/onFailure when refactor is done.
-                      Toast.makeText(
-                              context,
-                              "Pdf delete started, TODO notify if worked",
-                              Toast.LENGTH_SHORT)
-                          .show()
-                    })
-
-                Button(
-                    colors =
-                        ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.primary,
-                            contentColor = MaterialTheme.colorScheme.onPrimary),
-                    onClick = { navigationActions.navigateTo(Screen.EDIT_MARKDOWN) },
-                    modifier = Modifier.testTag("Edit Markdown button")) {
-                      Text("Edit Markdown")
-                    }
-
-                SaveButton(
-                    noteTitle = noteTitle,
-                    note = note!!,
-                    visibility = visibility,
-                    courseCode = courseCode,
-                    courseName = courseName,
-                    courseYear = courseYear,
-                    updatedComments = updatedComments,
-                    currentUser = currentUser!!,
-                    navigationActions = navigationActions,
-                    noteViewModel = noteViewModel)
-
-                DeleteButton(
-                    note = note!!,
-                    currentUser = currentUser!!,
-                    navigationActions = navigationActions,
-                    noteViewModel = noteViewModel)
-
-                AddCommentButton(
-                    currentUser = currentUser!!,
-                    updatedComments = updatedComments,
-                    onCommentsChange = { updatedComments = it },
-                    updateNoteComment = {
-                      noteViewModel.updateNote(
-                          note!!.copy(comments = updatedComments), currentUser!!.uid)
-                    })
-
-                CommentsSection(
-                    updatedComments,
-                    { updatedComments = it },
-                    {
-                      noteViewModel.updateNote(
-                          note!!.copy(comments = updatedComments), currentUser!!.uid)
-                    })
+                when (selectedTabIndex) {
+                  0 -> {
+                    NoteSection(
+                        note = note!!,
+                        state = state,
+                        context = context,
+                        currentUser = currentUser!!,
+                        noteViewModel = noteViewModel,
+                        fileViewModel = fileViewModel,
+                        scanner = scanner,
+                        navigationActions = navigationActions)
+                  }
+                  1 -> {
+                    AddCommentButton(
+                        currentUser = currentUser!!,
+                        updatedComments = updatedComments,
+                        onCommentsChange = { updatedComments = it },
+                        updateNoteComment = {
+                          noteViewModel.updateNote(
+                              note!!.copy(comments = updatedComments), currentUser!!.uid)
+                        })
+                    CommentsSection(
+                        updatedComments,
+                        { updatedComments = it },
+                        {
+                          noteViewModel.updateNote(
+                              note!!.copy(comments = updatedComments), currentUser!!.uid)
+                        })
+                  }
+                }
               }
         }
       }
+}
+
+@Composable
+fun NoteSection(
+    note: Note,
+    state: RichTextState,
+    context: Context,
+    currentUser: User,
+    noteViewModel: NoteViewModel,
+    fileViewModel: FileViewModel,
+    scanner: Scanner,
+    navigationActions: NavigationActions,
+) {
+  val currentYear = Calendar.getInstance().get(Calendar.YEAR)
+  var noteTitle by remember { mutableStateOf(note.title) }
+  var courseName by remember { mutableStateOf(note.noteCourse.courseName) }
+  var courseCode by remember { mutableStateOf(note.noteCourse.courseCode) }
+  var courseYear by remember { mutableIntStateOf(note.noteCourse.courseYear) }
+  var visibility by remember { mutableStateOf(note.visibility) }
+  var expandedVisibility by remember { mutableStateOf(false) }
+
+  NoteDataTextField(
+      value = noteTitle,
+      onValueChange = { noteTitle = it },
+      label = "Note Title",
+      placeholder = "Enter the new title here",
+      modifier = Modifier.fillMaxWidth().testTag("EditTitle textField"),
+      trailingIcon = {
+        IconButton(onClick = { noteTitle = "" }) {
+          Icon(Icons.Outlined.Clear, contentDescription = "Clear Title")
+        }
+      })
+
+  OptionDropDownMenu(
+      value = visibility.toReadableString(),
+      expanded = expandedVisibility,
+      buttonTag = "visibilityEditButton",
+      menuTag = "visibilityEditMenu",
+      onExpandedChange = { expandedVisibility = it },
+      items = Visibility.READABLE_STRINGS,
+      onItemClick = { visibility = Visibility.fromReadableString(it) })
+
+  NoteDataTextField(
+      value = courseName,
+      onValueChange = { courseName = Course.formatCourseName(it) },
+      label = "Course Name",
+      placeholder = "Set the course name for the note",
+      modifier = Modifier.fillMaxWidth().testTag("EditCourseName textField"))
+
+  NoteDataTextField(
+      value = courseCode,
+      onValueChange = { courseCode = Course.formatCourseCode(it) },
+      label = "Course Code",
+      placeholder = "Set the course code for the note",
+      modifier = Modifier.fillMaxWidth().testTag("EditCourseCode textField"))
+
+  NoteDataTextField(
+      value = courseYear.toString(),
+      onValueChange = { courseYear = it.toIntOrNull() ?: currentYear },
+      label = "Course Year",
+      placeholder = "Set the course year for the note",
+      modifier = Modifier.fillMaxWidth().testTag("EditCourseYear textField"))
+
+  RichTextEditor(
+      state = state,
+      modifier = Modifier.fillMaxWidth().pointerInput(Unit) {},
+      readOnly = true,
+      trailingIcon = {
+        IconButton(
+            onClick = { navigationActions.navigateTo(Screen.EDIT_MARKDOWN) },
+            modifier = Modifier.testTag("Edit Markdown button")) {
+              Icon(
+                  imageVector = Icons.Default.Edit, // Use an appropriate pencil icon
+                  contentDescription = "Edit Markdown")
+            }
+      })
+
+  PdfCard(
+      modifier = Modifier.fillMaxWidth(),
+      testTagBase = "EditPdf",
+      onViewClick = {
+        fileViewModel.openPdf(
+            uid = note.id,
+            context = context,
+            onSuccess = {},
+            onFileNotFound = {
+              Toast.makeText(context, "No stored Pdf", Toast.LENGTH_SHORT).show()
+            },
+            onFailure = {
+              Toast.makeText(context, "Failed to open Pdf", Toast.LENGTH_SHORT).show()
+            })
+      },
+      onScanClick = {
+        // Todo: Could show error to user, not possible with current functions
+        scanner.scan { fileViewModel.updateFile(note.id, it, FileType.NOTE_PDF) }
+      },
+      onDeleteClick = {
+        // Todo: Could show error to user, not possible with current functions
+        fileViewModel.deleteFile(
+            uid = note.id,
+            fileType = FileType.NOTE_PDF,
+        )
+        // Todo: temporary toast to show the button does something.
+        //  Adapt to work with onSuccess/onFailure when refactor is done.
+        Toast.makeText(context, "Pdf delete started, TODO notify if worked", Toast.LENGTH_SHORT)
+            .show()
+      })
+
+  Row {
+    SaveButton(
+        noteTitle = noteTitle,
+        note = note,
+        visibility = visibility,
+        courseCode = courseCode,
+        courseName = courseName,
+        courseYear = courseYear,
+        currentUser = currentUser,
+        navigationActions = navigationActions,
+        noteViewModel = noteViewModel)
+
+    DeleteButton(note = note, navigationActions = navigationActions, noteViewModel = noteViewModel)
+  }
 }
 
 /**
@@ -384,7 +423,6 @@ fun ErrorScreen(errorText: String) {
  * @param courseCode The updated course code of the note.
  * @param courseName The updated course name of the note.
  * @param courseYear The updated course year of the note.
- * @param updatedComments The updated collection of comments for the note.
  * @param currentUser The current user.
  * @param navigationActions The navigation view model used to transition between different screens.
  * @param noteViewModel The ViewModel that provides the current note to be edited and handles note
@@ -398,7 +436,6 @@ fun SaveButton(
     courseCode: String,
     courseName: String,
     courseYear: Int,
-    updatedComments: Note.CommentCollection,
     currentUser: User,
     navigationActions: NavigationActions,
     noteViewModel: NoteViewModel
@@ -415,7 +452,7 @@ fun SaveButton(
                 noteCourse = Course(courseCode, courseName, courseYear, "path"),
                 userId = note.userId,
                 folderId = note.folderId,
-                comments = updatedComments),
+                comments = note.comments),
             currentUser.uid)
         if (note.folderId != null) {
           noteViewModel.selectedNote(null)
@@ -445,12 +482,7 @@ fun SaveButton(
  *   updates.
  */
 @Composable
-fun DeleteButton(
-    note: Note,
-    currentUser: User,
-    navigationActions: NavigationActions,
-    noteViewModel: NoteViewModel
-) {
+fun DeleteButton(note: Note, navigationActions: NavigationActions, noteViewModel: NoteViewModel) {
   Button(
       colors =
           ButtonDefaults.buttonColors(
