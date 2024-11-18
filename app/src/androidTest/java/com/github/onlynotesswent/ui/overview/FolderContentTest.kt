@@ -1,6 +1,5 @@
 package com.github.onlynotesswent.ui.overview
 
-import android.graphics.Bitmap
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
@@ -45,12 +44,11 @@ class FolderContentTest {
           Note(
               id = "1",
               title = "Sample Title",
-              content = "This is a sample content.",
               date = Timestamp.now(),
               visibility = Visibility.DEFAULT,
               userId = "1",
               noteCourse = Course("CS-100", "Sample Course", 2024, "path"),
-              image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)))
+          ))
 
   private val folderList =
       listOf(Folder(id = "1", name = "name", userId = "1", parentFolderId = null))

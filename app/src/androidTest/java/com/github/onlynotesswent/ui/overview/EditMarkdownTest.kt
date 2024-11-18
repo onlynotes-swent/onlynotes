@@ -9,6 +9,7 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
 import com.github.onlynotesswent.model.file.FileRepository
 import com.github.onlynotesswent.model.file.FileViewModel
+import com.github.onlynotesswent.model.note.Note
 import com.github.onlynotesswent.model.note.NoteRepository
 import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.model.users.User
@@ -16,12 +17,13 @@ import com.github.onlynotesswent.model.users.UserRepository
 import com.github.onlynotesswent.model.users.UserViewModel
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
+import com.github.onlynotesswent.utils.Course
+import com.github.onlynotesswent.utils.Visibility
 import com.google.firebase.Timestamp
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.mockito.Mock
-import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
@@ -61,6 +63,17 @@ class EditMarkdownTest {
             Timestamp.now(),
             0.0)
     userViewModel.addUser(testUser, {}, {})
+
+    val testNote =
+        Note(
+            "testNoteId",
+            "testTitle",
+            Timestamp.now(),
+            Visibility.PUBLIC,
+            Course("CS-311", "SwEnt", 2024, "testCoursePath"),
+            "testUserId")
+
+    noteViewModel.selectedNote(testNote)
 
     // Mock the current route to be the user create screen
     `when`(navigationActions.currentRoute()).thenReturn(Screen.EDIT_NOTE)
