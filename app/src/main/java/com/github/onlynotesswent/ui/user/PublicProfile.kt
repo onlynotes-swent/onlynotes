@@ -378,11 +378,17 @@ fun ProfileContent(
             }
             // Display bottom sheets for the user's following and followers
             UserBottomSheet(
-                isFollowingMenuShown, following, userViewModel, navigationActions, "following")
+                isFollowingMenuShown,
+                following,
+                userViewModel,
+                fileViewModel,
+                navigationActions,
+                "following")
             UserBottomSheet(
                 isFollowerMenuShown,
                 followers,
                 userViewModel,
+                fileViewModel,
                 navigationActions,
                 "followers",
                 user.value == userViewModel.currentUser.collectAsState().value)
@@ -397,24 +403,33 @@ fun ProfileContent(
  * @param userViewModel The ViewModel for the user.
  */
 @Composable
-fun FollowUnfollowButton(userViewModel: UserViewModel, otherUserId : String) {
-    val followButtonText = remember { mutableStateOf("") }
-    followButtonText.value =
-        if (userViewModel.currentUser.collectAsState().value!!.friends.following.contains(otherUserId))
-            "Unfollow"
-        else "Follow"
+fun FollowUnfollowButton(userViewModel: UserViewModel, otherUserId: String) {
+  val followButtonText = remember { mutableStateOf("") }
+  followButtonText.value =
+      if (userViewModel.currentUser
+          .collectAsState()
+          .value!!
+          .friends
+          .following
+          .contains(otherUserId))
+          "Unfollow"
+      else "Follow"
   OutlinedButton(
       modifier = Modifier.testTag("followUnfollowButton"),
       onClick = {
         if (followButtonText.value == "Follow")
             userViewModel.followUser(
                 otherUserId,
-                { userViewModel.profileUser.value?.let { userViewModel.refreshProfileUser(it.uid) } },
+                {
+                  userViewModel.profileUser.value?.let { userViewModel.refreshProfileUser(it.uid) }
+                },
                 {})
         else
             userViewModel.unfollowUser(
                 otherUserId,
-                { userViewModel.profileUser.value?.let { userViewModel.refreshProfileUser(it.uid) } },
+                {
+                  userViewModel.profileUser.value?.let { userViewModel.refreshProfileUser(it.uid) }
+                },
                 {})
       }) {
         Text(followButtonText.value, modifier = Modifier.testTag("followUnfollowButtonText"))
@@ -443,6 +458,7 @@ fun UserBottomSheet(
     expanded: MutableState<Boolean>,
     users: State<List<User>>,
     userViewModel: UserViewModel,
+    fileViewModel: FileViewModel,
     navigationActions: NavigationActions,
     tag: String = "",
     isFollowerSheetOfCurrentUser: Boolean = false
@@ -474,10 +490,7 @@ fun UserBottomSheet(
                                   expanded.value = false
                                   switchProfileTo(user, userViewModel, navigationActions)
                                 }) {
-                              Icon(
-                                  Icons.Default.AccountCircle,
-                                  "profileIcon",
-                                  modifier = Modifier.size(40.dp))
+                              ThumbnailPic(user, fileViewModel)
                               Column(
                                   verticalArrangement = Arrangement.Center,
                                   modifier = Modifier.padding(start = 10.dp)) {
@@ -573,6 +586,35 @@ fun DisplayBioCard(user: State<User?>) {
         },
         modifier = Modifier.padding(10.dp).testTag("userBio"))
   }
+}
+
+@Composable
+fun ThumbnailPic(user: User, fileViewModel: FileViewModel, size: Int = 40) {
+  val profilePictureUri = remember { mutableStateOf("") }
+  if (user.hasProfilePicture && profilePictureUri.value.isBlank()) {
+    fileViewModel.downloadFile(
+        user.uid,
+        FileType.PROFILE_PIC_JPEG,
+        context = LocalContext.current,
+        onSuccess = { file -> profilePictureUri.value = file.absolutePath },
+        onFileNotFound = { Log.e("ProfilePicture", "Profile picture not found") },
+        onFailure = { e -> Log.e("ProfilePicture", "Error downloading profile picture", e) })
+  }
+  // Profile Picture Painter
+  val painter =
+      if (profilePictureUri.value.isNotBlank()) {
+        // Load the profile picture if it exists
+        rememberAsyncImagePainter(profilePictureUri.value)
+      } else {
+        // Load the default profile picture if it doesn't exist
+        rememberVectorPainter(Icons.Default.AccountCircle)
+      }
+  // Profile Picture
+  Image(
+      painter = painter,
+      contentDescription = "Profile Picture",
+      modifier = Modifier.testTag("thumbnail--${user.uid}").size(size.dp).clip(CircleShape),
+      contentScale = ContentScale.Crop)
 }
 
 @Composable

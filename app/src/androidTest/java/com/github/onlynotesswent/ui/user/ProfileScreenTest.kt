@@ -160,15 +160,11 @@ class ProfileScreenTest {
     composeTestRule.onNodeWithTag("followingButton").assertIsDisplayed().performClick()
 
     composeTestRule.onNodeWithTag("followingBottomSheet").assertIsDisplayed()
-    composeTestRule
-        .onNodeWithTag("item--${testUser2.userName}")
-        .assertIsDisplayed()
+    composeTestRule.onNodeWithTag("item--${testUser2.userName}").assertIsDisplayed()
 
     composeTestRule.onNodeWithTag("followersButton").performClick()
     composeTestRule.onNodeWithTag("followersBottomSheet").assertIsDisplayed()
-    composeTestRule
-        .onNodeWithTag("item--${testUser3.userName}")
-        .assertIsDisplayed()
+    composeTestRule.onNodeWithTag("item--${testUser3.userName}").assertIsDisplayed()
   }
 
   @Test
