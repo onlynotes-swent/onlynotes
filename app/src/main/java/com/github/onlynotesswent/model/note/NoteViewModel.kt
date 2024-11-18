@@ -1,5 +1,6 @@
 package com.github.onlynotesswent.model.note
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.initializer
@@ -120,7 +121,10 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
    * @param userID The user ID.
    */
   fun updateNote(note: Note, userID: String) {
-    repository.updateNote(note = note, onSuccess = { getRootNotesFrom(userID) }, onFailure = {})
+    repository.updateNote(note = note, onSuccess = {
+      getRootNotesFrom(userID)
+      Log.e("NoteViewModel", "Note updated")
+    }, onFailure = {})
   }
 
   /**

@@ -2,6 +2,7 @@ package com.github.onlynotesswent.utils
 
 import android.content.ClipData
 import android.content.Context
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
@@ -215,8 +216,7 @@ fun NoteItem(
 fun FolderItem(folder: Folder, navigationActions: NavigationActions, noteViewModel: NoteViewModel, folderViewModel: FolderViewModel, onClick: () -> Unit) {
 
   var navigateToOverview by remember { mutableStateOf(false) }
-
-  // LaunchedEffect to navigate to the overview screen when a subfolder is dropped into another
+    // LaunchedEffect to navigate to the overview screen when a subfolder is dropped into another
   // subfolder
   LaunchedEffect(navigateToOverview) {
       if (navigateToOverview) {
@@ -253,15 +253,19 @@ fun FolderItem(folder: Folder, navigationActions: NavigationActions, noteViewMod
                               val draggedObjectId =
                                   event.toAndroidDragEvent().clipData.getItemAt(0).text.toString()
                               val selectedNote = noteViewModel.selectedNote.value
+                              Log.e("FolderItem", "selectedNoteId: ${selectedNote?.id} and draggedObjectId: $draggedObjectId")
                               if (selectedNote != null && selectedNote.id == draggedObjectId) {
                                   // Update the selected note (dragged) with the new folder Id
                                   noteViewModel.updateNote(
                                       selectedNote.copy(folderId = folder.id),
                                       selectedNote.userId)
+
+                                  Log.e("FolderItem", "returning true")
                                   return true
                               }
                               // Get the dragged folder in case a folder is being dragged
                               val draggedFolder = folderViewModel.draggedFolder.value
+                              Log.e("FolderItem", "draggedFolderId: ${draggedFolder?.id} and draggedObjectId: $draggedObjectId")
                               if (draggedFolder != null &&
                                   draggedFolder.id == draggedObjectId &&
                                   draggedFolder.id != folder.id) {
