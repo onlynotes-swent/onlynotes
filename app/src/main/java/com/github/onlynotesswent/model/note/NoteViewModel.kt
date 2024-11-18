@@ -121,9 +121,13 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
    * @param userID The user ID.
    */
   fun updateNote(note: Note, userID: String) {
-    repository.updateNote(note = note, onSuccess = {
-      Log.d("NoteViewModel", "Successfully updated note : $note")
-      getRootNotesFrom(userID) }, onFailure = { Log.e("NoteViewModel", "Failed to update note : $it") })
+    repository.updateNote(
+        note = note,
+        onSuccess = {
+          Log.d("NoteViewModel", "Successfully updated note : $note")
+          getRootNotesFrom(userID)
+        },
+        onFailure = { Log.e("NoteViewModel", "Failed to update note : $it") })
   }
 
   /**

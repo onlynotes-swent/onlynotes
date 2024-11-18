@@ -223,11 +223,9 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
 
   override fun updateNote(note: Note, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) {
     val firebaseNote = convertNotes(note)
-      Log.d("NoteRepositoryFirestore", "updateNote: $firebaseNote")
-      performFirestoreOperation(
-        db.collection(collectionPath).document(note.id).set(firebaseNote),
-        onSuccess,
-        onFailure)
+    Log.d("NoteRepositoryFirestore", "updateNote: $firebaseNote")
+    performFirestoreOperation(
+        db.collection(collectionPath).document(note.id).set(firebaseNote), onSuccess, onFailure)
   }
 
   override fun deleteNoteById(id: String, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) {
