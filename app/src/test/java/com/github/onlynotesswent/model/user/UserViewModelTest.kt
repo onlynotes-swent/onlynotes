@@ -246,7 +246,7 @@ class UserViewModelTest {
     var onSuccessCalled = false
     userViewModel.unfollowUser("2", { onSuccessCalled = true }, { assert(false) })
     verify(mockRepositoryFirestore, timeout(1000))
-        .removeFollowerFrom(eq("2"), eq("1"), anyBoolean() ,anyOrNull(), anyOrNull())
+        .removeFollowerFrom(eq("2"), eq("1"), anyBoolean(), anyOrNull(), anyOrNull())
     assert(onSuccessCalled)
   }
 

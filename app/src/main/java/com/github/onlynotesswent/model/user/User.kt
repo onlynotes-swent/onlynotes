@@ -29,8 +29,8 @@ data class User(
     val friends: Friends = Friends(),
     val hasProfilePicture: Boolean = false,
     val bio: String = "",
-    val pendingFriends:  Friends = Friends(),
-    val isAccountPublic: Boolean= false
+    val pendingFriends: Friends = Friends(),
+    val isAccountPublic: Boolean = false
 ) {
   /**
    * Returns the user's handle, which is the username prefixed with an '@' symbol.

@@ -365,7 +365,7 @@ class UserRepositoryFirestoreTest {
     // Call addFollowerTo method
     var onSuccessCalled = false
     userRepositoryFirestore.addFollowerTo(
-        user = user.uid, follower = "4", true,{ onSuccessCalled = true }, { assert(false) })
+        user = user.uid, follower = "4", true, { onSuccessCalled = true }, { assert(false) })
 
     // Verify if Firestore collection was called
     verify(mockCollectionReference, timeout(1000)).document(user.uid)
@@ -381,7 +381,7 @@ class UserRepositoryFirestoreTest {
     // Call addFollowerTo method
     var onSuccessCalled = false
     userRepositoryFirestore.removeFollowerFrom(
-        user = user.uid, follower = "4", true,{ onSuccessCalled = true }, { assert(false) })
+        user = user.uid, follower = "4", true, { onSuccessCalled = true }, { assert(false) })
 
     // Verify if Firestore collection was called
     verify(mockCollectionReference, timeout(1000)).document(user.uid)

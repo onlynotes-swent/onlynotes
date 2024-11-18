@@ -152,9 +152,6 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore) : UserRepositor
     return db.collection(collectionPath).document().id
   }
 
-
-
-
   override fun addFollowerTo(
       user: String,
       follower: String,
@@ -162,7 +159,7 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore) : UserRepositor
       onSuccess: () -> Unit,
       onFailure: (Exception) -> Unit
   ) {
-      val type: String = if ( isRequest) "pendingFriends" else "friends"
+    val type: String = if (isRequest) "pendingFriends" else "friends"
     db.collection(collectionPath)
         .document(user)
         .update("$type.followers", FieldValue.arrayUnion(follower))
@@ -176,7 +173,6 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore) : UserRepositor
         .addOnFailureListener { exception -> onFailure(exception) }
   }
 
-
   override fun removeFollowerFrom(
       user: String,
       follower: String,
@@ -184,7 +180,7 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore) : UserRepositor
       onSuccess: () -> Unit,
       onFailure: (Exception) -> Unit
   ) {
-    val type: String = if ( isRequest) "pendingFriends" else "friends"
+    val type: String = if (isRequest) "pendingFriends" else "friends"
     db.collection(collectionPath)
         .document(user)
         .update("$type.followers", FieldValue.arrayRemove(follower))
