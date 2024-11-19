@@ -1,9 +1,14 @@
 package com.github.onlynotesswent.ui.user
 
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotDisplayed
 import androidx.compose.ui.test.assertTextContains
+import androidx.compose.ui.test.filter
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithTag
+import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import com.github.onlynotesswent.model.file.FileRepository
@@ -152,33 +157,31 @@ class ProfileScreenTest {
   }
 
   @Test
-  fun displayFollowingAndFollowers() {
+  fun displayAndNavigateToFollowersAndFollowing() {
     composeTestRule.setContent {
       UserProfileScreen(mockNavigationActions, userViewModel, fileViewModel)
     }
 
     composeTestRule.onNodeWithTag("followingButton").assertIsDisplayed().performClick()
+    composeTestRule
+        .onAllNodesWithTag("userItem")
+        .assertCountEquals(1)
+        .filter(hasText(testUser2.fullName()))
+        .onFirst()
+        .assertIsDisplayed()
+        .performClick()
 
-    composeTestRule.onNodeWithTag("followingBottomSheet").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("item--${testUser2.userName}").assertIsDisplayed()
-
-    composeTestRule.onNodeWithTag("followersButton").performClick()
-    composeTestRule.onNodeWithTag("followersBottomSheet").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("item--${testUser3.userName}").assertIsDisplayed()
-  }
-
-  @Test
-  fun navigateToFollowersAndFollowing() {
-    composeTestRule.setContent {
-      UserProfileScreen(mockNavigationActions, userViewModel, fileViewModel)
-    }
-
-    composeTestRule.onNodeWithTag("followingButton").assertIsDisplayed().performClick()
-    composeTestRule.onNodeWithTag("item--${testUser2.userName}").assertIsDisplayed().performClick()
     composeTestRule.onNodeWithTag("followingDropdownMenu").assertIsNotDisplayed()
 
     composeTestRule.onNodeWithTag("followersButton").assertIsDisplayed().performClick()
-    composeTestRule.onNodeWithTag("item--${testUser3.userName}").assertIsDisplayed().performClick()
+    composeTestRule
+        .onAllNodesWithTag("userItem")
+        .assertCountEquals(1)
+        .filter(hasText(testUser3.fullName()))
+        .onFirst()
+        .assertIsDisplayed()
+        .performClick()
+
     composeTestRule.onNodeWithTag("followersDropdownMenu").assertIsNotDisplayed()
 
     verify(mockNavigationActions, times(2)).navigateTo(Screen.PUBLIC_PROFILE)
@@ -197,9 +200,9 @@ class ProfileScreenTest {
   @Test
   fun followUnfollowButtonWorksOnPublicProfile() {
     `when`(mockUserRepository.addFollowerTo(any(), any(), any(), any())).thenAnswer {
-      val onSuccess = it.arguments[2] as () -> Unit
       val userId = it.arguments[0] as String // testUser2
       val followerId = it.arguments[1] as String // testUser
+      val onSuccess = it.getArgument<() -> Unit>(2)
       testUser2 =
           testUser2.copy(
               friends =
@@ -213,9 +216,9 @@ class ProfileScreenTest {
     }
 
     `when`(mockUserRepository.removeFollowerFrom(any(), any(), any(), any())).thenAnswer {
-      val onSuccess = it.arguments[2] as () -> Unit
       val userId = it.arguments[0] as String // testUser2
       val followerId = it.arguments[1] as String // testUser
+      val onSuccess = it.getArgument<() -> Unit>(2)
       testUser2 =
           testUser2.copy(
               friends =
@@ -258,7 +261,11 @@ class ProfileScreenTest {
 
     userViewModel.setProfileUser(testUser2)
     composeTestRule.onNodeWithTag("followersButton").assertIsDisplayed().performClick()
-    composeTestRule.onNodeWithTag("item--${testUser.userName}").assertIsDisplayed().performClick()
+    composeTestRule
+        .onAllNodesWithTag("userItem")
+        .filter(hasText(testUser.fullName()))
+        .onFirst()
+        .performClick()
 
     verify(mockNavigationActions).navigateTo(TopLevelDestinations.PROFILE)
   }

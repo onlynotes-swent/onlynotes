@@ -516,7 +516,7 @@ fun UserItem(
     onClick: () -> Unit,
 ) {
   Row(
-      modifier = Modifier.padding(8.dp).testTag("item--${user.userName}").clickable { onClick() },
+      modifier = Modifier.padding(8.dp).testTag("userItem").clickable { onClick() },
   ) {
     ThumbnailPic(user, fileViewModel)
     Column(
