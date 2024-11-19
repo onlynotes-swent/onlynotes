@@ -148,7 +148,12 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
    * @param folder The folder with updated information.
    */
   fun updateFolder(folder: Folder, userId: String) {
-    repository.updateFolder(folder, onSuccess = { getRootFoldersFromUid(userId) }, onFailure = {})
+    repository.updateFolder(folder, onSuccess = {
+      getRootFoldersFromUid(userId)
+      if (folder.parentFolderId != null) {
+        getSubFoldersOf(folder.parentFolderId)
+      }
+    }, onFailure = {})
   }
 
   /**

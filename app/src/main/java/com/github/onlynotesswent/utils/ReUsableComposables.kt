@@ -222,15 +222,9 @@ fun FolderItem(
     onClick: () -> Unit
 ) {
 
-  var navigateToFolder by remember { mutableStateOf(false) }
   val context = LocalContext.current
+  val dropSuccess = remember { mutableStateOf(false) }
 
-  // LaunchedEffect to navigate to the folder content screen when an item is dropped into a folder
-  LaunchedEffect(navigateToFolder) {
-    if (navigateToFolder) {
-      navigationActions.navigateTo(Screen.FOLDER_CONTENTS)
-    }
-  }
   Card(
       modifier =
           Modifier.testTag("folderCard")
@@ -256,8 +250,6 @@ fun FolderItem(
                       remember {
                         object : DragAndDropTarget {
                           override fun onDrop(event: DragAndDropEvent): Boolean {
-                              //Set launchedEffect to false
-                              navigateToFolder = false
                               // Set the target folder as the selected folder to navigate to it when dropping on it
                               folderViewModel.selectedFolder(folder)
                               // Get the dragged object Id
@@ -277,7 +269,7 @@ fun FolderItem(
                                       context, "Note moved to ${folder.name}", Toast.LENGTH_SHORT)
                                       .show()
                                   noteViewModel.draggedNote(null)
-                                  navigateToFolder = true
+                                  dropSuccess.value = true
                                   return true
                               }
                               // Get the dragged folder in case a folder is being dragged
@@ -297,10 +289,20 @@ fun FolderItem(
                                       .show()
                                   folderViewModel.draggedFolder(null)
                                   // Allows calling the LaunchedEffect after returning true
-                                  navigateToFolder = true
+                                  dropSuccess.value = true
                                   return true
                               }
+                              dropSuccess.value = false
                               return false
+                          }
+
+                          override fun onEnded(event: DragAndDropEvent) {
+                              if (dropSuccess.value) {
+                                  // Drop was successful
+                                  navigateToFolderContents(folder, navigationActions)
+                              }
+                              // Reset dropSuccess value
+                              dropSuccess.value = false
                           }
                         }
                       }),
@@ -466,26 +468,7 @@ fun CustomLazyGrid(
                   noteViewModel = noteViewModel,
                   folderViewModel = folderViewModel) {
                     folderViewModel.selectedFolder(folders.value[index])
-
-                    if (folders.value[index].parentFolderId == null) {
-                      // Don't add to the screen navigation stack as we are at the root folder
-                      navigationActions.navigateTo(Screen.FOLDER_CONTENTS)
-                    } else {
-                      val poppedId = navigationActions.popFromScreenNavigationStack()
-                      if (poppedId == Screen.SEARCH) {
-                        // If we come from search, don't push the folderId to the stack
-                        navigationActions.pushToScreenNavigationStack(poppedId)
-                      } else {
-                        if (poppedId != null) {
-                          navigationActions.pushToScreenNavigationStack(poppedId)
-                        }
-                        // Add the previously visited folder Id (parent) to the screen navigation
-                        // stack
-                        navigationActions.pushToScreenNavigationStack(
-                            folders.value[index].parentFolderId!!)
-                      }
-                      navigationActions.navigateTo(Screen.FOLDER_CONTENTS)
-                    }
+                    navigateToFolderContents(folders.value[index], navigationActions)
                   }
             }
             items(notes.value.size) { index ->
@@ -650,4 +633,35 @@ fun OptionDropDownMenu(
           }
         }
   }
+}
+
+/**
+ * A function that handles the navigation to the folder content screen by using the screen
+ * navigation stack.
+ *
+ * @param folder The folder to navigate to. If it is not a root folder, its parent id will be pushed
+ * to the screen navigation stack to properly go back.
+ * @param navigationActions The navigation instance used to navigate between different screens.
+ */
+fun navigateToFolderContents(
+    folder: Folder,
+    navigationActions: NavigationActions
+) {
+    if (folder.parentFolderId == null) {
+        // Don't add to the screen navigation stack as we are at the root folder
+        navigationActions.navigateTo(Screen.FOLDER_CONTENTS)
+    } else {
+        val poppedId = navigationActions.popFromScreenNavigationStack()
+        if (poppedId == Screen.SEARCH) {
+            // If we come from search, don't push the folderId to the stack
+            navigationActions.pushToScreenNavigationStack(poppedId)
+        } else {
+            if (poppedId != null) {
+                navigationActions.pushToScreenNavigationStack(poppedId)
+            }
+            // Add the previously visited folder Id (parent) to the screen navigation stack
+            navigationActions.pushToScreenNavigationStack(folder.parentFolderId)
+        }
+        navigationActions.navigateTo(Screen.FOLDER_CONTENTS)
+    }
 }

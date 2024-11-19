@@ -78,7 +78,6 @@ fun FolderContentScreen(
   currentUser.let { folderViewModel.getSubFoldersOf(folder.value?.id ?: "") }
 
   val parentFolderId = folderViewModel.parentFolderId.collectAsState()
-
   val context = LocalContext.current
 
   var expanded by remember { mutableStateOf(false) }
@@ -295,7 +294,7 @@ fun FolderContentTopBar(
                             // TODO for now we just delete the folder directly and set the
                             // folderId field of sub elements to null, later on we will
                             // implement a recursive delete to delete all elements of a folder
-                            // (folders and notes)
+                            // (folders and notes) SO I will add another item to delete folder contents
                           } else {
                             Toast.makeText(
                                     context,
