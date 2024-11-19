@@ -228,11 +228,7 @@ fun SearchScreen(
               contentPadding = PaddingValues(horizontal = 16.dp),
               modifier = Modifier.fillMaxWidth().padding(padding).testTag("filteredUserList")) {
                 items(filteredUsers.value.size) { index ->
-                  UserItem(
-                      filteredUsers.value[index],
-                      userViewModel,
-                      fileViewModel
-                  ) {
+                  UserItem(filteredUsers.value[index], userViewModel, fileViewModel) {
                     userViewModel.setProfileUser(filteredUsers.value[index])
                     switchProfileTo(filteredUsers.value[index], userViewModel, navigationActions)
                   }

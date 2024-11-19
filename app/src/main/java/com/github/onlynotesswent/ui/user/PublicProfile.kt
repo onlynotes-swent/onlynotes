@@ -2,7 +2,6 @@ package com.github.onlynotesswent.ui.user
 
 import android.util.Log
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -433,18 +432,27 @@ fun FollowUnfollowButton(userViewModel: UserViewModel, otherUserId: String) {
                 },
                 {})
       }) {
-        Text(followButtonText.value, modifier = Modifier.testTag("followUnfollowButtonText"), maxLines = 1, overflow = TextOverflow.Ellipsis)
+        Text(
+            followButtonText.value,
+            modifier = Modifier.testTag("followUnfollowButtonText"),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis)
       }
 }
 
 @Composable
 fun RemoveFollowerButton(userViewModel: UserViewModel) {
-  OutlinedButton(modifier = Modifier.testTag("removeFollowerButton"),
+  OutlinedButton(
+      modifier = Modifier.testTag("removeFollowerButton"),
       onClick = {
-          // TODO: Implement remove follower functionality
+        // TODO: Implement remove follower functionality
       }) {
-    Text("Remove", modifier = Modifier.testTag("removeFollowerButtonText"), maxLines = 1, overflow = TextOverflow.Ellipsis)
-  }
+        Text(
+            "Remove",
+            modifier = Modifier.testTag("removeFollowerButtonText"),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis)
+      }
 }
 
 /**
@@ -488,16 +496,10 @@ fun UserBottomSheet(
                     modifier = Modifier.fillMaxWidth().padding(start = 30.dp, end = 10.dp),
                     horizontalAlignment = Alignment.Start) {
                       users.value.forEach { user ->
-                          UserItem(
-                              user,
-                              userViewModel,
-                              fileViewModel,
-                              isFollowerSheetOfCurrentUser
-                          )
-                          {
-                              expanded.value = false
-                              switchProfileTo(user, userViewModel, navigationActions)
-                          }
+                        UserItem(user, userViewModel, fileViewModel, isFollowerSheetOfCurrentUser) {
+                          expanded.value = false
+                          switchProfileTo(user, userViewModel, navigationActions)
+                        }
                       }
                     }
               }
@@ -513,40 +515,29 @@ fun UserItem(
     isFollowerSheetOfCurrentUser: Boolean = false,
     onClick: () -> Unit,
 ) {
-    Row(
-        modifier =
-        Modifier
-            .padding(8.dp)
-            .testTag("item--${user.userName}")
-            .clickable {onClick()}, ) {
-        ThumbnailPic(user, fileViewModel)
-        Column(
-            verticalArrangement = Arrangement.Center,
-            modifier = Modifier.padding(start = 10.dp).weight(1f)
-        ) {
-            // Display the user's full name and handle (username)
-            Text(
-                user.fullName(),
-                style = Typography.bodyLarge,
-                fontWeight = FontWeight(500),
-                modifier = Modifier.alpha(0.9f),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-            Text(
-                user.userHandle(),
-                style = Typography.bodyLarge,
-                modifier = Modifier.alpha(0.7f)
-            )
+  Row(
+      modifier = Modifier.padding(8.dp).testTag("item--${user.userName}").clickable { onClick() },
+  ) {
+    ThumbnailPic(user, fileViewModel)
+    Column(
+        verticalArrangement = Arrangement.Center,
+        modifier = Modifier.padding(start = 10.dp).weight(1f)) {
+          // Display the user's full name and handle (username)
+          Text(
+              user.fullName(),
+              style = Typography.bodyLarge,
+              fontWeight = FontWeight(500),
+              modifier = Modifier.alpha(0.9f),
+              maxLines = 1,
+              overflow = TextOverflow.Ellipsis)
+          Text(user.userHandle(), style = Typography.bodyLarge, modifier = Modifier.alpha(0.7f))
         }
-        if (isFollowerSheetOfCurrentUser) {
-            RemoveFollowerButton(userViewModel)
-        } else if (user.uid !=
-            userViewModel.currentUser.collectAsState().value!!.uid
-        ) {
-            FollowUnfollowButton(userViewModel, user.uid)
-        }
+    if (isFollowerSheetOfCurrentUser) {
+      RemoveFollowerButton(userViewModel)
+    } else if (user.uid != userViewModel.currentUser.collectAsState().value!!.uid) {
+      FollowUnfollowButton(userViewModel, user.uid)
     }
+  }
 }
 
 /**
@@ -594,7 +585,8 @@ fun DisplayBioCard(user: State<User?>) {
 fun ThumbnailPic(user: User, fileViewModel: FileViewModel, size: Int = 40) {
   val profilePictureUri = remember { mutableStateOf("") }
   val userState = remember { mutableStateOf(user) }
-  NonModifiableProfilePicture(userState, profilePictureUri, fileViewModel, size, "thumbnail--${user.uid}")
+  NonModifiableProfilePicture(
+      userState, profilePictureUri, fileViewModel, size, "thumbnail--${user.uid}")
 }
 
 @Composable
@@ -631,10 +623,7 @@ fun NonModifiableProfilePicture(
     Image(
         painter = painter,
         contentDescription = "Profile Picture",
-        modifier =
-            Modifier.testTag(testTag)
-                .size(size.dp)
-                .clip(CircleShape),
+        modifier = Modifier.testTag(testTag).size(size.dp).clip(CircleShape),
         contentScale = ContentScale.Crop)
   }
 }
