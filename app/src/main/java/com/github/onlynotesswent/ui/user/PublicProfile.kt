@@ -7,6 +7,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -17,6 +18,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
@@ -416,7 +418,9 @@ fun FollowUnfollowButton(userViewModel: UserViewModel, otherUserId: String) {
           "Unfollow"
       else "Follow"
   OutlinedButton(
-      modifier = Modifier.testTag("followUnfollowButton--$otherUserId"),
+      contentPadding = PaddingValues(horizontal = 10.dp),
+      shape = RoundedCornerShape(25),
+      modifier = Modifier.testTag("followUnfollowButton--$otherUserId").width(90.dp),
       onClick = {
         if (followButtonText.value == "Follow")
             userViewModel.followUser(
@@ -435,6 +439,7 @@ fun FollowUnfollowButton(userViewModel: UserViewModel, otherUserId: String) {
       }) {
         Text(
             followButtonText.value,
+            fontWeight = FontWeight(600),
             modifier = Modifier.testTag("followUnfollowButtonText--$otherUserId"),
             maxLines = 1,
             overflow = TextOverflow.Ellipsis)
@@ -445,13 +450,16 @@ fun FollowUnfollowButton(userViewModel: UserViewModel, otherUserId: String) {
 fun RemoveFollowerButton(userViewModel: UserViewModel, followerId: String) {
   val context = LocalContext.current
   OutlinedButton(
-      modifier = Modifier.testTag("removeFollowerButton--$followerId"),
+      contentPadding = PaddingValues(horizontal = 10.dp),
+      shape = RoundedCornerShape(25),
+      modifier = Modifier.testTag("removeFollowerButton--$followerId").width(90.dp),
       onClick = {
         // TODO: Implement remove follower functionality
         Toast.makeText(context, "Not Implemented Yet", Toast.LENGTH_SHORT).show()
       }) {
         Text(
             "Remove",
+            fontWeight = FontWeight(600),
             modifier = Modifier.testTag("removeFollowerText--$followerId"),
             maxLines = 1,
             overflow = TextOverflow.Ellipsis)
@@ -524,7 +532,7 @@ fun UserItem(
     ThumbnailPic(user, fileViewModel)
     Column(
         verticalArrangement = Arrangement.Center,
-        modifier = Modifier.padding(start = 10.dp).weight(1f)) {
+        modifier = Modifier.padding(horizontal = 10.dp).weight(1f)) {
           // Display the user's full name and handle (username)
           Text(
               user.fullName(),
