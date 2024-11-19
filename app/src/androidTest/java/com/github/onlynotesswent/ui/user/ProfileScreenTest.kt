@@ -23,6 +23,7 @@ import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
 import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
 import com.google.firebase.Timestamp
+import junit.framework.TestCase.assertEquals
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -43,34 +44,36 @@ class ProfileScreenTest {
   private lateinit var fileViewModel: FileViewModel
 
   private val testUid = "testUid"
+  private val testUid2 = "testUid2"
+  private val testUid3 = "testUid3"
 
   // Following user
-  private var testUser2 =
+  private val initialTestUser2 =
       User(
           firstName = "testFirstName2",
           lastName = "testLastName2",
           userName = "testUserName2",
           email = "testEmail2",
-          uid = "testUid2",
+          uid = testUid2,
           dateOfJoining = Timestamp.now(),
           rating = 0.0,
-          friends = Friends(listOf(), listOf(testUid)),
+          friends = Friends(listOf(testUid3), listOf(testUid)),
           bio = "testBio2")
   // Follower user
-  private var testUser3 =
+  private val initialTestUser3 =
       User(
           firstName = "testFirstName3",
-          lastName = "testLastNam3e",
+          lastName = "testLastName3",
           userName = "testUserName3",
           email = "testEmail3",
-          uid = "testUid3",
+          uid = testUid3,
           dateOfJoining = Timestamp.now(),
           rating = 0.0,
-          friends = Friends(listOf(testUid), listOf()),
+          friends = Friends(listOf(testUid), listOf(testUid2)),
           bio = "testBio3")
 
   // current user
-  private var testUser =
+  private val initialTestUser =
       User(
           firstName = "testFirstName",
           lastName = "testLastName",
@@ -79,8 +82,12 @@ class ProfileScreenTest {
           uid = testUid,
           dateOfJoining = Timestamp.now(),
           rating = 0.0,
-          friends = Friends(following = listOf(testUser2.uid), followers = listOf(testUser3.uid)),
+          friends = Friends(following = listOf(testUid2), followers = listOf(testUid3)),
           bio = "testBio")
+
+  private var testUser = initialTestUser
+  private var testUser2 = initialTestUser2
+  private var testUser3 = initialTestUser3
 
   private val uidToUser = { s: String ->
     when (s) {
@@ -129,6 +136,67 @@ class ProfileScreenTest {
     }
     // Initialize current user
     userViewModel.addUser(testUser, {}, {})
+
+    // Reset test users:
+    testUser = initialTestUser
+    testUser2 = initialTestUser2
+    testUser3 = initialTestUser3
+
+    // ----------------- Follow and Unfollow Mechanics -----------------
+    // Mock the user repository to add and remove followers
+    `when`(mockUserRepository.addFollowerTo(any(), any(), any(), any())).thenAnswer {
+      val userId = it.arguments[0] as String // testUser2
+      val followerId = it.arguments[1] as String // testUser
+      val onSuccess = it.getArgument<() -> Unit>(2)
+      var user = uidToUser(userId)!!
+      var follower = uidToUser(followerId)!!
+      user =
+          user.copy(
+              friends = user.friends.copy(followers = user.friends.followers.plus(followerId)))
+      follower =
+          follower.copy(
+              friends = follower.friends.copy(following = follower.friends.following.plus(userId)))
+      // Update the test user and follower
+      when (userId) {
+        testUser.uid -> testUser = user
+        testUser2.uid -> testUser2 = user
+        testUser3.uid -> testUser3 = user
+      }
+      when (followerId) {
+        testUser.uid -> testUser = follower
+        testUser2.uid -> testUser2 = follower
+        testUser3.uid -> testUser3 = follower
+      }
+      onSuccess()
+    }
+
+    `when`(mockUserRepository.removeFollowerFrom(any(), any(), any(), any())).thenAnswer {
+      val userId = it.arguments[0] as String // testUser2
+      val followerId = it.arguments[1] as String // testUser
+      val onSuccess = it.getArgument<() -> Unit>(2)
+      var user = uidToUser(userId)!!
+      var follower = uidToUser(followerId)!!
+      user =
+          user.copy(
+              friends = user.friends.copy(followers = user.friends.followers.minus(followerId)))
+
+      follower =
+          follower.copy(
+              friends = follower.friends.copy(following = follower.friends.following.minus(userId)))
+
+      // Update the test user and follower
+      when (userId) {
+        testUser.uid -> testUser = user
+        testUser2.uid -> testUser2 = user
+        testUser3.uid -> testUser3 = user
+      }
+      when (followerId) {
+        testUser.uid -> testUser = follower
+        testUser2.uid -> testUser2 = follower
+        testUser3.uid -> testUser3 = follower
+      }
+      onSuccess()
+    }
   }
 
   @Test
@@ -163,6 +231,7 @@ class ProfileScreenTest {
     }
 
     composeTestRule.onNodeWithTag("followingButton").assertIsDisplayed().performClick()
+    composeTestRule.onNodeWithTag("followUnfollowButton--$testUid2").assertIsDisplayed()
     composeTestRule
         .onAllNodesWithTag("userItem")
         .assertCountEquals(1)
@@ -170,10 +239,10 @@ class ProfileScreenTest {
         .onFirst()
         .assertIsDisplayed()
         .performClick()
-
-    composeTestRule.onNodeWithTag("followingDropdownMenu").assertIsNotDisplayed()
+    assertEquals(testUser2, userViewModel.profileUser.value)
 
     composeTestRule.onNodeWithTag("followersButton").assertIsDisplayed().performClick()
+    composeTestRule.onNodeWithTag("removeFollowerButton--$testUid3").assertIsDisplayed()
     composeTestRule
         .onAllNodesWithTag("userItem")
         .assertCountEquals(1)
@@ -181,8 +250,7 @@ class ProfileScreenTest {
         .onFirst()
         .assertIsDisplayed()
         .performClick()
-
-    composeTestRule.onNodeWithTag("followersDropdownMenu").assertIsNotDisplayed()
+    assertEquals(testUser3, userViewModel.profileUser.value)
 
     verify(mockNavigationActions, times(2)).navigateTo(Screen.PUBLIC_PROFILE)
   }
@@ -198,39 +266,7 @@ class ProfileScreenTest {
   }
 
   @Test
-  fun followUnfollowButtonWorksOnPublicProfile() {
-    `when`(mockUserRepository.addFollowerTo(any(), any(), any(), any())).thenAnswer {
-      val userId = it.arguments[0] as String // testUser2
-      val followerId = it.arguments[1] as String // testUser
-      val onSuccess = it.getArgument<() -> Unit>(2)
-      testUser2 =
-          testUser2.copy(
-              friends =
-                  Friends(
-                      testUser2.friends.following, testUser2.friends.followers.plus(followerId)))
-      testUser =
-          testUser.copy(
-              friends =
-                  Friends(testUser.friends.following.plus(userId), testUser.friends.followers))
-      onSuccess()
-    }
-
-    `when`(mockUserRepository.removeFollowerFrom(any(), any(), any(), any())).thenAnswer {
-      val userId = it.arguments[0] as String // testUser2
-      val followerId = it.arguments[1] as String // testUser
-      val onSuccess = it.getArgument<() -> Unit>(2)
-      testUser2 =
-          testUser2.copy(
-              friends =
-                  Friends(
-                      testUser2.friends.following, testUser2.friends.followers.minus(followerId)))
-      testUser =
-          testUser.copy(
-              friends =
-                  Friends(testUser.friends.following.minus(userId), testUser.friends.followers))
-      onSuccess()
-    }
-
+  fun followUnfollowButtonsWork() {
     composeTestRule.setContent {
       PublicProfileScreen(mockNavigationActions, userViewModel, fileViewModel)
     }
@@ -238,17 +274,42 @@ class ProfileScreenTest {
     composeTestRule.onNodeWithTag("userNotFound").assertIsDisplayed()
 
     userViewModel.setProfileUser(testUser2)
-    composeTestRule.onNodeWithTag("followUnfollowButton").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("followUnfollowButton--$testUid2").assertIsDisplayed()
+
+    // Follow and unfollow the user
     composeTestRule
-        .onNodeWithTag("followUnfollowButtonText", useUnmergedTree = true)
+        .onNodeWithTag("followUnfollowButtonText--$testUid2", useUnmergedTree = true)
         .assertIsDisplayed()
         .assertTextContains("Unfollow")
         .performClick()
         .assertTextContains("Follow")
-        .performClick()
-        .assertTextContains("Unfollow")
 
-    verify(mockUserRepository, times(4)).getUserById(any(), any(), any(), any())
+    assert(testUser.friends.following.isEmpty())
+    assert(testUser2.friends.followers.isEmpty())
+
+    composeTestRule.onNodeWithTag("followersButton").performClick()
+    composeTestRule
+        .onNodeWithTag("followersAbsent")
+        .assertIsDisplayed()
+        .assertTextContains("No followers to display")
+    // Follow and unfollow the user, in the bottom sheet this time
+    composeTestRule.onNodeWithTag("followingButton").performClick()
+    composeTestRule.onNodeWithTag("followingAbsent").assertIsNotDisplayed()
+    composeTestRule
+        .onAllNodesWithTag("userItem")
+        .assertCountEquals(1)
+        .filter(hasText(testUser3.fullName()))
+        .onFirst()
+        .assertIsDisplayed()
+    composeTestRule
+        .onNodeWithTag("followUnfollowButtonText--$testUid3", useUnmergedTree = true)
+        .assertIsDisplayed()
+        .assertTextContains("Follow")
+        .performClick()
+
+    assert(testUser.friends.following.contains(testUser3.uid))
+    assert(testUser3.friends.followers.contains(testUser.uid))
+
     verify(mockUserRepository).addFollowerTo(any(), any(), any(), any())
     verify(mockUserRepository).removeFollowerFrom(any(), any(), any(), any())
   }

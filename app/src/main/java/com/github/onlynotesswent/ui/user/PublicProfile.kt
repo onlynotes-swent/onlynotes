@@ -415,7 +415,7 @@ fun FollowUnfollowButton(userViewModel: UserViewModel, otherUserId: String) {
           "Unfollow"
       else "Follow"
   OutlinedButton(
-      modifier = Modifier.testTag("followUnfollowButton"),
+      modifier = Modifier.testTag("followUnfollowButton--$otherUserId"),
       onClick = {
         if (followButtonText.value == "Follow")
             userViewModel.followUser(
@@ -434,22 +434,22 @@ fun FollowUnfollowButton(userViewModel: UserViewModel, otherUserId: String) {
       }) {
         Text(
             followButtonText.value,
-            modifier = Modifier.testTag("followUnfollowButtonText"),
+            modifier = Modifier.testTag("followUnfollowButtonText--$otherUserId"),
             maxLines = 1,
             overflow = TextOverflow.Ellipsis)
       }
 }
 
 @Composable
-fun RemoveFollowerButton(userViewModel: UserViewModel) {
+fun RemoveFollowerButton(userViewModel: UserViewModel, followerId: String) {
   OutlinedButton(
-      modifier = Modifier.testTag("removeFollowerButton"),
+      modifier = Modifier.testTag("removeFollowerButton--$followerId"),
       onClick = {
         // TODO: Implement remove follower functionality
       }) {
         Text(
             "Remove",
-            modifier = Modifier.testTag("removeFollowerButtonText"),
+            modifier = Modifier.testTag("removeFollowerText--$followerId"),
             maxLines = 1,
             overflow = TextOverflow.Ellipsis)
       }
@@ -533,7 +533,7 @@ fun UserItem(
           Text(user.userHandle(), style = Typography.bodyLarge, modifier = Modifier.alpha(0.7f))
         }
     if (isFollowerSheetOfCurrentUser) {
-      RemoveFollowerButton(userViewModel)
+      RemoveFollowerButton(userViewModel, user.uid)
     } else if (user.uid != userViewModel.currentUser.collectAsState().value!!.uid) {
       FollowUnfollowButton(userViewModel, user.uid)
     }
