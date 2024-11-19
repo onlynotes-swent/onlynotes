@@ -102,7 +102,7 @@ fun OnlyNotesApp(
         route = Route.SEARCH,
     ) {
       composable(Screen.SEARCH) {
-        SearchScreen(navigationActions, noteViewModel, userViewModel, folderViewModel)
+        SearchScreen(navigationActions, noteViewModel, userViewModel, folderViewModel, fileViewModel)
       }
     }
 

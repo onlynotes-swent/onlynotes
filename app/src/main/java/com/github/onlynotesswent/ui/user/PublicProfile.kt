@@ -58,6 +58,7 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -432,14 +433,17 @@ fun FollowUnfollowButton(userViewModel: UserViewModel, otherUserId: String) {
                 },
                 {})
       }) {
-        Text(followButtonText.value, modifier = Modifier.testTag("followUnfollowButtonText"))
+        Text(followButtonText.value, modifier = Modifier.testTag("followUnfollowButtonText"), maxLines = 1, overflow = TextOverflow.Ellipsis)
       }
 }
 
 @Composable
 fun RemoveFollowerButton(userViewModel: UserViewModel) {
-  OutlinedButton(modifier = Modifier.testTag("removeFollowerButton"), onClick = {}) {
-    Text("Remove", modifier = Modifier.testTag("removeFollowerButtonText"))
+  OutlinedButton(modifier = Modifier.testTag("removeFollowerButton"),
+      onClick = {
+          // TODO: Implement remove follower functionality
+      }) {
+    Text("Remove", modifier = Modifier.testTag("removeFollowerButtonText"), maxLines = 1, overflow = TextOverflow.Ellipsis)
   }
 }
 
@@ -484,67 +488,65 @@ fun UserBottomSheet(
                     modifier = Modifier.fillMaxWidth().padding(start = 30.dp, end = 10.dp),
                     horizontalAlignment = Alignment.Start) {
                       users.value.forEach { user ->
-                        Row(
-                            modifier =
-                                Modifier.padding(8.dp).testTag("item--${user.userName}").clickable {
-                                  expanded.value = false
-                                  switchProfileTo(user, userViewModel, navigationActions)
-                                }) {
-                              ThumbnailPic(user, fileViewModel)
-                              Column(
-                                  verticalArrangement = Arrangement.Center,
-                                  modifier = Modifier.padding(start = 10.dp)) {
-                                    // Display the user's full name and handle (username)
-                                    Text(
-                                        user.fullName(),
-                                        style = Typography.bodyLarge,
-                                        fontWeight = FontWeight(500),
-                                        modifier = Modifier.alpha(0.9f))
-                                    Text(
-                                        user.userHandle(),
-                                        style = Typography.bodyLarge,
-                                        modifier = Modifier.alpha(0.7f))
-                                  }
-                              Spacer(Modifier.weight(1f))
-                              if (isFollowerSheetOfCurrentUser) {
-                                RemoveFollowerButton(userViewModel)
-                              } else if (user.uid !=
-                                  userViewModel.currentUser.collectAsState().value!!.uid) {
-                                FollowUnfollowButton(userViewModel, user.uid)
-                              }
-                            }
+                          UserItem(
+                              user,
+                              userViewModel,
+                              fileViewModel,
+                              isFollowerSheetOfCurrentUser
+                          )
+                          {
+                              expanded.value = false
+                              switchProfileTo(user, userViewModel, navigationActions)
+                          }
                       }
                     }
               }
         }
   }
+}
 
-  /*DropdownMenu(
-     expanded = expanded.value,
-     onDismissRequest = { expanded.value = false },
-     modifier =
-         Modifier.testTag("${tag}DropdownMenu")
-             .fillMaxWidth(0.7f) // Set a fixed width for the dropdown menu
-     ) {
-       Column(modifier = Modifier.fillMaxWidth()) {
-         if (users.value.isEmpty()) {
-           Text("No $tag to display", modifier = Modifier.padding(8.dp).testTag("${tag}Absent"))
-         }
-         users.value.forEach { user ->
-           Text(
-               "${user.fullName()} — @${user.userName}",
-               modifier =
-                   Modifier.testTag("item--${user.userName}")
-                       .clickable {
-                         expanded.value = false
-                         switchProfileTo(user, userViewModel, navigationActions)
-                       }
-                       .padding(8.dp) // Add padding for better UI
-               )
-         }
-       }
-     }
-  */
+@Composable
+fun UserItem(
+    user: User,
+    userViewModel: UserViewModel,
+    fileViewModel: FileViewModel,
+    isFollowerSheetOfCurrentUser: Boolean = false,
+    onClick: () -> Unit,
+) {
+    Row(
+        modifier =
+        Modifier
+            .padding(8.dp)
+            .testTag("item--${user.userName}")
+            .clickable {onClick()}, ) {
+        ThumbnailPic(user, fileViewModel)
+        Column(
+            verticalArrangement = Arrangement.Center,
+            modifier = Modifier.padding(start = 10.dp).weight(1f)
+        ) {
+            // Display the user's full name and handle (username)
+            Text(
+                user.fullName(),
+                style = Typography.bodyLarge,
+                fontWeight = FontWeight(500),
+                modifier = Modifier.alpha(0.9f),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            Text(
+                user.userHandle(),
+                style = Typography.bodyLarge,
+                modifier = Modifier.alpha(0.7f)
+            )
+        }
+        if (isFollowerSheetOfCurrentUser) {
+            RemoveFollowerButton(userViewModel)
+        } else if (user.uid !=
+            userViewModel.currentUser.collectAsState().value!!.uid
+        ) {
+            FollowUnfollowButton(userViewModel, user.uid)
+        }
+    }
 }
 
 /**
@@ -591,39 +593,19 @@ fun DisplayBioCard(user: State<User?>) {
 @Composable
 fun ThumbnailPic(user: User, fileViewModel: FileViewModel, size: Int = 40) {
   val profilePictureUri = remember { mutableStateOf("") }
-  if (user.hasProfilePicture && profilePictureUri.value.isBlank()) {
-    fileViewModel.downloadFile(
-        user.uid,
-        FileType.PROFILE_PIC_JPEG,
-        context = LocalContext.current,
-        onSuccess = { file -> profilePictureUri.value = file.absolutePath },
-        onFileNotFound = { Log.e("ProfilePicture", "Profile picture not found") },
-        onFailure = { e -> Log.e("ProfilePicture", "Error downloading profile picture", e) })
-  }
-  // Profile Picture Painter
-  val painter =
-      if (profilePictureUri.value.isNotBlank()) {
-        // Load the profile picture if it exists
-        rememberAsyncImagePainter(profilePictureUri.value)
-      } else {
-        // Load the default profile picture if it doesn't exist
-        rememberVectorPainter(Icons.Default.AccountCircle)
-      }
-  // Profile Picture
-  Image(
-      painter = painter,
-      contentDescription = "Profile Picture",
-      modifier = Modifier.testTag("thumbnail--${user.uid}").size(size.dp).clip(CircleShape),
-      contentScale = ContentScale.Crop)
+  val userState = remember { mutableStateOf(user) }
+  NonModifiableProfilePicture(userState, profilePictureUri, fileViewModel, size, "thumbnail--${user.uid}")
 }
 
 @Composable
 fun NonModifiableProfilePicture(
     user: State<User?>,
     profilePictureUri: MutableState<String>,
-    fileViewModel: FileViewModel
+    fileViewModel: FileViewModel,
+    size: Int = 150,
+    testTag: String = "profilePicture"
 ) {
-  Box(modifier = Modifier.size(150.dp)) {
+  Box(modifier = Modifier.size(size.dp)) {
     // Download the profile picture from Firebase Storage if it hasn't been downloaded yet
     if (user.value!!.hasProfilePicture && profilePictureUri.value.isBlank()) {
       fileViewModel.downloadFile(
@@ -650,10 +632,9 @@ fun NonModifiableProfilePicture(
         painter = painter,
         contentDescription = "Profile Picture",
         modifier =
-            Modifier.testTag("profilePicture")
-                .size(150.dp)
-                .clip(CircleShape)
-                .border(2.dp, Color.Gray, CircleShape),
+            Modifier.testTag(testTag)
+                .size(size.dp)
+                .clip(CircleShape),
         contentScale = ContentScale.Crop)
   }
 }
