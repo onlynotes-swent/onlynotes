@@ -40,6 +40,8 @@ class CustomTextRecognizerTest {
 
   private lateinit var customTextRecognizer: CustomTextRecognizer
 
+  private fun <T> capture(argumentCaptor: ArgumentCaptor<T>): T = argumentCaptor.capture()
+
   @Before
   fun setUp() {
     MockitoAnnotations.openMocks(this)
@@ -162,7 +164,7 @@ class CustomTextRecognizerTest {
           ArgumentCaptor.forClass(ActivityResultCallback::class.java)
               as ArgumentCaptor<ActivityResultCallback<Uri?>>
       verify(mockActivity)
-          .registerForActivityResult(any<ActivityResultContracts.GetContent>(), captor.capture())
+          .registerForActivityResult(any<ActivityResultContracts.GetContent>(), capture(captor))
       captor.value.onActivityResult(mockUri)
 
       // Verify that the text processing was triggered
@@ -195,7 +197,7 @@ class CustomTextRecognizerTest {
             ArgumentCaptor.forClass(ActivityResultCallback::class.java)
                 as ArgumentCaptor<ActivityResultCallback<Uri?>>
         verify(mockActivity)
-            .registerForActivityResult(any<ActivityResultContracts.GetContent>(), captor.capture())
+            .registerForActivityResult(any<ActivityResultContracts.GetContent>(), capture(captor))
         captor.value.onActivityResult(mockUri)
 
         // Get all the logs
@@ -261,7 +263,7 @@ class CustomTextRecognizerTest {
             ArgumentCaptor.forClass(ActivityResultCallback::class.java)
                 as ArgumentCaptor<ActivityResultCallback<Uri?>>
         verify(mockActivity)
-            .registerForActivityResult(any<ActivityResultContracts.GetContent>(), captor.capture())
+            .registerForActivityResult(any<ActivityResultContracts.GetContent>(), capture(captor))
         captor.value.onActivityResult(mockUri)
 
         // Get all the logs
@@ -326,7 +328,7 @@ class CustomTextRecognizerTest {
             ArgumentCaptor.forClass(ActivityResultCallback::class.java)
                 as ArgumentCaptor<ActivityResultCallback<Uri?>>
         verify(mockActivity)
-            .registerForActivityResult(any<ActivityResultContracts.GetContent>(), captor.capture())
+            .registerForActivityResult(any<ActivityResultContracts.GetContent>(), capture(captor))
         captor.value.onActivityResult(mockUri)
 
         // Get all the logs
