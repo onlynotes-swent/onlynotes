@@ -1,6 +1,7 @@
 package com.github.onlynotesswent.ui.user
 
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -442,10 +443,12 @@ fun FollowUnfollowButton(userViewModel: UserViewModel, otherUserId: String) {
 
 @Composable
 fun RemoveFollowerButton(userViewModel: UserViewModel, followerId: String) {
+  val context = LocalContext.current
   OutlinedButton(
       modifier = Modifier.testTag("removeFollowerButton--$followerId"),
       onClick = {
         // TODO: Implement remove follower functionality
+        Toast.makeText(context, "Not Implemented Yet", Toast.LENGTH_SHORT).show()
       }) {
         Text(
             "Remove",
