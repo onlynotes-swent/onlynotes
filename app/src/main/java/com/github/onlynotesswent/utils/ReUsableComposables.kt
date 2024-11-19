@@ -46,7 +46,6 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -251,7 +250,8 @@ fun FolderItem(
                         object : DragAndDropTarget {
                           override fun onDrop(event: DragAndDropEvent): Boolean {
                               // Set the target folder as the selected folder to navigate to it when dropping on it
-                              folderViewModel.selectedFolder(folder)
+                              //folderViewModel.selectedFolder(folder)
+                              Log.e("FolderItem", "onDrop selected folder: ${folder.name} vs real selected folder: ${folderViewModel.selectedFolder.value?.name}")
                               // Get the dragged object Id
                               val draggedObjectId =
                                   event.toAndroidDragEvent().clipData.getItemAt(0).text.toString()
@@ -274,10 +274,11 @@ fun FolderItem(
                               }
                               // Get the dragged folder in case a folder is being dragged
                               val draggedFolder = folderViewModel.draggedFolder.value
-                              Log.e("FolderItem", "draggedFolderId: ${draggedFolder?.id} and draggedObjectId: $draggedObjectId")
-                              if (draggedFolder != null &&
-                                  draggedFolder.id == draggedObjectId &&
-                                  draggedFolder.id != folder.id) {
+                              val selectedFolder = folderViewModel.selectedFolder.value
+                              Log.e("FolderItem", "draggedFolderId: ${draggedFolder?.id} and draggedObjectId: $draggedObjectId and selectedFolderId: ${selectedFolder?.id} and folderId: ${folder.id}")
+                              if (draggedFolder != null && draggedFolder.id == draggedObjectId &&
+                                  draggedFolder.id != folder.id && draggedFolder.parentFolderId == folder.parentFolderId // If dragged and folder dont have same parent id dont allow drop
+                                  && selectedFolder?.id != folder.id) { // Also check the current selected folder and the target folder are not the same
                                   // Update the dragged folder with the new parent folder Id. Folder
                                   // here represents the target folder, so the future parent of the
                                   // dragged folder
@@ -299,6 +300,7 @@ fun FolderItem(
                           override fun onEnded(event: DragAndDropEvent) {
                               if (dropSuccess.value) {
                                   // Drop was successful
+                                  folderViewModel.selectedFolder(folder)
                                   navigateToFolderContents(folder, navigationActions)
                               }
                               // Reset dropSuccess value
@@ -454,32 +456,35 @@ fun CustomLazyGrid(
     paddingValues: PaddingValues,
     columnContent: @Composable (ColumnScope.() -> Unit)
 ) {
+  val sortedFolders = folders.value.sortedBy { it.name }
+  val sortedNotes = notes.value.sortedBy { it.title }
+
   Box(modifier = modifier) {
-    if (notes.value.isNotEmpty() || folders.value.isNotEmpty()) {
+    if (sortedNotes.isNotEmpty() || sortedFolders.isNotEmpty()) {
       LazyVerticalGrid(
           columns = GridCells.Adaptive(minSize = 100.dp),
           contentPadding = PaddingValues(vertical = 20.dp),
           horizontalArrangement = Arrangement.spacedBy(4.dp),
           modifier = gridModifier) {
-            items(folders.value.size) { index ->
+            items(sortedFolders.size) { index ->
               FolderItem(
-                  folder = folders.value[index],
+                  folder = sortedFolders[index],
                   navigationActions = navigationActions,
                   noteViewModel = noteViewModel,
                   folderViewModel = folderViewModel) {
-                    folderViewModel.selectedFolder(folders.value[index])
-                    navigateToFolderContents(folders.value[index], navigationActions)
+                    folderViewModel.selectedFolder(sortedFolders[index])
+                    navigateToFolderContents(sortedFolders[index], navigationActions)
                   }
             }
-            items(notes.value.size) { index ->
+            items(sortedNotes.size) { index ->
               NoteItem(
-                  note = notes.value[index],
+                  note = sortedNotes[index],
                   currentUser = userViewModel.currentUser.collectAsState(),
                   context = context,
                   noteViewModel = noteViewModel,
                   showDialog = false,
                   navigationActions = navigationActions) {
-                    noteViewModel.selectedNote(notes.value[index])
+                    noteViewModel.selectedNote(sortedNotes[index])
                     navigationActions.navigateTo(Screen.EDIT_NOTE)
                   }
             }
