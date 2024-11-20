@@ -137,6 +137,8 @@ class NoteRepositoryFirestoreTest {
     `when`(mockDocumentSnapshot.getString("publicPath"))
         .thenReturn(testNotePublic.noteCourse.publicPath)
     `when`(mockDocumentSnapshot.getString("userId")).thenReturn(testNotePublic.userId)
+    `when`(mockDocumentSnapshot.getString("folderId")).thenReturn(testNotePublic.folderId)
+    `when`(mockDocumentSnapshot.get("commentsList")).thenReturn(noteRepositoryFirestore.convertCommentsList(testNotePublic.comments.commentsList))
 
     `when`(mockDocumentSnapshot2.id).thenReturn(testNotePrivate.id)
     `when`(mockDocumentSnapshot2.getString("title")).thenReturn(testNotePrivate.title)
@@ -152,7 +154,7 @@ class NoteRepositoryFirestoreTest {
     `when`(mockDocumentSnapshot.getString("publicPath"))
         .thenReturn(testNotePrivate.noteCourse.publicPath)
     `when`(mockDocumentSnapshot2.getString("userId")).thenReturn(testNotePrivate.userId)
-    `when`(mockDocumentSnapshot2.get("commentsList")).thenReturn(testNotePrivate.comments)
+    `when`(mockDocumentSnapshot2.get("commentsList")).thenReturn(noteRepositoryFirestore.convertCommentsList(testNotePrivate.comments.commentsList))
 
     `when`(mockDocumentSnapshot3.id).thenReturn(testSubNotePublic.id)
     `when`(mockDocumentSnapshot3.getString("title")).thenReturn(testSubNotePublic.title)
@@ -169,6 +171,7 @@ class NoteRepositoryFirestoreTest {
         .thenReturn(testSubNotePublic.noteCourse.publicPath)
     `when`(mockDocumentSnapshot3.getString("userId")).thenReturn(testSubNotePublic.userId)
     `when`(mockDocumentSnapshot3.getString("folderId")).thenReturn(testSubNotePublic.folderId)
+    `when`(mockDocumentSnapshot3.get("commentsList")).thenReturn(noteRepositoryFirestore.convertCommentsList(testSubNotePublic.comments.commentsList))
 
     `when`(mockDocumentSnapshot4.id).thenReturn(testSubNotePrivate.id)
     `when`(mockDocumentSnapshot4.getString("title")).thenReturn(testSubNotePrivate.title)
@@ -185,19 +188,20 @@ class NoteRepositoryFirestoreTest {
         .thenReturn(testSubNotePrivate.noteCourse.publicPath)
     `when`(mockDocumentSnapshot4.getString("userId")).thenReturn(testSubNotePrivate.userId)
     `when`(mockDocumentSnapshot4.getString("folderId")).thenReturn(testSubNotePrivate.folderId)
+    `when`(mockDocumentSnapshot4.get("commentsList")).thenReturn(noteRepositoryFirestore.convertCommentsList(testSubNotePublic.comments.commentsList))
   }
 
-  private fun compareNotesButNotImage(note1: Note, note2: Note) {
-    assert(note1.id == note2.id)
-    assert(note1.title == note2.title)
-    assert(note1.date == note2.date)
-    assert(note1.visibility == note2.visibility)
-    assert(note1.userId == note2.userId)
-    assert(note1.folderId == note2.folderId)
-    assert(note1.noteCourse.courseCode == note2.noteCourse.courseCode)
-    assert(note1.noteCourse.courseName == note2.noteCourse.courseName)
-    assert(note1.noteCourse.courseYear == note2.noteCourse.courseYear)
-    assert(note1.noteCourse.publicPath == note2.noteCourse.publicPath)
+  private fun compareNotes(testNote: Note?, expectedNote: Note) {
+    assert(testNote?.id == expectedNote.id)
+    assert(testNote?.title == expectedNote.title)
+    assert(testNote?.date == expectedNote.date)
+    assert(testNote?.visibility == expectedNote.visibility)
+    assert(testNote?.userId == expectedNote.userId)
+    assert(testNote?.folderId == expectedNote.folderId)
+    assert(testNote?.noteCourse?.courseCode == expectedNote.noteCourse.courseCode)
+    assert(testNote?.noteCourse?.courseName == expectedNote.noteCourse.courseName)
+    assert(testNote?.noteCourse?.courseYear == expectedNote.noteCourse.courseYear)
+    assert(testNote?.noteCourse?.publicPath == expectedNote.noteCourse.publicPath)
   }
 
   @Test
@@ -213,7 +217,7 @@ class NoteRepositoryFirestoreTest {
     val resultingNote = noteRepositoryFirestore.documentSnapshotToNote(mockDocumentSnapshot)
 
     assertNotNull(resultingNote)
-    compareNotesButNotImage(resultingNote!!, testNotePublic)
+    compareNotes(resultingNote, testNotePublic)
   }
 
   @Test
@@ -227,7 +231,7 @@ class NoteRepositoryFirestoreTest {
 
     assertNotNull(receivedNotes)
     assert(receivedNotes!!.size == 1)
-    compareNotesButNotImage(receivedNotes?.get(0)!!, testNotePublic)
+    compareNotes(receivedNotes!![0], testNotePublic)
     verify(timeout(100)) { mockQuerySnapshot.documents }
   }
 

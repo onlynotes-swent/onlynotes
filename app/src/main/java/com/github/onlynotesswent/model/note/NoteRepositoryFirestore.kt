@@ -35,7 +35,7 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
    *
    * Each field is separated by the `commentDelimiter` for easy parsing during retrieval.
    */
-  private fun convertCommentToString(comment: Note.Comment): String {
+  internal fun convertCommentToString(comment: Note.Comment): String {
     return comment.commentId +
         commentDelimiter +
         comment.userId +
@@ -74,7 +74,7 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
    * @return A list of snapshot strings where each string represents a Comment, formatted as
    *   "commentId<delimiter>userId<delimiter>content".
    */
-  private fun convertCommentsList(commentsList: List<Note.Comment>): List<String> {
+  internal fun convertCommentsList(commentsList: List<Note.Comment>): List<String> {
     return commentsList.map { convertCommentToString(it) }
   }
   /**

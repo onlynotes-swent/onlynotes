@@ -74,19 +74,21 @@ class FolderRepositoryFirestoreTest {
     `when`(mockDocumentSnapshot.getString("name")).thenReturn(testFolder.name)
     `when`(mockDocumentSnapshot.getString("userId")).thenReturn(testFolder.userId)
     `when`(mockDocumentSnapshot.getString("parentFolderId")).thenReturn(testFolder.parentFolderId)
+    `when`(mockDocumentSnapshot.getString("visibility")).thenReturn(testFolder.visibility.toString())
 
     `when`(mockDocumentSnapshot2.id).thenReturn(testSubFolder.id)
     `when`(mockDocumentSnapshot2.getString("name")).thenReturn(testSubFolder.name)
     `when`(mockDocumentSnapshot2.getString("userId")).thenReturn(testSubFolder.userId)
     `when`(mockDocumentSnapshot2.getString("parentFolderId"))
         .thenReturn(testSubFolder.parentFolderId)
+    `when`(mockDocumentSnapshot2.getString("visibility")).thenReturn(testSubFolder.visibility.toString())
   }
 
-  private fun compareFolders(folder: Folder, folder2: Folder) {
-    assert(folder.id == folder2.id)
-    assert(folder.name == folder2.name)
-    assert(folder.userId == folder2.userId)
-    assert(folder.parentFolderId == folder2.parentFolderId)
+  private fun compareFolders(testFolder: Folder?, expectedFolder: Folder) {
+    assert(testFolder?.id == expectedFolder.id)
+    assert(testFolder?.name == expectedFolder.name)
+    assert(testFolder?.userId == expectedFolder.userId)
+    assert(testFolder?.parentFolderId == expectedFolder.parentFolderId)
   }
 
   @Test
@@ -100,7 +102,7 @@ class FolderRepositoryFirestoreTest {
   fun documentSnapshotToFolderConvertsSnapshotToFolder() {
     val convertedFolder = folderRepositoryFirestore.documentSnapshotToFolder(mockDocumentSnapshot)
     assertNotNull(convertedFolder)
-    compareFolders(convertedFolder, testFolder)
+    compareFolders(convertedFolder!!, testFolder)
   }
 
   @Test

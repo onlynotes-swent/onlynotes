@@ -12,6 +12,7 @@ import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.QuerySnapshot
 import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertNotNull
+import junit.framework.TestCase.assertNull
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -109,6 +110,8 @@ class UserRepositoryFirestoreTest {
     `when`(mockDocumentSnapshot.getDouble("rating")).thenReturn(user.rating)
     `when`(mockDocumentSnapshot.get("friends.following")).thenReturn(user.friends.following)
     `when`(mockDocumentSnapshot.get("friends.followers")).thenReturn(user.friends.followers)
+    `when`(mockDocumentSnapshot.getBoolean("hasProfilePicture")).thenReturn(user.hasProfilePicture)
+    `when`(mockDocumentSnapshot.getString("bio")).thenReturn(user.bio)
   }
 
   @Test
@@ -124,28 +127,12 @@ class UserRepositoryFirestoreTest {
     val userTest = userRepositoryFirestore.documentSnapshotToUser(mockDocumentSnapshot)
     assertEquals(user, userTest)
 
-    // Test with empty user
-    `when`(mockDocumentSnapshot.getString("firstName")).thenReturn(null)
-    `when`(mockDocumentSnapshot.getString("lastName")).thenReturn(null)
-    `when`(mockDocumentSnapshot.getString("userName")).thenReturn(null)
-    `when`(mockDocumentSnapshot.getString("email")).thenReturn(null)
-    `when`(mockDocumentSnapshot.getString("uid")).thenReturn(null)
-    `when`(mockDocumentSnapshot.getTimestamp("dateOfJoining")).thenReturn(null)
-    `when`(mockDocumentSnapshot.getDouble("rating")).thenReturn(null)
-    `when`(mockDocumentSnapshot.get("friends.following")).thenReturn(null)
-    `when`(mockDocumentSnapshot.get("friends.followers")).thenReturn(null)
+    // Test with invalid user
+    // By default all functions return null, so we don't need to mock them
+    // (otherwise mockito error for unnecessary stubbing)
+    val mockDocumentSnapshotEmpty = mock(DocumentSnapshot::class.java)
 
-    val userTestEmpty = userRepositoryFirestore.documentSnapshotToUser(mockDocumentSnapshot)!!
-
-    assertEquals("", userTestEmpty.firstName)
-    assertEquals("", userTestEmpty.lastName)
-    assertEquals("", userTestEmpty.userName)
-    assertEquals("", userTestEmpty.email)
-    assertEquals("", userTestEmpty.uid)
-    assertNotNull(userTestEmpty.dateOfJoining)
-    assertEquals(0.0, userTestEmpty.rating)
-    assert(userTestEmpty.friends.following.isEmpty())
-    assert(userTestEmpty.friends.followers.isEmpty())
+    assertNull(userRepositoryFirestore.documentSnapshotToUser(mockDocumentSnapshotEmpty))
   }
 
   @Test
