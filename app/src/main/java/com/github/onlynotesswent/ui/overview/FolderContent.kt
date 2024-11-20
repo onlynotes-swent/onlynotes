@@ -278,19 +278,22 @@ fun FolderContentTopBar(
                         },
                         onClick = {
                           onExpandedChange(false)
-                          // Clear the folder navigation stack as we go back to overview
-                          // screen
-                          if (currentUser.value!!.uid == folder?.userId) {
-                            navigationActions.clearScreenNavigationStack()
-                            folderViewModel.deleteFolderById(folder.id, folder.userId)
 
+                          if (currentUser.value!!.uid == folder?.userId) {
+                            folderViewModel.deleteFolderById(folder.id, folder.userId)
+                            // Retrieve parent folder id to navigate to the parent folder
+                            val parentFolderId = navigationActions.popFromScreenNavigationStack()
+                            if(parentFolderId != null) {
+                              folderViewModel.getFolderById(parentFolderId)
+                            } else {
+                                navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
+                            }
                             handleSubFoldersAndNotes(
                                 folder = folder,
                                 userFolderSubFolders = userFolderSubFolders.value,
                                 userFolderNotes = userFolderNotes.value,
                                 folderViewModel = folderViewModel,
                                 noteViewModel = noteViewModel)
-                            navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
                           } else {
                             Toast.makeText(
                                     context,

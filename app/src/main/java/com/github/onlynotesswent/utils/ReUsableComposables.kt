@@ -126,10 +126,6 @@ fun NoteItem(
                     noteViewModel.updateNote(note.copy(folderId = null), note.userId)
                     navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
                   }
-                  // Clear the screen navigation stack as we navigate to the overview screen
-
-                  // navigationActions.clearScreenNavigationStack()
-                  // navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
                 } else {
                   Toast.makeText(
                           context,
@@ -290,17 +286,13 @@ fun FolderItem(
                             val selectedFolder = folderViewModel.selectedFolder.value
                             Log.e(
                                 "FolderItem",
-                                "draggedFolderId: ${draggedFolder?.id} and draggedObjectId: $draggedObjectId and selectedFolderId: ${selectedFolder?.id} and folderId: ${folder.id}")
+                                "draggedFolderId: ${draggedFolder?.id} and draggedObjectId: $draggedObjectId and selectedFolderName: ${selectedFolder?.name} and folderName: ${folder.name}")
                             if (draggedFolder != null &&
                                 draggedFolder.id == draggedObjectId &&
                                 draggedFolder.id != folder.id &&
                                 draggedFolder.parentFolderId ==
-                                    folder.parentFolderId // If dragged and folder dont have same
-                                // parent id dont allow drop
-                                &&
-                                selectedFolder?.id !=
-                                    folder.id) { // Also check the current selected folder and the
-                              // target folder are not the same
+                                    folder.parentFolderId // If dragged and folder dont have same parent id dont allow drop
+                                ) {
                               // Update the dragged folder with the new parent folder Id. Folder
                               // here represents the target folder, so the future parent of the
                               // dragged folder
