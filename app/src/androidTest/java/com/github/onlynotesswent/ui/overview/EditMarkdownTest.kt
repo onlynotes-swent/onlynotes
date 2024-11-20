@@ -7,6 +7,8 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
+import com.github.onlynotesswent.model.common.Course
+import com.github.onlynotesswent.model.common.Visibility
 import com.github.onlynotesswent.model.file.FileRepository
 import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.note.Note
@@ -17,8 +19,6 @@ import com.github.onlynotesswent.model.users.UserRepository
 import com.github.onlynotesswent.model.users.UserViewModel
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
-import com.github.onlynotesswent.utils.Course
-import com.github.onlynotesswent.utils.Visibility
 import com.google.firebase.Timestamp
 import org.junit.Before
 import org.junit.Rule
