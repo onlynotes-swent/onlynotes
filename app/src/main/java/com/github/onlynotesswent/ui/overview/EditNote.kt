@@ -170,7 +170,7 @@ fun EditNoteScreen(
               horizontalAlignment = Alignment.CenterHorizontally) {
                 NoteDataTextField(
                     value = noteTitle,
-                    onValueChange = { noteTitle = it },
+                    onValueChange = { noteTitle = Note.formatTitle(it) },
                     label = "Note Title",
                     placeholder = "Enter the new title here",
                     modifier = Modifier.fillMaxWidth().testTag("EditTitle textField"),

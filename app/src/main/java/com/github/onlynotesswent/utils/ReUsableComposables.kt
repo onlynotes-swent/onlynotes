@@ -390,7 +390,7 @@ fun FolderDialog(
 
             OutlinedTextField(
                 value = name,
-                onValueChange = { name = it },
+                onValueChange = { name = Folder.formatName(it) },
                 label = { Text("Folder Name") },
                 modifier = Modifier.testTag("inputFolderName"))
 
