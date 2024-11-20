@@ -20,6 +20,10 @@ class ProfilePictureTakerTest {
   @Mock private lateinit var mockActivityResultLauncher: ActivityResultLauncher<Intent>
   private lateinit var profilePictureTaker: ProfilePictureTaker
 
+  private fun <T> nullableAny(type: Class<T>): T = any(type)
+
+  private inline fun <reified T> nullableAnyReified(): T = any(T::class.java)
+
   @Before
   fun setup() {
     MockitoAnnotations.openMocks(this)
@@ -27,8 +31,8 @@ class ProfilePictureTakerTest {
     // Mock the activity result launcher registration
     `when`(
             mockActivity.registerForActivityResult(
-                any(ActivityResultContracts.StartActivityForResult::class.java),
-                any<ActivityResultCallback<ActivityResult>>()))
+                nullableAny(ActivityResultContracts.StartActivityForResult::class.java),
+                nullableAnyReified<ActivityResultCallback<ActivityResult>>()))
         .thenReturn(mockActivityResultLauncher)
 
     // Initialize ProfilePictureTaker with mocked components
@@ -41,8 +45,8 @@ class ProfilePictureTakerTest {
     // Verify that the activity result launcher is registered
     verify(mockActivity)
         .registerForActivityResult(
-            any<ActivityResultContract<Intent, ActivityResult>>(),
-            any<ActivityResultCallback<ActivityResult>>())
+            nullableAnyReified<ActivityResultContract<Intent, ActivityResult>>(),
+            nullableAnyReified<ActivityResultCallback<ActivityResult>>())
   }
 
   @Test
@@ -51,6 +55,6 @@ class ProfilePictureTakerTest {
     profilePictureTaker.pickImage()
 
     // Verify that ImagePicker intent is launched
-    verify(mockActivityResultLauncher).launch(any(Intent::class.java))
+    verify(mockActivityResultLauncher).launch(nullableAny(Intent::class.java))
   }
 }

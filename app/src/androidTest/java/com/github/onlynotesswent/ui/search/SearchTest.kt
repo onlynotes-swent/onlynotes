@@ -2,6 +2,10 @@ package com.github.onlynotesswent.ui.search
 
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
+import com.github.onlynotesswent.model.common.Course
+import com.github.onlynotesswent.model.common.Visibility
+import com.github.onlynotesswent.model.file.FileRepository
+import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.folder.Folder
 import com.github.onlynotesswent.model.folder.FolderRepository
 import com.github.onlynotesswent.model.folder.FolderViewModel
@@ -13,8 +17,6 @@ import com.github.onlynotesswent.model.users.UserRepository
 import com.github.onlynotesswent.model.users.UserViewModel
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
-import com.github.onlynotesswent.utils.Course
-import com.github.onlynotesswent.utils.Visibility
 import com.google.firebase.Timestamp
 import org.junit.Before
 import org.junit.Rule
@@ -30,9 +32,11 @@ class SearchScreenTest {
   @Mock private lateinit var noteRepository: NoteRepository
   @Mock private lateinit var userRepository: UserRepository
   @Mock private lateinit var folderRepository: FolderRepository
+  @Mock private lateinit var fileRepository: FileRepository
   private lateinit var noteViewModel: NoteViewModel
   private lateinit var userViewModel: UserViewModel
   private lateinit var folderViewModel: FolderViewModel
+  private lateinit var fileViewModel: FileViewModel
 
   @get:Rule val composeTestRule = createComposeRule()
 
@@ -102,9 +106,14 @@ class SearchScreenTest {
       val onSuccess = invocation.getArgument<(List<Note>) -> Unit>(0)
       onSuccess(testNotes)
     }
+
     `when`(userRepository.getAllUsers(any(), any())).thenAnswer { invocation ->
       val onSuccess = invocation.getArgument<(List<User>) -> Unit>(0)
       onSuccess(testUsers)
+    }
+    `when`(userRepository.addUser(any(), any(), any())).thenAnswer { invocation ->
+      val onSuccess = invocation.getArgument<() -> Unit>(1)
+      onSuccess()
     }
     `when`(folderRepository.getPublicFolders(any(), any())).thenAnswer { invocation ->
       val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(0)
@@ -114,24 +123,23 @@ class SearchScreenTest {
     userViewModel = UserViewModel(userRepository)
     noteViewModel = NoteViewModel(noteRepository)
     folderViewModel = FolderViewModel(folderRepository)
+    fileViewModel = FileViewModel(fileRepository)
+
+    userViewModel.addUser(testUser1, {}, {})
+
+    composeTestRule.setContent {
+      SearchScreen(navigationActions, noteViewModel, userViewModel, folderViewModel, fileViewModel)
+    }
   }
 
   @Test
   fun testSearchFieldVisibility() {
-    composeTestRule.setContent {
-      SearchScreen(navigationActions, noteViewModel, userViewModel, folderViewModel)
-    }
-
     composeTestRule.onNodeWithTag("searchScreen").assertIsDisplayed()
     composeTestRule.onNodeWithTag("searchTextField").assertIsDisplayed()
   }
 
   @Test
   fun testEmptySearchQuery() {
-    composeTestRule.setContent {
-      SearchScreen(navigationActions, noteViewModel, userViewModel, folderViewModel)
-    }
-
     composeTestRule.onNodeWithTag("filteredNoteList").assertDoesNotExist()
     composeTestRule.onNodeWithTag("filteredUserList").assertDoesNotExist()
     composeTestRule.onNodeWithTag("noSearchResults").assertIsNotDisplayed()
@@ -139,10 +147,6 @@ class SearchScreenTest {
 
   @Test
   fun testValidSearchQueryShowsOneResult() {
-    composeTestRule.setContent {
-      SearchScreen(navigationActions, noteViewModel, userViewModel, folderViewModel)
-    }
-
     composeTestRule.onNodeWithTag("searchTextField").performTextInput(testNote1.title)
     composeTestRule.onNodeWithTag("noteFilterChip").performClick()
 
@@ -161,11 +165,11 @@ class SearchScreenTest {
     composeTestRule.onNodeWithTag("filteredUserList").assertIsDisplayed()
     composeTestRule.onNodeWithTag("noSearchResults").assertIsNotDisplayed()
     composeTestRule
-        .onAllNodesWithTag("userCard")
+        .onAllNodesWithTag("userItem")
         .filter(hasText(testUser1.fullName()))
         .onFirst()
         .assertIsDisplayed()
-    composeTestRule.onAllNodesWithTag("userCard").assertCountEquals(1)
+    composeTestRule.onAllNodesWithTag("userItem").assertCountEquals(1)
 
     composeTestRule.onNodeWithTag("searchTextField").performTextReplacement(testFolder1.name)
     composeTestRule.onNodeWithTag("folderFilterChip").performClick()
@@ -182,10 +186,6 @@ class SearchScreenTest {
 
   @Test
   fun testValidSearchQueryShowsMultipleResults() {
-    composeTestRule.setContent {
-      SearchScreen(navigationActions, noteViewModel, userViewModel, folderViewModel)
-    }
-
     composeTestRule.onNodeWithTag("searchTextField").performTextInput("Note")
     composeTestRule.onNodeWithTag("noteFilterChip").performClick()
 
@@ -209,18 +209,18 @@ class SearchScreenTest {
     composeTestRule.onNodeWithTag("filteredUserList").assertIsDisplayed()
     composeTestRule.onNodeWithTag("noSearchResults").assertIsNotDisplayed()
     composeTestRule
-        .onAllNodesWithTag("userCard")
+        .onAllNodesWithTag("userItem")
         .filter(hasText(testUser1.fullName()))
         .onFirst()
         .assertIsDisplayed()
 
     composeTestRule
-        .onAllNodesWithTag("userCard")
+        .onAllNodesWithTag("userItem")
         .filter(hasText(testUser2.fullName()))
         .onFirst()
         .assertIsDisplayed()
 
-    composeTestRule.onAllNodesWithTag("userCard").assertCountEquals(2)
+    composeTestRule.onAllNodesWithTag("userItem").assertCountEquals(2)
 
     composeTestRule.onNodeWithTag("searchTextField").performTextReplacement("Folder")
     composeTestRule.onNodeWithTag("folderFilterChip").performClick()
@@ -242,10 +242,6 @@ class SearchScreenTest {
 
   @Test
   fun testNoSearchResultsMessage() {
-    composeTestRule.setContent {
-      SearchScreen(navigationActions, noteViewModel, userViewModel, folderViewModel)
-    }
-
     composeTestRule.onNodeWithTag("searchTextField").performTextInput("Non-existent Note")
     composeTestRule.onNodeWithTag("noteFilterChip").performClick()
     composeTestRule.onNodeWithTag("noSearchResults").assertIsDisplayed()
@@ -264,10 +260,6 @@ class SearchScreenTest {
 
   @Test
   fun testNoteSelectionNavigatesToEditScreen() {
-    composeTestRule.setContent {
-      SearchScreen(navigationActions, noteViewModel, userViewModel, folderViewModel)
-    }
-
     composeTestRule.onNodeWithTag("searchTextField").performTextInput(testNote1.title)
     composeTestRule.onNodeWithTag("noteFilterChip").performClick()
     composeTestRule.onNodeWithTag("filteredNoteList").onChildren().onFirst().performClick()
@@ -277,23 +269,20 @@ class SearchScreenTest {
 
   @Test
   fun testUserSelectionNavigatesToUserProfileScreen() {
-    composeTestRule.setContent {
-      SearchScreen(navigationActions, noteViewModel, userViewModel, folderViewModel)
-    }
-
-    composeTestRule.onNodeWithTag("searchTextField").performTextInput(testUser1.userName)
+    composeTestRule.onNodeWithTag("searchTextField").performTextInput(testUser2.userName)
     composeTestRule.onNodeWithTag("userFilterChip").performClick()
-    composeTestRule.onNodeWithTag("filteredUserList").onChildren().onFirst().performClick()
+    composeTestRule
+        .onNodeWithTag("filteredUserList")
+        .onChildren()
+        .filter(hasText(testUser2.fullName()))
+        .onFirst()
+        .performClick()
 
     verify(navigationActions).navigateTo(Screen.PUBLIC_PROFILE)
   }
 
   @Test
   fun testFolderSelectionNavigatesToFolderScreen() {
-    composeTestRule.setContent {
-      SearchScreen(navigationActions, noteViewModel, userViewModel, folderViewModel)
-    }
-
     composeTestRule.onNodeWithTag("searchTextField").performTextInput(testFolder1.name)
     composeTestRule.onNodeWithTag("folderFilterChip").performClick()
     composeTestRule.onNodeWithTag("filteredFolderList").onChildren().onFirst().performClick()
