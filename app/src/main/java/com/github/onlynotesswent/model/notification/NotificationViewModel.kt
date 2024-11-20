@@ -17,8 +17,8 @@ class NotificationViewModel(private val repository: NotificationRepository) {
    */
   fun getNotificationByReceiverId(
       userID: String,
-      onSuccess: () -> Unit,
-      onFailure: (Exception) -> Unit
+      onSuccess: () -> Unit={},
+      onFailure: (Exception) -> Unit={}
   ) {
     repository.getNotificationByReceiverId(
         receiverId = userID,
@@ -38,8 +38,8 @@ class NotificationViewModel(private val repository: NotificationRepository) {
    */
   fun addNotification(
       notification: Notification,
-      onSuccess: () -> Unit,
-      onFailure: (Exception) -> Unit
+      onSuccess: () -> Unit={},
+      onFailure: (Exception) -> Unit={}
   ) {
     repository.addNotification(
         notification = notification, onSuccess = { onSuccess() }, onFailure = { onFailure(it) })
@@ -52,7 +52,7 @@ class NotificationViewModel(private val repository: NotificationRepository) {
    * @param onSuccess Callback to be invoked when the deletion is successful.
    * @param onFailure Callback to be invoked if an error occurs.
    */
-  fun deleteNotification(id: String, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) {
+  fun deleteNotification(id: String, onSuccess: () -> Unit={}, onFailure: (Exception) -> Unit={}) {
     repository.deleteNotification(
         id = id, onSuccess = { onSuccess() }, onFailure = { onFailure(it) })
   }
@@ -66,8 +66,8 @@ class NotificationViewModel(private val repository: NotificationRepository) {
    */
   fun updateNotification(
       notification: Notification,
-      onSuccess: () -> Unit,
-      onFailure: (Exception) -> Unit
+      onSuccess: () -> Unit={},
+      onFailure: (Exception) -> Unit={}
   ) {
     repository.updateNotification(
         notification = notification, onSuccess = { onSuccess() }, onFailure = { onFailure(it) })

@@ -192,7 +192,7 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
    * @param onSuccess Callback to be invoked when the follow operation is successful.
    * @param onFailure Callback to be invoked if an error occurs.
    */
-  fun followUser(followingUID: String, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) {
+  fun followUser(followingUID: String, onSuccess: () -> Unit={}, onFailure: (Exception) -> Unit={}) {
     if (_currentUser.value == null) {
       onFailure(UserNotLoggedInException())
       return
@@ -217,7 +217,7 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
    * @param onSuccess Callback to be invoked when the unfollow operation is successful.
    * @param onFailure Callback to be invoked if an error occurs.
    */
-  fun unfollowUser(followingUID: String, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) {
+  fun unfollowUser(followingUID: String, onSuccess: () -> Unit={}, onFailure: (Exception) -> Unit={}) {
     if (_currentUser.value == null) {
       onFailure(UserNotLoggedInException())
       return
@@ -250,7 +250,7 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
    * @param onSuccess Callback to be invoked when the operation is successful.
    * @param onFailure Callback to be invoked if an error occurs.
    */
-  fun removeFollower(followerUID: String, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) {
+  fun removeFollower(followerUID: String, onSuccess: () -> Unit={}, onFailure: (Exception) -> Unit={}) {
     if (_currentUser.value == null) {
       onFailure(UserNotLoggedInException())
       return
@@ -279,8 +279,8 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
    */
   fun acceptFollowerRequest(
       followerUID: String,
-      onSuccess: () -> Unit,
-      onFailure: (Exception) -> Unit
+      onSuccess: () -> Unit={},
+      onFailure: (Exception) -> Unit={}
   ) {
     if (_currentUser.value == null) {
       onFailure(UserNotLoggedInException())
@@ -319,8 +319,8 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
    */
   fun declineFollowerRequest(
       followerUID: String,
-      onSuccess: () -> Unit,
-      onFailure: (Exception) -> Unit
+      onSuccess: () -> Unit={},
+      onFailure: (Exception) -> Unit={}
   ) {
     if (_currentUser.value == null) {
       onFailure(UserNotLoggedInException())
