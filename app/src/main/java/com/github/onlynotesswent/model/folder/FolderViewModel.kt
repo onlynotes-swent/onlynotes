@@ -76,80 +76,188 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
    * Adds a Folder to the repository.
    *
    * @param folder The folder to add.
+   * @param userId The ID of the user the folder belongs to.
+   * @param onSuccess The function to call when the folder is added successfully.
+   * @param onFailure The function to call when the folder fails to be added.
    */
-  fun addFolder(folder: Folder, userId: String) {
-    repository.addFolder(folder, onSuccess = { getRootFoldersFromUid(userId) }, onFailure = {})
+  fun addFolder(
+      folder: Folder,
+      userId: String,
+      onSuccess: () -> Unit = {},
+      onFailure: (Exception) -> Unit = {}
+  ) {
+    repository.addFolder(
+        folder = folder,
+        onSuccess = {
+          onSuccess()
+          getRootFoldersFromUid(userId)
+        },
+        onFailure = onFailure)
   }
 
   /**
    * Deletes a folder by its ID.
    *
    * @param folderId The ID of the folder to delete.
+   * @param userId The ID of the user that owns the folder.
+   * @param onSuccess The function to call when the folder is deleted successfully.
+   * @param onFailure The function to call when the folder fails to be deleted.
    */
-  fun deleteFolderById(folderId: String, userId: String) {
+  fun deleteFolderById(
+      folderId: String,
+      userId: String,
+      onSuccess: () -> Unit = {},
+      onFailure: (Exception) -> Unit = {}
+  ) {
     repository.deleteFolderById(
-        folderId, onSuccess = { getRootFoldersFromUid(userId) }, onFailure = {})
+        folderId = folderId,
+        onSuccess = {
+          onSuccess()
+          getRootFoldersFromUid(userId)
+        },
+        onFailure = onFailure)
   }
 
   /**
    * Deletes all folders from a user.
    *
    * @param userId The ID of the user to delete folders notes for.
+   * @param onSuccess The function to call when the folders are deleted successfully.
+   * @param onFailure The function to call when the folders fail to be deleted.
    */
-  fun deleteFoldersByUserId(userId: String) {
+  fun deleteFoldersByUserId(
+      userId: String,
+      onSuccess: () -> Unit = {},
+      onFailure: (Exception) -> Unit = {}
+  ) {
     repository.deleteFoldersByUserId(
-        userId, onSuccess = { getRootFoldersFromUid(userId) }, onFailure = {})
+        userId = userId,
+        onSuccess = {
+          onSuccess()
+          getRootFoldersFromUid(userId)
+        },
+        onFailure = onFailure)
   }
 
   /**
    * Retrieves all folders owned by a user.
    *
    * @param userId The ID of the user to retrieve folders for.
+   * @param onSuccess The function to call when the folders are retrieved successfully.
+   * @param onFailure The function to call when the folders fail to be retrieved.
    */
-  fun getFoldersFromUid(userId: String) {
-    repository.getFoldersFromUid(userId, onSuccess = { _userFolders.value = it }, onFailure = {})
+  fun getFoldersFromUid(
+      userId: String,
+      onSuccess: (List<Folder>) -> Unit = {},
+      onFailure: (Exception) -> Unit = {}
+  ) {
+    repository.getFoldersFromUid(
+        userId = userId,
+        onSuccess = {
+          onSuccess(it)
+          _userFolders.value = it
+        },
+        onFailure = onFailure)
   }
 
   /**
    * Retrieves all root folders owned by a user.
    *
    * @param userId The ID of the user to retrieve root folders for.
+   * @param onSuccess The function to call when the root folders are retrieved successfully.
+   * @param onFailure The function to call when the root folders fail to be retrieved.
    */
-  fun getRootFoldersFromUid(userId: String) {
+  fun getRootFoldersFromUid(
+      userId: String,
+      onSuccess: (List<Folder>) -> Unit = {},
+      onFailure: (Exception) -> Unit = {}
+  ) {
     repository.getRootFoldersFromUid(
-        userId, onSuccess = { _userRootFolders.value = it }, onFailure = {})
+        userId = userId,
+        onSuccess = {
+          onSuccess(it)
+          _userRootFolders.value = it
+        },
+        onFailure = onFailure)
   }
 
   /**
    * Retrieves a folder by its ID.
    *
    * @param folderId The ID of the folder to retrieve.
+   * @param onSuccess The function to call when the folder is retrieved successfully.
+   * @param onFailure The function to call when the folder fails to be retrieved.
    */
-  fun getFolderById(folderId: String) {
-    repository.getFolderById(folderId, onSuccess = { _selectedFolder.value = it }, onFailure = {})
+  fun getFolderById(
+      folderId: String,
+      onSuccess: (Folder) -> Unit = {},
+      onFailure: (Exception) -> Unit = {}
+  ) {
+    repository.getFolderById(
+        folderId = folderId,
+        onSuccess = {
+          onSuccess(it)
+          _selectedFolder.value = it
+        },
+        onFailure = onFailure)
   }
 
   /**
    * Updates an existing folder.
    *
    * @param folder The folder with updated information.
+   * @param userId The ID of the user that owns the folder.
+   * @param onSuccess The function to call when the folder is updated successfully.
+   * @param onFailure The function to call when the folder fails to be updated.
    */
-  fun updateFolder(folder: Folder, userId: String) {
-    repository.updateFolder(folder, onSuccess = { getRootFoldersFromUid(userId) }, onFailure = {})
+  fun updateFolder(
+      folder: Folder,
+      userId: String,
+      onSuccess: () -> Unit = {},
+      onFailure: (Exception) -> Unit = {}
+  ) {
+    repository.updateFolder(
+        folder = folder,
+        onSuccess = {
+          onSuccess()
+          getRootFoldersFromUid(userId)
+        },
+        onFailure = onFailure)
   }
 
   /**
    * Retrieves all children folders of a parent folder.
    *
-   * @param parentId The ID of the parent folder.
+   * @param parentFolderId The ID of the parent folder.
+   * @param onSuccess The function to call when the children folders are retrieved successfully.
+   * @param onFailure The function to call when the children folders fail to be retrieved.
    */
-  fun getSubFoldersOf(parentId: String) {
+  fun getSubFoldersOf(
+      parentFolderId: String,
+      onSuccess: (List<Folder>) -> Unit = {},
+      onFailure: (Exception) -> Unit = {}
+  ) {
     repository.getSubFoldersOf(
-        parentId, onSuccess = { _folderSubFolders.value = it }, onFailure = {})
+        parentFolderId = parentFolderId,
+        onSuccess = {
+          onSuccess(it)
+          _folderSubFolders.value = it
+        },
+        onFailure = onFailure)
   }
 
-  /** Retrieves all public folders. */
-  fun getPublicFolders() {
-    repository.getPublicFolders(onSuccess = { _publicFolders.value = it }, onFailure = {})
+  /**
+   * Retrieves all public folders.
+   *
+   * @param onSuccess The function to call when the public folders are retrieved successfully.
+   * @param onFailure The function to call when the public folders fail to be retrieved.
+   */
+  fun getPublicFolders(onSuccess: () -> Unit = {}, onFailure: (Exception) -> Unit = {}) {
+    repository.getPublicFolders(
+        onSuccess = {
+          onSuccess()
+          _publicFolders.value = it
+        },
+        onFailure = onFailure)
   }
 }

@@ -199,6 +199,7 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
           onSuccess(note)
         } else {
           onFailure(Exception("Note not found"))
+          Log.e(TAG, "Note not found")
         }
       } else {
         task.exception?.let { e ->
@@ -299,33 +300,23 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
    * Converts a Firestore DocumentSnapshot to a Note object.
    *
    * @param document The DocumentSnapshot to convert.
-   * @return The converted Note object.
+   * @return The converted Note object. Returns null if the conversion fails.
    */
   fun documentSnapshotToNote(document: DocumentSnapshot): Note? {
     return try {
       val id = document.id
-      val title = document.getString("title") ?: ""
-      val date = document.getTimestamp("date") ?: Timestamp.now()
-      val visibility =
-          Visibility.fromString(document.getString("visibility") ?: Visibility.DEFAULT.toString())
-      val userId = document.getString("userId") ?: return null
-      val courseCode = document.getString("courseCode") ?: ""
-      val courseName = document.getString("courseName") ?: ""
-      val courseYear = document.getLong("courseYear")?.toInt() ?: 0
-      val publicPath = document.getString("publicPath") ?: ""
+      val title = document.getString("title")!!
+      val date = document.getTimestamp("date")!!
+      val visibility = Visibility.fromString(document.getString("visibility")!!)
+      val userId = document.getString("userId")!!
+      val courseCode = document.getString("courseCode")!!
+      val courseName = document.getString("courseName")!!
+      val courseYear = document.getLong("courseYear")?.toInt()!!
+      val publicPath = document.getString("publicPath")!!
       val folderId = document.getString("folderId")
-      val comments =
-          commentStringToCommentClass(document.get("commentsList") as? List<String> ?: emptyList())
+      val comments = commentStringToCommentClass(document.get("commentsList") as List<String>)
 
-      val course =
-          if (courseYear == 0 ||
-              courseCode.isEmpty() ||
-              courseName.isEmpty() ||
-              publicPath.isEmpty()) {
-            Course.DEFAULT
-          } else {
-            Course(courseCode, courseName, courseYear, publicPath)
-          }
+      val course = Course(courseCode, courseName, courseYear, publicPath)
 
       Note(
           id = id,

@@ -186,16 +186,29 @@ fun EditProfileScreen(
                                 if (profilePictureUri.value.isNotBlank()) {
                                   if (user.value!!.hasProfilePicture) {
                                     fileViewModel.updateFile(
-                                        userViewModel.currentUser.value!!.uid,
-                                        profilePictureUri.value.toUri(),
-                                        FileType.PROFILE_PIC_JPEG,
+                                        uid = userViewModel.currentUser.value!!.uid,
+                                        fileUri = profilePictureUri.value.toUri(),
+                                        fileType = FileType.PROFILE_PIC_JPEG,
+                                        onFailure = {
+                                          Toast.makeText(
+                                                  localContext,
+                                                  "Error updating profile picture",
+                                                  Toast.LENGTH_SHORT)
+                                              .show()
+                                        },
                                     )
                                   } else {
                                     fileViewModel.uploadFile(
-                                        userViewModel.currentUser.value!!.uid,
-                                        profilePictureUri.value.toUri(),
-                                        FileType.PROFILE_PIC_JPEG,
-                                    )
+                                        uid = userViewModel.currentUser.value!!.uid,
+                                        fileUri = profilePictureUri.value.toUri(),
+                                        fileType = FileType.PROFILE_PIC_JPEG,
+                                        onFailure = {
+                                          Toast.makeText(
+                                                  localContext,
+                                                  "Error uploading profile picture",
+                                                  Toast.LENGTH_SHORT)
+                                              .show()
+                                        })
                                   }
                                 } else {
                                   fileViewModel.deleteFile(

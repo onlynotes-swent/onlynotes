@@ -2,7 +2,6 @@ package com.github.onlynotesswent.model.flashcard
 
 import android.util.Log
 import com.google.firebase.Firebase
-import com.google.firebase.Timestamp
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
@@ -20,16 +19,16 @@ class FlashcardRepositoryFirestore(private val db: FirebaseFirestore) : Flashcar
    */
   fun documentSnapshotToFlashcard(document: DocumentSnapshot): Flashcard? {
     return try {
-      val id = document.id
-      val front = document.getString("front") ?: ""
-      val back = document.getString("back") ?: ""
-      val nextReview = document.getTimestamp("nextReview") ?: Timestamp.now()
-      val userId = document.getString("userId") ?: ""
-      val folderId = document.getString("folderId") ?: ""
-      val noteId = document.getString("noteId") ?: ""
-      Flashcard(id, front, back, nextReview, userId, folderId, noteId)
+      Flashcard(
+          id = document.id,
+          front = document.getString("front")!!,
+          back = document.getString("back")!!,
+          nextReview = document.getTimestamp("nextReview")!!,
+          userId = document.getString("userId")!!,
+          folderId = document.getString("folderId")!!,
+          noteId = document.getString("noteId")!!)
     } catch (e: Exception) {
-      Log.e("Firestore", "Error converting document to Flashcard", e)
+      Log.e(TAG, "Error converting document to Flashcard", e)
       null
     }
   }
@@ -58,22 +57,37 @@ class FlashcardRepositoryFirestore(private val db: FirebaseFirestore) : Flashcar
           val flashcards = querySnapshot.documents.mapNotNull { documentSnapshotToFlashcard(it) }
           onSuccess(flashcards)
         }
-        .addOnFailureListener { exception -> onFailure(exception) }
+        .addOnFailureListener { exception ->
+          onFailure(exception)
+          Log.e(TAG, "Error getting flashcards from user", exception)
+        }
   }
 
   override fun getFlashcardById(
       id: String,
-      onSuccess: (Flashcard?) -> Unit,
+      onSuccess: (Flashcard) -> Unit,
       onFailure: (Exception) -> Unit
   ) {
     db.collection(collectionPath)
         .document(id)
         .get()
         .addOnSuccessListener { document ->
-          if (!document.exists()) onFailure(Exception("Flashcard not found"))
-          else onSuccess(documentSnapshotToFlashcard(document))
+          // Todo: Is this check necessary?
+          if (!document.exists()) {
+            onFailure(Exception("Flashcard not found"))
+            Log.e(TAG, "Flashcard not found")
+          } else {
+            val flashcard = documentSnapshotToFlashcard(document)
+            if (flashcard == null) {
+              onFailure(Exception("Error converting document to Flashcard"))
+              Log.e(TAG, "Error converting document to Flashcard")
+            } else onSuccess(flashcard)
+          }
         }
-        .addOnFailureListener { exception -> onFailure(exception) }
+        .addOnFailureListener { exception ->
+          onFailure(exception)
+          Log.e(TAG, "Error getting flashcard by id", exception)
+        }
   }
 
   override fun getFlashcardsByFolder(
@@ -88,7 +102,10 @@ class FlashcardRepositoryFirestore(private val db: FirebaseFirestore) : Flashcar
           val flashcards = querySnapshot.documents.mapNotNull { documentSnapshotToFlashcard(it) }
           onSuccess(flashcards)
         }
-        .addOnFailureListener { exception -> onFailure(exception) }
+        .addOnFailureListener { exception ->
+          onFailure(exception)
+          Log.e(TAG, "Error getting flashcards by folder", exception)
+        }
   }
 
   override fun getFlashcardsByNote(
@@ -103,7 +120,10 @@ class FlashcardRepositoryFirestore(private val db: FirebaseFirestore) : Flashcar
           val flashcards = querySnapshot.documents.mapNotNull { documentSnapshotToFlashcard(it) }
           onSuccess(flashcards)
         }
-        .addOnFailureListener { exception -> onFailure(exception) }
+        .addOnFailureListener { exception ->
+          onFailure(exception)
+          Log.e(TAG, "Error getting flashcards by note", exception)
+        }
   }
 
   override fun addFlashcard(
@@ -115,7 +135,10 @@ class FlashcardRepositoryFirestore(private val db: FirebaseFirestore) : Flashcar
         .document(flashcard.id)
         .set(flashcard)
         .addOnSuccessListener { onSuccess() }
-        .addOnFailureListener { exception -> onFailure(exception) }
+        .addOnFailureListener { exception ->
+          onFailure(exception)
+          Log.e(TAG, "Error adding flashcard", exception)
+        }
   }
 
   override fun updateFlashcard(
@@ -127,7 +150,10 @@ class FlashcardRepositoryFirestore(private val db: FirebaseFirestore) : Flashcar
         .document(flashcard.id)
         .set(flashcard)
         .addOnSuccessListener { onSuccess() }
-        .addOnFailureListener { exception -> onFailure(exception) }
+        .addOnFailureListener { exception ->
+          onFailure(exception)
+          Log.e(TAG, "Error updating flashcard", exception)
+        }
   }
 
   override fun deleteFlashcard(
@@ -139,6 +165,13 @@ class FlashcardRepositoryFirestore(private val db: FirebaseFirestore) : Flashcar
         .document(flashcard.id)
         .delete()
         .addOnSuccessListener { onSuccess() }
-        .addOnFailureListener { exception -> onFailure(exception) }
+        .addOnFailureListener { exception ->
+          onFailure(exception)
+          Log.e(TAG, "Error deleting flashcard", exception)
+        }
+  }
+
+  companion object {
+    const val TAG = "FlashcardRepositoryFirestore"
   }
 }

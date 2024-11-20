@@ -71,83 +71,190 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
     return repository.getNewUid()
   }
 
-  /** Gets all public Note documents. */
-  fun getPublicNotes() {
-    repository.getPublicNotes(onSuccess = { _publicNotes.value = it }, onFailure = {})
+  /**
+   * Gets all public Note documents.
+   *
+   * @param onSuccess The function to call when the retrieval is successful.
+   * @param onFailure The function to call when the retrieval fails.
+   */
+  fun getPublicNotes(onSuccess: (List<Note>) -> Unit = {}, onFailure: (Exception) -> Unit = {}) {
+    repository.getPublicNotes(
+        onSuccess = {
+          onSuccess(it)
+          _publicNotes.value = it
+        },
+        onFailure = onFailure)
   }
 
   /**
    * Gets all Note documents from a user, specified by their ID.
    *
-   * @param userID The user ID.
+   * @param userId The user ID.
+   * @param onSuccess The function to call when the retrieval is successful.
+   * @param onFailure The function to call when the retrieval fails.
    */
-  fun getNotesFrom(userID: String) {
-    repository.getNotesFrom(userID, onSuccess = { _userNotes.value = it }, onFailure = {})
+  fun getNotesFrom(
+      userId: String,
+      onSuccess: (List<Note>) -> Unit = {},
+      onFailure: (Exception) -> Unit = {}
+  ) {
+    repository.getNotesFrom(
+        userId = userId,
+        onSuccess = {
+          onSuccess(it)
+          _userNotes.value = it
+        },
+        onFailure = onFailure)
   }
 
   /**
    * Gets all root Note documents from a user, specified by their ID.
    *
-   * @param userID The user ID.
+   * @param userId The user ID.
+   * @param onSuccess The function to call when the retrieval is successful.
+   * @param onFailure The function to call when the retrieval fails.
    */
-  fun getRootNotesFrom(userID: String) {
-    repository.getRootNotesFrom(userID, onSuccess = { _userRootNotes.value = it }, onFailure = {})
+  fun getRootNotesFrom(
+      userId: String,
+      onSuccess: (List<Note>) -> Unit = {},
+      onFailure: (Exception) -> Unit = {}
+  ) {
+    repository.getRootNotesFrom(
+        userId = userId,
+        onSuccess = {
+          onSuccess(it)
+          _userRootNotes.value = it
+        },
+        onFailure = onFailure)
   }
 
   /**
    * Gets a Note document with ID noteId.
    *
    * @param noteId The ID of the Note document to be fetched.
+   * @param onSuccess The function to call when the retrieval is successful.
+   * @param onFailure The function to call when the retrieval fails.
    */
-  fun getNoteById(noteId: String) {
-    repository.getNoteById(id = noteId, onSuccess = { _selectedNote.value = it }, onFailure = {})
+  fun getNoteById(
+      noteId: String,
+      onSuccess: (Note) -> Unit = {},
+      onFailure: (Exception) -> Unit = {}
+  ) {
+    repository.getNoteById(
+        id = noteId,
+        onSuccess = {
+          onSuccess(it)
+          _selectedNote.value = it
+        },
+        onFailure = onFailure)
   }
 
   /**
    * Adds a Note document.
    *
    * @param note The Note document to be added.
-   * @param userID The user ID.
+   * @param userId The user ID.
+   * @param onSuccess The function to call when the addition is successful.
+   * @param onFailure The function to call when the addition fails.
    */
-  fun addNote(note: Note, userID: String) {
-    repository.addNote(note = note, onSuccess = { getRootNotesFrom(userID) }, onFailure = {})
+  fun addNote(
+      note: Note,
+      userId: String,
+      onSuccess: () -> Unit = {},
+      onFailure: (Exception) -> Unit = {}
+  ) {
+    repository.addNote(
+        note = note,
+        onSuccess = {
+          onSuccess()
+          getRootNotesFrom(userId)
+        },
+        onFailure = onFailure)
   }
 
   /**
    * Updates a Note document.
    *
    * @param note The Note document to be updated.
-   * @param userID The user ID.
+   * @param userId The user ID.
+   * @param onSuccess The function to call when the update is successful.
+   * @param onFailure The function to call when the update fails.
    */
-  fun updateNote(note: Note, userID: String) {
-    repository.updateNote(note = note, onSuccess = { getRootNotesFrom(userID) }, onFailure = {})
+  fun updateNote(
+      note: Note,
+      userId: String,
+      onSuccess: () -> Unit = {},
+      onFailure: (Exception) -> Unit = {}
+  ) {
+    repository.updateNote(
+        note = note,
+        onSuccess = {
+          onSuccess()
+          getRootNotesFrom(userId)
+        },
+        onFailure = onFailure)
   }
 
   /**
    * Deletes a Note document by its ID.
    *
    * @param noteId The ID of the Note document to be deleted.
-   * @param userID The user ID.
+   * @param userId The user ID.
    */
-  fun deleteNoteById(noteId: String, userID: String) {
-    repository.deleteNoteById(id = noteId, onSuccess = { getRootNotesFrom(userID) }, onFailure = {})
+  fun deleteNoteById(
+      noteId: String,
+      userId: String,
+      onSuccess: () -> Unit = {},
+      onFailure: (Exception) -> Unit = {}
+  ) {
+    repository.deleteNoteById(
+        id = noteId,
+        onSuccess = {
+          onSuccess()
+          getRootNotesFrom(userId)
+        },
+        onFailure = onFailure)
   }
 
   /**
    * Deletes all Note documents from a user, specified by their userId.
    *
    * @param userId The user ID.
+   * @param onSuccess The function to call when the deletion is successful.
+   * @param onFailure The function to call when the deletion fails.
    */
-  fun deleteNotesByUserId(userId: String) {
-    repository.deleteNotesByUserId(userId, onSuccess = { getRootNotesFrom(userId) }, onFailure = {})
+  fun deleteNotesByUserId(
+      userId: String,
+      onSuccess: () -> Unit = {},
+      onFailure: (Exception) -> Unit = {}
+  ) {
+    repository.deleteNotesByUserId(
+        userId = userId,
+        onSuccess = {
+          onSuccess()
+          getRootNotesFrom(userId)
+        },
+        onFailure = onFailure)
   }
 
   /**
    * Retrieves all notes from a folder.
    *
    * @param folderId The ID of the folder to retrieve notes from.
+   * @param onSuccess The function to call when the retrieval is successful.
+   * @param onFailure The function to call when the retrieval fails.
    */
-  fun getNotesFromFolder(folderId: String) {
-    repository.getNotesFromFolder(folderId, onSuccess = { _folderNotes.value = it }, onFailure = {})
+  fun getNotesFromFolder(
+      folderId: String,
+      onSuccess: (List<Note>) -> Unit = {},
+      onFailure: (Exception) -> Unit = {}
+  ) {
+    repository.getNotesFromFolder(
+        folderId = folderId,
+        onSuccess = {
+          onSuccess(it)
+          _folderNotes.value = it
+        },
+        onFailure = onFailure)
   }
 }

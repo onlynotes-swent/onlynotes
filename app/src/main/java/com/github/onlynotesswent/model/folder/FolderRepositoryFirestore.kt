@@ -201,15 +201,20 @@ class FolderRepositoryFirestore(private val db: FirebaseFirestore) : FolderRepos
    * Converts a DocumentSnapshot to a Folder object.
    *
    * @param document The DocumentSnapshot to convert.
-   * @return The converted Folder object.
+   * @return The converted Folder object. If the conversion fails, null is returned.
    */
-  fun documentSnapshotToFolder(document: DocumentSnapshot): Folder {
-    return Folder(
-        id = document.id,
-        name = document.getString("name")!!,
-        userId = document.getString("userId")!!,
-        parentFolderId = document.getString("parentFolderId"),
-        Visibility.fromString(document.getString("visibility") ?: Visibility.DEFAULT.toString()))
+  fun documentSnapshotToFolder(document: DocumentSnapshot): Folder? {
+    return try {
+      Folder(
+          id = document.id,
+          name = document.getString("name")!!,
+          userId = document.getString("userId")!!,
+          parentFolderId = document.getString("parentFolderId"),
+          visibility = Visibility.fromString(document.getString("visibility")!!))
+    } catch (e: Exception) {
+      Log.e(TAG, "Error converting document to Folder", e)
+      null
+    }
   }
 
   companion object {

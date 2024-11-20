@@ -222,7 +222,6 @@ fun EditNoteScreen(
                       fileViewModel.openPdf(
                           uid = note!!.id,
                           context = context,
-                          onSuccess = {},
                           onFileNotFound = {
                             Toast.makeText(context, "No stored Pdf", Toast.LENGTH_SHORT).show()
                           },
@@ -239,14 +238,17 @@ fun EditNoteScreen(
                       fileViewModel.deleteFile(
                           uid = note!!.id,
                           fileType = FileType.NOTE_PDF,
+                          onSuccess = {
+                            Toast.makeText(context, "Pdf deleted", Toast.LENGTH_SHORT).show()
+                          },
+                          onFileNotFound = {
+                            Toast.makeText(context, "No Pdf found", Toast.LENGTH_SHORT).show()
+                          },
+                          onFailure = {
+                            Toast.makeText(context, "Failed to delete Pdf", Toast.LENGTH_SHORT)
+                                .show()
+                          },
                       )
-                      // Todo: temporary toast to show the button does something.
-                      //  Adapt to work with onSucces/onFailure when refactor is done.
-                      Toast.makeText(
-                              context,
-                              "Pdf delete started, TODO notify if worked",
-                              Toast.LENGTH_SHORT)
-                          .show()
                     })
 
                 Button(

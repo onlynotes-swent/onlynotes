@@ -55,9 +55,17 @@ open class FileViewModel(private val repository: FileRepository) : ViewModel() {
    * @param fileUri The URI of the file to upload.
    * @param fileType The type of the file. This type determines if it is a profile picture (JPEG or
    *   PNG) or a note file (PDF or MD).
+   * @param onSuccess The function to call when the upload is successful.
+   * @param onFailure The function to call when the upload fails.
    */
-  fun uploadFile(uid: String, fileUri: Uri, fileType: FileType) {
-    repository.uploadFile(uid, fileUri, fileType, {}, {})
+  fun uploadFile(
+      uid: String,
+      fileUri: Uri,
+      fileType: FileType,
+      onSuccess: () -> Unit = {},
+      onFailure: (Exception) -> Unit = {}
+  ) {
+    repository.uploadFile(uid, fileUri, fileType, onSuccess, onFailure)
   }
 
   /**
@@ -77,9 +85,9 @@ open class FileViewModel(private val repository: FileRepository) : ViewModel() {
       uid: String,
       fileType: FileType,
       context: Context,
-      onSuccess: (File) -> Unit,
-      onFileNotFound: () -> Unit,
-      onFailure: (Exception) -> Unit
+      onSuccess: (File) -> Unit = {},
+      onFileNotFound: () -> Unit = {},
+      onFailure: (Exception) -> Unit = {}
   ) {
     repository.downloadFile(uid, fileType, context.cacheDir, onSuccess, onFileNotFound, onFailure)
   }
@@ -91,9 +99,19 @@ open class FileViewModel(private val repository: FileRepository) : ViewModel() {
    *   pictures, it's the user's UID For documents/texts of a note, it's the note's UID.
    * @param fileType The type of the file. This type determines if it is a profile picture (JPEG or
    *   PNG) or a note file (PDF or MD).
+   * @param onSuccess The function to call when the download is successful, where the file is
+   *   downloaded to the File.
+   * @param onFileNotFound The function to call when the file is not found.
+   * @param onFailure The function to call when the delete fails.
    */
-  fun deleteFile(uid: String, fileType: FileType) {
-    repository.deleteFile(uid, fileType, {}, {}, {})
+  fun deleteFile(
+      uid: String,
+      fileType: FileType,
+      onSuccess: () -> Unit = {},
+      onFileNotFound: () -> Unit = {},
+      onFailure: (Exception) -> Unit = {},
+  ) {
+    repository.deleteFile(uid, fileType, onSuccess, onFileNotFound, onFailure)
   }
 
   /**
@@ -104,9 +122,17 @@ open class FileViewModel(private val repository: FileRepository) : ViewModel() {
    *   pictures, it's the user's UID For documents/texts of a note, it's the note's UID.
    * @param fileType The type of the file. This type determines if it is a profile picture (JPEG or
    *   PNG) or a note file (PDF or MD).
+   * @param onSuccess The function to call when the update is successful.
+   * @param onFailure The function to call when the update fails.
    */
-  fun updateFile(uid: String, fileUri: Uri, fileType: FileType) {
-    repository.updateFile(uid, fileUri, fileType, {}, {})
+  fun updateFile(
+      uid: String,
+      fileUri: Uri,
+      fileType: FileType,
+      onSuccess: () -> Unit = {},
+      onFailure: (Exception) -> Unit = {}
+  ) {
+    repository.updateFile(uid, fileUri, fileType, onSuccess, onFailure)
   }
 
   /**
@@ -124,9 +150,9 @@ open class FileViewModel(private val repository: FileRepository) : ViewModel() {
   fun getFile(
       uid: String,
       fileType: FileType,
-      onSuccess: (ByteArray) -> Unit,
-      onFileNotFound: () -> Unit,
-      onFailure: (Exception) -> Unit
+      onSuccess: (ByteArray) -> Unit = {},
+      onFileNotFound: () -> Unit = {},
+      onFailure: (Exception) -> Unit = {}
   ) {
     repository.getFile(uid, fileType, onSuccess, onFileNotFound, onFailure)
   }
@@ -143,9 +169,9 @@ open class FileViewModel(private val repository: FileRepository) : ViewModel() {
   fun openPdf(
       uid: String,
       context: Context,
-      onSuccess: () -> Unit,
-      onFileNotFound: () -> Unit,
-      onFailure: (Exception) -> Unit
+      onSuccess: () -> Unit = {},
+      onFileNotFound: () -> Unit = {},
+      onFailure: (Exception) -> Unit = {}
   ) {
     // Download the file, then open it with a 3rd party PDF Viewer
     // TODO: Implement a PDF viewer in the app, possible, though maybe not

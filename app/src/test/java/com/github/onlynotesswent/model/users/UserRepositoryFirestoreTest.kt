@@ -135,7 +135,7 @@ class UserRepositoryFirestoreTest {
     `when`(mockDocumentSnapshot.get("friends.following")).thenReturn(null)
     `when`(mockDocumentSnapshot.get("friends.followers")).thenReturn(null)
 
-    val userTestEmpty = userRepositoryFirestore.documentSnapshotToUser(mockDocumentSnapshot)
+    val userTestEmpty = userRepositoryFirestore.documentSnapshotToUser(mockDocumentSnapshot)!!
 
     assertEquals("", userTestEmpty.firstName)
     assertEquals("", userTestEmpty.lastName)

@@ -1,6 +1,6 @@
 package com.github.onlynotesswent.model.users
 
-import com.google.firebase.Timestamp
+import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FieldValue
@@ -23,22 +23,28 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore) : UserRepositor
    * @param document The DocumentSnapshot to convert.
    * @return The converted User object.
    */
-  fun documentSnapshotToUser(document: DocumentSnapshot): User {
-    return User(
-        firstName = document.getString("firstName") ?: "",
-        lastName = document.getString("lastName") ?: "",
-        userName = document.getString("userName") ?: "",
-        email = document.getString("email") ?: "",
-        uid = document.getString("uid") ?: "",
-        dateOfJoining = document.getTimestamp("dateOfJoining") ?: Timestamp.now(),
-        rating = document.getDouble("rating") ?: 0.0,
-        friends =
-            Friends(
-                following = document.get("friends.following") as? List<String> ?: emptyList(),
-                followers = document.get("friends.followers") as? List<String> ?: emptyList(),
-            ),
-        hasProfilePicture = document.getBoolean("hasProfilePicture") ?: false,
-        bio = document.getString("bio") ?: "")
+  fun documentSnapshotToUser(document: DocumentSnapshot): User? {
+    return try {
+      User(
+          firstName = document.getString("firstName")!!,
+          lastName = document.getString("lastName")!!,
+          userName = document.getString("userName")!!,
+          email = document.getString("email")!!,
+          uid = document.getString("uid")!!,
+          dateOfJoining = document.getTimestamp("dateOfJoining")!!,
+          rating = document.getDouble("rating")!!,
+          friends =
+              Friends(
+                  following = document.get("friends.following") as List<String>,
+                  followers = document.get("friends.followers") as List<String>,
+              ),
+          hasProfilePicture = document.getBoolean("hasProfilePicture")!!,
+          bio = document.getString("bio")!!,
+      )
+    } catch (e: Exception) {
+      Log.e(TAG, "Error converting document to User", e)
+      null
+    }
   }
 
   override fun init(auth: FirebaseAuth, onSuccess: () -> Unit) {
@@ -57,9 +63,17 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore) : UserRepositor
         .document(id)
         .get()
         .addOnSuccessListener { document ->
-          if (!document.exists()) onUserNotFound() else onSuccess(documentSnapshotToUser(document))
+          if (!document.exists()) onUserNotFound()
+          else {
+            val user = documentSnapshotToUser(document)
+            if (user == null) onFailure(Exception("Error converting document to User"))
+            else onSuccess(user)
+          }
         }
-        .addOnFailureListener { exception -> onFailure(exception) }
+        .addOnFailureListener { exception ->
+          onFailure(exception)
+          Log.e(TAG, "Error getting user by id", exception)
+        }
   }
 
   override fun getUserByEmail(
@@ -73,9 +87,16 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore) : UserRepositor
         .get()
         .addOnSuccessListener { result ->
           if (result.isEmpty) onUserNotFound()
-          else onSuccess(documentSnapshotToUser(result.documents[0]))
+          else {
+            val user = documentSnapshotToUser(result.documents[0])
+            if (user == null) onFailure(Exception("Error converting document to User"))
+            else onSuccess(user)
+          }
         }
-        .addOnFailureListener { exception -> onFailure(exception) }
+        .addOnFailureListener { exception ->
+          onFailure(exception)
+          Log.e(TAG, "Error getting user by email", exception)
+        }
   }
 
   override fun updateUser(user: User, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) {
@@ -92,13 +113,16 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore) : UserRepositor
                 .addOnFailureListener { exception -> onFailure(exception) }
           } else onFailure(UsernameTakenException())
         }
-        .addOnFailureListener { exception -> onFailure(exception) }
+        .addOnFailureListener { exception ->
+          onFailure(exception)
+          Log.e(TAG, "Error updating user", exception)
+        }
   }
 
   override fun deleteUserById(id: String, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) {
     getUserById(
-        id,
-        { user ->
+        id = id,
+        onSuccess = { user ->
           // for each of the current user follower remove them from their following list
           user.friends.followers.forEach { follower ->
             db.collection(collectionPath)
@@ -116,10 +140,19 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore) : UserRepositor
               .document(id)
               .delete()
               .addOnSuccessListener { onSuccess() }
-              .addOnFailureListener { exception -> onFailure(exception) }
+              .addOnFailureListener { exception ->
+                onFailure(exception)
+                Log.e(TAG, "Error deleting user by id", exception)
+              }
         },
-        { onFailure(Exception("User not found")) },
-        { exception -> onFailure(exception) })
+        onUserNotFound = {
+          onFailure(Exception("User not found"))
+          Log.e(TAG, "User not found")
+        },
+        onFailure = { exception ->
+          onFailure(exception)
+          Log.e(TAG, "Error deleting user by id", exception)
+        })
   }
 
   override fun addUser(user: User, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) {
@@ -135,17 +168,23 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore) : UserRepositor
                 .addOnFailureListener { exception -> onFailure(exception) }
           } else onFailure(UsernameTakenException())
         }
-        .addOnFailureListener { exception -> onFailure(exception) }
+        .addOnFailureListener { exception ->
+          onFailure(exception)
+          Log.e(TAG, "Error adding user", exception)
+        }
   }
 
   override fun getAllUsers(onSuccess: (List<User>) -> Unit, onFailure: (Exception) -> Unit) {
     db.collection(collectionPath)
         .get()
         .addOnSuccessListener { result ->
-          val users = result.documents.map { document -> documentSnapshotToUser(document) }
+          val users = result.documents.mapNotNull { document -> documentSnapshotToUser(document) }
           onSuccess(users)
         }
-        .addOnFailureListener { exception -> onFailure(exception) }
+        .addOnFailureListener { exception ->
+          onFailure(exception)
+          Log.e(TAG, "Error getting all users", exception)
+        }
   }
 
   override fun getNewUid(): String {
@@ -166,9 +205,15 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore) : UserRepositor
               .document(follower)
               .update("friends.following", FieldValue.arrayUnion(user))
               .addOnSuccessListener { onSuccess() }
-              .addOnFailureListener { exception -> onFailure(exception) }
+              .addOnFailureListener { exception ->
+                onFailure(exception)
+                Log.e(TAG, "Error adding follower to user", exception)
+              }
         }
-        .addOnFailureListener { exception -> onFailure(exception) }
+        .addOnFailureListener { exception ->
+          onFailure(exception)
+          Log.e(TAG, "Error adding follower to user", exception)
+        }
   }
 
   override fun removeFollowerFrom(
@@ -185,9 +230,15 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore) : UserRepositor
               .document(follower)
               .update("friends.following", FieldValue.arrayRemove(user))
               .addOnSuccessListener { onSuccess() }
-              .addOnFailureListener { exception -> onFailure(exception) }
+              .addOnFailureListener { exception ->
+                onFailure(exception)
+                Log.e(TAG, "Error removing follower from user", exception)
+              }
         }
-        .addOnFailureListener { exception -> onFailure(exception) }
+        .addOnFailureListener { exception ->
+          onFailure(exception)
+          Log.e(TAG, "Error removing follower from user", exception)
+        }
   }
 
   override fun getUsersById(
@@ -203,9 +254,16 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore) : UserRepositor
         .whereIn("uid", userIDs)
         .get()
         .addOnSuccessListener { result ->
-          val users = result.documents.map { document -> documentSnapshotToUser(document) }
+          val users = result.documents.mapNotNull { document -> documentSnapshotToUser(document) }
           onSuccess(users)
         }
-        .addOnFailureListener { exception -> onFailure(exception) }
+        .addOnFailureListener { exception ->
+          onFailure(exception)
+          Log.e(TAG, "Error getting users by id", exception)
+        }
+  }
+
+  companion object {
+    private const val TAG = "UserRepositoryFirestore"
   }
 }

@@ -34,7 +34,7 @@ interface FlashcardRepository {
    * @param onFailure The callback to be invoked if an error occurs.
    * @return the flashcard with the given id.
    */
-  fun getFlashcardById(id: String, onSuccess: (Flashcard?) -> Unit, onFailure: (Exception) -> Unit)
+  fun getFlashcardById(id: String, onSuccess: (Flashcard) -> Unit, onFailure: (Exception) -> Unit)
 
   /**
    * Retrieves all flashcards in the given folder.
