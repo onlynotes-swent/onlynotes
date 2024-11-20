@@ -49,6 +49,9 @@ import kotlinx.coroutines.delay
  *
  * @param navigationActions The navigation view model used to transition between different screens.
  * @param noteViewModel The ViewModel that provides the list of publicNotes to search from.
+ * @param userViewModel The ViewModel that provides the list of users to search from.
+ * @param folderViewModel The ViewModel that provides the list of folders to search from.
+ * @param fileViewModel The ViewModel used to download large files.
  */
 @Composable
 fun SearchScreen(

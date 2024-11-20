@@ -225,8 +225,7 @@ fun TopProfileBar(
           } else if (userProfileId != null) {
             // set profile user to userProfileId and navigate to public profile screen
             // If we pop from stack and the profile id corresponds to profile user (we will navigate
-            // to
-            // the current screen), so we pop twice to get to previous visited public profile
+            // to the current screen), so we pop twice to get to previous visited public profile
             userViewModel.getUserById(
                 userProfileId,
                 { userViewModel.setProfileUser(it) },
@@ -277,6 +276,7 @@ fun TopProfileBar(
  * @param user The user whose profile information is to be displayed.
  * @param userViewModel The ViewModel for the user.
  * @param navigationActions The navigation actions.
+ * @param fileViewModel The ViewModel for downloading images.
  */
 @Composable
 fun ProfileContent(
@@ -404,6 +404,7 @@ fun ProfileContent(
  * Displays a button that allows the user to follow or unfollow another user.
  *
  * @param userViewModel The ViewModel for the user.
+ * @param otherUserId The ID of the user to follow or unfollow.
  */
 @Composable
 fun FollowUnfollowButton(userViewModel: UserViewModel, otherUserId: String) {
@@ -446,6 +447,12 @@ fun FollowUnfollowButton(userViewModel: UserViewModel, otherUserId: String) {
       }
 }
 
+/**
+ * Displays a button that allows the user to remove a follower.
+ *
+ * @param userViewModel The ViewModel for the user.
+ * @param followerId The ID of the follower to remove.
+ */
 @Composable
 fun RemoveFollowerButton(userViewModel: UserViewModel, followerId: String) {
   val context = LocalContext.current
@@ -467,13 +474,16 @@ fun RemoveFollowerButton(userViewModel: UserViewModel, followerId: String) {
 }
 
 /**
- * Displays a dropdown menu with the list of users.
+ * Displays a bottom sheet with the list of users.
  *
- * @param expanded The state of the dropdown menu.
+ * @param expanded The state of the bottom sheet.
  * @param users The state of the list of users to be displayed in the dropdown menu.
  * @param userViewModel The ViewModel for the user.
+ * @param fileViewModel The ViewModel for downloading images.
  * @param navigationActions The navigation actions.
  * @param tag The tag for the dropdown menu (either "following" or "followers"), used for testing.
+ * @param isFollowerSheetOfCurrentUser Whether the sheet is for the current user's followers, in
+ *   which case the "Remove" button is displayed.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -518,6 +528,16 @@ fun UserBottomSheet(
   }
 }
 
+/**
+ * Displays a user item with a thumbnail picture, full name, handle and follow/unfollow button.
+ *
+ * @param user The user to be displayed.
+ * @param userViewModel The ViewModel for the user.
+ * @param fileViewModel The ViewModel for downloading images.
+ * @param isFollowerSheetOfCurrentUser Whether the sheet is for the current user's followers, in
+ *   which case the "Remove" button is displayed.
+ * @param onClick The action to be performed when the user item is clicked.
+ */
 @Composable
 fun UserItem(
     user: User,
@@ -554,6 +574,10 @@ fun UserItem(
 /**
  * Switches the profile to the specified user. If the user is the current user, navigates to the
  * user's profile. Otherwise, sets the profile user and navigates to the public profile.
+ *
+ * @param user The user to switch the profile to.
+ * @param userViewModel The ViewModel for the user.
+ * @param navigationActions The navigation actions.
  */
 fun switchProfileTo(
     user: User,
@@ -592,6 +616,14 @@ fun DisplayBioCard(user: State<User?>) {
   }
 }
 
+/**
+ * Displays the user's thumbnail profile picture, by wrapping the NonModifiableProfilePicture
+ * composable.
+ *
+ * @param user The user whose profile picture is to be displayed.
+ * @param fileViewModel The ViewModel for downloading images.
+ * @param size The size of the profile picture.
+ */
 @Composable
 fun ThumbnailPic(user: User, fileViewModel: FileViewModel, size: Int = 40) {
   val profilePictureUri = remember { mutableStateOf("") }
@@ -600,6 +632,15 @@ fun ThumbnailPic(user: User, fileViewModel: FileViewModel, size: Int = 40) {
       userState, profilePictureUri, fileViewModel, size, "thumbnail--${user.uid}")
 }
 
+/**
+ * Displays the user's profile picture.
+ *
+ * @param user The user whose profile picture is to be displayed.
+ * @param profilePictureUri The URI of the profile picture.
+ * @param fileViewModel The ViewModel for downloading images.
+ * @param size The size of the profile picture.
+ * @param testTag The test tag for the profile picture.
+ */
 @Composable
 fun NonModifiableProfilePicture(
     user: State<User?>,
