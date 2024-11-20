@@ -370,4 +370,15 @@ class UserViewModelTest {
         .removeFollowerFrom(eq("1"), eq("3"), anyBoolean(), anyOrNull(), anyOrNull())
     assert(onSuccessCalled)
   }
+
+  @Test
+  fun `acceptFollower works correctly`() {
+    var onSuccessCalled = false
+    val user2 = user.copy(friends = Friends(), pendingFriends = Friends(followers = listOf("3")))
+    userViewModel.addUser(user2, { assert(true) }, { assert(false) })
+    userViewModel.acceptFollowerRequest("3", { onSuccessCalled = true }, { assert(false) })
+    verify(mockRepositoryFirestore, timeout(1000))
+        .addFollowerTo(eq("1"), eq("3"), anyBoolean(), anyOrNull(), anyOrNull())
+    assert(onSuccessCalled)
+  }
 }
