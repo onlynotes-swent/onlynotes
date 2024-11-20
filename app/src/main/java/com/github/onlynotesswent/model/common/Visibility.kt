@@ -1,4 +1,4 @@
-package com.github.onlynotesswent.utils
+package com.github.onlynotesswent.model.common
 
 enum class Visibility {
   PUBLIC,

@@ -51,12 +51,12 @@ import com.github.onlynotesswent.model.users.UserViewModel
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
 import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
-import com.github.onlynotesswent.utils.Course
+import com.github.onlynotesswent.model.common.Course
 import com.github.onlynotesswent.utils.NoteDataTextField
 import com.github.onlynotesswent.utils.OptionDropDownMenu
 import com.github.onlynotesswent.utils.Scanner
 import com.github.onlynotesswent.utils.ScreenTopBar
-import com.github.onlynotesswent.utils.Visibility
+import com.github.onlynotesswent.model.common.Visibility
 import com.google.firebase.Timestamp
 import com.mohamedrejeb.richeditor.model.rememberRichTextState
 import com.mohamedrejeb.richeditor.ui.material3.RichTextEditor

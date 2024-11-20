@@ -53,10 +53,10 @@ import com.github.onlynotesswent.ui.user.CreateUserScreen
 import com.github.onlynotesswent.ui.user.EditProfileScreen
 import com.github.onlynotesswent.ui.user.PublicProfileScreen
 import com.github.onlynotesswent.ui.user.UserProfileScreen
-import com.github.onlynotesswent.utils.Course
+import com.github.onlynotesswent.model.common.Course
 import com.github.onlynotesswent.utils.ProfilePictureTaker
 import com.github.onlynotesswent.utils.Scanner
-import com.github.onlynotesswent.utils.Visibility
+import com.github.onlynotesswent.model.common.Visibility
 import com.google.firebase.Timestamp
 import org.junit.After
 import org.junit.Before
@@ -124,7 +124,8 @@ class EndToEndTest {
           date = Timestamp.now(),
           userId = testUid,
           visibility = Visibility.DEFAULT,
-          noteCourse = Course("courseCode", "courseName", 2024, "publicPath"))
+          noteCourse = Course("courseCode", "courseName", 2024, "publicPath")
+      )
 
   // Setup Compose test rule for UI testing
   @get:Rule val composeTestRule = createComposeRule()

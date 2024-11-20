@@ -19,9 +19,9 @@ import com.github.onlynotesswent.model.users.UserRepository
 import com.github.onlynotesswent.model.users.UserViewModel
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
-import com.github.onlynotesswent.utils.Course
+import com.github.onlynotesswent.model.common.Course
 import com.github.onlynotesswent.utils.Scanner
-import com.github.onlynotesswent.utils.Visibility
+import com.github.onlynotesswent.model.common.Visibility
 import com.google.firebase.Timestamp
 import org.junit.Before
 import org.junit.Rule
