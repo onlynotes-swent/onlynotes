@@ -138,7 +138,9 @@ class NoteRepositoryFirestoreTest {
         .thenReturn(testNotePublic.noteCourse.publicPath)
     `when`(mockDocumentSnapshot.getString("userId")).thenReturn(testNotePublic.userId)
     `when`(mockDocumentSnapshot.getString("folderId")).thenReturn(testNotePublic.folderId)
-    `when`(mockDocumentSnapshot.get("commentsList")).thenReturn(noteRepositoryFirestore.convertCommentsList(testNotePublic.comments.commentsList))
+    `when`(mockDocumentSnapshot.get("commentsList"))
+        .thenReturn(
+            noteRepositoryFirestore.convertCommentsList(testNotePublic.comments.commentsList))
 
     `when`(mockDocumentSnapshot2.id).thenReturn(testNotePrivate.id)
     `when`(mockDocumentSnapshot2.getString("title")).thenReturn(testNotePrivate.title)
@@ -154,7 +156,9 @@ class NoteRepositoryFirestoreTest {
     `when`(mockDocumentSnapshot.getString("publicPath"))
         .thenReturn(testNotePrivate.noteCourse.publicPath)
     `when`(mockDocumentSnapshot2.getString("userId")).thenReturn(testNotePrivate.userId)
-    `when`(mockDocumentSnapshot2.get("commentsList")).thenReturn(noteRepositoryFirestore.convertCommentsList(testNotePrivate.comments.commentsList))
+    `when`(mockDocumentSnapshot2.get("commentsList"))
+        .thenReturn(
+            noteRepositoryFirestore.convertCommentsList(testNotePrivate.comments.commentsList))
 
     `when`(mockDocumentSnapshot3.id).thenReturn(testSubNotePublic.id)
     `when`(mockDocumentSnapshot3.getString("title")).thenReturn(testSubNotePublic.title)
@@ -171,7 +175,9 @@ class NoteRepositoryFirestoreTest {
         .thenReturn(testSubNotePublic.noteCourse.publicPath)
     `when`(mockDocumentSnapshot3.getString("userId")).thenReturn(testSubNotePublic.userId)
     `when`(mockDocumentSnapshot3.getString("folderId")).thenReturn(testSubNotePublic.folderId)
-    `when`(mockDocumentSnapshot3.get("commentsList")).thenReturn(noteRepositoryFirestore.convertCommentsList(testSubNotePublic.comments.commentsList))
+    `when`(mockDocumentSnapshot3.get("commentsList"))
+        .thenReturn(
+            noteRepositoryFirestore.convertCommentsList(testSubNotePublic.comments.commentsList))
 
     `when`(mockDocumentSnapshot4.id).thenReturn(testSubNotePrivate.id)
     `when`(mockDocumentSnapshot4.getString("title")).thenReturn(testSubNotePrivate.title)
@@ -188,7 +194,9 @@ class NoteRepositoryFirestoreTest {
         .thenReturn(testSubNotePrivate.noteCourse.publicPath)
     `when`(mockDocumentSnapshot4.getString("userId")).thenReturn(testSubNotePrivate.userId)
     `when`(mockDocumentSnapshot4.getString("folderId")).thenReturn(testSubNotePrivate.folderId)
-    `when`(mockDocumentSnapshot4.get("commentsList")).thenReturn(noteRepositoryFirestore.convertCommentsList(testSubNotePublic.comments.commentsList))
+    `when`(mockDocumentSnapshot4.get("commentsList"))
+        .thenReturn(
+            noteRepositoryFirestore.convertCommentsList(testSubNotePublic.comments.commentsList))
   }
 
   private fun compareNotes(testNote: Note?, expectedNote: Note) {

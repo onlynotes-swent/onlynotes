@@ -109,8 +109,9 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
       repository.getUserById(
           id = user.uid,
           onSuccess = {
-              onSuccess()
-              _currentUser.value = it },
+            onSuccess()
+            _currentUser.value = it
+          },
           onUserNotFound = {
             onUserNotFound()
             _currentUser.value = null

@@ -74,14 +74,16 @@ class FolderRepositoryFirestoreTest {
     `when`(mockDocumentSnapshot.getString("name")).thenReturn(testFolder.name)
     `when`(mockDocumentSnapshot.getString("userId")).thenReturn(testFolder.userId)
     `when`(mockDocumentSnapshot.getString("parentFolderId")).thenReturn(testFolder.parentFolderId)
-    `when`(mockDocumentSnapshot.getString("visibility")).thenReturn(testFolder.visibility.toString())
+    `when`(mockDocumentSnapshot.getString("visibility"))
+        .thenReturn(testFolder.visibility.toString())
 
     `when`(mockDocumentSnapshot2.id).thenReturn(testSubFolder.id)
     `when`(mockDocumentSnapshot2.getString("name")).thenReturn(testSubFolder.name)
     `when`(mockDocumentSnapshot2.getString("userId")).thenReturn(testSubFolder.userId)
     `when`(mockDocumentSnapshot2.getString("parentFolderId"))
         .thenReturn(testSubFolder.parentFolderId)
-    `when`(mockDocumentSnapshot2.getString("visibility")).thenReturn(testSubFolder.visibility.toString())
+    `when`(mockDocumentSnapshot2.getString("visibility"))
+        .thenReturn(testSubFolder.visibility.toString())
   }
 
   private fun compareFolders(testFolder: Folder?, expectedFolder: Folder) {
