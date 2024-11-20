@@ -214,7 +214,10 @@ class FolderRepositoryFirestore(private val db: FirebaseFirestore) : FolderRepos
           }
           onSuccess()
         },
-        onFailure = onFailure)
+        onFailure = { e: Exception ->
+            onFailure(e)
+            Log.e(TAG, "Failed to delete folder contents: ${e.message}")
+        })
   }
 
   /**
@@ -233,6 +236,6 @@ class FolderRepositoryFirestore(private val db: FirebaseFirestore) : FolderRepos
   }
 
   companion object {
-    const val TAG = "FolderRepositoryFirestore"
+    private const val TAG = "FolderRepositoryFirestore"
   }
 }
