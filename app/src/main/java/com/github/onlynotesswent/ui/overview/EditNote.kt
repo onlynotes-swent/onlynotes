@@ -273,7 +273,6 @@ fun EditNoteScreen(
 
                 DeleteButton(
                     note = note!!,
-                    currentUser = currentUser!!,
                     navigationActions = navigationActions,
                     noteViewModel = noteViewModel)
 
@@ -439,18 +438,12 @@ fun SaveButton(
  * ViewModel and navigates back to the overview screen.
  *
  * @param note The note to be deleted.
- * @param currentUser The current user.
  * @param navigationActions The navigation view model used to transition between different screens.
  * @param noteViewModel The ViewModel that provides the current note to be edited and handles note
  *   updates.
  */
 @Composable
-fun DeleteButton(
-    note: Note,
-    currentUser: User,
-    navigationActions: NavigationActions,
-    noteViewModel: NoteViewModel
-) {
+fun DeleteButton(note: Note, navigationActions: NavigationActions, noteViewModel: NoteViewModel) {
   Button(
       colors =
           ButtonDefaults.buttonColors(
