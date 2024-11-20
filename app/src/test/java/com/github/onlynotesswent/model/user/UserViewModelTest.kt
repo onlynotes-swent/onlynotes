@@ -360,4 +360,14 @@ class UserViewModelTest {
     assert(onSuccessCalled)
     assert(returnedUsers.isEmpty())
   }
+
+  @Test
+  fun `removeFollowerFrom works correctly`() {
+    var onSuccessCalled = false
+    userViewModel.addUser(user, { assert(true) }, { assert(false) })
+    userViewModel.removeFollower("3", { onSuccessCalled = true }, { assert(false) })
+    verify(mockRepositoryFirestore, timeout(1000))
+        .removeFollowerFrom(eq("1"), eq("3"), anyBoolean(), anyOrNull(), anyOrNull())
+    assert(onSuccessCalled)
+  }
 }
