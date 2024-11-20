@@ -97,6 +97,7 @@ fun NoteItem(
     currentUser: State<User?>,
     context: Context,
     noteViewModel: NoteViewModel,
+    folderViewModel: FolderViewModel,
     showDialog: Boolean,
     navigationActions: NavigationActions,
     onClick: () -> Unit
@@ -116,11 +117,19 @@ fun NoteItem(
           Button(
               onClick = {
                 if (currentUser.value!!.uid == note.userId) {
-                  // Move out will move the given note to the overview menu
-                  noteViewModel.updateNote(note.copy(folderId = null), note.userId)
+                  // Move out will move the given note to the parent folder
+                  val parentFolderId = navigationActions.popFromScreenNavigationStack()
+                  if (parentFolderId != null) {
+                      noteViewModel.updateNote(note.copy(folderId = parentFolderId), note.userId)
+                      folderViewModel.getFolderById(parentFolderId)
+                  } else {
+                    noteViewModel.updateNote(note.copy(folderId = null), note.userId)
+                    navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
+                  }
                   // Clear the screen navigation stack as we navigate to the overview screen
-                  navigationActions.clearScreenNavigationStack()
-                  navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
+
+                  //navigationActions.clearScreenNavigationStack()
+                  //navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
                 } else {
                   Toast.makeText(
                           context,
@@ -503,6 +512,7 @@ fun CustomLazyGrid(
                   currentUser = userViewModel.currentUser.collectAsState(),
                   context = context,
                   noteViewModel = noteViewModel,
+                  folderViewModel = folderViewModel,
                   showDialog = false,
                   navigationActions = navigationActions) {
                     noteViewModel.selectedNote(sortedNotes[index])
