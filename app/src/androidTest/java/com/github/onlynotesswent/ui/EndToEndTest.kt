@@ -191,7 +191,12 @@ class EndToEndTest {
                     route = Route.SEARCH,
                 ) {
                   composable(Screen.SEARCH) {
-                    SearchScreen(navigationActions, noteViewModel, userViewModel, folderViewModel)
+                    SearchScreen(
+                        navigationActions,
+                        noteViewModel,
+                        userViewModel,
+                        folderViewModel,
+                        fileViewModel)
                   }
                 }
                 navigation(
@@ -402,31 +407,31 @@ class EndToEndTest {
     composeTestRule.onNodeWithTag("noSearchResults").assertIsNotDisplayed()
 
     composeTestRule
-        .onAllNodesWithTag("userCard")
+        .onAllNodesWithTag("userItem")
         .filter(hasText(testUser1.fullName()))
         .onFirst()
         .assertIsDisplayed()
 
     composeTestRule
-        .onAllNodesWithTag("userCard")
+        .onAllNodesWithTag("userItem")
         .filter(hasText(testUser2.fullName()))
         .onFirst()
         .assertIsDisplayed()
 
-    composeTestRule.onAllNodesWithTag("userCard").assertCountEquals(2)
+    composeTestRule.onAllNodesWithTag("userItem").assertCountEquals(2)
 
     // Click on testUser2
     composeTestRule
-        .onAllNodesWithTag("userCard")
+        .onAllNodesWithTag("userItem")
         .filter(hasText(testUser2.fullName()))
         .onFirst()
         .assertIsDisplayed()
         .performClick()
 
     // Verify that the user profile screen is displayed and you can follow the user
-    composeTestRule.onNodeWithTag("followUnfollowButton").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("followUnfollowButton--${testUser2.uid}").assertIsDisplayed()
     composeTestRule
-        .onNodeWithTag("followUnfollowButtonText", useUnmergedTree = true)
+        .onNodeWithTag("followUnfollowButtonText--${testUser2.uid}", useUnmergedTree = true)
         .assertIsDisplayed()
         .assertTextContains("Follow")
         .performClick()
@@ -438,14 +443,17 @@ class EndToEndTest {
     // Verify that the following button is displayed and the person the user is following is
     // displayed
     composeTestRule.onNodeWithTag("followingButton").assertIsDisplayed().performClick()
-    composeTestRule.onNodeWithTag("item--${testUser2.userName}").assertIsDisplayed().performClick()
-    composeTestRule.onNodeWithTag("followingDropdownMenu").assertIsNotDisplayed()
+    composeTestRule
+        .onAllNodesWithTag("userItem")
+        .filter(hasText(testUser2.fullName()))
+        .onFirst()
+        .assertIsDisplayed()
 
     // Verify that the unfollow button is displayed and the person the user is following is
     // displayed
-    composeTestRule.onNodeWithTag("followUnfollowButton").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("followUnfollowButton--${testUser2.uid}").assertIsDisplayed()
     composeTestRule
-        .onNodeWithTag("followUnfollowButtonText", useUnmergedTree = true)
+        .onNodeWithTag("followUnfollowButtonText--${testUser2.uid}", useUnmergedTree = true)
         .assertIsDisplayed()
         .assertTextContains("Unfollow")
         .performClick()
