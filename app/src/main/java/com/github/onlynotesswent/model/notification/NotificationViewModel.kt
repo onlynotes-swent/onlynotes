@@ -8,6 +8,13 @@ class NotificationViewModel(private val repository: NotificationRepository) {
   private val _userNotifications = MutableStateFlow<List<Notification>>(emptyList())
   val userNotifications: StateFlow<List<Notification>> = _userNotifications.asStateFlow()
 
+  /**
+   * Retrieves all notifications for a receiver.
+   *
+   * @param userID The ID of the notification to retrieve.
+   * @param onSuccess Callback to be invoked with the retrieved notification.
+   * @param onFailure Callback to be invoked if an error occurs.
+   */
   fun getNotificationByReceiverId(
       userID: String,
       onSuccess: () -> Unit,
@@ -22,6 +29,13 @@ class NotificationViewModel(private val repository: NotificationRepository) {
         onFailure = { onFailure(it) })
   }
 
+  /**
+   * Adds a notification.
+   *
+   * @param notification The notification to added.
+   * @param onSuccess Callback to be invoked when the addition is successful.
+   * @param onFailure Callback to be invoked if an error occurs.
+   */
   fun addNotification(
       notification: Notification,
       onSuccess: () -> Unit,
@@ -31,11 +45,25 @@ class NotificationViewModel(private val repository: NotificationRepository) {
         notification = notification, onSuccess = { onSuccess() }, onFailure = { onFailure(it) })
   }
 
+  /**
+   * Deletes a notification.
+   *
+   * @param id The ID of the notification to delete.
+   * @param onSuccess Callback to be invoked when the deletion is successful.
+   * @param onFailure Callback to be invoked if an error occurs.
+   */
   fun deleteNotification(id: String, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) {
     repository.deleteNotification(
         id = id, onSuccess = { onSuccess() }, onFailure = { onFailure(it) })
   }
 
+  /**
+   * Updates a notification.
+   *
+   * @param notification The notification to update.
+   * @param onSuccess Callback to be invoked when the update is successful.
+   * @param onFailure Callback to be invoked if an error occurs.
+   */
   fun updateNotification(
       notification: Notification,
       onSuccess: () -> Unit,

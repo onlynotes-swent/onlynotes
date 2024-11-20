@@ -185,9 +185,8 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
 
   // SOCIAL FUNCTIONS:
   /**
-   * Make current user follow the specified user. The method changes both the current user's
-   * following list and the specified user's followers list. If the current user is not logged in,
-   * the onFailure callback is invoked with a UserNotLoggedInException.
+   * request a follow from the specified user. The method changes the current user's pending
+   * followers
    *
    * @param followingUID The UID of the user to follow.
    * @param onSuccess Callback to be invoked when the follow operation is successful.
@@ -244,6 +243,13 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
         onFailure)
   }
 
+  /**
+   * remove the specified user from the current user's followers list.
+   *
+   * @param followerUID The UID of the user to to be removed from the followers list.
+   * @param onSuccess Callback to be invoked when the operation is successful.
+   * @param onFailure Callback to be invoked if an error occurs.
+   */
   fun removeFollower(followerUID: String, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) {
     if (_currentUser.value == null) {
       onFailure(UserNotLoggedInException())
