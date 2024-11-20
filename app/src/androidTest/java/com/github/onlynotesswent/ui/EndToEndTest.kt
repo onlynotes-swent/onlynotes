@@ -366,7 +366,7 @@ class EndToEndTest {
     }
 
     `when`(userRepository.removeFollowerFrom(any(), any(), any(), any(), any())).thenAnswer {
-      val onSuccess = it.arguments[2] as () -> Unit
+      val onSuccess = it.arguments[3] as () -> Unit
       val userId = it.arguments[0] as String // testUser2
       val followerId = it.arguments[1] as String // testUser
       testUser2 =

@@ -173,7 +173,7 @@ class ProfileScreenTest {
     `when`(mockUserRepository.removeFollowerFrom(any(), any(), any(), any(), any())).thenAnswer {
       val userId = it.arguments[0] as String // testUser2
       val followerId = it.arguments[1] as String // testUser
-      val onSuccess = it.getArgument<() -> Unit>(2)
+      val onSuccess = it.getArgument<() -> Unit>(3)
       var user = uidToUser(userId)!!
       var follower = uidToUser(followerId)!!
       user =
