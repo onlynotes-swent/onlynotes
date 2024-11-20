@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import com.github.onlynotesswent.model.note.NoteViewModel
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.firestore
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -169,5 +170,15 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
   /** Retrieves all public folders. */
   fun getPublicFolders() {
     repository.getPublicFolders(onSuccess = { _publicFolders.value = it }, onFailure = {})
+  }
+
+  /**
+   * Deletes all elements from a folder.
+   *
+   * @param folder The folder to delete notes from.
+   * @param noteViewModel The Note view model used to delete the folder notes.
+   */
+  fun deleteFolderContents(folder: Folder, noteViewModel: NoteViewModel) {
+    repository.deleteFolderContents(folder, noteViewModel, onSuccess = { getSubFoldersOf(folder.id) }, onFailure = {})
   }
 }

@@ -291,10 +291,6 @@ fun FolderContentTopBar(
                                 folderViewModel = folderViewModel,
                                 noteViewModel = noteViewModel)
                             navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
-                            // TODO for now we just delete the folder directly and set the
-                            // folderId field of sub elements to null, later on we will
-                            // implement a recursive delete to delete all elements of a folder
-                            // (folders and notes) SO I will add another item to delete folder contents
                           } else {
                             Toast.makeText(
                                     context,
@@ -303,7 +299,29 @@ fun FolderContentTopBar(
                                 .show()
                           }
                         },
-                        modifier = Modifier.testTag("deleteFolderButton"))),
+                        modifier = Modifier.testTag("deleteFolderButton")),
+                    CustomDropDownMenuItem(
+                        text = { Text("Delete folder contents") },
+                        icon = {
+                          Icon(
+                              painter = painterResource(id = R.drawable.delete_folder_contents),
+                              contentDescription = "DeleteFolderContents")
+                        },
+                        onClick = {
+                            onExpandedChange(false)
+                            if (currentUser.value!!.uid == folder?.userId) {
+                                // Delete all notes from the folder and call delete folder contents to delete everything except the folder itself
+                                noteViewModel.deleteNotesFromFolder(folder.id)
+                                folderViewModel.deleteFolderContents(folder, noteViewModel)
+                            } else {
+                                Toast.makeText(
+                                    context,
+                                    "You are not the owner of this folder",
+                                    Toast.LENGTH_SHORT)
+                                    .show()
+                            }
+                        }
+                    )),
             fabIcon = {
               Icon(imageVector = Icons.Default.MoreVert, contentDescription = "settings")
             },

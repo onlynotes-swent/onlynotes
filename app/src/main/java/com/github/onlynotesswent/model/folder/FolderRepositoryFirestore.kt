@@ -1,6 +1,7 @@
 package com.github.onlynotesswent.model.folder
 
 import android.util.Log
+import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.utils.Visibility
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
@@ -197,7 +198,23 @@ class FolderRepositoryFirestore(private val db: FirebaseFirestore) : FolderRepos
     }
   }
 
-  /**
+  override fun deleteFolderContents(
+      folder: Folder,
+      noteViewModel: NoteViewModel,
+      onSuccess: () -> Unit,
+      onFailure: (Exception) -> Unit
+  ) {
+      getSubFoldersOf(folder.id, onSuccess = { subFolders ->
+          subFolders.forEach { subFolder ->
+              deleteFolderContents(subFolder, noteViewModel, onSuccess = {}, onFailure = onFailure)
+              noteViewModel.deleteNotesFromFolder(subFolder.id)
+              deleteFolderById(subFolder.id, onSuccess = {}, onFailure = onFailure)
+          }
+          onSuccess()
+      }, onFailure = onFailure)
+  }
+
+    /**
    * Converts a DocumentSnapshot to a Folder object.
    *
    * @param document The DocumentSnapshot to convert.

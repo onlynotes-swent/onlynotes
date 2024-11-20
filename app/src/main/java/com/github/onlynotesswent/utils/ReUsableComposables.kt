@@ -299,9 +299,14 @@ fun FolderItem(
 
                           override fun onEnded(event: DragAndDropEvent) {
                               if (dropSuccess.value) {
-                                  // Drop was successful
-                                  folderViewModel.selectedFolder(folder)
-                                  navigateToFolderContents(folder, navigationActions)
+                                  // Drop was successful // TODO try calling collect as state inside folder content
+                                  //if (folder.parentFolderId == null) {
+                                      folderViewModel.selectedFolder(folder)
+                                      navigateToFolderContents(folder, navigationActions)
+                                  //} else {
+                                      // To refresh folder contents
+                                      //navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
+                                  //}
                               }
                               // Reset dropSuccess value
                               dropSuccess.value = false
