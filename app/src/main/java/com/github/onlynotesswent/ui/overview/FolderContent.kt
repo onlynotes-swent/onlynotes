@@ -43,15 +43,15 @@ import com.github.onlynotesswent.model.folder.Folder
 import com.github.onlynotesswent.model.folder.FolderViewModel
 import com.github.onlynotesswent.model.note.Note
 import com.github.onlynotesswent.model.note.NoteViewModel
-import com.github.onlynotesswent.model.user.User
-import com.github.onlynotesswent.model.user.UserViewModel
+import com.github.onlynotesswent.model.users.User
+import com.github.onlynotesswent.model.users.UserViewModel
+import com.github.onlynotesswent.ui.common.CustomDropDownMenu
+import com.github.onlynotesswent.ui.common.CustomDropDownMenuItem
+import com.github.onlynotesswent.ui.common.CustomLazyGrid
+import com.github.onlynotesswent.ui.common.FolderDialog
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
 import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
-import com.github.onlynotesswent.utils.CustomDropDownMenu
-import com.github.onlynotesswent.utils.CustomDropDownMenuItem
-import com.github.onlynotesswent.utils.CustomLazyGrid
-import com.github.onlynotesswent.utils.FolderDialog
 
 /**
  * Screen that displays the content of a folder.

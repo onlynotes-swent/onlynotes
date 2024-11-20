@@ -5,6 +5,8 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
+import com.github.onlynotesswent.model.common.Course
+import com.github.onlynotesswent.model.common.Visibility
 import com.github.onlynotesswent.model.folder.Folder
 import com.github.onlynotesswent.model.folder.FolderRepository
 import com.github.onlynotesswent.model.folder.FolderViewModel
@@ -16,8 +18,6 @@ import com.github.onlynotesswent.model.user.UserRepository
 import com.github.onlynotesswent.model.user.UserViewModel
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
-import com.github.onlynotesswent.utils.Course
-import com.github.onlynotesswent.utils.Visibility
 import com.google.firebase.Timestamp
 import org.junit.Before
 import org.junit.Rule
