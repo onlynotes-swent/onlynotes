@@ -206,8 +206,8 @@ class ProfileScreenTest {
 
   @Test
   fun followUnfollowButtonWorksOnPublicProfile() {
-    `when`(mockUserRepository.addFollowerTo(any(), any(), any(), any())).thenAnswer {
-      val onSuccess = it.arguments[2] as () -> Unit
+    `when`(mockUserRepository.addFollowerTo(any(), any(), any(), any(), any())).thenAnswer {
+      val onSuccess = it.arguments[3] as () -> Unit
       val userId = it.arguments[0] as String // testUser2
       val followerId = it.arguments[1] as String // testUser
       testUser2 =
@@ -222,8 +222,8 @@ class ProfileScreenTest {
       onSuccess()
     }
 
-    `when`(mockUserRepository.removeFollowerFrom(any(), any(), any(), any())).thenAnswer {
-      val onSuccess = it.arguments[2] as () -> Unit
+    `when`(mockUserRepository.removeFollowerFrom(any(), any(), any(), any(), any())).thenAnswer {
+      val onSuccess = it.arguments[3] as () -> Unit
       val userId = it.arguments[0] as String // testUser2
       val followerId = it.arguments[1] as String // testUser
       testUser2 =
@@ -256,8 +256,8 @@ class ProfileScreenTest {
         .assertTextContains("Unfollow")
 
     verify(mockUserRepository, times(4)).getUserById(any(), any(), any(), any())
-    verify(mockUserRepository).addFollowerTo(any(), any(), any(), any())
-    verify(mockUserRepository).removeFollowerFrom(any(), any(), any(), any())
+    verify(mockUserRepository).addFollowerTo(any(), any(), any(), any(), any())
+    verify(mockUserRepository).removeFollowerFrom(any(), any(), any(), any(), any())
   }
 
   @Test

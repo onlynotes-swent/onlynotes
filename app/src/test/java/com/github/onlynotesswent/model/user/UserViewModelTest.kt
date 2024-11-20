@@ -107,7 +107,7 @@ class UserViewModelTest {
             mockRepositoryFirestore.addFollowerTo(
                 anyString(), anyString(), anyBoolean(), anyOrNull(), anyOrNull()))
         .thenAnswer {
-          val onSuccess = it.arguments[2] as () -> Unit
+          val onSuccess = it.arguments[3] as () -> Unit
           onSuccess()
         }
     // Mock the removeFollowerFrom method to call onSuccess
@@ -115,7 +115,7 @@ class UserViewModelTest {
             mockRepositoryFirestore.removeFollowerFrom(
                 anyString(), anyString(), anyBoolean(), anyOrNull(), anyOrNull()))
         .thenAnswer {
-          val onSuccess = it.arguments[2] as () -> Unit
+          val onSuccess = it.arguments[3] as () -> Unit
           onSuccess()
         }
 
@@ -240,13 +240,14 @@ class UserViewModelTest {
     assert(exception is UserViewModel.UserNotLoggedInException)
 
     // Mock the currentUser to be non-null
+
     userViewModel.addUser(user, { assert(true) }, { assert(false) })
 
     // Call unfollowUser with a logged in user
     var onSuccessCalled = false
-    userViewModel.unfollowUser("2", { onSuccessCalled = true }, { assert(false) })
+    userViewModel.unfollowUser("3", { onSuccessCalled = true }, { assert(false) })
     verify(mockRepositoryFirestore, timeout(1000))
-        .removeFollowerFrom(eq("2"), eq("1"), anyBoolean(), anyOrNull(), anyOrNull())
+        .removeFollowerFrom(eq("3"), eq("1"), anyBoolean(), anyOrNull(), anyOrNull())
     assert(onSuccessCalled)
   }
 

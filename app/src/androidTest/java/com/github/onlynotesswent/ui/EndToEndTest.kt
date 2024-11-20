@@ -343,7 +343,7 @@ class EndToEndTest {
     // Initialize current user
     userViewModel.addUser(testUser1, {}, {})
 
-    `when`(userRepository.addFollowerTo(any(), any(), any(), any())).thenAnswer {
+    `when`(userRepository.addFollowerTo(any(), any(), any(), any(), any())).thenAnswer {
       val onSuccess = it.arguments[2] as () -> Unit
       val userId = it.arguments[0] as String // testUser2
       val followerId = it.arguments[1] as String // testUser
@@ -360,7 +360,7 @@ class EndToEndTest {
       onSuccess()
     }
 
-    `when`(userRepository.removeFollowerFrom(any(), any(), any(), any())).thenAnswer {
+    `when`(userRepository.removeFollowerFrom(any(), any(), any(), any(), any())).thenAnswer {
       val onSuccess = it.arguments[2] as () -> Unit
       val userId = it.arguments[0] as String // testUser2
       val followerId = it.arguments[1] as String // testUser
