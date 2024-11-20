@@ -1,6 +1,6 @@
 package com.github.onlynotesswent.model.folder
 
-import com.github.onlynotesswent.utils.Visibility
+import com.github.onlynotesswent.model.common.Visibility
 
 /**
  * Represents a folder that contains notes.
