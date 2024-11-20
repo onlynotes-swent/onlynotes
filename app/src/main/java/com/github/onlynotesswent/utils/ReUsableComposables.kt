@@ -146,7 +146,7 @@ fun NoteItem(
                     onTap = { onClick() },
                     onLongPress = {
                       noteViewModel.draggedNote(note)
-                      //noteViewModel.selectedNote(note)
+                      // noteViewModel.selectedNote(note)
                       // Start a drag-and-drop operation to transfer the data which is being dragged
                       startTransfer(
                           // Transfer the note Id as a ClipData object
@@ -249,67 +249,83 @@ fun FolderItem(
                       remember {
                         object : DragAndDropTarget {
                           override fun onDrop(event: DragAndDropEvent): Boolean {
-                              // Set the target folder as the selected folder to navigate to it when dropping on it
-                              //folderViewModel.selectedFolder(folder)
-                              Log.e("FolderItem", "onDrop selected folder: ${folder.name} vs real selected folder: ${folderViewModel.selectedFolder.value?.name}")
-                              // Get the dragged object Id
-                              val draggedObjectId =
-                                  event.toAndroidDragEvent().clipData.getItemAt(0).text.toString()
-                              val draggedNote = noteViewModel.draggedNote.value
-                              Log.e("FolderItem", "selectedNoteId: ${draggedNote?.id} and draggedObjectId: $draggedObjectId")
-                              if (draggedNote != null && draggedNote.id == draggedObjectId) {
-                                  // Update the selected note (dragged) with the new folder Id
-                                  noteViewModel.updateNote(
-                                      draggedNote.copy(folderId = folder.id),
-                                      draggedNote.userId)
+                            // Set the target folder as the selected folder to navigate to it when
+                            // dropping on it
+                            // folderViewModel.selectedFolder(folder)
+                            Log.e(
+                                "FolderItem",
+                                "onDrop selected folder: ${folder.name} vs real selected folder: ${folderViewModel.selectedFolder.value?.name}")
+                            // Get the dragged object Id
+                            val draggedObjectId =
+                                event.toAndroidDragEvent().clipData.getItemAt(0).text.toString()
+                            val draggedNote = noteViewModel.draggedNote.value
+                            Log.e(
+                                "FolderItem",
+                                "selectedNoteId: ${draggedNote?.id} and draggedObjectId: $draggedObjectId")
+                            if (draggedNote != null && draggedNote.id == draggedObjectId) {
+                              // Update the selected note (dragged) with the new folder Id
+                              noteViewModel.updateNote(
+                                  draggedNote.copy(folderId = folder.id), draggedNote.userId)
 
-                                  Log.e("FolderItem", "returning true")
-                                  // Toast:
-                                  Toast.makeText(
+                              Log.e("FolderItem", "returning true")
+                              // Toast:
+                              Toast.makeText(
                                       context, "Note moved to ${folder.name}", Toast.LENGTH_SHORT)
-                                      .show()
-                                  noteViewModel.draggedNote(null)
-                                  dropSuccess.value = true
-                                  return true
-                              }
-                              // Get the dragged folder in case a folder is being dragged
-                              val draggedFolder = folderViewModel.draggedFolder.value
-                              val selectedFolder = folderViewModel.selectedFolder.value
-                              Log.e("FolderItem", "draggedFolderId: ${draggedFolder?.id} and draggedObjectId: $draggedObjectId and selectedFolderId: ${selectedFolder?.id} and folderId: ${folder.id}")
-                              if (draggedFolder != null && draggedFolder.id == draggedObjectId &&
-                                  draggedFolder.id != folder.id && draggedFolder.parentFolderId == folder.parentFolderId // If dragged and folder dont have same parent id dont allow drop
-                                  && selectedFolder?.id != folder.id) { // Also check the current selected folder and the target folder are not the same
-                                  // Update the dragged folder with the new parent folder Id. Folder
-                                  // here represents the target folder, so the future parent of the
-                                  // dragged folder
-                                  folderViewModel.updateFolder(
-                                      draggedFolder.copy(parentFolderId = folder.id), folder.userId)
-                                  // Toast:
-                                  Toast.makeText(
+                                  .show()
+                              noteViewModel.draggedNote(null)
+                              dropSuccess.value = true
+                              return true
+                            }
+                            // Get the dragged folder in case a folder is being dragged
+                            val draggedFolder = folderViewModel.draggedFolder.value
+                            val selectedFolder = folderViewModel.selectedFolder.value
+                            Log.e(
+                                "FolderItem",
+                                "draggedFolderId: ${draggedFolder?.id} and draggedObjectId: $draggedObjectId and selectedFolderId: ${selectedFolder?.id} and folderId: ${folder.id}")
+                            if (draggedFolder != null &&
+                                draggedFolder.id == draggedObjectId &&
+                                draggedFolder.id != folder.id &&
+                                draggedFolder.parentFolderId ==
+                                    folder
+                                        .parentFolderId // If dragged and folder dont have same
+                                                        // parent id dont allow drop
+                                &&
+                                selectedFolder?.id !=
+                                    folder
+                                        .id) { // Also check the current selected folder and the
+                                               // target folder are not the same
+                              // Update the dragged folder with the new parent folder Id. Folder
+                              // here represents the target folder, so the future parent of the
+                              // dragged folder
+                              folderViewModel.updateFolder(
+                                  draggedFolder.copy(parentFolderId = folder.id), folder.userId)
+                              // Toast:
+                              Toast.makeText(
                                       context, "Folder moved to ${folder.name}", Toast.LENGTH_SHORT)
-                                      .show()
-                                  folderViewModel.draggedFolder(null)
-                                  // Allows calling the LaunchedEffect after returning true
-                                  dropSuccess.value = true
-                                  return true
-                              }
-                              dropSuccess.value = false
-                              return false
+                                  .show()
+                              folderViewModel.draggedFolder(null)
+                              // Allows calling the LaunchedEffect after returning true
+                              dropSuccess.value = true
+                              return true
+                            }
+                            dropSuccess.value = false
+                            return false
                           }
 
                           override fun onEnded(event: DragAndDropEvent) {
-                              if (dropSuccess.value) {
-                                  // Drop was successful // TODO try calling collect as state inside folder content
-                                  //if (folder.parentFolderId == null) {
-                                      folderViewModel.selectedFolder(folder)
-                                      navigateToFolderContents(folder, navigationActions)
-                                  //} else {
-                                      // To refresh folder contents
-                                      //navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
-                                  //}
-                              }
-                              // Reset dropSuccess value
-                              dropSuccess.value = false
+                            if (dropSuccess.value) {
+                              // Drop was successful // TODO try calling collect as state inside
+                              // folder content
+                              // if (folder.parentFolderId == null) {
+                              folderViewModel.selectedFolder(folder)
+                              navigateToFolderContents(folder, navigationActions)
+                              // } else {
+                              // To refresh folder contents
+                              // navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
+                              // }
+                            }
+                            // Reset dropSuccess value
+                            dropSuccess.value = false
                           }
                         }
                       }),
@@ -650,28 +666,25 @@ fun OptionDropDownMenu(
  * navigation stack.
  *
  * @param folder The folder to navigate to. If it is not a root folder, its parent id will be pushed
- * to the screen navigation stack to properly go back.
+ *   to the screen navigation stack to properly go back.
  * @param navigationActions The navigation instance used to navigate between different screens.
  */
-fun navigateToFolderContents(
-    folder: Folder,
-    navigationActions: NavigationActions
-) {
-    if (folder.parentFolderId == null) {
-        // Don't add to the screen navigation stack as we are at the root folder
-        navigationActions.navigateTo(Screen.FOLDER_CONTENTS)
+fun navigateToFolderContents(folder: Folder, navigationActions: NavigationActions) {
+  if (folder.parentFolderId == null) {
+    // Don't add to the screen navigation stack as we are at the root folder
+    navigationActions.navigateTo(Screen.FOLDER_CONTENTS)
+  } else {
+    val poppedId = navigationActions.popFromScreenNavigationStack()
+    if (poppedId == Screen.SEARCH) {
+      // If we come from search, don't push the folderId to the stack
+      navigationActions.pushToScreenNavigationStack(poppedId)
     } else {
-        val poppedId = navigationActions.popFromScreenNavigationStack()
-        if (poppedId == Screen.SEARCH) {
-            // If we come from search, don't push the folderId to the stack
-            navigationActions.pushToScreenNavigationStack(poppedId)
-        } else {
-            if (poppedId != null) {
-                navigationActions.pushToScreenNavigationStack(poppedId)
-            }
-            // Add the previously visited folder Id (parent) to the screen navigation stack
-            navigationActions.pushToScreenNavigationStack(folder.parentFolderId)
-        }
-        navigationActions.navigateTo(Screen.FOLDER_CONTENTS)
+      if (poppedId != null) {
+        navigationActions.pushToScreenNavigationStack(poppedId)
+      }
+      // Add the previously visited folder Id (parent) to the screen navigation stack
+      navigationActions.pushToScreenNavigationStack(folder.parentFolderId)
     }
+    navigationActions.navigateTo(Screen.FOLDER_CONTENTS)
+  }
 }

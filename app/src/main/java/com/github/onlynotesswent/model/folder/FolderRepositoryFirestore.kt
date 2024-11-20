@@ -204,17 +204,20 @@ class FolderRepositoryFirestore(private val db: FirebaseFirestore) : FolderRepos
       onSuccess: () -> Unit,
       onFailure: (Exception) -> Unit
   ) {
-      getSubFoldersOf(folder.id, onSuccess = { subFolders ->
+    getSubFoldersOf(
+        folder.id,
+        onSuccess = { subFolders ->
           subFolders.forEach { subFolder ->
-              deleteFolderContents(subFolder, noteViewModel, onSuccess = {}, onFailure = onFailure)
-              noteViewModel.deleteNotesFromFolder(subFolder.id)
-              deleteFolderById(subFolder.id, onSuccess = {}, onFailure = onFailure)
+            deleteFolderContents(subFolder, noteViewModel, onSuccess = {}, onFailure = onFailure)
+            noteViewModel.deleteNotesFromFolder(subFolder.id)
+            deleteFolderById(subFolder.id, onSuccess = {}, onFailure = onFailure)
           }
           onSuccess()
-      }, onFailure = onFailure)
+        },
+        onFailure = onFailure)
   }
 
-    /**
+  /**
    * Converts a DocumentSnapshot to a Folder object.
    *
    * @param document The DocumentSnapshot to convert.

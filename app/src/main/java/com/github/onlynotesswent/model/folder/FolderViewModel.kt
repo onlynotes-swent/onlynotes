@@ -149,12 +149,15 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
    * @param folder The folder with updated information.
    */
   fun updateFolder(folder: Folder, userId: String) {
-    repository.updateFolder(folder, onSuccess = {
-      getRootFoldersFromUid(userId)
-      if (folder.parentFolderId != null) {
-        getSubFoldersOf(folder.parentFolderId)
-      }
-    }, onFailure = {})
+    repository.updateFolder(
+        folder,
+        onSuccess = {
+          getRootFoldersFromUid(userId)
+          if (folder.parentFolderId != null) {
+            getSubFoldersOf(folder.parentFolderId)
+          }
+        },
+        onFailure = {})
   }
 
   /**
@@ -179,6 +182,7 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
    * @param noteViewModel The Note view model used to delete the folder notes.
    */
   fun deleteFolderContents(folder: Folder, noteViewModel: NoteViewModel) {
-    repository.deleteFolderContents(folder, noteViewModel, onSuccess = { getSubFoldersOf(folder.id) }, onFailure = {})
+    repository.deleteFolderContents(
+        folder, noteViewModel, onSuccess = { getSubFoldersOf(folder.id) }, onFailure = {})
   }
 }

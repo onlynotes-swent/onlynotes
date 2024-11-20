@@ -308,20 +308,20 @@ fun FolderContentTopBar(
                               contentDescription = "DeleteFolderContents")
                         },
                         onClick = {
-                            onExpandedChange(false)
-                            if (currentUser.value!!.uid == folder?.userId) {
-                                // Delete all notes from the folder and call delete folder contents to delete everything except the folder itself
-                                noteViewModel.deleteNotesFromFolder(folder.id)
-                                folderViewModel.deleteFolderContents(folder, noteViewModel)
-                            } else {
-                                Toast.makeText(
+                          onExpandedChange(false)
+                          if (currentUser.value!!.uid == folder?.userId) {
+                            // Delete all notes from the folder and call delete folder contents to
+                            // delete everything except the folder itself
+                            noteViewModel.deleteNotesFromFolder(folder.id)
+                            folderViewModel.deleteFolderContents(folder, noteViewModel)
+                          } else {
+                            Toast.makeText(
                                     context,
                                     "You are not the owner of this folder",
                                     Toast.LENGTH_SHORT)
-                                    .show()
-                            }
-                        }
-                    )),
+                                .show()
+                          }
+                        })),
             fabIcon = {
               Icon(imageVector = Icons.Default.MoreVert, contentDescription = "settings")
             },

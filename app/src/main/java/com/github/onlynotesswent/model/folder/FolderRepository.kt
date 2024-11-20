@@ -118,5 +118,10 @@ interface FolderRepository {
    * @param onSuccess Callback to be invoked when the subfolders are deleted successfully.
    * @param onFailure Callback to be invoked if an error occurs.
    */
-  fun deleteFolderContents(folder: Folder, noteViewModel: NoteViewModel, onSuccess: () -> Unit, onFailure: (Exception) -> Unit)
+  fun deleteFolderContents(
+      folder: Folder,
+      noteViewModel: NoteViewModel,
+      onSuccess: () -> Unit,
+      onFailure: (Exception) -> Unit
+  )
 }

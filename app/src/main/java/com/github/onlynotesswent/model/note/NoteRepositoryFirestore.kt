@@ -272,29 +272,29 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
   }
 
   override fun deleteNotesFromFolder(
-        folderId: String,
-        onSuccess: () -> Unit,
-        onFailure: (Exception) -> Unit
+      folderId: String,
+      onSuccess: () -> Unit,
+      onFailure: (Exception) -> Unit
   ) {
-      db.collection(collectionPath).get().addOnCompleteListener { task ->
-          if (task.isSuccessful) {
-              val folderNotes =
-                  task.result.documents
-                      .mapNotNull { document -> documentSnapshotToNote(document) }
-                      .filter { it.folderId == folderId }
-              folderNotes.forEach { note -> db.collection(collectionPath).document(note.id).delete() }
-              // Throw onSuccess only after deleting all notes
-              onSuccess()
-          } else {
-              task.exception?.let { e ->
-                  Log.e(TAG, "Error deleting folder notes", e)
-                  onFailure(e)
-              }
-          }
+    db.collection(collectionPath).get().addOnCompleteListener { task ->
+      if (task.isSuccessful) {
+        val folderNotes =
+            task.result.documents
+                .mapNotNull { document -> documentSnapshotToNote(document) }
+                .filter { it.folderId == folderId }
+        folderNotes.forEach { note -> db.collection(collectionPath).document(note.id).delete() }
+        // Throw onSuccess only after deleting all notes
+        onSuccess()
+      } else {
+        task.exception?.let { e ->
+          Log.e(TAG, "Error deleting folder notes", e)
+          onFailure(e)
+        }
       }
+    }
   }
 
-    /**
+  /**
    * Performs a Firestore operation and calls the appropriate callback based on the result.
    *
    * @param task The Firestore task to perform.

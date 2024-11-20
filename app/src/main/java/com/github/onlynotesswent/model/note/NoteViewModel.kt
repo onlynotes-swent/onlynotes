@@ -175,6 +175,7 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
    * @param folderId The ID of the folder to delete notes from.
    */
   fun deleteNotesFromFolder(folderId: String) {
-    repository.deleteNotesFromFolder(folderId, onSuccess = { getNotesFromFolder(folderId) }, onFailure = {})
+    repository.deleteNotesFromFolder(
+        folderId, onSuccess = { getNotesFromFolder(folderId) }, onFailure = {})
   }
 }
