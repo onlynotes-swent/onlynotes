@@ -21,8 +21,8 @@ import androidx.compose.ui.platform.testTag
  * menu contains two items, each with its own text and onClick action.
  *
  * @param modifier The modifier for the floating action button.
- * @param fabIcon The icon to be displayed on the floating action button.
  * @param menuItems The list of dropdown menu items to be displayed in the dropdown menu.
+ * @param fabIcon The icon to be displayed on the floating action button.
  * @param expanded The state of the dropdown menu.
  * @param onFabClick The action to be invoked when the floating action button is clicked.
  * @param onDismissRequest The action to be invoked when the dropdown menu is dismissed.
@@ -68,13 +68,16 @@ data class CustomDropDownMenuItem(
 /**
  * A composable function that displays an `OutlinedTextField` with a dropdown menu.
  *
- * @param value The current value of the text field.
  * @param expanded A boolean indicating whether the dropdown menu is expanded.
+ * @param value The current value of the text field.
+ * @param buttonTag The test tag for the button.
+ * @param menuTag The test tag for the dropdown menu.
  * @param onExpandedChange A callback to be invoked when the expanded state of the dropdown menu
  *   changes.
  * @param items A list of strings representing the items to be displayed in the dropdown menu.
  * @param onItemClick A callback to be invoked when an item in the dropdown menu is clicked.
  * @param modifier The modifier to be applied to the `OutlinedTextField`.
+ * @param widthFactor The width factor of the `BoxWithConstraints`.
  */
 @Composable
 fun OptionDropDownMenu(

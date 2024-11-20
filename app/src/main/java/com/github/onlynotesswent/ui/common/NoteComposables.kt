@@ -49,6 +49,8 @@ import java.util.Locale
  *
  * @param note The note data that will be displayed in this card.
  * @param author The author of the note.
+ * @param currentUser The current user.
+ * @param context The context used to display the dialog.
  * @param noteViewModel The ViewModel that provides the list of notes to display.
  * @param showDialog A boolean indicating whether the move out dialog should be displayed.
  * @param navigationActions The navigation instance used to transition between different screens.

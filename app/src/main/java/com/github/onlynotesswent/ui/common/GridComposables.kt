@@ -34,6 +34,8 @@ import com.github.onlynotesswent.ui.navigation.Screen
  * @param gridModifier The modifier for the grid.
  * @param folderViewModel The ViewModel that provides the list of folders to display.
  * @param noteViewModel The ViewModel that provides the list of notes to display.
+ * @param userViewModel The ViewModel that provides the current user.
+ * @param context The context used to display the dialog.
  * @param navigationActions The navigation view model used to transition between different screens.
  * @param paddingValues The padding values for the grid.
  * @param columnContent The content to be displayed in the column when there are no notes or
