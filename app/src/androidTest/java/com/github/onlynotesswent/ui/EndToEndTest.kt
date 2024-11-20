@@ -28,6 +28,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navigation
 import androidx.test.espresso.intent.Intents
+import com.github.onlynotesswent.model.common.Course
+import com.github.onlynotesswent.model.common.Visibility
 import com.github.onlynotesswent.model.file.FileRepository
 import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.folder.FolderRepository
@@ -53,10 +55,8 @@ import com.github.onlynotesswent.ui.user.CreateUserScreen
 import com.github.onlynotesswent.ui.user.EditProfileScreen
 import com.github.onlynotesswent.ui.user.PublicProfileScreen
 import com.github.onlynotesswent.ui.user.UserProfileScreen
-import com.github.onlynotesswent.utils.Course
 import com.github.onlynotesswent.utils.ProfilePictureTaker
 import com.github.onlynotesswent.utils.Scanner
-import com.github.onlynotesswent.utils.Visibility
 import com.google.firebase.Timestamp
 import org.junit.After
 import org.junit.Before
