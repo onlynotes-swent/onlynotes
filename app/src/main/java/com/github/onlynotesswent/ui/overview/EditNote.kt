@@ -16,6 +16,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.ArrowDropUp
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.UploadFile
@@ -23,14 +25,19 @@ import androidx.compose.material.icons.outlined.Clear
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -57,7 +64,6 @@ import com.github.onlynotesswent.ui.navigation.Screen
 import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
 import com.github.onlynotesswent.utils.Course
 import com.github.onlynotesswent.utils.NoteDataTextField
-import com.github.onlynotesswent.utils.OptionDropDownMenu
 import com.github.onlynotesswent.utils.Scanner
 import com.github.onlynotesswent.utils.ScreenTopBar
 import com.github.onlynotesswent.utils.Visibility
@@ -215,6 +221,7 @@ fun EditNoteScreen(
       }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NoteSection(
     note: Note,
@@ -246,14 +253,50 @@ fun NoteSection(
         }
       })
 
-  OptionDropDownMenu(
-      value = visibility.toReadableString(),
+  ExposedDropdownMenuBox(
+      modifier = Modifier.fillMaxWidth().testTag("VisibilityEditMenu"),
       expanded = expandedVisibility,
-      buttonTag = "visibilityEditButton",
-      menuTag = "visibilityEditMenu",
       onExpandedChange = { expandedVisibility = it },
-      items = Visibility.READABLE_STRINGS,
-      onItemClick = { visibility = Visibility.fromReadableString(it) })
+  ) {
+    OutlinedTextField(
+        value = visibility.toReadableString(),
+        onValueChange = {},
+        readOnly = true,
+        modifier =
+            Modifier.menuAnchor(
+                    type =
+                        MenuAnchorType.PrimaryEditable, // Ensures proper alignment for text fields
+                    enabled = true // Enables the anchor functionality
+                    )
+                .fillMaxWidth(),
+        label = { Text("Visibility") },
+        trailingIcon = {
+          IconButton(onClick = { expandedVisibility = !expandedVisibility }) {
+            Icon(
+                imageVector =
+                    if (expandedVisibility) Icons.Default.ArrowDropUp
+                    else Icons.Default.ArrowDropDown,
+                contentDescription = "Toggle Visibility Dropdown")
+          }
+        },
+        colors =
+            TextFieldDefaults.colors(
+                focusedIndicatorColor = MaterialTheme.colorScheme.primary,
+                unfocusedIndicatorColor = MaterialTheme.colorScheme.onBackground,
+                focusedContainerColor = MaterialTheme.colorScheme.background,
+                unfocusedContainerColor = MaterialTheme.colorScheme.background))
+    ExposedDropdownMenu(
+        expanded = expandedVisibility, onDismissRequest = { expandedVisibility = false }) {
+          Visibility.entries.forEach { visibilityOption ->
+            DropdownMenuItem(
+                onClick = {
+                  visibility = visibilityOption
+                  expandedVisibility = false
+                },
+                text = { Text(visibilityOption.toReadableString()) })
+          }
+        }
+  }
 
   NoteDataTextField(
       value = courseName,
@@ -476,7 +519,6 @@ fun SaveButton(
  * ViewModel and navigates back to the overview screen.
  *
  * @param note The note to be deleted.
- * @param currentUser The current user.
  * @param navigationActions The navigation view model used to transition between different screens.
  * @param noteViewModel The ViewModel that provides the current note to be edited and handles note
  *   updates.
