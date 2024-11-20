@@ -31,20 +31,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
+import com.github.onlynotesswent.model.common.Course
+import com.github.onlynotesswent.model.common.Visibility
 import com.github.onlynotesswent.model.file.FileType
 import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.note.Note
 import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.model.users.User
 import com.github.onlynotesswent.model.users.UserViewModel
+import com.github.onlynotesswent.ui.common.NoteDataTextField
+import com.github.onlynotesswent.ui.common.OptionDropDownMenu
+import com.github.onlynotesswent.ui.common.ScreenTopBar
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
-import com.github.onlynotesswent.model.common.Course
-import com.github.onlynotesswent.utils.NoteDataTextField
-import com.github.onlynotesswent.utils.OptionDropDownMenu
 import com.github.onlynotesswent.utils.Scanner
-import com.github.onlynotesswent.utils.ScreenTopBar
-import com.github.onlynotesswent.model.common.Visibility
 import com.google.firebase.Timestamp
 import java.util.Calendar
 
