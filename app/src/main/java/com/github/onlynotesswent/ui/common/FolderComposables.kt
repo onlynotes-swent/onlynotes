@@ -79,7 +79,7 @@ fun FolderDialog(
     oldName: String = ""
 ) {
 
-  var name by remember { mutableStateOf("") }
+  var name by remember { mutableStateOf(oldName) }
   var visibility: Visibility? by remember { mutableStateOf(oldVis) }
   var expandedVisibility by remember { mutableStateOf(false) }
 
