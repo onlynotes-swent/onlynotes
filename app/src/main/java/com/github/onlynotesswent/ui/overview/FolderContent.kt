@@ -321,7 +321,8 @@ fun FolderContentTopBar(
                                     Toast.LENGTH_SHORT)
                                 .show()
                           }
-                        })),
+                        },
+                        modifier = Modifier.testTag("deleteFolderContentsButton"))),
             fabIcon = {
               Icon(imageVector = Icons.Default.MoreVert, contentDescription = "settings")
             },

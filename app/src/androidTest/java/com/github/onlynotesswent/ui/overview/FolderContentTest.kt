@@ -147,6 +147,14 @@ class FolderContentTest {
   }
 
   @Test
+  fun deleteFolderContents() {
+    composeTestRule.onNodeWithTag("folderSettingsButton").performClick()
+    composeTestRule.onNodeWithTag("deleteFolderContentsButton").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("deleteFolderContentsButton").performClick()
+    composeTestRule.onNodeWithTag("emptyFolderPrompt").assertIsDisplayed()
+  }
+
+  @Test
   fun createNoteButtonCallsNavActions() {
     composeTestRule.onNodeWithTag("createSubNoteOrSubFolder").assertIsDisplayed()
     composeTestRule.onNodeWithTag("createSubNoteOrSubFolder").performClick()

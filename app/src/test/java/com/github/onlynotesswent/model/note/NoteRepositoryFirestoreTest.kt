@@ -20,6 +20,7 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mock
+import org.mockito.Mockito.times
 import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
@@ -348,5 +349,17 @@ class NoteRepositoryFirestoreTest {
     assertNotNull(receivedNotes)
 
     verify(timeout(100)) { (mockQuerySnapshot).documents }
+  }
+
+  @Test
+  fun deleteNotesFromFolder_callsDocuments() {
+      `when`(mockDocumentReference.delete()).thenReturn(Tasks.forResult(null))
+
+      noteRepositoryFirestore.deleteNotesFromFolder("1", onSuccess = {}, onFailure = {})
+
+      shadowOf(Looper.getMainLooper()).idle()
+
+      // Ensure the delete method was called twice (once for each sub note)
+      verify(mockDocumentReference, times(2)).delete()
   }
 }

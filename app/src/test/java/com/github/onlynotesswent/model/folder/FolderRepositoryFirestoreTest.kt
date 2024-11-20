@@ -2,6 +2,8 @@ package com.github.onlynotesswent.model.folder
 
 import android.os.Looper
 import androidx.test.core.app.ApplicationProvider
+import com.github.onlynotesswent.model.note.NoteRepository
+import com.github.onlynotesswent.model.note.NoteViewModel
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.android.gms.tasks.Task
 import com.google.android.gms.tasks.Tasks
@@ -36,6 +38,9 @@ class FolderRepositoryFirestoreTest {
   @Mock private lateinit var mockQuerySnapshot: QuerySnapshot
   @Mock private lateinit var mockQuerySnapshotTask: Task<QuerySnapshot>
 
+  @Mock private lateinit var mockNoteRepository: NoteRepository
+  private lateinit var noteViewModel: NoteViewModel
+
   private lateinit var folderRepositoryFirestore: FolderRepositoryFirestore
 
   private val testFolder = Folder(id = "1", name = "name", userId = "1", parentFolderId = null)
@@ -52,6 +57,7 @@ class FolderRepositoryFirestoreTest {
     }
 
     folderRepositoryFirestore = FolderRepositoryFirestore(mockFirestore)
+    noteViewModel = NoteViewModel(mockNoteRepository)
 
     `when`(mockFirestore.collection(any())).thenReturn(mockCollectionReference)
     `when`(mockCollectionReference.document(any())).thenReturn(mockDocumentReference)
@@ -222,5 +228,16 @@ class FolderRepositoryFirestoreTest {
     assertNotNull(receivedFolders)
 
     verify(timeout(100)) { (mockQuerySnapshot).documents }
+  }
+
+  @Test
+  fun deleteFolderContents_callsDocuments() {
+    `when`(mockDocumentReference.delete()).thenReturn(Tasks.forResult(null))
+
+    folderRepositoryFirestore.deleteFolderContents(testFolder, noteViewModel, onSuccess = {}, onFailure = {})
+
+    shadowOf(Looper.getMainLooper()).idle()
+
+    verify(mockDocumentReference).delete()
   }
 }
