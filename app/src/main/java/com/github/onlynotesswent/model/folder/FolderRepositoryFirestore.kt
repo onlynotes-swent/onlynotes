@@ -215,8 +215,8 @@ class FolderRepositoryFirestore(private val db: FirebaseFirestore) : FolderRepos
           onSuccess()
         },
         onFailure = { e: Exception ->
-            onFailure(e)
-            Log.e(TAG, "Failed to delete folder contents: ${e.message}")
+          onFailure(e)
+          Log.e(TAG, "Failed to delete folder contents: ${e.message}")
         })
   }
 

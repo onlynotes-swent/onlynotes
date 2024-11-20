@@ -353,13 +353,13 @@ class NoteRepositoryFirestoreTest {
 
   @Test
   fun deleteNotesFromFolder_callsDocuments() {
-      `when`(mockDocumentReference.delete()).thenReturn(Tasks.forResult(null))
+    `when`(mockDocumentReference.delete()).thenReturn(Tasks.forResult(null))
 
-      noteRepositoryFirestore.deleteNotesFromFolder("1", onSuccess = {}, onFailure = {})
+    noteRepositoryFirestore.deleteNotesFromFolder("1", onSuccess = {}, onFailure = {})
 
-      shadowOf(Looper.getMainLooper()).idle()
+    shadowOf(Looper.getMainLooper()).idle()
 
-      // Ensure the delete method was called twice (once for each sub note)
-      verify(mockDocumentReference, times(2)).delete()
+    // Ensure the delete method was called twice (once for each sub note)
+    verify(mockDocumentReference, times(2)).delete()
   }
 }

@@ -120,16 +120,16 @@ fun NoteItem(
                   // Move out will move the given note to the parent folder
                   val parentFolderId = navigationActions.popFromScreenNavigationStack()
                   if (parentFolderId != null) {
-                      noteViewModel.updateNote(note.copy(folderId = parentFolderId), note.userId)
-                      folderViewModel.getFolderById(parentFolderId)
+                    noteViewModel.updateNote(note.copy(folderId = parentFolderId), note.userId)
+                    folderViewModel.getFolderById(parentFolderId)
                   } else {
                     noteViewModel.updateNote(note.copy(folderId = null), note.userId)
                     navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
                   }
                   // Clear the screen navigation stack as we navigate to the overview screen
 
-                  //navigationActions.clearScreenNavigationStack()
-                  //navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
+                  // navigationActions.clearScreenNavigationStack()
+                  // navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
                 } else {
                   Toast.makeText(
                           context,
@@ -295,14 +295,12 @@ fun FolderItem(
                                 draggedFolder.id == draggedObjectId &&
                                 draggedFolder.id != folder.id &&
                                 draggedFolder.parentFolderId ==
-                                    folder
-                                        .parentFolderId // If dragged and folder dont have same
-                                                        // parent id dont allow drop
+                                    folder.parentFolderId // If dragged and folder dont have same
+                                // parent id dont allow drop
                                 &&
                                 selectedFolder?.id !=
-                                    folder
-                                        .id) { // Also check the current selected folder and the
-                                               // target folder are not the same
+                                    folder.id) { // Also check the current selected folder and the
+                              // target folder are not the same
                               // Update the dragged folder with the new parent folder Id. Folder
                               // here represents the target folder, so the future parent of the
                               // dragged folder

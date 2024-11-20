@@ -100,6 +100,7 @@ class FolderViewModelTest {
   @Test
   fun deleteFolderContentsCallsRepository() {
     folderViewModel.deleteFolderContents(testFolder, noteViewModel)
-    verify(mockFolderRepository).deleteFolderContents(eq(testFolder), eq(noteViewModel), any(), any())
+    verify(mockFolderRepository)
+        .deleteFolderContents(eq(testFolder), eq(noteViewModel), any(), any())
   }
 }

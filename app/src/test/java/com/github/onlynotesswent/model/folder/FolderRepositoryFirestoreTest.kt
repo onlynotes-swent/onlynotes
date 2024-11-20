@@ -234,7 +234,8 @@ class FolderRepositoryFirestoreTest {
   fun deleteFolderContents_callsDocuments() {
     `when`(mockDocumentReference.delete()).thenReturn(Tasks.forResult(null))
 
-    folderRepositoryFirestore.deleteFolderContents(testFolder, noteViewModel, onSuccess = {}, onFailure = {})
+    folderRepositoryFirestore.deleteFolderContents(
+        testFolder, noteViewModel, onSuccess = {}, onFailure = {})
 
     shadowOf(Looper.getMainLooper()).idle()
 
