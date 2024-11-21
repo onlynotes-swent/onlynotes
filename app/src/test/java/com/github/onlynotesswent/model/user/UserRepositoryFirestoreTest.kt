@@ -109,6 +109,7 @@ class UserRepositoryFirestoreTest {
     `when`(mockDocumentSnapshot.getDouble("rating")).thenReturn(user.rating)
     `when`(mockDocumentSnapshot.get("friends.following")).thenReturn(user.friends.following)
     `when`(mockDocumentSnapshot.get("friends.followers")).thenReturn(user.friends.followers)
+    `when`(mockDocumentSnapshot.getBoolean("isAccountPublic")).thenReturn(user.isAccountPublic)
   }
 
   @Test
