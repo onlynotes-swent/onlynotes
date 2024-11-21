@@ -1,4 +1,4 @@
-package com.github.onlynotesswent.ui.overview
+package com.github.onlynotesswent.ui.overview.editnote
 
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotDisplayed
@@ -21,7 +21,6 @@ import com.github.onlynotesswent.model.users.UserRepository
 import com.github.onlynotesswent.model.users.UserViewModel
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
-import com.github.onlynotesswent.ui.overview.editnote.EditNoteScreen
 import com.github.onlynotesswent.utils.Scanner
 import com.google.firebase.Timestamp
 import org.junit.Before

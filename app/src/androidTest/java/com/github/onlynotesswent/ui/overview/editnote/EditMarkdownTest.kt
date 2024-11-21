@@ -1,4 +1,4 @@
-package com.github.onlynotesswent.ui.overview
+package com.github.onlynotesswent.ui.overview.editnote
 
 import androidx.compose.ui.test.assertContentDescriptionContains
 import androidx.compose.ui.test.assertIsDisplayed
@@ -16,7 +16,6 @@ import com.github.onlynotesswent.model.note.NoteRepository
 import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
-import com.github.onlynotesswent.ui.overview.editnote.EditMarkdownScreen
 import com.google.firebase.Timestamp
 import org.junit.Before
 import org.junit.Rule
