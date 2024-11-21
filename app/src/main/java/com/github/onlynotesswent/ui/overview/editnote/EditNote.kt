@@ -3,7 +3,6 @@ package com.github.onlynotesswent.ui.overview.editnote
 import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -12,10 +11,9 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.ArrowDropUp
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.outlined.Clear
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -73,15 +71,36 @@ fun EditNoteScreen(
   val note by noteViewModel.selectedNote.collectAsState()
   val currentUser by userViewModel.currentUser.collectAsState()
 
+  // State variables to hold the editable fields
+  var noteTitle by remember { mutableStateOf(note?.title ?: "") }
+  var courseName by remember { mutableStateOf(note?.noteCourse?.courseName ?: "") }
+  var courseCode by remember { mutableStateOf(note?.noteCourse?.courseCode ?: "") }
+  var courseYear by remember { mutableIntStateOf(note?.noteCourse?.courseYear ?: 0) }
+  var visibility by remember { mutableStateOf(note?.visibility ?: Visibility.DEFAULT) }
+
   Scaffold(
       floatingActionButton = { DeleteButton(currentUser, note, navigationActions, noteViewModel) },
       modifier = Modifier.testTag("editNoteScreen"),
       topBar = {
         EditNoteTopBar(
-            title = "Edit note",
+            title = "Edit Note",
             titleTestTag = "editNoteTitle",
             noteViewModel = noteViewModel,
-            navigationActions = navigationActions)
+            navigationActions = navigationActions,
+            actions = {
+              if (note != null && currentUser != null) {
+                SaveButton(
+                    noteTitle = noteTitle,
+                    note = note!!,
+                    visibility = visibility,
+                    courseCode = courseCode,
+                    courseName = courseName,
+                    courseYear = courseYear,
+                    currentUser = currentUser!!,
+                    navigationActions = navigationActions,
+                    noteViewModel = noteViewModel)
+              }
+            })
       },
       bottomBar = {
         EditNoteNavigationMenu(
@@ -102,10 +121,16 @@ fun EditNoteScreen(
               verticalArrangement = Arrangement.spacedBy(8.dp),
               horizontalAlignment = Alignment.CenterHorizontally) {
                 NoteSection(
-                    note = note!!,
-                    currentUser = currentUser!!,
-                    noteViewModel = noteViewModel,
-                    navigationActions = navigationActions)
+                    noteTitle = noteTitle,
+                    onNoteTitleChange = { noteTitle = it },
+                    courseName = courseName,
+                    onCourseNameChange = { courseName = it },
+                    courseCode = courseCode,
+                    onCourseCodeChange = { courseCode = it },
+                    courseYear = courseYear,
+                    onCourseYearChange = { courseYear = it },
+                    visibility = visibility,
+                    onVisibilityChange = { visibility = it })
               }
         }
       }
@@ -114,27 +139,28 @@ fun EditNoteScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NoteSection(
-    note: Note,
-    currentUser: User,
-    noteViewModel: NoteViewModel,
-    navigationActions: NavigationActions,
+    noteTitle: String,
+    onNoteTitleChange: (String) -> Unit,
+    courseName: String,
+    onCourseNameChange: (String) -> Unit,
+    courseCode: String,
+    onCourseCodeChange: (String) -> Unit,
+    courseYear: Int,
+    onCourseYearChange: (Int) -> Unit,
+    visibility: Visibility,
+    onVisibilityChange: (Visibility) -> Unit
 ) {
   val currentYear = Calendar.getInstance().get(Calendar.YEAR)
-  var noteTitle by remember { mutableStateOf(note.title) }
-  var courseName by remember { mutableStateOf(note.noteCourse.courseName) }
-  var courseCode by remember { mutableStateOf(note.noteCourse.courseCode) }
-  var courseYear by remember { mutableIntStateOf(note.noteCourse.courseYear) }
-  var visibility by remember { mutableStateOf(note.visibility) }
   var expandedVisibility by remember { mutableStateOf(false) }
 
   NoteDataTextField(
       value = noteTitle,
-      onValueChange = { noteTitle = it },
+      onValueChange = onNoteTitleChange,
       label = "Note Title",
       placeholder = "Enter the new title here",
       modifier = Modifier.fillMaxWidth().testTag("EditTitle textField"),
       trailingIcon = {
-        IconButton(onClick = { noteTitle = "" }) {
+        IconButton(onClick = { onNoteTitleChange("") }) {
           Icon(Icons.Outlined.Clear, contentDescription = "Clear Title")
         }
       })
@@ -176,7 +202,7 @@ fun NoteSection(
           Visibility.entries.forEach { visibilityOption ->
             DropdownMenuItem(
                 onClick = {
-                  visibility = visibilityOption
+                  onVisibilityChange(visibilityOption)
                   expandedVisibility = false
                 },
                 text = { Text(visibilityOption.toReadableString()) })
@@ -186,37 +212,24 @@ fun NoteSection(
 
   NoteDataTextField(
       value = courseName,
-      onValueChange = { courseName = Course.formatCourseName(it) },
+      onValueChange = onCourseNameChange,
       label = "Course Name",
       placeholder = "Set the course name for the note",
       modifier = Modifier.fillMaxWidth().testTag("EditCourseName textField"))
 
   NoteDataTextField(
       value = courseCode,
-      onValueChange = { courseCode = Course.formatCourseCode(it) },
+      onValueChange = onCourseCodeChange,
       label = "Course Code",
       placeholder = "Set the course code for the note",
       modifier = Modifier.fillMaxWidth().testTag("EditCourseCode textField"))
 
   NoteDataTextField(
       value = courseYear.toString(),
-      onValueChange = { courseYear = it.toIntOrNull() ?: currentYear },
+      onValueChange = { onCourseYearChange(it.toIntOrNull() ?: currentYear) },
       label = "Course Year",
       placeholder = "Set the course year for the note",
       modifier = Modifier.fillMaxWidth().testTag("EditCourseYear textField"))
-
-  Row {
-    SaveButton(
-        noteTitle = noteTitle,
-        note = note,
-        visibility = visibility,
-        courseCode = courseCode,
-        courseName = courseName,
-        courseYear = courseYear,
-        currentUser = currentUser,
-        navigationActions = navigationActions,
-        noteViewModel = noteViewModel)
-  }
 }
 
 /**
@@ -263,7 +276,7 @@ fun SaveButton(
     navigationActions: NavigationActions,
     noteViewModel: NoteViewModel
 ) {
-  Button(
+  IconButton(
       enabled = noteTitle.isNotEmpty(),
       onClick = {
         noteViewModel.updateNote(
@@ -285,12 +298,11 @@ fun SaveButton(
           navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
         }
       },
-      colors =
-          ButtonDefaults.buttonColors(
-              containerColor = MaterialTheme.colorScheme.primary,
-              contentColor = MaterialTheme.colorScheme.onPrimary),
-      modifier = Modifier.testTag("Save button")) {
-        Text("Update note")
+      modifier = Modifier.testTag("saveNoteButton")) {
+        Icon(
+            imageVector = Icons.Default.Check,
+            contentDescription = "Save Note",
+            tint = MaterialTheme.colorScheme.onSurface)
       }
 }
 
