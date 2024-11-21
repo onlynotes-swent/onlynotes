@@ -12,7 +12,11 @@ import com.github.onlynotesswent.ui.navigation.LIST_EDIT_NOTE_DESTINATION
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 
 @Composable
-fun EditNoteNavigationMenu(navigationActions: NavigationActions, selectedItem: String) {
+fun EditNoteNavigationMenu(
+    navigationActions: NavigationActions,
+    selectedItem: String,
+    onClick: () -> Unit = {}
+) {
   NavigationBar(
       modifier = Modifier.testTag("bottomNavigationMenu"),
       containerColor = MaterialTheme.colorScheme.surface,
@@ -21,7 +25,10 @@ fun EditNoteNavigationMenu(navigationActions: NavigationActions, selectedItem: S
           val isSelected = selectedItem == tab.textId
           NavigationBarItem(
               selected = isSelected,
-              onClick = { tab.screen?.let { navigationActions.navigateTo(it) } },
+              onClick = {
+                tab.screen?.let { navigationActions.navigateTo(it) }
+                onClick()
+              },
               modifier = Modifier.testTag(tab.textId),
               icon = {
                 Icon(

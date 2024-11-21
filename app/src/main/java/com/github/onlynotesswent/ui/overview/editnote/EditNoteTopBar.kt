@@ -15,12 +15,14 @@ fun EditNoteTopBar(
     title: String,
     titleTestTag: String,
     noteViewModel: NoteViewModel,
-    navigationActions: NavigationActions
+    navigationActions: NavigationActions,
+    onClick: () -> Unit = {}
 ) {
   ScreenTopBar(
       title = title,
       titleTestTag = titleTestTag,
       onBackClick = {
+        onClick()
         // Unselects the note and navigates back to the previous screen
         navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
         noteViewModel.selectedNote(null)

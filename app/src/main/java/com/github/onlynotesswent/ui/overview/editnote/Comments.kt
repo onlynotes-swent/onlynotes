@@ -1,18 +1,20 @@
 package com.github.onlynotesswent.ui.overview.editnote
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -34,7 +36,6 @@ import com.github.onlynotesswent.model.note.Note
 import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.model.users.User
 import com.github.onlynotesswent.model.users.UserViewModel
-import com.github.onlynotesswent.ui.common.ScreenTopBar
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
 import java.text.SimpleDateFormat
@@ -46,31 +47,37 @@ fun CommentsScreen(
     noteViewModel: NoteViewModel,
     userViewModel: UserViewModel
 ) {
-
   val note by noteViewModel.selectedNote.collectAsState()
   val currentUser by userViewModel.currentUser.collectAsState()
   var updatedComments by remember { mutableStateOf(note!!.comments) }
   Scaffold(
-      modifier = Modifier.testTag("editNoteScreen"),
-      topBar = {
-        ScreenTopBar(
-            title = "Edit note",
-            titleTestTag = "editNoteTitle",
-            onBackClick = {
-              // Unselects the note and navigates back to the previous screen
-              noteViewModel.selectedNote(null)
-              navigationActions.goBack()
-            },
-            icon = {
-              Icon(
-                  imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                  contentDescription = "Back",
-                  tint = MaterialTheme.colorScheme.onSurface)
-            },
-            iconTestTag = "goBackButton")
+      floatingActionButton = {
+        AddCommentButton(
+            currentUser = currentUser,
+            note = note,
+            updatedComments = updatedComments,
+            onCommentsChange = { updatedComments = it })
       },
-      bottomBar = { EditNoteNavigationMenu(navigationActions, Screen.EDIT_NOTE_COMMENT) }) {
-          paddingValues ->
+      modifier = Modifier.testTag("commentsScreen"),
+      topBar = {
+        EditNoteTopBar(
+            title = "Comments",
+            titleTestTag = "commentsTitle",
+            noteViewModel = noteViewModel,
+            navigationActions = navigationActions,
+            onClick = {
+              noteViewModel.updateNote(note!!.copy(comments = updatedComments), currentUser!!.uid)
+            })
+      },
+      bottomBar = {
+        EditNoteNavigationMenu(
+            navigationActions = navigationActions,
+            selectedItem = Screen.EDIT_NOTE_COMMENT,
+            onClick = {
+              noteViewModel.updateNote(note!!.copy(comments = updatedComments), currentUser!!.uid)
+              noteViewModel.getNoteById(note!!.id)
+            })
+      }) { paddingValues ->
         if (currentUser == null) {
           ErrorScreen("User not found. Please sign out then in again.")
         } else if (note == null) {
@@ -81,25 +88,11 @@ fun CommentsScreen(
                   Modifier.fillMaxSize()
                       .padding(16.dp)
                       .padding(paddingValues)
-                      .testTag("editNoteColumn")
+                      .testTag("commentsColumn")
                       .verticalScroll(rememberScrollState()),
               verticalArrangement = Arrangement.spacedBy(8.dp),
               horizontalAlignment = Alignment.CenterHorizontally) {
-                AddCommentButton(
-                    currentUser = currentUser!!,
-                    updatedComments = updatedComments,
-                    onCommentsChange = { updatedComments = it },
-                    updateNoteComment = {
-                      noteViewModel.updateNote(
-                          note!!.copy(comments = updatedComments), currentUser!!.uid)
-                    })
-                CommentsSection(
-                    updatedComments,
-                    { updatedComments = it },
-                    {
-                      noteViewModel.updateNote(
-                          note!!.copy(comments = updatedComments), currentUser!!.uid)
-                    })
+                CommentsSection(updatedComments, { updatedComments = it })
               }
         }
       }
@@ -112,28 +105,26 @@ fun CommentsScreen(
  * @param currentUser The current user.
  * @param updatedComments The updated collection of comments for the note.
  * @param onCommentsChange The callback function to update the comments collection.
- * @param updateNoteComment The callback function to update the note's comments.
  */
 @Composable
 fun AddCommentButton(
-    currentUser: User,
+    currentUser: User?,
+    note: Note?,
     updatedComments: Note.CommentCollection,
     onCommentsChange: (Note.CommentCollection) -> Unit,
-    updateNoteComment: () -> Unit
 ) {
-  Button(
-      colors =
-          ButtonDefaults.buttonColors(
-              containerColor = MaterialTheme.colorScheme.primary,
-              contentColor = MaterialTheme.colorScheme.onPrimary),
-      onClick = {
-        onCommentsChange(
-            updatedComments.addCommentByUser(currentUser.uid, currentUser.userName, ""))
-        updateNoteComment()
-      },
-      modifier = Modifier.testTag("Add Comment Button")) {
-        Text("Add Comment")
-      }
+  if (currentUser != null && note != null) {
+    FloatingActionButton(
+        onClick = {
+          onCommentsChange(
+              updatedComments.addCommentByUser(currentUser.uid, currentUser.userName, ""))
+        },
+        containerColor = MaterialTheme.colorScheme.primary,
+        contentColor = MaterialTheme.colorScheme.onPrimary,
+    ) {
+      Icon(imageVector = Icons.Default.Add, contentDescription = "Add Comment")
+    }
+  }
 }
 
 /**
@@ -143,13 +134,11 @@ fun AddCommentButton(
  *
  * @param updatedComments The collection of comments to be displayed and edited.
  * @param onCommentsChange The callback function to update the comments collection.
- * @param updateNoteComment The callback function to update only the note's comments and date.
  */
 @Composable
 fun CommentsSection(
     updatedComments: Note.CommentCollection,
     onCommentsChange: (Note.CommentCollection) -> Unit,
-    updateNoteComment: () -> Unit
 ) {
   if (updatedComments.commentsList.isEmpty()) {
     Text(
@@ -160,12 +149,16 @@ fun CommentsSection(
     updatedComments.commentsList.forEachIndexed { _, comment ->
       Row(
           modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
-          verticalAlignment = Alignment.CenterVertically) {
+          verticalAlignment = Alignment.CenterVertically, // Align items vertically
+          horizontalArrangement = Arrangement.SpaceBetween // Distribute space
+          ) {
+            // Comment TextField
             OutlinedTextField(
                 value = comment.content,
                 onValueChange = {
-                  onCommentsChange(updatedComments.editCommentByCommentId(comment.commentId, it))
-                  updateNoteComment()
+                  val updatedCollection =
+                      updatedComments.editCommentByCommentId(comment.commentId, it)
+                  onCommentsChange(updatedCollection)
                 },
                 label = {
                   val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
@@ -179,18 +172,32 @@ fun CommentsSection(
                   Text(displayedText)
                 },
                 placeholder = { Text("Enter comment here") },
-                modifier = Modifier.weight(1f).testTag("EditCommentTextField"))
+                modifier =
+                    Modifier.weight(1f) // Ensure the text field takes up remaining space
+                        .testTag("EditCommentTextField"))
 
-            IconButton(
-                onClick = {
-                  onCommentsChange(updatedComments.deleteCommentByCommentId(comment.commentId))
-                  updateNoteComment()
-                },
-                modifier = Modifier.testTag("DeleteCommentButton")) {
-                  Icon(
-                      imageVector = Icons.Default.Delete,
-                      contentDescription = "Delete Comment",
-                      tint = Color.Red)
+            // Delete Button with Background
+            Box(
+                modifier =
+                    Modifier.padding(
+                            start = 8.dp, top = 7.dp) // Space between TextField and IconButton
+                        .background(
+                            color = MaterialTheme.colorScheme.error,
+                            shape = MaterialTheme.shapes.small)
+                        .size(50.dp), // Ensure consistent size for the delete button
+                contentAlignment = Alignment.Center) {
+                  IconButton(
+                      onClick = {
+                        onCommentsChange(
+                            updatedComments.deleteCommentByCommentId(comment.commentId))
+                      },
+                      modifier = Modifier.testTag("DeleteCommentButton")) {
+                        Icon(
+                            imageVector = Icons.Default.Delete,
+                            contentDescription = "Delete Comment",
+                            tint = MaterialTheme.colorScheme.onError,
+                        )
+                      }
                 }
           }
     }
