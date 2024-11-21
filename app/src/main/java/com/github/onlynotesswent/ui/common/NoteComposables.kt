@@ -58,6 +58,7 @@ import java.util.Locale
  * @param currentUser The current user.
  * @param context The context used to display the dialog.
  * @param noteViewModel The ViewModel that provides the list of notes to display.
+ * @param folderViewModel The ViewModel that provides the list of folders to display.
  * @param showDialog A boolean indicating whether the move out dialog should be displayed.
  * @param navigationActions The navigation instance used to transition between different screens.
  * @param onClick The lambda function to be invoked when the note card is clicked.
