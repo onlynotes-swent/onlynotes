@@ -46,9 +46,9 @@ import com.github.onlynotesswent.ui.navigation.Route
 import com.github.onlynotesswent.ui.navigation.Screen
 import com.github.onlynotesswent.ui.overview.AddNoteScreen
 import com.github.onlynotesswent.ui.overview.EditMarkdownScreen
-import com.github.onlynotesswent.ui.overview.EditNoteScreen
 import com.github.onlynotesswent.ui.overview.FolderContentScreen
 import com.github.onlynotesswent.ui.overview.OverviewScreen
+import com.github.onlynotesswent.ui.overview.editnote.EditNoteScreen
 import com.github.onlynotesswent.ui.search.SearchScreen
 import com.github.onlynotesswent.ui.theme.AppTheme
 import com.github.onlynotesswent.ui.user.CreateUserScreen
@@ -181,7 +181,7 @@ class EndToEndTest {
                     FolderContentScreen(
                         navigationActions, folderViewModel, noteViewModel, userViewModel)
                   }
-                  composable(Screen.EDIT_MARKDOWN) {
+                  composable(Screen.EDIT_NOTE_MARKDOWN) {
                     EditMarkdownScreen(
                         navigationActions, noteViewModel, userViewModel, fileViewModel)
                   }

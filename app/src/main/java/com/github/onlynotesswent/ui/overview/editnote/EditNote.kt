@@ -1,4 +1,4 @@
-package com.github.onlynotesswent.ui.overview
+package com.github.onlynotesswent.ui.overview.editnote
 
 import android.content.Context
 import android.net.Uri
@@ -34,8 +34,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
@@ -48,7 +46,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
@@ -72,9 +69,7 @@ import com.mohamedrejeb.richeditor.model.RichTextState
 import com.mohamedrejeb.richeditor.model.rememberRichTextState
 import com.mohamedrejeb.richeditor.ui.material3.RichTextEditor
 import java.io.File
-import java.text.SimpleDateFormat
 import java.util.Calendar
-import java.util.Locale
 
 /**
  * Displays the edit note screen, where users can update the title and content of an existing note.
@@ -99,9 +94,6 @@ fun EditNoteScreen(
   val note by noteViewModel.selectedNote.collectAsState()
   val currentUser by userViewModel.currentUser.collectAsState()
   var attemptedMarkdownDownloads = 0
-  var selectedTabIndex by remember { mutableIntStateOf(0) }
-  val tabTitles = listOf("Note", "Comments")
-  var updatedComments by remember { mutableStateOf(note!!.comments) }
 
   /**
    * Downloads a markdown file associated with the note. If no file exists, it attempts once to
@@ -160,17 +152,8 @@ fun EditNoteScreen(
             iconTestTag = "goBackButton")
       },
       bottomBar = {
-        TabRow(
-            selectedTabIndex = selectedTabIndex,
-            containerColor = MaterialTheme.colorScheme.surface,
-            contentColor = MaterialTheme.colorScheme.onSurface) {
-              tabTitles.forEachIndexed { index, title ->
-                Tab(
-                    selected = selectedTabIndex == index,
-                    onClick = { selectedTabIndex = index },
-                    text = { Text(title) })
-              }
-            }
+        EditNoteNavigationMenu(
+            navigationActions = navigationActions, selectedItem = Screen.EDIT_NOTE)
       }) { paddingValues ->
         if (currentUser == null) {
           ErrorScreen("User not found. Please sign out then in again.")
@@ -186,36 +169,15 @@ fun EditNoteScreen(
                       .verticalScroll(rememberScrollState()),
               verticalArrangement = Arrangement.spacedBy(8.dp),
               horizontalAlignment = Alignment.CenterHorizontally) {
-                when (selectedTabIndex) {
-                  0 -> {
-                    NoteSection(
-                        note = note!!,
-                        state = state,
-                        context = context,
-                        currentUser = currentUser!!,
-                        noteViewModel = noteViewModel,
-                        fileViewModel = fileViewModel,
-                        scanner = scanner,
-                        navigationActions = navigationActions)
-                  }
-                  1 -> {
-                    AddCommentButton(
-                        currentUser = currentUser!!,
-                        updatedComments = updatedComments,
-                        onCommentsChange = { updatedComments = it },
-                        updateNoteComment = {
-                          noteViewModel.updateNote(
-                              note!!.copy(comments = updatedComments), currentUser!!.uid)
-                        })
-                    CommentsSection(
-                        updatedComments,
-                        { updatedComments = it },
-                        {
-                          noteViewModel.updateNote(
-                              note!!.copy(comments = updatedComments), currentUser!!.uid)
-                        })
-                  }
-                }
+                NoteSection(
+                    note = note!!,
+                    state = state,
+                    context = context,
+                    currentUser = currentUser!!,
+                    noteViewModel = noteViewModel,
+                    fileViewModel = fileViewModel,
+                    scanner = scanner,
+                    navigationActions = navigationActions)
               }
         }
       }
@@ -325,7 +287,7 @@ fun NoteSection(
       readOnly = true,
       trailingIcon = {
         IconButton(
-            onClick = { navigationActions.navigateTo(Screen.EDIT_MARKDOWN) },
+            onClick = { navigationActions.navigateTo(Screen.EDIT_NOTE_MARKDOWN) },
             modifier = Modifier.testTag("Edit Markdown button")) {
               Icon(
                   imageVector = Icons.Default.Edit, // Use an appropriate pencil icon
@@ -539,96 +501,4 @@ fun DeleteButton(note: Note, navigationActions: NavigationActions, noteViewModel
       modifier = Modifier.testTag("Delete button")) {
         Text("Delete note")
       }
-}
-
-/**
- * Displays a button that adds a new comment to the note. When clicked, the button adds a new
- * comment to the note in the ViewModel and updates the note's comments and date.
- *
- * @param currentUser The current user.
- * @param updatedComments The updated collection of comments for the note.
- * @param onCommentsChange The callback function to update the comments collection.
- * @param updateNoteComment The callback function to update the note's comments.
- */
-@Composable
-fun AddCommentButton(
-    currentUser: User,
-    updatedComments: Note.CommentCollection,
-    onCommentsChange: (Note.CommentCollection) -> Unit,
-    updateNoteComment: () -> Unit
-) {
-  Button(
-      colors =
-          ButtonDefaults.buttonColors(
-              containerColor = MaterialTheme.colorScheme.primary,
-              contentColor = MaterialTheme.colorScheme.onPrimary),
-      onClick = {
-        onCommentsChange(
-            updatedComments.addCommentByUser(currentUser.uid, currentUser.userName, ""))
-        updateNoteComment()
-      },
-      modifier = Modifier.testTag("Add Comment Button")) {
-        Text("Add Comment")
-      }
-}
-
-/**
- * Displays the comments section of the edit note screen. The section includes a list of comments
- * with text fields for editing each comment, and buttons for deleting comments and adding new
- * comments.
- *
- * @param updatedComments The collection of comments to be displayed and edited.
- * @param onCommentsChange The callback function to update the comments collection.
- * @param updateNoteComment The callback function to update only the note's comments and date.
- */
-@Composable
-fun CommentsSection(
-    updatedComments: Note.CommentCollection,
-    onCommentsChange: (Note.CommentCollection) -> Unit,
-    updateNoteComment: () -> Unit
-) {
-  if (updatedComments.commentsList.isEmpty()) {
-    Text(
-        text = "No comments yet. Add a comment to start the discussion.",
-        color = Color.Gray,
-        modifier = Modifier.padding(8.dp).testTag("NoCommentsText"))
-  } else {
-    updatedComments.commentsList.forEachIndexed { _, comment ->
-      Row(
-          modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
-          verticalAlignment = Alignment.CenterVertically) {
-            OutlinedTextField(
-                value = comment.content,
-                onValueChange = {
-                  onCommentsChange(updatedComments.editCommentByCommentId(comment.commentId, it))
-                  updateNoteComment()
-                },
-                label = {
-                  val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
-                  val formattedDate = formatter.format(comment.editedDate.toDate())
-                  val displayedText =
-                      if (comment.isUnedited()) {
-                        "${comment.userName} : $formattedDate"
-                      } else {
-                        "${comment.userName} edited: $formattedDate"
-                      }
-                  Text(displayedText)
-                },
-                placeholder = { Text("Enter comment here") },
-                modifier = Modifier.weight(1f).testTag("EditCommentTextField"))
-
-            IconButton(
-                onClick = {
-                  onCommentsChange(updatedComments.deleteCommentByCommentId(comment.commentId))
-                  updateNoteComment()
-                },
-                modifier = Modifier.testTag("DeleteCommentButton")) {
-                  Icon(
-                      imageVector = Icons.Default.Delete,
-                      contentDescription = "Delete Comment",
-                      tint = Color.Red)
-                }
-          }
-    }
-  }
 }

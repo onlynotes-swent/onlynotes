@@ -22,7 +22,9 @@ object Screen {
   const val CREATE_USER = "Create User Screen"
   const val ADD_NOTE = "Add Note Screen"
   const val EDIT_NOTE = "Edit Note Screen"
-  const val EDIT_MARKDOWN = "Edit Note Markdown Screen"
+  const val EDIT_NOTE_COMMENT = "Comment Note Screen"
+  const val EDIT_NOTE_PDF = "Edit Note PDF Screen"
+  const val EDIT_NOTE_MARKDOWN = "Edit Note Markdown Screen"
   const val SEARCH = "Search Screen"
   const val USER_PROFILE = "User Profile Screen"
   const val PUBLIC_PROFILE = "Public Profile Screen"
@@ -43,6 +45,22 @@ object TopLevelDestinations {
 
 val LIST_TOP_LEVEL_DESTINATION =
     listOf(TopLevelDestinations.OVERVIEW, TopLevelDestinations.SEARCH, TopLevelDestinations.PROFILE)
+
+data class EditNoteDestination(val screen: String, val textId: String)
+
+object EditNoteDestinations {
+  val DETAIL = EditNoteDestination(Screen.EDIT_NOTE, "Detail")
+  val COMMENT = EditNoteDestination(Screen.EDIT_NOTE_COMMENT, "Comment")
+  val PDF = EditNoteDestination(Screen.EDIT_NOTE_PDF, "PDF")
+  val MARKDOWN = EditNoteDestination(Screen.EDIT_NOTE_MARKDOWN, "Markdown")
+}
+
+val LIST_EDIT_NOTE_DESTINATION =
+    listOf(
+        EditNoteDestinations.DETAIL,
+        EditNoteDestinations.COMMENT,
+        EditNoteDestinations.PDF,
+        EditNoteDestinations.MARKDOWN)
 
 open class NavigationActions(
     private val navController: NavHostController,
