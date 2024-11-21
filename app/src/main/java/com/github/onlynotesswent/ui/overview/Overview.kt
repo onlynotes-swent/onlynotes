@@ -117,8 +117,7 @@ fun OverviewScreen(
                         name = newName,
                         userId = userViewModel.currentUser.value!!.uid,
                         parentFolderId = parentFolderId.value,
-                        visibility = visibility),
-                    userViewModel.currentUser.value!!.uid)
+                        visibility = visibility))
                 showCreateDialog = false
                 if (parentFolderId.value != null) {
                   navigationActions.navigateTo(Screen.FOLDER_CONTENTS)

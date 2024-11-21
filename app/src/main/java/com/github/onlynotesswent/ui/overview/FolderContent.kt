@@ -141,8 +141,7 @@ fun FolderContentScreen(
                             name = name,
                             userId = folder.value!!.userId,
                             parentFolderId = folder.value!!.parentFolderId,
-                            visibility = vis),
-                        folder.value!!.userId)
+                            visibility = vis))
                     updatedName = name
                   } else {
                     Toast.makeText(
@@ -167,8 +166,7 @@ fun FolderContentScreen(
                             name = name,
                             userId = currentUser.value!!.uid,
                             parentFolderId = parentFolderId.value,
-                            visibility = visibility),
-                        userViewModel.currentUser.value!!.uid)
+                            visibility = visibility))
                     if (parentFolderId.value != null) {
                       navigationActions.navigateTo(Screen.FOLDER_CONTENTS)
                     } else {
@@ -334,8 +332,7 @@ fun handleSubFoldersAndNotes(
   // elements to parent folder id
   if (folder.parentFolderId != null) {
     userFolderSubFolders.forEach { subFolder ->
-      folderViewModel.updateFolder(
-          subFolder.copy(parentFolderId = folder.parentFolderId), subFolder.userId)
+      folderViewModel.updateFolder(subFolder.copy(parentFolderId = folder.parentFolderId))
     }
     userFolderNotes.forEach { note ->
       noteViewModel.updateNote(note.copy(folderId = folder.parentFolderId), note.userId)
@@ -343,7 +340,7 @@ fun handleSubFoldersAndNotes(
   } else {
     // folder is root folder
     userFolderSubFolders.forEach { subFolder ->
-      folderViewModel.updateFolder(subFolder.copy(parentFolderId = null), subFolder.userId)
+      folderViewModel.updateFolder(subFolder.copy(parentFolderId = null))
     }
     userFolderNotes.forEach { note ->
       noteViewModel.updateNote(note.copy(folderId = null), note.userId)

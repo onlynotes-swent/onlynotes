@@ -1,5 +1,6 @@
 package com.github.onlynotesswent.model.folder
 
+import junit.framework.TestCase.assertEquals
 import org.hamcrest.CoreMatchers.`is`
 import org.hamcrest.MatcherAssert.assertThat
 import org.junit.Before
@@ -9,7 +10,6 @@ import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.mockito.kotlin.any
-import org.mockito.kotlin.eq
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
@@ -39,55 +39,99 @@ class FolderViewModelTest {
 
   @Test
   fun getFoldersFromCallsRepository() {
-    folderViewModel.getFoldersFromUid("1")
-    verify(folderRepository).getFoldersFromUid(eq("1"), any(), any())
+    `when`(folderRepository.getFoldersFromUid(any(), any(), any())).thenAnswer {
+      val onSuccess: (List<Folder>) -> Unit = it.getArgument(1)
+      onSuccess(listOf(testFolder))
+    }
+    folderViewModel.getFoldersFromUid(testFolder.id, { assert(true) })
+    assertEquals(folderViewModel.userFolders.value, listOf(testFolder))
   }
 
   @Test
   fun getRootFoldersFromCallsRepository() {
-    folderViewModel.getRootFoldersFromUid("1")
-    verify(folderRepository).getRootFoldersFromUid(eq("1"), any(), any())
+    `when`(folderRepository.getRootFoldersFromUid(any(), any(), any())).thenAnswer {
+      val onSuccess: (List<Folder>) -> Unit = it.getArgument(1)
+      onSuccess(listOf(testFolder))
+    }
+    folderViewModel.getRootFoldersFromUid(testFolder.id, { assert(true) })
+    assertEquals(folderViewModel.userRootFolders.value, listOf(testFolder))
   }
 
   @Test
   fun getFolderByIdCallsRepository() {
-    folderViewModel.getFolderById("1")
-    verify(folderRepository).getFolderById(eq("1"), any(), any())
+    `when`(folderRepository.getFolderById(any(), any(), any())).thenAnswer {
+      val onSuccess: (Folder) -> Unit = it.getArgument(1)
+      onSuccess(testFolder)
+    }
+    folderViewModel.getFolderById(testFolder.id, { assert(true) })
+    assertEquals(folderViewModel.selectedFolder.value, testFolder)
   }
 
   @Test
   fun addFolderCallsRepository() {
-    folderViewModel.addFolder(testFolder, "1")
-    verify(folderRepository).addFolder(eq(testFolder), any(), any())
+    `when`(folderRepository.addFolder(any(), any(), any())).thenAnswer {
+      val onSuccess: () -> Unit = it.getArgument(1)
+      onSuccess()
+    }
+
+    var onSuccessCalled = false
+    folderViewModel.addFolder(testFolder, { onSuccessCalled = true })
+    assert(onSuccessCalled)
   }
 
   @Test
   fun updateFolderCallsRepository() {
-    folderViewModel.updateFolder(testFolder, "1")
-    verify(folderRepository).updateFolder(eq(testFolder), any(), any())
+    `when`(folderRepository.updateFolder(any(), any(), any())).thenAnswer {
+      val onSuccess: () -> Unit = it.getArgument(1)
+      onSuccess()
+    }
+
+    var onSuccessCalled = false
+    folderViewModel.updateFolder(testFolder, { onSuccessCalled = true })
+    assert(onSuccessCalled)
   }
 
   @Test
   fun deleteFolderByIdCallsRepository() {
-    folderViewModel.deleteFolderById("1", "1")
-    verify(folderRepository).deleteFolderById(eq("1"), any(), any())
+    `when`(folderRepository.deleteFolderById(any(), any(), any())).thenAnswer {
+      val onSuccess: () -> Unit = it.getArgument(1)
+      onSuccess()
+    }
+
+    var onSuccessCalled = false
+    folderViewModel.deleteFolderById(testFolder.id, testFolder.userId, { onSuccessCalled = true })
+    assert(onSuccessCalled)
   }
 
   @Test
   fun deleteFoldersByUserIdCallsRepository() {
-    folderViewModel.deleteFoldersByUserId("1")
-    verify(folderRepository).deleteFoldersByUserId(eq("1"), any(), any())
+    `when`(folderRepository.deleteFoldersByUserId(any(), any(), any())).thenAnswer {
+      val onSuccess: () -> Unit = it.getArgument(1)
+      onSuccess()
+    }
+
+    var onSuccessCalled = false
+    folderViewModel.deleteFoldersByUserId(testFolder.userId, { onSuccessCalled = true })
+    assert(onSuccessCalled)
   }
 
   @Test
   fun getSubFoldersOfCallsRepository() {
-    folderViewModel.getSubFoldersOf("pid")
-    verify(folderRepository).getSubFoldersOf(eq("pid"), any(), any())
+    `when`(folderRepository.getSubFoldersOf(any(), any(), any())).thenAnswer {
+      val onSuccess: (List<Folder>) -> Unit = it.getArgument(1)
+      onSuccess(listOf(testFolder))
+    }
+    folderViewModel.getSubFoldersOf(testFolder.parentFolderId!!, { assert(true) })
+    assertEquals(folderViewModel.folderSubFolders.value, listOf(testFolder))
   }
 
   @Test
   fun getPublicFoldersCallsRepository() {
-    folderViewModel.getPublicFolders()
-    verify(folderRepository).getPublicFolders(any(), any())
+    `when`(folderRepository.getPublicFolders(any(), any())).thenAnswer {
+      val onSuccess: (List<Folder>) -> Unit = it.getArgument(0)
+      onSuccess(listOf(testFolder))
+    }
+    folderViewModel.getPublicFolders { assert(true) }
+    assertEquals(folderViewModel.publicFolders.value, listOf(testFolder))
   }
 }

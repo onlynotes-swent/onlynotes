@@ -76,21 +76,15 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
    * Adds a Folder to the repository.
    *
    * @param folder The folder to add.
-   * @param userId The ID of the user the folder belongs to.
    * @param onSuccess The function to call when the folder is added successfully.
    * @param onFailure The function to call when the folder fails to be added.
    */
-  fun addFolder(
-      folder: Folder,
-      userId: String,
-      onSuccess: () -> Unit = {},
-      onFailure: (Exception) -> Unit = {}
-  ) {
+  fun addFolder(folder: Folder, onSuccess: () -> Unit = {}, onFailure: (Exception) -> Unit = {}) {
     repository.addFolder(
         folder = folder,
         onSuccess = {
           onSuccess()
-          getRootFoldersFromUid(userId)
+          getRootFoldersFromUid(folder.userId)
         },
         onFailure = onFailure)
   }
@@ -206,13 +200,11 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
    * Updates an existing folder.
    *
    * @param folder The folder with updated information.
-   * @param userId The ID of the user that owns the folder.
    * @param onSuccess The function to call when the folder is updated successfully.
    * @param onFailure The function to call when the folder fails to be updated.
    */
   fun updateFolder(
       folder: Folder,
-      userId: String,
       onSuccess: () -> Unit = {},
       onFailure: (Exception) -> Unit = {}
   ) {
@@ -220,7 +212,7 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
         folder = folder,
         onSuccess = {
           onSuccess()
-          getRootFoldersFromUid(userId)
+          getRootFoldersFromUid(folder.userId)
         },
         onFailure = onFailure)
   }
