@@ -103,4 +103,10 @@ class FolderViewModelTest {
     verify(mockFolderRepository)
         .deleteFolderContents(eq(testFolder), eq(noteViewModel), any(), any())
   }
+
+  @Test
+  fun draggedFolderUpdatesCorrectly() {
+    folderViewModel.draggedFolder(testFolder)
+    assertThat(folderViewModel.draggedFolder.value, `is`(testFolder))
+  }
 }

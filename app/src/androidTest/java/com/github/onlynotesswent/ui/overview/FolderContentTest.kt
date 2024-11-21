@@ -1,7 +1,12 @@
 package com.github.onlynotesswent.ui.overview
 
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsNotDisplayed
+import androidx.compose.ui.test.filter
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithTag
+import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
@@ -49,6 +54,32 @@ class FolderContentTest {
               userId = "1",
               noteCourse = Course("CS-100", "Sample Course", 2024, "path"),
           ))
+
+  private val subNoteList1 =
+
+    listOf(
+      Note(
+          id = "2",
+          title = "Sample Sub Note",
+          date = Timestamp.now(),
+          visibility = Visibility.DEFAULT,
+          userId = "2",
+          folderId = "1",
+          noteCourse = Course("CS-100", "Sample Course", 2024, "path"),
+      ))
+
+  private val subNoteList2 =
+
+    listOf(
+      Note(
+        id = "3",
+        title = "Sample Sub Note3",
+        date = Timestamp.now(),
+        visibility = Visibility.DEFAULT,
+        userId = "1",
+        folderId = "1",
+        noteCourse = Course("CS-100", "Sample Course", 2024, "path"),
+      ))
 
   private val folderList =
       listOf(Folder(id = "1", name = "name", userId = "1", parentFolderId = null))
@@ -152,6 +183,45 @@ class FolderContentTest {
     composeTestRule.onNodeWithTag("deleteFolderContentsButton").assertIsDisplayed()
     composeTestRule.onNodeWithTag("deleteFolderContentsButton").performClick()
     composeTestRule.onNodeWithTag("emptyFolderPrompt").assertIsDisplayed()
+  }
+
+  @Test
+  fun moveOutDifferentUserDoesNoteMoveNote() {
+    `when`(mockNoteRepository.getNotesFromFolder(eq("1"), any(), any())).then { invocation ->
+      val onSuccess = invocation.getArgument<(List<Note>) -> Unit>(1)
+      onSuccess(subNoteList1)
+    }
+
+    noteViewModel.getNotesFromFolder("1")
+
+    composeTestRule.onNodeWithTag("noteCard").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("MoveOutButton").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("MoveOutButton").performClick()
+    composeTestRule.onNodeWithTag("MoveOutDialog").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("MoveOutConfirmButton").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("MoveOutConfirmButton").performClick()
+    composeTestRule.onNodeWithTag("noteCard").assertIsDisplayed()
+  }
+
+  @Test
+  fun moveOutSameUserDoesMoveNote() {
+    `when`(mockNoteRepository.getNotesFromFolder(eq("1"), any(), any())).then { invocation ->
+      val onSuccess = invocation.getArgument<(List<Note>) -> Unit>(1)
+      onSuccess(subNoteList2)
+    }
+
+    noteViewModel.getNotesFromFolder("1")
+
+    composeTestRule.onNodeWithTag("noteCard").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("MoveOutButton").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("MoveOutButton").performClick()
+    composeTestRule.onNodeWithTag("MoveOutDialog").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("MoveOutConfirmButton").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("MoveOutConfirmButton").performClick()
+    composeTestRule.onNodeWithTag("goBackButton").performClick()
+    composeTestRule.onAllNodesWithTag("noteCard").filter(hasText("Sample Sub Note3"))
+      .onFirst().assertIsDisplayed()
+    //composeTestRule.onNodeWithTag("noteCard").assertIsNotDisplayed()
   }
 
   @Test

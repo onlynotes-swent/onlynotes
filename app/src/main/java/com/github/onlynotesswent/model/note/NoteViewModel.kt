@@ -136,9 +136,7 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
           if (note.folderId != null) {
             getNotesFromFolder(note.folderId)
           }
-          Log.d("NoteViewModel", "Successfully updated note : $note")
-        },
-        onFailure = { Log.e("NoteViewModel", "Failed to update note : $it") })
+        }, onFailure = { })
   }
 
   /**

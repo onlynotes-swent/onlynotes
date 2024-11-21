@@ -1,13 +1,26 @@
 package com.github.onlynotesswent.ui.overview
 
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.click
+import androidx.compose.ui.test.filter
+import androidx.compose.ui.test.hasAnyChild
+import androidx.compose.ui.test.hasTestTag
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithTag
+import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
+import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.test.swipeLeft
+import androidx.compose.ui.test.swipeUp
+import androidx.compose.ui.unit.dp
 import com.github.onlynotesswent.model.common.Course
 import com.github.onlynotesswent.model.common.Visibility
 import com.github.onlynotesswent.model.folder.Folder
@@ -49,11 +62,11 @@ class OverviewTest {
               date = Timestamp.now(), // Use current timestamp
               visibility = Visibility.DEFAULT,
               userId = "1",
-              noteCourse = Course("CS-100", "Sample Course", 2024, "path"),
+              noteCourse = Course("CS-100", "Sample Course", 2024, "path")
           ))
 
   private val folderList =
-      listOf(Folder(id = "1", name = "name", userId = "1", parentFolderId = null))
+      listOf(Folder(id = "1", name = "name", userId = "1", parentFolderId = null), Folder(id = "2", name = "name2", userId = "1", parentFolderId = null))
 
   @get:Rule val composeTestRule = createComposeRule()
 
@@ -236,5 +249,31 @@ class OverviewTest {
     composeTestRule.onNodeWithTag("item--Private").assertIsDisplayed().performClick()
     composeTestRule.onNodeWithTag("confirmFolderAction").assertIsEnabled().assertIsDisplayed()
     composeTestRule.onNodeWithTag("confirmFolderAction").performClick()
+  }
+
+  @Test
+  fun dragAndDropWorksCorrectly() {
+    `when`(noteRepository.getRootNotesFrom(eq("1"), any(), any())).then { invocation ->
+      val onSuccess = invocation.getArgument<(List<Note>) -> Unit>(1)
+      onSuccess(noteList)
+    }
+    `when`(folderRepository.getRootFoldersFromUid(eq("1"), any(), any())).then { invocation ->
+      val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(1)
+      onSuccess(folderList)
+    }
+    noteViewModel.getRootNotesFrom("1")
+    folderViewModel.getRootFoldersFromUid("1")
+    composeTestRule.onNodeWithTag("noteAndFolderList").assertIsDisplayed()
+
+    composeTestRule.onNodeWithTag("noteCard").assertIsDisplayed()
+    composeTestRule.onAllNodesWithTag("folderCard").filter(hasText("name")).onFirst().assertIsDisplayed()
+    composeTestRule.onNodeWithTag("noteCard")
+      .performTouchInput {
+        down(center)
+        advanceEventTime(1000)
+        moveBy(Offset(-center.x * 9, 0f))
+        advanceEventTime(5000)
+        up()
+      }
   }
 }

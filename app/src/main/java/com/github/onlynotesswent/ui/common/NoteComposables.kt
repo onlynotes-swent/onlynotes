@@ -82,6 +82,7 @@ fun NoteItem(
 
   if (showMoveOutDialog && note.folderId != null) {
     AlertDialog(
+        modifier = Modifier.testTag("MoveOutDialog"),
         onDismissRequest = { showMoveOutDialog = false },
         title = {
           Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
@@ -90,6 +91,7 @@ fun NoteItem(
         },
         confirmButton = {
           Button(
+              modifier = Modifier.testTag("MoveOutConfirmButton"),
               onClick = {
                 if (currentUser.value!!.uid == note.userId) {
                   // Move out will move the given note to the parent folder
@@ -151,7 +153,7 @@ fun NoteItem(
                   Icon(
                       // Show move out menu when clicking on the Icon
                       modifier =
-                          Modifier.clickable(
+                          Modifier.testTag("MoveOutButton").clickable(
                               enabled =
                                   note.folderId != null &&
                                       navigationActions.currentRoute() == Screen.FOLDER_CONTENTS) {

@@ -108,4 +108,10 @@ class NoteViewModelTest {
     noteViewModel.deleteNotesFromFolder("1")
     verify(mockNoteRepository).deleteNotesFromFolder(eq("1"), any(), any())
   }
+
+  @Test
+  fun draggedNoteUpdatesCorrectly() {
+    noteViewModel.draggedNote(testNote)
+    assertThat(noteViewModel.draggedNote.value, `is`(testNote))
+  }
 }

@@ -362,4 +362,24 @@ class NoteRepositoryFirestoreTest {
     // Ensure the delete method was called twice (once for each sub note)
     verify(mockDocumentReference, times(2)).delete()
   }
+
+  @Test
+  fun deleteNotesFromFolder_fails() {
+      val errorMessage = "TestError"
+      `when`(mockQuerySnapshotTask.isSuccessful).thenReturn(false)
+      `when`(mockQuerySnapshotTask.exception).thenReturn(Exception(errorMessage))
+      `when`(mockQuerySnapshotTask.addOnCompleteListener(any())).thenAnswer { invocation ->
+          val listener = invocation.getArgument<OnCompleteListener<QuerySnapshot>>(0)
+          // Simulate a result being passed to the listener
+          listener.onComplete(mockQuerySnapshotTask)
+          mockQuerySnapshotTask
+      }
+      `when`(mockQuerySnapshot.documents)
+          .thenReturn(listOf(mockDocumentSnapshot3, mockDocumentSnapshot4))
+      var exceptionThrown: Exception? = null
+      noteRepositoryFirestore.deleteNotesFromFolder(
+          "1", onSuccess = {}, onFailure = { e -> exceptionThrown = e })
+      assertNotNull(exceptionThrown)
+      assertEquals(errorMessage, exceptionThrown?.message)
+  }
 }
