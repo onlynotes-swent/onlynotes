@@ -86,10 +86,12 @@ interface UserRepository {
   fun getNewUid(): String
 
   /**
-   * Adds a follower to a specified user.
+   * If is request is true, adds a follower to a specified user as a request. Otherwise, adds a
+   * follower to a specified user.
    *
    * @param user The ID of the user to whom the follower is to be added.
    * @param follower The ID of the follower to be added.
+   * @param isRequest Whether we add a follow request or a follower.
    * @param onSuccess Callback to be invoked when the operation is successful.
    * @param onFailure Callback to be invoked if an error occurs.
    */
@@ -102,10 +104,12 @@ interface UserRepository {
   )
 
   /**
-   * Removes a follower from a specified user.
+   * if is request is true, removes a follow request from a specified user. Otherwise, removes a
+   * follower from a specified user.
    *
    * @param user The ID of the user from whom the follower is to be removed.
    * @param follower The ID of the follower to be removed.
+   * @param isRequest whether we remove a follow request or a follower.
    * @param onSuccess Callback to be invoked when the operation is successful.
    * @param onFailure Callback to be invoked if an error occurs.
    */

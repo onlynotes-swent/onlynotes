@@ -1,7 +1,6 @@
 package com.github.onlynotesswent.ui.user
 
 import android.util.Log
-import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -461,8 +460,10 @@ fun RemoveFollowerButton(userViewModel: UserViewModel, followerId: String) {
       shape = RoundedCornerShape(25),
       modifier = Modifier.testTag("removeFollowerButton--$followerId").width(90.dp),
       onClick = {
-        // TODO: Implement remove follower functionality
-        Toast.makeText(context, "Not Implemented Yet", Toast.LENGTH_SHORT).show()
+        userViewModel.removeFollower(
+            followerId,
+            { userViewModel.profileUser.value?.let { userViewModel.refreshProfileUser(it.uid) } },
+            {})
       }) {
         Text(
             "Remove",

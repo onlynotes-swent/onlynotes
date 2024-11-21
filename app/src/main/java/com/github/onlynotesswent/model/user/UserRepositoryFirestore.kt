@@ -37,8 +37,17 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore) : UserRepositor
                 following = document.get("friends.following") as? List<String> ?: emptyList(),
                 followers = document.get("friends.followers") as? List<String> ?: emptyList(),
             ),
+        pendingFriends =
+            Friends(
+                following =
+                    document.get("pendingFriends.following") as? List<String> ?: emptyList(),
+                followers =
+                    document.get("pendingFriends.followers") as? List<String> ?: emptyList(),
+            ),
         hasProfilePicture = document.getBoolean("hasProfilePicture") ?: false,
-        bio = document.getString("bio") ?: "")
+        bio = document.getString("bio") ?: "",
+        isAccountPublic = document.getBoolean("isAccountPublic") ?: true,
+    )
   }
 
   override fun init(auth: FirebaseAuth, onSuccess: () -> Unit) {

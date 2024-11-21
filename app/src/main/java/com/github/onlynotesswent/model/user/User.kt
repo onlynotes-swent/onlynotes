@@ -30,7 +30,9 @@ data class User(
     val hasProfilePicture: Boolean = false,
     val bio: String = "",
     val pendingFriends: Friends = Friends(),
-    val isAccountPublic: Boolean = false
+    // for now it's set to true, will be set to false when the notification feature is
+    // implemented
+    val isAccountPublic: Boolean = true
 ) {
   /**
    * Returns the user's handle, which is the username prefixed with an '@' symbol.

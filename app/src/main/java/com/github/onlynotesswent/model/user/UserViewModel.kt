@@ -186,7 +186,8 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
   // SOCIAL FUNCTIONS:
   /**
    * request a follow from the specified user. The method changes the current user's pending
-   * followers
+   * followers. If the account of the specified user is public, the method will automatically follow
+   * else it will send a request.
    *
    * @param followingUID The UID of the user to follow.
    * @param onSuccess Callback to be invoked when the follow operation is successful.
@@ -201,21 +202,29 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
       onFailure(UserNotLoggedInException())
       return
     }
-    repository.addFollowerTo(
-        user = followingUID,
-        follower = _currentUser.value!!.uid,
-        true,
-        {
-          refreshCurrentUser()
-          onSuccess()
+    getUserById(
+        followingUID,
+        onSuccess = { user ->
+          repository.addFollowerTo(
+              user = followingUID,
+              follower = _currentUser.value!!.uid,
+              // if the account is public this is a follow, if not it is a request
+              !user.isAccountPublic,
+              {
+                refreshCurrentUser()
+                onSuccess()
+              },
+              onFailure)
         },
-        onFailure)
+        onUserNotFound = { onFailure(Exception("User not found")) },
+        onFailure = onFailure)
   }
 
   /**
    * Make current user unfollow the specified user. The method changes both the current user's
-   * following list and the specified user's followers list. If the current user is not logged in,
-   * the onFailure callback is invoked with a UserNotLoggedInException.
+   * following list and the specified user's followers list. If the user is not following the
+   * specified user, but has a pending request, the request is cancelled. If the current user is not
+   * logged in, the onFailure callback is invoked with a UserNotLoggedInException.
    *
    * @param followingUID The UID of the user to unfollow.
    * @param onSuccess Callback to be invoked when the unfollow operation is successful.
@@ -230,13 +239,14 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
       onFailure(UserNotLoggedInException())
       return
     }
+    // this if else will determine if we need to cancel a request or remove a follow
     val isRequest: Boolean
     if (_currentUser.value!!.pendingFriends.following.contains(followingUID)) {
       isRequest = true
     } else if (_currentUser.value!!.friends.following.contains(followingUID)) {
       isRequest = false
     } else {
-      // onFailure(Exception("User is not in following list"))
+      onFailure(Exception("User is not in following list"))
       return
     }
 
@@ -304,7 +314,6 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
           follower = followerUID,
           false,
           {
-            refreshCurrentUser()
             repository.removeFollowerFrom(
                 user = followerUID,
                 follower = _currentUser.value!!.uid,
