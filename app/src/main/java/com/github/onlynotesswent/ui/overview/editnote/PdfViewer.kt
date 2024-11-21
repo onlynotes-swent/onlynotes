@@ -11,7 +11,6 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.UploadFile
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -31,6 +30,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.github.onlynotesswent.model.file.FileType
 import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.note.NoteViewModel
+import com.github.onlynotesswent.ui.common.DeletePopup
 import com.github.onlynotesswent.ui.common.ScreenTopBar
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
@@ -112,17 +112,53 @@ fun PdfViewerScreen(
       floatingActionButton = {
         // Show a delete button if a PDF exists
         if (pdfExists) {
+          var showDeleteConfirmation by remember { mutableStateOf(false) }
           FloatingActionButton(
               onClick = {
-                // Delete the file and update the state
-                fileViewModel.deleteFile(uid = note!!.id, fileType = FileType.NOTE_PDF)
-                pdfFile = null
-                pdfExists = false
-                Toast.makeText(context, "PDF deleted successfully", Toast.LENGTH_SHORT).show()
+                // Show confirmation dialog when delete button is clicked
+                showDeleteConfirmation = true
               },
               containerColor = MaterialTheme.colorScheme.error,
-              contentColor = MaterialTheme.colorScheme.onError) {
-                Icon(imageVector = Icons.Default.Delete, contentDescription = "Delete PDF")
+              contentColor = MaterialTheme.colorScheme.onError,
+          ) {
+            Icon(imageVector = Icons.Default.Delete, contentDescription = "Delete PDF")
+          }
+
+          // Confirmation dialog for deletion
+          if (showDeleteConfirmation) {
+            DeletePopup(
+                title = "Delete PDF?",
+                text = "Are you sure you want to delete this PDF? This action cannot be undone.",
+                onConfirm = {
+                  // Perform delete action
+                  fileViewModel.deleteFile(uid = note!!.id, fileType = FileType.NOTE_PDF)
+                  pdfFile = null
+                  pdfExists = false
+                  showDeleteConfirmation = false
+                },
+                onDismiss = {
+                  // Close the dialog without deleting
+                  showDeleteConfirmation = false
+                })
+          }
+        } else {
+          // Show a scan button if no PDF exists
+          FloatingActionButton(
+              onClick = {
+                // Trigger scanning and start the retry logic for downloading
+                scanner.scan {
+                  fileViewModel.updateFile(note!!.id, it, FileType.NOTE_PDF)
+                  retryDownload = true // Trigger retry logic
+                  attempt = 0 // Reset attempts
+                }
+              },
+              containerColor = MaterialTheme.colorScheme.primary,
+              contentColor = MaterialTheme.colorScheme.onPrimary,
+              modifier = Modifier.testTag("scanPdfButton")) {
+                Icon(
+                    imageVector = Icons.Default.UploadFile,
+                    contentDescription = "Scan and replace PDF",
+                )
               }
         }
       },
@@ -158,21 +194,6 @@ fun PdfViewerScreen(
               verticalArrangement = Arrangement.Center,
               horizontalAlignment = Alignment.CenterHorizontally) {
                 Text("No PDF found.")
-                IconButton(
-                    onClick = {
-                      // Trigger scanning and start the retry logic for downloading
-                      scanner.scan {
-                        fileViewModel.updateFile(note!!.id, it, FileType.NOTE_PDF)
-                        retryDownload = true // Trigger retry logic
-                        attempt = 0 // Reset attempts
-                      }
-                    },
-                    modifier = Modifier.testTag("scanPdfButton")) {
-                      Icon(
-                          imageVector = Icons.Default.UploadFile,
-                          contentDescription = "Scan and replace PDF",
-                      )
-                    }
               }
         }
       }
