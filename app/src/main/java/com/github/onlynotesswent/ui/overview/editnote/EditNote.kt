@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.ArrowDropUp
 import androidx.compose.material.icons.filled.Delete
@@ -48,7 +47,6 @@ import com.github.onlynotesswent.model.users.User
 import com.github.onlynotesswent.model.users.UserViewModel
 import com.github.onlynotesswent.ui.common.DeletePopup
 import com.github.onlynotesswent.ui.common.NoteDataTextField
-import com.github.onlynotesswent.ui.common.ScreenTopBar
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
 import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
@@ -79,21 +77,11 @@ fun EditNoteScreen(
       floatingActionButton = {DeleteButton(currentUser, note, navigationActions, noteViewModel)},
       modifier = Modifier.testTag("editNoteScreen"),
       topBar = {
-        ScreenTopBar(
+        EditNoteTopBar(
             title = "Edit note",
             titleTestTag = "editNoteTitle",
-            onBackClick = {
-              // Unselects the note and navigates back to the previous screen
-              noteViewModel.selectedNote(null)
-              navigationActions.goBack()
-            },
-            icon = {
-              Icon(
-                  imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                  contentDescription = "Back",
-                  tint = MaterialTheme.colorScheme.onSurface)
-            },
-            iconTestTag = "goBackButton")
+            noteViewModel = noteViewModel,
+            navigationActions = navigationActions)
       },
       bottomBar = {
         EditNoteNavigationMenu(

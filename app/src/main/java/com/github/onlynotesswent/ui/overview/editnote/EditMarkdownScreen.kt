@@ -18,7 +18,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.FormatBold
@@ -55,15 +54,14 @@ import androidx.compose.ui.unit.dp
 import com.github.onlynotesswent.model.file.FileType
 import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.note.NoteViewModel
-import com.github.onlynotesswent.ui.common.ScreenTopBar
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
 import com.mohamedrejeb.richeditor.model.RichTextState
 import com.mohamedrejeb.richeditor.model.rememberRichTextState
 import com.mohamedrejeb.richeditor.ui.material3.RichTextEditor
+import kotlinx.coroutines.delay
 import java.io.File
 import java.io.IOException
-import kotlinx.coroutines.delay
 
 /**
  * A screen to edit markdown content for a selected note.
@@ -122,14 +120,11 @@ fun EditMarkdownScreen(
 
   Scaffold(
       topBar = {
-        ScreenTopBar(
-            titleTestTag = "modifyMDTitle",
-            onBackClick = { navigationActions.goBack() },
-            title = "Modify Markdown",
-            icon = {
-              Icon(imageVector = Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "Back")
-            },
-            iconTestTag = "goBackButton")
+        EditNoteTopBar(
+            title = "Content",
+            titleTestTag = "contentTitle",
+            noteViewModel = noteViewModel,
+            navigationActions = navigationActions)
       },
       bottomBar = {
         EditNoteNavigationMenu(navigationActions, selectedItem = Screen.EDIT_NOTE_MARKDOWN)

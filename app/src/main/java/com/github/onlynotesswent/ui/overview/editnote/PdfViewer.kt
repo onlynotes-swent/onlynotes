@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.UploadFile
 import androidx.compose.material3.FloatingActionButton
@@ -31,7 +30,6 @@ import com.github.onlynotesswent.model.file.FileType
 import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.ui.common.DeletePopup
-import com.github.onlynotesswent.ui.common.ScreenTopBar
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
 import com.github.onlynotesswent.utils.Scanner
@@ -163,18 +161,11 @@ fun PdfViewerScreen(
         }
       },
       topBar = {
-        // Top bar with navigation back button
-        ScreenTopBar(
-            title = "View PDF",
-            titleTestTag = "pdfViewerTitle",
-            onBackClick = { navigationActions.goBack() },
-            icon = {
-              Icon(
-                  imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                  contentDescription = "Back",
-                  tint = MaterialTheme.colorScheme.onSurface)
-            },
-            iconTestTag = "goBackButton")
+        EditNoteTopBar(
+            title = "PDF",
+            titleTestTag = "pdfTitle",
+            noteViewModel = noteViewModel,
+            navigationActions = navigationActions)
       },
       bottomBar = {
         // Navigation menu at the bottom
