@@ -67,7 +67,8 @@ fun FolderItem(
 
   Card(
       modifier =
-          Modifier.testTag("folderCard").semantics(mergeDescendants = true, properties = { })
+          Modifier.testTag("folderCard")
+              .semantics(mergeDescendants = true, properties = {})
               .padding(vertical = 4.dp)
               .dragAndDropSource {
                 detectTapGestures(

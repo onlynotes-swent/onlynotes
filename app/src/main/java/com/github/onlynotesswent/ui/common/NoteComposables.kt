@@ -117,7 +117,8 @@ fun NoteItem(
   }
   Card(
       modifier =
-          Modifier.testTag("noteCard").semantics(mergeDescendants = true, properties = { })
+          Modifier.testTag("noteCard")
+              .semantics(mergeDescendants = true, properties = {})
               .fillMaxWidth()
               .padding(vertical = 4.dp)
               // Enable drag and drop for the note card (as a source)
