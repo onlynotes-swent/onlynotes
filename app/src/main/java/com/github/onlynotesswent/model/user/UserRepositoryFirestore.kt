@@ -46,7 +46,7 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore) : UserRepositor
             ),
         hasProfilePicture = document.getBoolean("hasProfilePicture") ?: false,
         bio = document.getString("bio") ?: "",
-        isAccountPublic = document.getBoolean("isAccountPublic") == true)
+        isAccountPublic = document.getBoolean("isAccountPublic") ?: true)
   }
 
   override fun init(auth: FirebaseAuth, onSuccess: () -> Unit) {

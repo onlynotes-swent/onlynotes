@@ -416,6 +416,13 @@ fun FollowUnfollowButton(userViewModel: UserViewModel, otherUserId: String) {
           .following
           .contains(otherUserId))
           "Unfollow"
+      else if (userViewModel.currentUser
+          .collectAsState()
+          .value!!
+          .pendingFriends
+          .following
+          .contains(otherUserId))
+          "Pending..."
       else "Follow"
   OutlinedButton(
       contentPadding = PaddingValues(horizontal = 10.dp),
