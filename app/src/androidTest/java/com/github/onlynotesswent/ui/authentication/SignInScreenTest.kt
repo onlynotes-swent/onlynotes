@@ -10,8 +10,8 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.github.onlynotesswent.MainActivity
 import com.github.onlynotesswent.R
-import com.github.onlynotesswent.model.users.UserRepository
-import com.github.onlynotesswent.model.users.UserViewModel
+import com.github.onlynotesswent.model.user.UserRepository
+import com.github.onlynotesswent.model.user.UserViewModel
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Route
 import org.junit.Before

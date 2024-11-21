@@ -1,4 +1,4 @@
-package com.github.onlynotesswent.model.users
+package com.github.onlynotesswent.model.user
 
 import android.util.Log
 import com.google.android.gms.tasks.Task
@@ -114,6 +114,7 @@ class UserRepositoryFirestoreTest {
     `when`(mockDocumentSnapshot.get("friends.followers")).thenReturn(user.friends.followers)
     `when`(mockDocumentSnapshot.getBoolean("hasProfilePicture")).thenReturn(user.hasProfilePicture)
     `when`(mockDocumentSnapshot.getString("bio")).thenReturn(user.bio)
+    `when`(mockDocumentSnapshot.getBoolean("isAccountPublic")).thenReturn(user.isAccountPublic)
   }
 
   @Test
@@ -459,7 +460,7 @@ class UserRepositoryFirestoreTest {
     // Call addFollowerTo method
     var onSuccessCalled = false
     userRepositoryFirestore.addFollowerTo(
-        user = user.uid, follower = "4", { onSuccessCalled = true }, { assert(false) })
+        user = user.uid, follower = "4", false, { onSuccessCalled = true }, { assert(false) })
 
     // Verify if Firestore collection was called
     verify(mockCollectionReference, timeout(1000)).document(user.uid)
@@ -488,6 +489,7 @@ class UserRepositoryFirestoreTest {
     userRepositoryFirestore.addFollowerTo(
         user.uid,
         "4",
+        false,
         { assert(false) },
         {
           onFailureCalled = true
@@ -507,7 +509,7 @@ class UserRepositoryFirestoreTest {
     // Call addFollowerTo method
     var onSuccessCalled = false
     userRepositoryFirestore.removeFollowerFrom(
-        user = user.uid, follower = "4", { onSuccessCalled = true }, { assert(false) })
+        user = user.uid, follower = "4", false, { onSuccessCalled = true }, { assert(false) })
 
     // Verify if Firestore collection was called
     verify(mockCollectionReference, timeout(1000)).document(user.uid)
@@ -535,6 +537,7 @@ class UserRepositoryFirestoreTest {
     userRepositoryFirestore.removeFollowerFrom(
         user.uid,
         "4",
+        false,
         { assert(false) },
         {
           onFailureCalled = true
