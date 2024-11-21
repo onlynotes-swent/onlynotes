@@ -8,6 +8,7 @@ plugins {
     alias(libs.plugins.sonar)
     id("jacoco")
     id("com.google.gms.google-services")
+    id("com.google.devtools.ksp")
     //id("org.jetbrains.kotlin.plugin.compose") version "2.0.0" // this version matches your Kotlin version
 }
 
@@ -203,13 +204,13 @@ dependencies {
     androidTestImplementation(libs.mockito.android)
 
     //Image Library
-
-    implementation("androidx.compose.material:material-icons-extended:<version>")
+    implementation(libs.androidx.material.icons.extended)
     implementation(libs.coil.compose)
     implementation(libs.imagepicker)
 
     //Rich text editor
-    implementation("com.mohamedrejeb.richeditor:richeditor-compose:1.0.0-rc10")
+    implementation(libs.richeditor.compose)
+
     // --------- Kaspresso test framework ----------
     globalTestImplementation(libs.kaspresso)
     globalTestImplementation(libs.kaspresso.compose)
@@ -226,6 +227,12 @@ dependencies {
 
     // ----------      HTTP client     ------------
     implementation(libs.okhttp)
+
+    // ----------         Room         ------------
+    implementation(libs.androidx.room.runtime)
+    ksp(libs.room.compiler)
+    implementation(libs.androidx.room.ktx) // Kotlin Extensions and Coroutines support for Room
+    testImplementation(libs.androidx.room.testing) // Test helpers for Room
 }
 
 tasks.withType<Test> {
