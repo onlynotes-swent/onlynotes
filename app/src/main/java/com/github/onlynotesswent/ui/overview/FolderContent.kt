@@ -335,7 +335,7 @@ fun handleSubFoldersAndNotes(
       folderViewModel.updateFolder(subFolder.copy(parentFolderId = folder.parentFolderId))
     }
     userFolderNotes.forEach { note ->
-      noteViewModel.updateNote(note.copy(folderId = folder.parentFolderId), note.userId)
+      noteViewModel.updateNote(note.copy(folderId = folder.parentFolderId))
     }
   } else {
     // folder is root folder
@@ -343,7 +343,7 @@ fun handleSubFoldersAndNotes(
       folderViewModel.updateFolder(subFolder.copy(parentFolderId = null))
     }
     userFolderNotes.forEach { note ->
-      noteViewModel.updateNote(note.copy(folderId = null), note.userId)
+      noteViewModel.updateNote(note.copy(folderId = null))
     }
   }
 }

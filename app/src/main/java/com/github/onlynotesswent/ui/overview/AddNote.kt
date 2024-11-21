@@ -246,7 +246,7 @@ fun CreateNoteButton(
                 noteCourse = Course(courseCode, courseName, courseYear, "path"),
                 userId = currentUser.value!!.uid,
                 folderId = folderId)
-        noteViewModel.addNote(note, currentUser.value!!.uid)
+        noteViewModel.addNote(note)
 
         if (template == createNoteText) {
           noteViewModel.selectedNote(note)

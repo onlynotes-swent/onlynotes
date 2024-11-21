@@ -153,13 +153,11 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
    * Adds a Note document.
    *
    * @param note The Note document to be added.
-   * @param userId The user ID.
    * @param onSuccess The function to call when the addition is successful.
    * @param onFailure The function to call when the addition fails.
    */
   fun addNote(
       note: Note,
-      userId: String,
       onSuccess: () -> Unit = {},
       onFailure: (Exception) -> Unit = {}
   ) {
@@ -167,7 +165,7 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
         note = note,
         onSuccess = {
           onSuccess()
-          getRootNotesFrom(userId)
+          getRootNotesFrom(note.userId)
         },
         onFailure = onFailure)
   }
@@ -176,13 +174,11 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
    * Updates a Note document.
    *
    * @param note The Note document to be updated.
-   * @param userId The user ID.
    * @param onSuccess The function to call when the update is successful.
    * @param onFailure The function to call when the update fails.
    */
   fun updateNote(
       note: Note,
-      userId: String,
       onSuccess: () -> Unit = {},
       onFailure: (Exception) -> Unit = {}
   ) {
@@ -190,7 +186,7 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
         note = note,
         onSuccess = {
           onSuccess()
-          getRootNotesFrom(userId)
+          getRootNotesFrom(note.userId)
         },
         onFailure = onFailure)
   }

@@ -284,8 +284,7 @@ fun EditNoteScreen(
                     updatedComments = updatedComments,
                     onCommentsChange = { updatedComments = it },
                     updateNoteComment = {
-                      noteViewModel.updateNote(
-                          note!!.copy(comments = updatedComments), currentUser!!.uid)
+                      noteViewModel.updateNote(note!!.copy(comments = updatedComments))
                     })
 
                 CommentsSection(
@@ -293,7 +292,7 @@ fun EditNoteScreen(
                     { updatedComments = it },
                     {
                       noteViewModel.updateNote(
-                          note!!.copy(comments = updatedComments), currentUser!!.uid)
+                          note!!.copy(comments = updatedComments))
                     })
               }
         }
@@ -417,8 +416,7 @@ fun SaveButton(
                 noteCourse = Course(courseCode, courseName, courseYear, "path"),
                 userId = note.userId,
                 folderId = note.folderId,
-                comments = updatedComments),
-            currentUser.uid)
+                comments = updatedComments))
         if (note.folderId != null) {
           noteViewModel.selectedNote(null)
           navigationActions.navigateTo(Screen.FOLDER_CONTENTS)
