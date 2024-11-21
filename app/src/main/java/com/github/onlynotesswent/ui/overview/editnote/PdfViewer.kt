@@ -1,6 +1,6 @@
 package com.github.onlynotesswent.ui.overview.editnote
 
-import android.widget.Toast
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -35,6 +35,7 @@ import com.github.onlynotesswent.ui.navigation.Screen
 import com.github.onlynotesswent.utils.Scanner
 import com.rajat.pdfviewer.compose.PdfRendererViewCompose
 import java.io.File
+import kotlinx.coroutines.delay
 
 /**
  * Composable function to display the PDF viewer screen. Allows the user to view, delete, and scan
@@ -59,50 +60,62 @@ fun PdfViewerScreen(
   // States to manage the PDF existence, file reference, retry logic, and attempts
   var pdfExists by remember { mutableStateOf(false) }
   var pdfFile by remember { mutableStateOf<File?>(null) }
-  var retryDownload by remember { mutableStateOf(false) }
+  var retryDownload by remember { mutableStateOf(true) }
   var attempt by remember { mutableIntStateOf(0) }
-  val maxAttempts = 5
+  var isLoading by remember { mutableStateOf(true) }
 
-  // Retry logic for downloading the file
-  LaunchedEffect(retryDownload) {
-    if (retryDownload && note != null) {
-      while (attempt < maxAttempts) {
-        attempt++
+  // LaunchedEffect for initial load when entering the screen
+  LaunchedEffect(note) {
+    if (note != null) {
+      Log.d("PdfViewerScreen", "Entering screen: attempting initial PDF download.")
+      isLoading = true
+      attempt = 0
+      try {
         fileViewModel.downloadFile(
             uid = note!!.id,
             fileType = FileType.NOTE_PDF,
             context = context,
             onSuccess = { file ->
-              // If the download is successful, update the state and stop retrying
               pdfFile = file
               pdfExists = true
-              Toast.makeText(context, "PDF updated successfully", Toast.LENGTH_SHORT).show()
+              isLoading = false
               retryDownload = false
             },
-            onFileNotFound = {
-              // If the file is not found, check if max attempts have been reached
-              pdfExists = false
-              if (attempt == maxAttempts) {
-                Toast.makeText(context, "PDF not found after multiple attempts", Toast.LENGTH_SHORT)
-                    .show()
-                retryDownload = false
-              }
-            },
-            onFailure = {
-              // If the download fails, check if max attempts have been reached
-              pdfExists = false
-              if (attempt == maxAttempts) {
-                Toast.makeText(
-                        context,
-                        "Failed to download PDF after multiple attempts",
-                        Toast.LENGTH_SHORT)
-                    .show()
-                retryDownload = false
-              }
-            })
-        // Add a delay between retries to avoid rapid consecutive attempts
-        kotlinx.coroutines.delay(1000)
+            onFileNotFound = {},
+            onFailure = {})
+      } catch (e: Exception) {
+        Log.e("PdfViewerScreen", "Error downloading PDF: $e")
       }
+    }
+  }
+
+  // LaunchedEffect for retry logic
+  LaunchedEffect(retryDownload) {
+    if (retryDownload) {
+      Log.d("PdfViewerScreen", "Retrying PDF download...")
+      isLoading = true
+      attempt = 0 // Reset attempts
+      while (attempt < 5) {
+        attempt++
+        try {
+          fileViewModel.downloadFile(
+              uid = note!!.id,
+              fileType = FileType.NOTE_PDF,
+              context = context,
+              onSuccess = { file ->
+                pdfFile = file
+                pdfExists = true
+                isLoading = false
+                retryDownload = false
+              },
+              onFileNotFound = {},
+              onFailure = {})
+        } catch (e: Exception) {
+          Log.e("PdfViewerScreen", "Error downloading PDF: $e")
+        }
+        delay(1000) // Add delay between retries
+      }
+      isLoading = false // End loading if retries are exhausted
     }
   }
 
@@ -133,6 +146,7 @@ fun PdfViewerScreen(
                   pdfFile = null
                   pdfExists = false
                   showDeleteConfirmation = false
+                  isLoading = false
                 },
                 onDismiss = {
                   // Close the dialog without deleting
@@ -172,16 +186,21 @@ fun PdfViewerScreen(
         EditNoteNavigationMenu(
             navigationActions = navigationActions, selectedItem = Screen.EDIT_NOTE_PDF)
       }) { paddingValues ->
-        if (pdfExists && pdfFile != null) {
-          // Display the PDF if it exists
+        if (isLoading) {
+          Column(
+              modifier = Modifier.fillMaxSize(),
+              verticalArrangement = Arrangement.Center,
+              horizontalAlignment = Alignment.CenterHorizontally) {
+                Text("Loading PDF...")
+              }
+        } else if (pdfExists && pdfFile != null) {
           PdfRendererViewCompose(
               file = pdfFile!!,
               lifecycleOwner = LocalLifecycleOwner.current,
               modifier = Modifier.fillMaxSize().padding(paddingValues))
         } else {
-          // Display a fallback UI if no PDF is found
           Column(
-              modifier = Modifier.fillMaxSize().padding(paddingValues),
+              modifier = Modifier.fillMaxSize(),
               verticalArrangement = Arrangement.Center,
               horizontalAlignment = Alignment.CenterHorizontally) {
                 Text("No PDF found.")
