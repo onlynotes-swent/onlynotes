@@ -1,7 +1,6 @@
 package com.github.onlynotesswent.ui.overview.editnote
 
 import android.content.Context
-import android.net.Uri
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
@@ -19,7 +18,6 @@ import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.ArrowDropUp
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.UploadFile
 import androidx.compose.material.icons.outlined.Clear
 import androidx.compose.material3.Button
@@ -37,7 +35,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -46,7 +43,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
@@ -65,10 +61,6 @@ import com.github.onlynotesswent.ui.navigation.Screen
 import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
 import com.github.onlynotesswent.utils.Scanner
 import com.google.firebase.Timestamp
-import com.mohamedrejeb.richeditor.model.RichTextState
-import com.mohamedrejeb.richeditor.model.rememberRichTextState
-import com.mohamedrejeb.richeditor.ui.material3.RichTextEditor
-import java.io.File
 import java.util.Calendar
 
 /**
@@ -89,48 +81,9 @@ fun EditNoteScreen(
     userViewModel: UserViewModel,
     fileViewModel: FileViewModel
 ) {
-  val state = rememberRichTextState()
   val context = LocalContext.current
   val note by noteViewModel.selectedNote.collectAsState()
   val currentUser by userViewModel.currentUser.collectAsState()
-  var attemptedMarkdownDownloads = 0
-
-  /**
-   * Downloads a markdown file associated with the note. If no file exists, it attempts once to
-   * create and upload an empty markdown file, then re-download it.
-   */
-  @Suppress("kotlin:S6300")
-  fun downloadMarkdownFile() {
-    fileViewModel.downloadFile(
-        uid = note!!.id,
-        fileType = FileType.NOTE_TEXT,
-        context = context,
-        onSuccess = { downloadedFile: File ->
-          // Update the UI with the downloaded file reference
-          state.setMarkdown(downloadedFile.readText())
-        },
-        onFileNotFound = {
-          attemptedMarkdownDownloads += 1
-          if (attemptedMarkdownDownloads < 2) {
-            val file = File(context.cacheDir, "${note!!.id}.md")
-            if (!file.exists()) {
-              file.createNewFile()
-            }
-            file.writeText("")
-            // Get the file URI
-            val fileUri = Uri.fromFile(file)
-            fileViewModel.uploadFile(note!!.id, fileUri, FileType.NOTE_TEXT)
-            downloadMarkdownFile()
-          }
-        },
-        onFailure = { _ ->
-          attemptedMarkdownDownloads += 1
-          if (attemptedMarkdownDownloads < 2) {
-            downloadMarkdownFile()
-          }
-        })
-  }
-  LaunchedEffect(Unit) { downloadMarkdownFile() }
 
   Scaffold(
       modifier = Modifier.testTag("editNoteScreen"),
@@ -171,7 +124,6 @@ fun EditNoteScreen(
               horizontalAlignment = Alignment.CenterHorizontally) {
                 NoteSection(
                     note = note!!,
-                    state = state,
                     context = context,
                     currentUser = currentUser!!,
                     noteViewModel = noteViewModel,
@@ -187,7 +139,6 @@ fun EditNoteScreen(
 @Composable
 fun NoteSection(
     note: Note,
-    state: RichTextState,
     context: Context,
     currentUser: User,
     noteViewModel: NoteViewModel,
@@ -280,20 +231,6 @@ fun NoteSection(
       label = "Course Year",
       placeholder = "Set the course year for the note",
       modifier = Modifier.fillMaxWidth().testTag("EditCourseYear textField"))
-
-  RichTextEditor(
-      state = state,
-      modifier = Modifier.fillMaxWidth().pointerInput(Unit) {},
-      readOnly = true,
-      trailingIcon = {
-        IconButton(
-            onClick = { navigationActions.navigateTo(Screen.EDIT_NOTE_MARKDOWN) },
-            modifier = Modifier.testTag("Edit Markdown button")) {
-              Icon(
-                  imageVector = Icons.Default.Edit, // Use an appropriate pencil icon
-                  contentDescription = "Edit Markdown")
-            }
-      })
 
   PdfCard(
       modifier = Modifier.fillMaxWidth(),

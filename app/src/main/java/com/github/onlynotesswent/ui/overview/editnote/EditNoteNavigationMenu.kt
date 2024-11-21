@@ -1,5 +1,6 @@
 package com.github.onlynotesswent.ui.overview.editnote
 
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -17,12 +18,26 @@ fun EditNoteNavigationMenu(navigationActions: NavigationActions, selectedItem: S
       containerColor = MaterialTheme.colorScheme.surface,
       contentColor = MaterialTheme.colorScheme.onSurface) {
         LIST_EDIT_NOTE_DESTINATION.forEach { tab ->
+          val isSelected = selectedItem == tab.textId
           NavigationBarItem(
-              selected = selectedItem == tab.textId,
-              onClick = { navigationActions.navigateTo(tab.screen) },
-              icon = {},
+              selected = isSelected,
+              onClick = { tab.screen?.let { navigationActions.navigateTo(it) } },
               modifier = Modifier.testTag(tab.textId),
-              label = { Text(tab.textId) })
+              icon = {
+                Icon(
+                    imageVector = tab.icon,
+                    contentDescription = tab.textId,
+                    tint =
+                        if (isSelected) MaterialTheme.colorScheme.primary
+                        else MaterialTheme.colorScheme.onSurface)
+              },
+              label = {
+                Text(
+                    text = tab.textId,
+                    color =
+                        if (isSelected) MaterialTheme.colorScheme.primary
+                        else MaterialTheme.colorScheme.onSurface)
+              })
         }
       }
 }

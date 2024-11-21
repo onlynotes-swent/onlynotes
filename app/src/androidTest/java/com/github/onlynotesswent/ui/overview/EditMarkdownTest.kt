@@ -14,11 +14,9 @@ import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.note.Note
 import com.github.onlynotesswent.model.note.NoteRepository
 import com.github.onlynotesswent.model.note.NoteViewModel
-import com.github.onlynotesswent.model.users.User
-import com.github.onlynotesswent.model.users.UserRepository
-import com.github.onlynotesswent.model.users.UserViewModel
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
+import com.github.onlynotesswent.ui.overview.editnote.EditMarkdownScreen
 import com.google.firebase.Timestamp
 import org.junit.Before
 import org.junit.Rule
@@ -26,15 +24,12 @@ import org.junit.Test
 import org.mockito.Mock
 import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
-import org.mockito.kotlin.any
 import org.mockito.kotlin.never
 
 class EditMarkdownTest {
-  @Mock private lateinit var userRepository: UserRepository
   @Mock private lateinit var noteRepository: NoteRepository
   @Mock private lateinit var fileRepository: FileRepository
   @Mock private lateinit var navigationActions: NavigationActions
-  private lateinit var userViewModel: UserViewModel
   private lateinit var noteViewModel: NoteViewModel
   private lateinit var fileViewModel: FileViewModel
   @get:Rule val composeTestRule = createComposeRule()
@@ -43,26 +38,8 @@ class EditMarkdownTest {
   fun setUp() {
     // Mock is a way to create a fake object that can be used in place of a real object
     MockitoAnnotations.openMocks(this)
-    userViewModel = UserViewModel(userRepository)
     noteViewModel = NoteViewModel(noteRepository)
     fileViewModel = FileViewModel(fileRepository)
-
-    // Mock the addUser method to call the onSuccess callback
-    `when`(userRepository.addUser(any(), any(), any())).thenAnswer { invocation ->
-      val onSuccess = invocation.getArgument<() -> Unit>(1)
-      onSuccess()
-    }
-
-    val testUser =
-        User(
-            "testFirstName",
-            "testLastName",
-            "testUserName",
-            "test@gmail.com",
-            "testUID",
-            Timestamp.now(),
-            0.0)
-    userViewModel.addUser(testUser, {}, {})
 
     val testNote =
         Note(
@@ -78,7 +55,7 @@ class EditMarkdownTest {
     // Mock the current route to be the user create screen
     `when`(navigationActions.currentRoute()).thenReturn(Screen.EDIT_NOTE)
     composeTestRule.setContent {
-      EditMarkdownScreen(navigationActions, noteViewModel, userViewModel, fileViewModel)
+      EditMarkdownScreen(navigationActions, noteViewModel, fileViewModel)
     }
   }
 

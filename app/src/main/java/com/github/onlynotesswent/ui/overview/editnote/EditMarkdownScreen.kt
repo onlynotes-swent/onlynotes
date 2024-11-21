@@ -1,10 +1,11 @@
-package com.github.onlynotesswent.ui.overview
+package com.github.onlynotesswent.ui.overview.editnote
 
 import android.content.Context
 import android.net.Uri
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,17 +20,18 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.FormatBold
 import androidx.compose.material.icons.filled.FormatItalic
 import androidx.compose.material.icons.filled.FormatStrikethrough
 import androidx.compose.material.icons.filled.FormatUnderlined
-import androidx.compose.material3.Button
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -53,10 +55,9 @@ import androidx.compose.ui.unit.dp
 import com.github.onlynotesswent.model.file.FileType
 import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.note.NoteViewModel
-import com.github.onlynotesswent.model.users.UserViewModel
 import com.github.onlynotesswent.ui.common.ScreenTopBar
 import com.github.onlynotesswent.ui.navigation.NavigationActions
-import com.github.onlynotesswent.ui.overview.editnote.ErrorScreen
+import com.github.onlynotesswent.ui.navigation.Screen
 import com.mohamedrejeb.richeditor.model.RichTextState
 import com.mohamedrejeb.richeditor.model.rememberRichTextState
 import com.mohamedrejeb.richeditor.ui.material3.RichTextEditor
@@ -75,21 +76,19 @@ import kotlinx.coroutines.delay
  * @param navigationActions Object to handle navigation actions, including going back to the
  *   previous screen.
  * @param noteViewModel ViewModel to manage the note's state and interactions.
- * @param userViewModel ViewModel for user-specific actions, if required.
  * @param fileViewModel ViewModel to handle file downloads and uploads for markdown files.
  */
 @Composable
 fun EditMarkdownScreen(
     navigationActions: NavigationActions,
     noteViewModel: NoteViewModel,
-    userViewModel: UserViewModel,
     fileViewModel: FileViewModel
 ) {
   val state = rememberRichTextState()
-
   val context = LocalContext.current
   val selectedNote by noteViewModel.selectedNote.collectAsState()
   var markdownContent: File? by remember { mutableStateOf(null) }
+  var isEditing by rememberSaveable { mutableStateOf(false) } // Add this line
 
   // Function to download and set the Markdown file
   LaunchedEffect(Unit) {
@@ -98,7 +97,6 @@ fun EditMarkdownScreen(
         fileType = FileType.NOTE_TEXT,
         context = context,
         onSuccess = { downloadedFile: File ->
-          // Update the UI with the downloaded file reference
           markdownContent = downloadedFile
           state.setMarkdown(markdownContent?.readText() ?: "")
         },
@@ -108,16 +106,12 @@ fun EditMarkdownScreen(
               .show()
         })
   }
-  @Suppress("kotlin:S6300") // as there is no need to encrypt file
+
   fun updateMarkdownFile(context: Context, uid: String, fileViewModel: FileViewModel) {
     try {
       if (markdownContent != null) {
         markdownContent!!.writeText(state.toMarkdown())
-
-        // Get the file URI
         val fileUri = Uri.fromFile(markdownContent)
-
-        // Upload the file to update it in Firebase Storage
         fileViewModel.updateFile(uid = uid, fileUri = fileUri, fileType = FileType.NOTE_TEXT)
       }
     } catch (e: IOException) {
@@ -136,6 +130,23 @@ fun EditMarkdownScreen(
               Icon(imageVector = Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "Back")
             },
             iconTestTag = "goBackButton")
+      },
+      bottomBar = {
+        EditNoteNavigationMenu(navigationActions, selectedItem = Screen.EDIT_NOTE_MARKDOWN)
+      },
+      floatingActionButton = { // Add FAB here
+        if (!isEditing) {
+          FloatingActionButton(
+              onClick = {
+                isEditing = true // Switch to edit mode
+              },
+              containerColor = MaterialTheme.colorScheme.primary,
+              contentColor = MaterialTheme.colorScheme.onPrimary) {
+                Icon(
+                    imageVector = if (isEditing) Icons.Default.Check else Icons.Default.Edit,
+                    contentDescription = if (isEditing) "Save" else "Edit")
+              }
+        }
       }) { paddingValues ->
         if (selectedNote == null) {
           ErrorScreen("No note is selected")
@@ -148,41 +159,43 @@ fun EditMarkdownScreen(
                       .testTag("editMarkdownColumn")
                       .verticalScroll(rememberScrollState()),
           ) {
-            EditorControls(modifier = Modifier.testTag("EditorControl"), state = state)
+            if (isEditing) {
+              EditorControls(
+                  modifier = Modifier.testTag("EditorControl"),
+                  state = state,
+                  onSaveClick = {
+                    updateMarkdownFile(context, selectedNote!!.id, fileViewModel)
+                    isEditing = false // Switch back to view mode after saving
+                  })
+            }
             RichTextEditor(
                 modifier = Modifier.fillMaxWidth().weight(2f).testTag("RichTextEditor"),
                 state = state,
+                readOnly = !isEditing, // Make editor read-only when not editing
             )
-
-            Button(
-                modifier = Modifier.fillMaxWidth().testTag("Save button"),
-                onClick = { updateMarkdownFile(context, selectedNote!!.id, fileViewModel) }) {
-                  Text("Save")
-                }
           }
         }
       }
 }
+
 /**
  * A composable component that provides a set of text formatting controls for the rich text editor.
- * It manually controls the state SpanStyle depending on the selected toggles.
+ * It manually controls the state SpanStyle depending on the selected toggles. It also provides a
+ * save button to save the current text content and formatting.
  *
  * @param modifier Modifier to be applied to the Row layout containing the controls.
- * @param state The current state of the rich text editor, used to apply styles.
+ * @param state RichTextState object to manage the text content and formatting.
+ * @param onSaveClick Callback function to save the current text content and formatting.
  */
 @Composable
-fun EditorControls(modifier: Modifier, state: RichTextState) {
+fun EditorControls(modifier: Modifier, state: RichTextState, onSaveClick: () -> Unit) {
   var boldSelected by rememberSaveable { mutableStateOf(false) }
   var italicSelected by rememberSaveable { mutableStateOf(false) }
   var underlineSelected by rememberSaveable { mutableStateOf(false) }
   var strikethroughSelected by rememberSaveable { mutableStateOf(false) }
-  var previousMarkdown by rememberSaveable { mutableStateOf("") }
-  // fix as using a state.toggleSpanStyle() seems to be broken now need to manually set the
-  // SpanStyle
+
   LaunchedEffect(Unit) {
     while (true) {
-      val currentMarkdown = state.toMarkdown()
-      previousMarkdown = currentMarkdown
       if (!boldSelected) {
         state.removeSpanStyle(SpanStyle(fontWeight = FontWeight.Bold))
       } else {
@@ -210,7 +223,7 @@ fun EditorControls(modifier: Modifier, state: RichTextState) {
 
   Row(
       modifier = modifier.fillMaxWidth().padding(all = 10.dp),
-      horizontalArrangement = Arrangement.spacedBy(8.dp),
+      horizontalArrangement = Arrangement.spacedBy(16.dp),
   ) {
     ControlWrapper(
         modifier = Modifier.testTag("BoldControl"),
@@ -235,6 +248,23 @@ fun EditorControls(modifier: Modifier, state: RichTextState) {
         selected = strikethroughSelected,
         onChangeClick = { strikethroughSelected = it }) {
           Icon(imageVector = Icons.Filled.FormatStrikethrough, contentDescription = "Strikethrough")
+        }
+
+    IconButton(
+        modifier =
+            Modifier.size(35.dp)
+                .align(Alignment.CenterVertically)
+                .testTag("SaveCheckButton")
+                .background(
+                    color = MaterialTheme.colorScheme.primary,
+                    shape = RoundedCornerShape(6.dp),
+                )
+                .padding(0.dp),
+        onClick = { onSaveClick() }) {
+          Icon(
+              imageVector = Icons.Default.Check,
+              contentDescription = "Save",
+              tint = MaterialTheme.colorScheme.onPrimary)
         }
   }
 }
@@ -277,7 +307,7 @@ fun ControlWrapper(
           Icon(
               modifier = Modifier.size(20.dp).testTag("FilterChipIcon"),
               imageVector = Icons.Default.Check,
-              contentDescription = if (selected) "Selected" else "Not Selected",
+              contentDescription = "Selected",
               tint = MaterialTheme.colorScheme.onBackground)
         }
       },
