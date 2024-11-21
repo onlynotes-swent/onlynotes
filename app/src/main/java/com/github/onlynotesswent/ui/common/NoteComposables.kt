@@ -36,6 +36,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draganddrop.DragAndDropTransferData
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.github.onlynotesswent.model.folder.FolderViewModel
@@ -116,7 +117,7 @@ fun NoteItem(
   }
   Card(
       modifier =
-          Modifier.testTag("noteCard")
+          Modifier.testTag("noteCard").semantics(mergeDescendants = true, properties = { })
               .fillMaxWidth()
               .padding(vertical = 4.dp)
               // Enable drag and drop for the note card (as a source)

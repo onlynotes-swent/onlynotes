@@ -31,6 +31,7 @@ import androidx.compose.ui.draganddrop.DragAndDropTransferData
 import androidx.compose.ui.draganddrop.toAndroidDragEvent
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -66,7 +67,7 @@ fun FolderItem(
 
   Card(
       modifier =
-          Modifier.testTag("folderCard")
+          Modifier.testTag("folderCard").semantics(mergeDescendants = true, properties = { })
               .padding(vertical = 4.dp)
               .dragAndDropSource {
                 detectTapGestures(
