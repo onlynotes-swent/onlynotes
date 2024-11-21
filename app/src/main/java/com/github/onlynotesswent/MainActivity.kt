@@ -26,6 +26,7 @@ import com.github.onlynotesswent.ui.overview.OverviewScreen
 import com.github.onlynotesswent.ui.overview.editnote.CommentsScreen
 import com.github.onlynotesswent.ui.overview.editnote.EditMarkdownScreen
 import com.github.onlynotesswent.ui.overview.editnote.EditNoteScreen
+import com.github.onlynotesswent.ui.overview.editnote.PdfViewerScreen
 import com.github.onlynotesswent.ui.search.SearchScreen
 import com.github.onlynotesswent.ui.theme.AppTheme
 import com.github.onlynotesswent.ui.user.CreateUserScreen
@@ -92,6 +93,9 @@ fun OnlyNotesApp(
       }
       composable(Screen.EDIT_NOTE_COMMENT) {
         CommentsScreen(navigationActions, noteViewModel, userViewModel)
+      }
+      composable(Screen.EDIT_NOTE_PDF) {
+        PdfViewerScreen(noteViewModel, fileViewModel, scanner, navigationActions)
       }
       composable(Screen.EDIT_NOTE_MARKDOWN) {
         EditMarkdownScreen(navigationActions, noteViewModel, fileViewModel)

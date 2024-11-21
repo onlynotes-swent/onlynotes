@@ -24,6 +24,7 @@ mockitoKotlin = "5.4.0"
 mockitoInline = "4.0.0"
 mockitoAndroid = "5.14.1"
 okhttp = "4.10.0"
+pdfViewer = "2.1.1"
 richeditorCompose = "1.0.0-rc10"
 robolectric = "4.11.1"
 sonar = "4.4.1.3373"
@@ -80,6 +81,7 @@ mockito-kotlin = { module = "org.mockito.kotlin:mockito-kotlin", version.ref = "
 mockito-inline = { module = "org.mockito:mockito-inline", version.ref = "mockitoInline" }
 mockito-android = { module = "org.mockito:mockito-android", version.ref = "mockitoAndroid" }
 okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
+pdf-viewer = { module = "io.github.afreakyelf:Pdf-Viewer", version.ref = "pdfViewer" }
 richeditor-compose = { module = "com.mohamedrejeb.richeditor:richeditor-compose", version.ref = "richeditorCompose" }
 robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric" }
 
