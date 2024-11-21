@@ -78,10 +78,8 @@ class FlashcardRepositoryFirestore(private val db: FirebaseFirestore) : Flashcar
             Log.e(TAG, "Flashcard not found")
           } else {
             val flashcard = documentSnapshotToFlashcard(document)
-            if (flashcard == null) {
-              onFailure(Exception("Error converting document to Flashcard"))
-              Log.e(TAG, "Error converting document to Flashcard")
-            } else onSuccess(flashcard)
+            if (flashcard == null) onFailure(Exception("Error converting document to Flashcard"))
+            else onSuccess(flashcard)
           }
         }
         .addOnFailureListener { exception ->

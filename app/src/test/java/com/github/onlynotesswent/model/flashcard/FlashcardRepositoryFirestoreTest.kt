@@ -1,6 +1,7 @@
 package com.github.onlynotesswent.model.flashcard
 
 import android.os.Looper
+import android.util.Log
 import com.google.android.gms.tasks.Task
 import com.google.android.gms.tasks.Tasks
 import com.google.firebase.Timestamp
@@ -12,12 +13,14 @@ import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.QuerySnapshot
 import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertNotNull
+import junit.framework.TestCase.assertNull
 import junit.framework.TestCase.fail
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mock
 import org.mockito.Mockito.anyString
+import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
@@ -25,6 +28,7 @@ import org.mockito.kotlin.timeout
 import org.mockito.kotlin.verify
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows.shadowOf
+import org.robolectric.shadows.ShadowLog
 
 @RunWith(RobolectricTestRunner::class)
 class FlashcardRepositoryFirestoreTest {
@@ -109,16 +113,14 @@ class FlashcardRepositoryFirestoreTest {
 
   @Test
   fun documentSnapshotToFlashcardConvertsToFlashcard() {
-    `when`(mockDocumentSnapshot.id).thenReturn(flashcard.id)
-    `when`(mockDocumentSnapshot.getString("front")).thenReturn(flashcard.front)
-    `when`(mockDocumentSnapshot.getString("back")).thenReturn(flashcard.back)
-    `when`(mockDocumentSnapshot.getTimestamp("nextReview")).thenReturn(flashcard.nextReview)
-    `when`(mockDocumentSnapshot.getString("userId")).thenReturn(flashcard.userId)
-    `when`(mockDocumentSnapshot.getString("folderId")).thenReturn(flashcard.folderId)
+    // Failed conversion of a DocumentSnapshot to a Flashcard
+    val mockBadDocumentSnapshot = mock(DocumentSnapshot::class.java)
+    assertNull(flashcardRepositoryFirestore.documentSnapshotToFlashcard(mockBadDocumentSnapshot))
+    verifyErrorLog("Error converting document to Flashcard")
 
+    // Successful conversion of a DocumentSnapshot to a Flashcard
     val convertedFlashcard =
         flashcardRepositoryFirestore.documentSnapshotToFlashcard(mockDocumentSnapshot)
-
     assertEquals(flashcard, convertedFlashcard)
   }
 
@@ -128,6 +130,32 @@ class FlashcardRepositoryFirestoreTest {
     val uid = flashcardRepositoryFirestore.getNewUid()
     assert(uid == flashcard.id)
   }
+
+  //  @Test
+  //  fun `init should call FirebaseAuth currentUser`() {
+  //    val mockAuth = mock(FirebaseAuth::class.java)
+  //    val mockUser = mock(FirebaseUser::class.java)
+  //
+  //    val MockFirebaseAuth = Mockito.mockStatic(FirebaseAuth::class.java)
+  //
+  //    MockFirebaseAuth.`when`<FirebaseAuth> { FirebaseAuth.getInstance() }.thenReturn(mockAuth)
+  //    `when`(mockAuth.addAuthStateListener(any())).thenAnswer({ invocation ->
+  //      val listener = invocation.arguments[0] as FirebaseAuth.AuthStateListener
+  //      listener.
+  //      onAuthStateChanged(mockAuth)
+  //    })
+  //
+  //    var onSuccessCalled = false
+  //    flashcardRepositoryFirestore.init{ onSuccessCalled = true }
+  //    verify(mockAuth).currentUser
+  //    assert(onSuccessCalled)
+  //
+  //    // Mock failure:
+  //    `when`(mockAuth.currentUser).thenReturn(null)
+  //    flashcardRepositoryFirestore.init{ assert(false) }
+  //
+  //    MockFirebaseAuth.close()
+  //  }
 
   @Test
   fun getFlashcards_success() {
@@ -148,6 +176,20 @@ class FlashcardRepositoryFirestoreTest {
     // Assertions to verify that the correct flashcard is returned
     assertNotNull(flashcardTest)
     assertEquals(flashcard, flashcardTest)
+  }
+
+  @Test
+  fun getFlashcardById_flashcardEmpty() {
+    // Override the mock behavior to return that the documentSnapshot is empty (no doc found)
+    `when`(mockDocumentSnapshot.exists()).thenReturn(false)
+
+    var onFailureCalled = false
+    // Call the method under test
+    flashcardRepositoryFirestore.getFlashcardById(
+        flashcard.id, onSuccess = { assert(false) }, onFailure = { onFailureCalled = true })
+
+    assert(onFailureCalled)
+    verifyErrorLog("Flashcard not found")
   }
 
   @Test
@@ -229,14 +271,25 @@ class FlashcardRepositoryFirestoreTest {
   @Test
   fun getFlashcardsByFolder_failure() {
     // Create a mock Task that returns an exception
-    val exception = Exception("Test exception")
-    val mockQueryTask: Task<QuerySnapshot> = Tasks.forException(exception)
-    `when`(mockQuery.get()).thenReturn(mockQueryTask)
+    val testException = Exception("Test exception")
+
+    `when`(mockCollectionReference.whereEqualTo(anyString(), any()))
+        .thenReturn(mockCollectionReference)
+
+    // Override mock behavior to call onFailure with the test exception
+    `when`(mockQueryTask.addOnSuccessListener(any())).thenReturn(mockQueryTask)
+    `when`(mockQueryTask.addOnFailureListener(any())).thenAnswer { invocation ->
+      val listener = invocation.arguments[0] as com.google.android.gms.tasks.OnFailureListener
+      listener.onFailure(testException)
+      mockQueryTask
+    }
 
     flashcardRepositoryFirestore.getFlashcardsByFolder(
         flashcard.folderId,
         onSuccess = { fail("Success callback should not be called") },
-        onFailure = { error -> assert(error.message == "Test exception") })
+        onFailure = { assertEquals(testException, it) })
+
+    verifyErrorLog("Error getting flashcards by folder")
   }
 
   @Test
@@ -264,14 +317,25 @@ class FlashcardRepositoryFirestoreTest {
   @Test
   fun getFlashcardsByNote_failure() {
     // Create a mock Task that returns an exception
-    val exception = Exception("Test exception")
-    val mockQueryTask: Task<QuerySnapshot> = Tasks.forException(exception)
-    `when`(mockQuery.get()).thenReturn(mockQueryTask)
+    val testException = Exception("Test exception")
+
+    `when`(mockCollectionReference.whereEqualTo(anyString(), any()))
+        .thenReturn(mockCollectionReference)
+
+    // Override mock behavior to call onFailure with the test exception
+    `when`(mockQueryTask.addOnSuccessListener(any())).thenReturn(mockQueryTask)
+    `when`(mockQueryTask.addOnFailureListener(any())).thenAnswer { invocation ->
+      val listener = invocation.arguments[0] as com.google.android.gms.tasks.OnFailureListener
+      listener.onFailure(testException)
+      mockQueryTask
+    }
 
     flashcardRepositoryFirestore.getFlashcardsByNote(
         flashcard.noteId,
         onSuccess = { fail("Success callback should not be called") },
-        onFailure = { error -> assert(error.message == "Test exception") })
+        onFailure = { assertEquals(testException, it) })
+
+    verifyErrorLog("Error getting flashcards by note")
   }
 
   @Test
@@ -289,6 +353,27 @@ class FlashcardRepositoryFirestoreTest {
   }
 
   @Test
+  fun addFlashcard_failure() {
+    // Create a mock Task that returns an exception
+    val testException = Exception("Test exception")
+
+    // Override mock behavior to call onFailure with the test exception
+    `when`(mockResolveTask.addOnSuccessListener(any())).thenReturn(mockResolveTask)
+    `when`(mockResolveTask.addOnFailureListener(any())).thenAnswer { invocation ->
+      val listener = invocation.arguments[0] as com.google.android.gms.tasks.OnFailureListener
+      listener.onFailure(testException)
+      mockResolveTask
+    }
+
+    flashcardRepositoryFirestore.addFlashcard(
+        flashcard,
+        onSuccess = { fail("Success callback should not be called") },
+        onFailure = { assertEquals(testException, it) })
+
+    verifyErrorLog("Error adding flashcard")
+  }
+
+  @Test
   fun updateFlashcard_callsCollection() {
     `when`(mockDocumentReference.set(any())).thenReturn(Tasks.forResult(null)) // Simulate success
 
@@ -303,6 +388,27 @@ class FlashcardRepositoryFirestoreTest {
   }
 
   @Test
+  fun updateFlashcard_failure() {
+    // Create a mock Task that returns an exception
+    val testException = Exception("Test exception")
+
+    // Override mock behavior to call onFailure with the test exception
+    `when`(mockResolveTask.addOnSuccessListener(any())).thenReturn(mockResolveTask)
+    `when`(mockResolveTask.addOnFailureListener(any())).thenAnswer { invocation ->
+      val listener = invocation.arguments[0] as com.google.android.gms.tasks.OnFailureListener
+      listener.onFailure(testException)
+      mockResolveTask
+    }
+
+    flashcardRepositoryFirestore.updateFlashcard(
+        flashcard,
+        onSuccess = { fail("Success callback should not be called") },
+        onFailure = { assertEquals(testException, it) })
+
+    verifyErrorLog("Error updating flashcard")
+  }
+
+  @Test
   fun deleteFlashcard_callsDocument() {
     `when`(mockDocumentReference.delete()).thenReturn(Tasks.forResult(null)) // Simulate success
 
@@ -312,4 +418,38 @@ class FlashcardRepositoryFirestoreTest {
 
     verify(mockDocumentReference).delete()
   }
+
+  @Test
+  fun deleteFlashcard_failure() {
+    `when`(mockDocumentReference.delete()).thenReturn(mockResolveTask)
+    // Create a mock Task that returns an exception
+    val testException = Exception("Test exception")
+
+    // Override mock behavior to call onFailure with the test exception
+    `when`(mockResolveTask.addOnSuccessListener(any())).thenReturn(mockResolveTask)
+    `when`(mockResolveTask.addOnFailureListener(any())).thenAnswer { invocation ->
+      val listener = invocation.arguments[0] as com.google.android.gms.tasks.OnFailureListener
+      listener.onFailure(testException)
+      mockResolveTask
+    }
+
+    flashcardRepositoryFirestore.deleteFlashcard(
+        flashcard,
+        onSuccess = { fail("Success callback should not be called") },
+        onFailure = { assertEquals(testException, it) })
+
+    verifyErrorLog("Error deleting flashcard")
+  }
+}
+
+private fun verifyErrorLog(msg: String) {
+  // Get all the logs
+  val logs = ShadowLog.getLogs()
+
+  // Check for the debug log that should be generated
+  val errorLog =
+      logs.find {
+        it.type == Log.ERROR && it.tag == FlashcardRepositoryFirestore.TAG && it.msg == msg
+      }
+  assert(errorLog != null) { "Expected error log was not found!" }
 }

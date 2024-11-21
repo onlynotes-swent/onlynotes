@@ -547,6 +547,12 @@ class UserRepositoryFirestoreTest {
 
   @Test
   fun `getUsersById should call Firestore collection`() {
+
+    // Test with an empty list
+    var onSuccessCalled = false
+    userRepositoryFirestore.getUsersById(listOf(), { onSuccessCalled = true }, { assert(false) })
+    assert(onSuccessCalled)
+
     // Mock whereIn method and QuerySnapshot task
     `when`(mockCollectionReference.whereIn("uid", listOf(user.uid))).thenReturn(mockQuery)
     `when`(mockQuerySnapshot.documents).thenReturn(listOf(mockDocumentSnapshot))
