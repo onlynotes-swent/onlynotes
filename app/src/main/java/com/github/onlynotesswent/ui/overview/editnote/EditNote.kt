@@ -1,8 +1,6 @@
 package com.github.onlynotesswent.ui.overview.editnote
 
-import android.content.Context
 import android.util.Log
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -15,12 +13,14 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.ArrowDropUp
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.outlined.Clear
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -38,22 +38,20 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.github.onlynotesswent.model.common.Course
 import com.github.onlynotesswent.model.common.Visibility
-import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.note.Note
 import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.model.users.User
 import com.github.onlynotesswent.model.users.UserViewModel
+import com.github.onlynotesswent.ui.common.DeletePopup
 import com.github.onlynotesswent.ui.common.NoteDataTextField
 import com.github.onlynotesswent.ui.common.ScreenTopBar
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
 import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
-import com.github.onlynotesswent.utils.Scanner
 import com.google.firebase.Timestamp
 import java.util.Calendar
 
@@ -66,20 +64,19 @@ import java.util.Calendar
  * @param navigationActions The navigation view model used to transition between different screens.
  * @param noteViewModel The ViewModel that provides the current note to be edited and handles note
  *   updates.
+ * @param userViewModel The ViewModel that provides the current user.
  */
 @Composable
 fun EditNoteScreen(
     navigationActions: NavigationActions,
-    scanner: Scanner,
     noteViewModel: NoteViewModel,
-    userViewModel: UserViewModel,
-    fileViewModel: FileViewModel
+    userViewModel: UserViewModel
 ) {
-  val context = LocalContext.current
   val note by noteViewModel.selectedNote.collectAsState()
   val currentUser by userViewModel.currentUser.collectAsState()
 
   Scaffold(
+      floatingActionButton = {DeleteButton(currentUser, note, navigationActions, noteViewModel)},
       modifier = Modifier.testTag("editNoteScreen"),
       topBar = {
         ScreenTopBar(
@@ -118,11 +115,8 @@ fun EditNoteScreen(
               horizontalAlignment = Alignment.CenterHorizontally) {
                 NoteSection(
                     note = note!!,
-                    context = context,
                     currentUser = currentUser!!,
                     noteViewModel = noteViewModel,
-                    fileViewModel = fileViewModel,
-                    scanner = scanner,
                     navigationActions = navigationActions)
               }
         }
@@ -133,11 +127,8 @@ fun EditNoteScreen(
 @Composable
 fun NoteSection(
     note: Note,
-    context: Context,
     currentUser: User,
     noteViewModel: NoteViewModel,
-    fileViewModel: FileViewModel,
-    scanner: Scanner,
     navigationActions: NavigationActions,
 ) {
   val currentYear = Calendar.getInstance().get(Calendar.YEAR)
@@ -237,8 +228,6 @@ fun NoteSection(
         currentUser = currentUser,
         navigationActions = navigationActions,
         noteViewModel = noteViewModel)
-
-    DeleteButton(note = note, navigationActions = navigationActions, noteViewModel = noteViewModel)
   }
 }
 
@@ -327,19 +316,34 @@ fun SaveButton(
  *   updates.
  */
 @Composable
-fun DeleteButton(note: Note, navigationActions: NavigationActions, noteViewModel: NoteViewModel) {
-  Button(
-      colors =
-          ButtonDefaults.buttonColors(
-              containerColor = MaterialTheme.colorScheme.background,
-              contentColor = MaterialTheme.colorScheme.error),
-      border = BorderStroke(1.dp, MaterialTheme.colorScheme.error),
-      onClick = {
-        noteViewModel.deleteNoteById(note.id, note.userId)
-        noteViewModel.selectedNote(null)
-        navigationActions.navigateTo(Screen.OVERVIEW)
-      },
-      modifier = Modifier.testTag("Delete button")) {
-        Text("Delete note")
-      }
+fun DeleteButton(currentUser: User?, note: Note?, navigationActions: NavigationActions, noteViewModel: NoteViewModel) {
+    if (currentUser != null && note != null){
+        var showDeleteConfirmation by remember { mutableStateOf(false) }
+        FloatingActionButton(
+            onClick = {
+                // Show confirmation dialog when delete button is clicked
+                showDeleteConfirmation = true
+            },
+            containerColor = MaterialTheme.colorScheme.error,
+            contentColor = MaterialTheme.colorScheme.onError,
+        ) {
+            Icon(imageVector = Icons.Default.Delete, contentDescription = "Delete Note")
+        }
+
+        // Confirmation dialog for deletion
+        if (showDeleteConfirmation) {
+            DeletePopup(
+                title = "Delete Note?",
+                text = "Are you sure you want to delete this note? This action cannot be undone.",
+                onConfirm = {
+                    noteViewModel.deleteNoteById(note.id, note.userId)
+                    noteViewModel.selectedNote(null)
+                    navigationActions.navigateTo(Screen.OVERVIEW)
+                },
+                onDismiss = {
+                    // Close the dialog without deleting
+                    showDeleteConfirmation = false
+                })
+        }
+    }
 }

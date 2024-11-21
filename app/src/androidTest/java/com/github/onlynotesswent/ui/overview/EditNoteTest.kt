@@ -91,7 +91,7 @@ class EditNoteTest {
       onSuccess()
     }
     composeTestRule.setContent {
-      EditNoteScreen(navigationActions, scanner, noteViewModel, userViewModel, fileViewModel)
+      EditNoteScreen(navigationActions, noteViewModel, userViewModel)
     }
   }
 

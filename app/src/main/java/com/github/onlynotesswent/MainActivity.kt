@@ -89,7 +89,7 @@ fun OnlyNotesApp(
         AddNoteScreen(navigationActions, scanner, noteViewModel, userViewModel, fileViewModel)
       }
       composable(Screen.EDIT_NOTE) {
-        EditNoteScreen(navigationActions, scanner, noteViewModel, userViewModel, fileViewModel)
+        EditNoteScreen(navigationActions, noteViewModel, userViewModel)
       }
       composable(Screen.EDIT_NOTE_COMMENT) {
         CommentsScreen(navigationActions, noteViewModel, userViewModel)
