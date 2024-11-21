@@ -3,7 +3,6 @@ package com.github.onlynotesswent.ui.common
 import android.content.ClipData
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.draganddrop.dragAndDropSource
 import androidx.compose.foundation.draganddrop.dragAndDropTarget
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -70,72 +69,71 @@ fun FolderItem(
           Modifier.testTag("folderCard")
               .padding(vertical = 4.dp)
               .dragAndDropSource {
-                  detectTapGestures(
-                      // When tapping on a folder, perform onCLick
-                      onTap = { onClick() },
-                      onLongPress = {
-                          // Only allow drag-and-drop for root folders
-                          if (folder.parentFolderId == null) {
-                              folderViewModel.draggedFolder(folder)
-                              // Start a drag-and-drop operation to transfer the data being dragged
-                              startTransfer(
-                                  DragAndDropTransferData(
-                                      // Transfer the folder Id as a ClipData object
-                                      ClipData.newPlainText("Folder", folder.id))
-                              )
-                          }
-                      })
+                detectTapGestures(
+                    // When tapping on a folder, perform onCLick
+                    onTap = { onClick() },
+                    onLongPress = {
+                      // Only allow drag-and-drop for root folders
+                      if (folder.parentFolderId == null) {
+                        folderViewModel.draggedFolder(folder)
+                        // Start a drag-and-drop operation to transfer the data being dragged
+                        startTransfer(
+                            DragAndDropTransferData(
+                                // Transfer the folder Id as a ClipData object
+                                ClipData.newPlainText("Folder", folder.id)))
+                      }
+                    })
               } // Enable drag-and-drop for the folder (as a target)
               .dragAndDropTarget(
                   // Accept any drag-and-drop event (either folder or note in this case)
                   shouldStartDragAndDrop = { true },
                   // Handle the drop event
                   target =
-                  remember {
-                      object : DragAndDropTarget {
+                      remember {
+                        object : DragAndDropTarget {
                           override fun onDrop(event: DragAndDropEvent): Boolean {
-                              // Get the dragged object Id TODO reviewer: should I extract this logic
-                              // in separate
-                              // functions like handleDraggedNote and handleDraggedFolder or leave it
-                              // as is?
-                              val draggedObjectId =
-                                  event.toAndroidDragEvent().clipData.getItemAt(0).text.toString()
-                              val draggedNote = noteViewModel.draggedNote.value
-                              if (draggedNote != null && draggedNote.id == draggedObjectId) {
-                                  // Update the dragged note with the new folder Id
-                                  noteViewModel.updateNote(
-                                      draggedNote.copy(folderId = folder.id), draggedNote.userId)
-                                  noteViewModel.draggedNote(null)
-                                  dropSuccess.value = true
-                                  return true
-                              }
-                              // Get the dragged folder in case a folder is being dragged
-                              val draggedFolder = folderViewModel.draggedFolder.value
-                              if (draggedFolder != null &&
-                                  draggedFolder.id == draggedObjectId &&
-                                  draggedFolder.id != folder.id) {
-                                  // Update the dragged folder with the new parent folder Id.
-                                  folderViewModel.updateFolder(
-                                      draggedFolder.copy(parentFolderId = folder.id), folder.userId)
-                                  folderViewModel.draggedFolder(null)
-                                  // Set dropSuccess to true to indicate that the drop was successful
-                                  dropSuccess.value = true
-                                  return true
-                              }
-                              dropSuccess.value = false
-                              return false
+                            // Get the dragged object Id TODO reviewer: should I extract this logic
+                            // in separate
+                            // functions like handleDraggedNote and handleDraggedFolder or leave it
+                            // as is?
+                            val draggedObjectId =
+                                event.toAndroidDragEvent().clipData.getItemAt(0).text.toString()
+                            val draggedNote = noteViewModel.draggedNote.value
+                            if (draggedNote != null && draggedNote.id == draggedObjectId) {
+                              // Update the dragged note with the new folder Id
+                              noteViewModel.updateNote(
+                                  draggedNote.copy(folderId = folder.id), draggedNote.userId)
+                              noteViewModel.draggedNote(null)
+                              dropSuccess.value = true
+                              return true
+                            }
+                            // Get the dragged folder in case a folder is being dragged
+                            val draggedFolder = folderViewModel.draggedFolder.value
+                            if (draggedFolder != null &&
+                                draggedFolder.id == draggedObjectId &&
+                                draggedFolder.id != folder.id) {
+                              // Update the dragged folder with the new parent folder Id.
+                              folderViewModel.updateFolder(
+                                  draggedFolder.copy(parentFolderId = folder.id), folder.userId)
+                              folderViewModel.draggedFolder(null)
+                              // Set dropSuccess to true to indicate that the drop was successful
+                              dropSuccess.value = true
+                              return true
+                            }
+                            dropSuccess.value = false
+                            return false
                           }
 
                           override fun onEnded(event: DragAndDropEvent) {
-                              if (dropSuccess.value) {
-                                  folderViewModel.selectedFolder(folder)
-                                  navigateToFolderContents(folder, navigationActions)
-                              }
-                              // Reset dropSuccess value
-                              dropSuccess.value = false
+                            if (dropSuccess.value) {
+                              folderViewModel.selectedFolder(folder)
+                              navigationActions.navigateToFolderContents(folder)
+                            }
+                            // Reset dropSuccess value
+                            dropSuccess.value = false
                           }
-                      }
-                  }),
+                        }
+                      }),
       colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.background)) {
         Column(
             modifier = Modifier.padding(8.dp), horizontalAlignment = Alignment.CenterHorizontally) {

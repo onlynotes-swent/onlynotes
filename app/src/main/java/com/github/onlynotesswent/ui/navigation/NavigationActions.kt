@@ -7,6 +7,7 @@ import androidx.compose.material.icons.outlined.Search
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
+import com.github.onlynotesswent.model.folder.Folder
 import java.util.Stack
 
 object Route {
@@ -131,5 +132,32 @@ open class NavigationActions(
   /** Returns the top of the screen navigation stack. */
   open fun retrieveTopElementOfScreenNavigationStack(): String {
     return screenNavigationStack.peek()
+  }
+
+  /**
+   * A function that handles the navigation to the folder content screen by using the screen
+   * navigation stack.
+   *
+   * @param folder The folder to navigate to. If it is not a root folder, its parent id will be
+   *   pushed to the screen navigation stack to properly go back.
+   */
+  open fun navigateToFolderContents(folder: Folder) {
+    if (folder.parentFolderId == null) {
+      // Don't add to the screen navigation stack as we are at the root folder
+      navigateTo(Screen.FOLDER_CONTENTS)
+    } else {
+      val poppedId = popFromScreenNavigationStack()
+      if (poppedId == Screen.SEARCH) {
+        // If we come from search, don't push the folderId to the stack
+        pushToScreenNavigationStack(poppedId)
+      } else {
+        if (poppedId != null) {
+          pushToScreenNavigationStack(poppedId)
+        }
+        // Add the previously visited folder Id (parent) to the screen navigation stack
+        pushToScreenNavigationStack(folder.parentFolderId)
+      }
+      navigateTo(Screen.FOLDER_CONTENTS)
+    }
   }
 }

@@ -23,7 +23,6 @@ import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.model.users.UserViewModel
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
-import com.github.onlynotesswent.utils.navigateToFolderContents
 
 /**
  * Custom lazy grid that displays a list of notes and folders. If there are no notes or folders, it
@@ -67,15 +66,14 @@ fun CustomLazyGrid(
           horizontalArrangement = Arrangement.spacedBy(4.dp),
           modifier = gridModifier) {
             items(sortedFolders.size) { index ->
-                FolderItem(
-                    folder = sortedFolders[index],
-                    navigationActions = navigationActions,
-                    noteViewModel = noteViewModel,
-                    folderViewModel = folderViewModel
-                ) {
+              FolderItem(
+                  folder = sortedFolders[index],
+                  navigationActions = navigationActions,
+                  noteViewModel = noteViewModel,
+                  folderViewModel = folderViewModel) {
                     folderViewModel.selectedFolder(sortedFolders[index])
-                    navigateToFolderContents(sortedFolders[index], navigationActions)
-                }
+                    navigationActions.navigateToFolderContents(sortedFolders[index])
+                  }
             }
             items(sortedNotes.size) { index ->
               NoteItem(

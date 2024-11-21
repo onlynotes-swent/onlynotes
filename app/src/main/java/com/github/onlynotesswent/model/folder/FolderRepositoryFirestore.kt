@@ -1,8 +1,8 @@
 package com.github.onlynotesswent.model.folder
 
 import android.util.Log
-import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.model.common.Visibility
+import com.github.onlynotesswent.model.note.NoteViewModel
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.DocumentSnapshot

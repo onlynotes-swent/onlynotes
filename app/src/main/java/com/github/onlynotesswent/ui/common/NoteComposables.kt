@@ -90,15 +90,15 @@ fun NoteItem(
           Button(
               onClick = {
                 if (currentUser.value!!.uid == note.userId) {
-                    // Move out will move the given note to the parent folder
-                    val parentFolderId = navigationActions.popFromScreenNavigationStack()
-                    if (parentFolderId != null) {
-                        noteViewModel.updateNote(note.copy(folderId = parentFolderId), note.userId)
-                        folderViewModel.getFolderById(parentFolderId)
-                    } else {
-                        noteViewModel.updateNote(note.copy(folderId = null), note.userId)
-                        navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
-                    }
+                  // Move out will move the given note to the parent folder
+                  val parentFolderId = navigationActions.popFromScreenNavigationStack()
+                  if (parentFolderId != null) {
+                    noteViewModel.updateNote(note.copy(folderId = parentFolderId), note.userId)
+                    folderViewModel.getFolderById(parentFolderId)
+                  } else {
+                    noteViewModel.updateNote(note.copy(folderId = null), note.userId)
+                    navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
+                  }
                 } else {
                   Toast.makeText(
                           context,
@@ -120,17 +120,16 @@ fun NoteItem(
               .padding(vertical = 4.dp)
               // Enable drag and drop for the note card (as a source)
               .dragAndDropSource {
-                  detectTapGestures(
-                      onTap = { onClick() },
-                      onLongPress = {
-                          noteViewModel.draggedNote(note)
-                          // Start a drag-and-drop operation to transfer the data which is being dragged
-                          startTransfer(
-                              // Transfer the note Id as a ClipData object
-                              DragAndDropTransferData(ClipData.newPlainText("Note", note.id))
-                          )
-                      },
-                  )
+                detectTapGestures(
+                    onTap = { onClick() },
+                    onLongPress = {
+                      noteViewModel.draggedNote(note)
+                      // Start a drag-and-drop operation to transfer the data which is being dragged
+                      startTransfer(
+                          // Transfer the note Id as a ClipData object
+                          DragAndDropTransferData(ClipData.newPlainText("Note", note.id)))
+                    },
+                )
               },
       colors =
           CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)) {
