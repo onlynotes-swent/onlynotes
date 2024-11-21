@@ -90,9 +90,7 @@ class EditNoteTest {
       val onSuccess = invocation.getArgument<() -> Unit>(3)
       onSuccess()
     }
-    composeTestRule.setContent {
-      EditNoteScreen(navigationActions, noteViewModel, userViewModel)
-    }
+    composeTestRule.setContent { EditNoteScreen(navigationActions, noteViewModel, userViewModel) }
   }
 
   @Test

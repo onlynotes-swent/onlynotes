@@ -59,9 +59,9 @@ import com.github.onlynotesswent.ui.navigation.Screen
 import com.mohamedrejeb.richeditor.model.RichTextState
 import com.mohamedrejeb.richeditor.model.rememberRichTextState
 import com.mohamedrejeb.richeditor.ui.material3.RichTextEditor
-import kotlinx.coroutines.delay
 import java.io.File
 import java.io.IOException
+import kotlinx.coroutines.delay
 
 /**
  * A screen to edit markdown content for a selected note.

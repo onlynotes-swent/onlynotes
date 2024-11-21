@@ -17,19 +17,19 @@ fun EditNoteTopBar(
     noteViewModel: NoteViewModel,
     navigationActions: NavigationActions
 ) {
-    ScreenTopBar(
-        title = title,
-        titleTestTag = titleTestTag,
-        onBackClick = {
-            // Unselects the note and navigates back to the previous screen
-            navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
-            noteViewModel.selectedNote(null)
-        },
-        icon = {
-            Icon(
-                imageVector = Icons.Filled.Close,
-                contentDescription = "Exit Edit Note",
-                tint = MaterialTheme.colorScheme.onSurface)
-        },
-        iconTestTag = "goToOverviewButton")
+  ScreenTopBar(
+      title = title,
+      titleTestTag = titleTestTag,
+      onBackClick = {
+        // Unselects the note and navigates back to the previous screen
+        navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
+        noteViewModel.selectedNote(null)
+      },
+      icon = {
+        Icon(
+            imageVector = Icons.Filled.Close,
+            contentDescription = "Exit Edit Note",
+            tint = MaterialTheme.colorScheme.onSurface)
+      },
+      iconTestTag = "goToOverviewButton")
 }

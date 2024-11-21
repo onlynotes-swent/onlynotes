@@ -74,7 +74,7 @@ fun EditNoteScreen(
   val currentUser by userViewModel.currentUser.collectAsState()
 
   Scaffold(
-      floatingActionButton = {DeleteButton(currentUser, note, navigationActions, noteViewModel)},
+      floatingActionButton = { DeleteButton(currentUser, note, navigationActions, noteViewModel) },
       modifier = Modifier.testTag("editNoteScreen"),
       topBar = {
         EditNoteTopBar(
@@ -304,34 +304,39 @@ fun SaveButton(
  *   updates.
  */
 @Composable
-fun DeleteButton(currentUser: User?, note: Note?, navigationActions: NavigationActions, noteViewModel: NoteViewModel) {
-    if (currentUser != null && note != null){
-        var showDeleteConfirmation by remember { mutableStateOf(false) }
-        FloatingActionButton(
-            onClick = {
-                // Show confirmation dialog when delete button is clicked
-                showDeleteConfirmation = true
-            },
-            containerColor = MaterialTheme.colorScheme.error,
-            contentColor = MaterialTheme.colorScheme.onError,
-        ) {
-            Icon(imageVector = Icons.Default.Delete, contentDescription = "Delete Note")
-        }
-
-        // Confirmation dialog for deletion
-        if (showDeleteConfirmation) {
-            DeletePopup(
-                title = "Delete Note?",
-                text = "Are you sure you want to delete this note? This action cannot be undone.",
-                onConfirm = {
-                    noteViewModel.deleteNoteById(note.id, note.userId)
-                    noteViewModel.selectedNote(null)
-                    navigationActions.navigateTo(Screen.OVERVIEW)
-                },
-                onDismiss = {
-                    // Close the dialog without deleting
-                    showDeleteConfirmation = false
-                })
-        }
+fun DeleteButton(
+    currentUser: User?,
+    note: Note?,
+    navigationActions: NavigationActions,
+    noteViewModel: NoteViewModel
+) {
+  if (currentUser != null && note != null) {
+    var showDeleteConfirmation by remember { mutableStateOf(false) }
+    FloatingActionButton(
+        onClick = {
+          // Show confirmation dialog when delete button is clicked
+          showDeleteConfirmation = true
+        },
+        containerColor = MaterialTheme.colorScheme.error,
+        contentColor = MaterialTheme.colorScheme.onError,
+    ) {
+      Icon(imageVector = Icons.Default.Delete, contentDescription = "Delete Note")
     }
+
+    // Confirmation dialog for deletion
+    if (showDeleteConfirmation) {
+      DeletePopup(
+          title = "Delete Note?",
+          text = "Are you sure you want to delete this note? This action cannot be undone.",
+          onConfirm = {
+            noteViewModel.deleteNoteById(note.id, note.userId)
+            noteViewModel.selectedNote(null)
+            navigationActions.navigateTo(Screen.OVERVIEW)
+          },
+          onDismiss = {
+            // Close the dialog without deleting
+            showDeleteConfirmation = false
+          })
+    }
+  }
 }

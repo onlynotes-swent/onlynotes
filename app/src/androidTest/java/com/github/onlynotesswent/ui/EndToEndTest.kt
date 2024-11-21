@@ -174,9 +174,7 @@ class EndToEndTest {
                         navigationActions, scanner, noteViewModel, userViewModel, fileViewModel)
                   }
                   composable(Screen.EDIT_NOTE) {
-                    EditNoteScreen(
-                        navigationActions, noteViewModel, userViewModel
-                    )
+                    EditNoteScreen(navigationActions, noteViewModel, userViewModel)
                   }
                   composable(Screen.FOLDER_CONTENTS) {
                     FolderContentScreen(
