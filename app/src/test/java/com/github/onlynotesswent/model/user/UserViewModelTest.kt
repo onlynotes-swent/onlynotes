@@ -86,6 +86,11 @@ class UserViewModelTest {
       val onSuccess = it.arguments[1] as (User) -> Unit
       onSuccess(user)
     }
+    // Mock the getUserById method to return a valid user
+    `when`(mockRepositoryFirestore.getUserById(eq("2"), any(), any(), any())).thenAnswer {
+      val onSuccess = it.arguments[1] as (User) -> Unit
+      onSuccess(user)
+    }
     // Mock the getUsers method to return a valid user
     `when`(mockRepositoryFirestore.getUsersById(eq(listOf("1")), any(), any())).thenAnswer {
       val onSuccess = it.arguments[1] as (List<User>) -> Unit
@@ -226,9 +231,9 @@ class UserViewModelTest {
     var onSuccessCalled = false
     userViewModel.followUser("2", { onSuccessCalled = true }, { assert(false) })
     verify(mockRepositoryFirestore, timeout(1000))
-        .addFollowerTo(eq("2"), eq("1"), anyBoolean(), anyOrNull(), anyOrNull())
+        .getUserById(eq("2"), anyOrNull(), anyOrNull(), anyOrNull())
     verify(mockRepositoryFirestore, timeout(1000))
-        .getUserById(eq("1"), anyOrNull(), anyOrNull(), anyOrNull())
+        .addFollowerTo(eq("2"), eq("1"), anyBoolean(), anyOrNull(), anyOrNull())
     assert(onSuccessCalled)
   }
 
