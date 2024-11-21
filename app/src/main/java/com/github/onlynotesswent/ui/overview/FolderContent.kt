@@ -300,10 +300,10 @@ fun FolderContentTopBar(
                             folderViewModel.deleteFolderById(folder.id, folder.userId)
                             // Retrieve parent folder id to navigate to the parent folder
                             val parentFolderId = navigationActions.popFromScreenNavigationStack()
-                            if(parentFolderId != null) {
-                                folderViewModel.getFolderById(parentFolderId)
+                            if (parentFolderId != null) {
+                              folderViewModel.getFolderById(parentFolderId)
                             } else {
-                                navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
+                              navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
                             }
 
                             handleSubFoldersAndNotes(

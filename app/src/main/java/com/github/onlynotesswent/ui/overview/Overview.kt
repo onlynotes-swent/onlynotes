@@ -49,7 +49,8 @@ import com.github.onlynotesswent.utils.FolderDialog
  * If there are no publicNotes, it shows a text to the user indicating no publicNotes are available.
  * It also provides a floating action button to add a new note.
  *
- * @param navigationActions The navigationActions instance used to transition between different screens.
+ * @param navigationActions The navigationActions instance used to transition between different
+ *   screens.
  * @param noteViewModel The ViewModel that provides the list of publicNotes to display.
  * @param userViewModel The ViewModel that provides the current user.
  * @param folderViewModel The ViewModel that provides the list of folders to display.

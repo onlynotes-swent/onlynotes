@@ -103,125 +103,109 @@ fun NoteItem(
     navigationActions: NavigationActions,
     onClick: () -> Unit
 ) {
-    // Mutable state to show the move out dialog
-    var showMoveOutDialog by remember { mutableStateOf(showDialog) }
+  // Mutable state to show the move out dialog
+  var showMoveOutDialog by remember { mutableStateOf(showDialog) }
 
-    if (showMoveOutDialog && note.folderId != null) {
-        AlertDialog(
-            onDismissRequest = { showMoveOutDialog = false },
-            title = {
-                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                    Text("Move note out of folder")
+  if (showMoveOutDialog && note.folderId != null) {
+    AlertDialog(
+        onDismissRequest = { showMoveOutDialog = false },
+        title = {
+          Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+            Text("Move note out of folder")
+          }
+        },
+        confirmButton = {
+          Button(
+              onClick = {
+                if (currentUser.value!!.uid == note.userId) {
+                  // Move out will move the given note to the parent folder
+                  val parentFolderId = navigationActions.popFromScreenNavigationStack()
+                  if (parentFolderId != null) {
+                    noteViewModel.updateNote(note.copy(folderId = parentFolderId), note.userId)
+                    folderViewModel.getFolderById(parentFolderId)
+                  } else {
+                    noteViewModel.updateNote(note.copy(folderId = null), note.userId)
+                    navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
+                  }
+                } else {
+                  Toast.makeText(
+                          context,
+                          "You can't move out a note that you didn't create",
+                          Toast.LENGTH_SHORT)
+                      .show()
                 }
-            },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        if (currentUser.value!!.uid == note.userId) {
-                            // Move out will move the given note to the parent folder
-                            val parentFolderId = navigationActions.popFromScreenNavigationStack()
-                            if (parentFolderId != null) {
-                                noteViewModel.updateNote(
-                                    note.copy(folderId = parentFolderId),
-                                    note.userId
-                                )
-                                folderViewModel.getFolderById(parentFolderId)
-                            } else {
-                                noteViewModel.updateNote(note.copy(folderId = null), note.userId)
-                                navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
-                            }
-                        } else {
-                            Toast.makeText(
-                                context,
-                                "You can't move out a note that you didn't create",
-                                Toast.LENGTH_SHORT
-                            )
-                                .show()
-                        }
-                        showMoveOutDialog = false
-                    }) {
-                    Text("Move")
-                }
-            },
-            dismissButton = { Button(onClick = { showMoveOutDialog = false }) { Text("Cancel") } })
-    }
-    Card(
-        modifier =
-        Modifier
-            .testTag("noteCard")
-            .fillMaxWidth()
-            .padding(vertical = 4.dp)
-            // Enable drag and drop for the note card (as a source)
-            .dragAndDropSource {
+                showMoveOutDialog = false
+              }) {
+                Text("Move")
+              }
+        },
+        dismissButton = { Button(onClick = { showMoveOutDialog = false }) { Text("Cancel") } })
+  }
+  Card(
+      modifier =
+          Modifier.testTag("noteCard")
+              .fillMaxWidth()
+              .padding(vertical = 4.dp)
+              // Enable drag and drop for the note card (as a source)
+              .dragAndDropSource {
                 detectTapGestures(
                     onTap = { onClick() },
                     onLongPress = {
-                        noteViewModel.draggedNote(note)
-                        // Start a drag-and-drop operation to transfer the data which is being dragged
-                        startTransfer(
-                            // Transfer the note Id as a ClipData object
-                            DragAndDropTransferData(ClipData.newPlainText("Note", note.id))
-                        )
+                      noteViewModel.draggedNote(note)
+                      // Start a drag-and-drop operation to transfer the data which is being dragged
+                      startTransfer(
+                          // Transfer the note Id as a ClipData object
+                          DragAndDropTransferData(ClipData.newPlainText("Note", note.id)))
                     },
                 )
-            },
-        colors =
-        CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
-    ) {
-        Column(modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
+              },
+      colors =
+          CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)) {
+        Column(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
+          Row(
+              modifier = Modifier.fillMaxWidth(),
+              horizontalArrangement = Arrangement.SpaceBetween) {
                 Text(
                     text =
-                    SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-                        .format(note.date.toDate()),
+                        SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+                            .format(note.date.toDate()),
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer
-                )
+                    color = MaterialTheme.colorScheme.onPrimaryContainer)
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        // Show move out menu when clicking on the Icon
-                        modifier =
-                        Modifier.clickable(
-                            enabled =
-                            note.folderId != null &&
-                                    navigationActions.currentRoute() == Screen.FOLDER_CONTENTS
-                        ) {
-                            showMoveOutDialog = true
-                        },
-                        imageVector = Icons.Filled.MoreVert,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onPrimaryContainer
-                    )
+                  Icon(
+                      // Show move out menu when clicking on the Icon
+                      modifier =
+                          Modifier.clickable(
+                              enabled =
+                                  note.folderId != null &&
+                                      navigationActions.currentRoute() == Screen.FOLDER_CONTENTS) {
+                                showMoveOutDialog = true
+                              },
+                      imageVector = Icons.Filled.MoreVert,
+                      contentDescription = null,
+                      tint = MaterialTheme.colorScheme.onPrimaryContainer)
                 }
-            }
+              }
 
-            Spacer(modifier = Modifier.height(4.dp))
+          Spacer(modifier = Modifier.height(4.dp))
+          Text(
+              text = note.title,
+              style = MaterialTheme.typography.bodyMedium,
+              fontWeight = FontWeight.Bold,
+              color = MaterialTheme.colorScheme.onPrimaryContainer)
+          if (author != null) {
             Text(
-                text = note.title,
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onPrimaryContainer
-            )
-            if (author != null) {
-                Text(
-                    text = author,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer
-                )
-            }
-            Text(
-                text = note.noteCourse.fullName(),
+                text = author,
                 style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onPrimaryContainer
-            )
+                color = MaterialTheme.colorScheme.onPrimaryContainer)
+          }
+          Text(
+              text = note.noteCourse.fullName(),
+              style = MaterialTheme.typography.bodySmall,
+              color = MaterialTheme.colorScheme.onPrimaryContainer)
         }
-    }
+      }
 }
 
 /**
@@ -230,7 +214,8 @@ fun NoteItem(
  * interactions.
  *
  * @param folder The folder data that will be displayed in this card.
- * @param navigationActions The navigationActions instance used to transition between different screens.
+ * @param navigationActions The navigationActions instance used to transition between different
+ *   screens.
  * @param noteViewModel The Note view model.
  * @param folderViewModel The Folder view model.
  * @param onClick The lambda function to be invoked when the folder card is clicked.
@@ -244,101 +229,94 @@ fun FolderItem(
     folderViewModel: FolderViewModel,
     onClick: () -> Unit
 ) {
-    val dropSuccess = remember { mutableStateOf(false) }
+  val dropSuccess = remember { mutableStateOf(false) }
 
-    Card(
-        modifier =
-        Modifier
-            .testTag("folderCard")
-            .padding(vertical = 4.dp)
-            .dragAndDropSource {
+  Card(
+      modifier =
+          Modifier.testTag("folderCard")
+              .padding(vertical = 4.dp)
+              .dragAndDropSource {
                 detectTapGestures(
                     // When tapping on a folder, perform onCLick
                     onTap = { onClick() },
                     onLongPress = {
-                        // Only allow drag-and-drop for root folders
-                        if (folder.parentFolderId == null) {
-                            folderViewModel.draggedFolder(folder)
-                            // Start a drag-and-drop operation to transfer the data being dragged
-                            startTransfer(
-                                DragAndDropTransferData(
-                                    // Transfer the folder Id as a ClipData object
-                                    ClipData.newPlainText("Folder", folder.id)
-                                )
-                            )
-                        }
+                      // Only allow drag-and-drop for root folders
+                      if (folder.parentFolderId == null) {
+                        folderViewModel.draggedFolder(folder)
+                        // Start a drag-and-drop operation to transfer the data being dragged
+                        startTransfer(
+                            DragAndDropTransferData(
+                                // Transfer the folder Id as a ClipData object
+                                ClipData.newPlainText("Folder", folder.id)))
+                      }
                     })
-            } // Enable drag-and-drop for the folder (as a target)
-            .dragAndDropTarget(
-                // Accept any drag-and-drop event (either folder or note in this case)
-                shouldStartDragAndDrop = { true },
-                // Handle the drop event
-                target =
-                remember {
-                    object : DragAndDropTarget {
-                        override fun onDrop(event: DragAndDropEvent): Boolean {
-                            // Get the dragged object Id TODO reviewer: should I extract this logic in separate
-                            // functions like handleDraggedNote and handleDraggedFolder or leave it as is?
+              } // Enable drag-and-drop for the folder (as a target)
+              .dragAndDropTarget(
+                  // Accept any drag-and-drop event (either folder or note in this case)
+                  shouldStartDragAndDrop = { true },
+                  // Handle the drop event
+                  target =
+                      remember {
+                        object : DragAndDropTarget {
+                          override fun onDrop(event: DragAndDropEvent): Boolean {
+                            // Get the dragged object Id TODO reviewer: should I extract this logic
+                            // in separate
+                            // functions like handleDraggedNote and handleDraggedFolder or leave it
+                            // as is?
                             val draggedObjectId =
                                 event.toAndroidDragEvent().clipData.getItemAt(0).text.toString()
                             val draggedNote = noteViewModel.draggedNote.value
                             if (draggedNote != null && draggedNote.id == draggedObjectId) {
-                                // Update the dragged note with the new folder Id
-                                noteViewModel.updateNote(
-                                    draggedNote.copy(folderId = folder.id), draggedNote.userId
-                                )
-                                noteViewModel.draggedNote(null)
-                                dropSuccess.value = true
-                                return true
+                              // Update the dragged note with the new folder Id
+                              noteViewModel.updateNote(
+                                  draggedNote.copy(folderId = folder.id), draggedNote.userId)
+                              noteViewModel.draggedNote(null)
+                              dropSuccess.value = true
+                              return true
                             }
                             // Get the dragged folder in case a folder is being dragged
                             val draggedFolder = folderViewModel.draggedFolder.value
-                            if (draggedFolder != null && draggedFolder.id == draggedObjectId &&
-                                draggedFolder.id != folder.id
-                            ) {
-                                // Update the dragged folder with the new parent folder Id.
-                                folderViewModel.updateFolder(
-                                    draggedFolder.copy(parentFolderId = folder.id), folder.userId
-                                )
-                                folderViewModel.draggedFolder(null)
-                                // Set dropSuccess to true to indicate that the drop was successful
-                                dropSuccess.value = true
-                                return true
+                            if (draggedFolder != null &&
+                                draggedFolder.id == draggedObjectId &&
+                                draggedFolder.id != folder.id) {
+                              // Update the dragged folder with the new parent folder Id.
+                              folderViewModel.updateFolder(
+                                  draggedFolder.copy(parentFolderId = folder.id), folder.userId)
+                              folderViewModel.draggedFolder(null)
+                              // Set dropSuccess to true to indicate that the drop was successful
+                              dropSuccess.value = true
+                              return true
                             }
                             dropSuccess.value = false
                             return false
-                        }
+                          }
 
-                        override fun onEnded(event: DragAndDropEvent) {
+                          override fun onEnded(event: DragAndDropEvent) {
                             if (dropSuccess.value) {
-                                folderViewModel.selectedFolder(folder)
-                                navigateToFolderContents(folder, navigationActions)
+                              folderViewModel.selectedFolder(folder)
+                              navigateToFolderContents(folder, navigationActions)
                             }
                             // Reset dropSuccess value
                             dropSuccess.value = false
+                          }
                         }
-                    }
-                }),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.background)
-    ) {
+                      }),
+      colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.background)) {
         Column(
-            modifier = Modifier.padding(8.dp), horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Image(
-                painter = painterResource(id = R.drawable.folder_icon),
-                contentDescription = "Folder Icon",
-                modifier = Modifier.size(80.dp)
-            )
+            modifier = Modifier.padding(8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+              Image(
+                  painter = painterResource(id = R.drawable.folder_icon),
+                  contentDescription = "Folder Icon",
+                  modifier = Modifier.size(80.dp))
 
-            Text(
-                modifier = Modifier.align(Alignment.CenterHorizontally),
-                text = folder.name,
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onBackground
-            )
-        }
-    }
+              Text(
+                  modifier = Modifier.align(Alignment.CenterHorizontally),
+                  text = folder.name,
+                  style = MaterialTheme.typography.bodyMedium,
+                  fontWeight = FontWeight.Bold,
+                  color = MaterialTheme.colorScheme.onBackground)
+            }
+      }
 }
 
 /**
@@ -359,66 +337,53 @@ fun FolderDialog(
     oldName: String = ""
 ) {
 
-    var name by remember { mutableStateOf("") }
-    var visibility: Visibility? by remember { mutableStateOf(oldVis) }
-    var expandedVisibility by remember { mutableStateOf(false) }
+  var name by remember { mutableStateOf("") }
+  var visibility: Visibility? by remember { mutableStateOf(oldVis) }
+  var expandedVisibility by remember { mutableStateOf(false) }
 
-    Dialog(onDismissRequest = onDismiss) {
-        Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
-            Column(
-                modifier = Modifier
-                    .padding(16.dp)
-                    .testTag("folderDialog"),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(0.92f),
-                    horizontalArrangement = Arrangement.Start
-                ) {
-                    Text("$action Folder", style = MaterialTheme.typography.titleLarge)
+  Dialog(onDismissRequest = onDismiss) {
+    Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
+      Column(
+          modifier = Modifier.padding(16.dp).testTag("folderDialog"),
+          verticalArrangement = Arrangement.spacedBy(8.dp),
+          horizontalAlignment = Alignment.CenterHorizontally) {
+            Row(
+                modifier = Modifier.fillMaxWidth(0.92f),
+                horizontalArrangement = Arrangement.Start) {
+                  Text("$action Folder", style = MaterialTheme.typography.titleLarge)
                 }
 
-                OutlinedTextField(
-                    value = name,
-                    onValueChange = { name = Folder.formatName(it) },
-                    label = { Text("Folder Name") },
-                    modifier = Modifier.testTag("inputFolderName")
-                )
+            OutlinedTextField(
+                value = name,
+                onValueChange = { name = Folder.formatName(it) },
+                label = { Text("Folder Name") },
+                modifier = Modifier.testTag("inputFolderName"))
 
-                OptionDropDownMenu(
-                    value = visibility?.toReadableString() ?: "Choose visibility",
-                    expanded = expandedVisibility,
-                    buttonTag = "visibilityButton",
-                    menuTag = "visibilityMenu",
-                    onExpandedChange = { expandedVisibility = it },
-                    items = Visibility.READABLE_STRINGS,
-                    onItemClick = { visibility = Visibility.fromReadableString(it) },
-                    modifier = Modifier.testTag("visibilityDropDown"),
-                    widthFactor = 0.94f
-                )
+            OptionDropDownMenu(
+                value = visibility?.toReadableString() ?: "Choose visibility",
+                expanded = expandedVisibility,
+                buttonTag = "visibilityButton",
+                menuTag = "visibilityMenu",
+                onExpandedChange = { expandedVisibility = it },
+                items = Visibility.READABLE_STRINGS,
+                onItemClick = { visibility = Visibility.fromReadableString(it) },
+                modifier = Modifier.testTag("visibilityDropDown"),
+                widthFactor = 0.94f)
 
-                Row(
-                    modifier = Modifier.fillMaxWidth(0.92f),
-                    horizontalArrangement = Arrangement.End
-                ) {
-                    Button(
-                        onClick = onDismiss,
-                        modifier = Modifier.testTag("dismissFolderAction")
-                    ) {
-                        Text("Cancel")
-                    }
-                    Button(
-                        enabled = name.isNotEmpty() && visibility != null,
-                        onClick = { onConfirm(name, visibility ?: Visibility.DEFAULT) },
-                        modifier = Modifier.testTag("confirmFolderAction")
-                    ) {
-                        Text(action)
-                    }
-                }
+            Row(modifier = Modifier.fillMaxWidth(0.92f), horizontalArrangement = Arrangement.End) {
+              Button(onClick = onDismiss, modifier = Modifier.testTag("dismissFolderAction")) {
+                Text("Cancel")
+              }
+              Button(
+                  enabled = name.isNotEmpty() && visibility != null,
+                  onClick = { onConfirm(name, visibility ?: Visibility.DEFAULT) },
+                  modifier = Modifier.testTag("confirmFolderAction")) {
+                    Text(action)
+                  }
             }
-        }
+          }
     }
+  }
 }
 
 /**
@@ -441,19 +406,18 @@ fun CustomDropDownMenu(
     onFabClick: () -> Unit,
     onDismissRequest: () -> Unit,
 ) {
-    Box {
-        FloatingActionButton(onClick = onFabClick, modifier = modifier) { fabIcon() }
-        DropdownMenu(expanded = expanded, onDismissRequest = onDismissRequest) {
-            menuItems.forEach { item ->
-                DropdownMenuItem(
-                    text = item.text,
-                    leadingIcon = item.icon,
-                    onClick = item.onClick,
-                    modifier = item.modifier
-                )
-            }
-        }
+  Box {
+    FloatingActionButton(onClick = onFabClick, modifier = modifier) { fabIcon() }
+    DropdownMenu(expanded = expanded, onDismissRequest = onDismissRequest) {
+      menuItems.forEach { item ->
+        DropdownMenuItem(
+            text = item.text,
+            leadingIcon = item.icon,
+            onClick = item.onClick,
+            modifier = item.modifier)
+      }
     }
+  }
 }
 
 /**
@@ -487,55 +451,49 @@ fun CustomLazyGrid(
     paddingValues: PaddingValues,
     columnContent: @Composable (ColumnScope.() -> Unit)
 ) {
-    val sortedFolders = folders.value.sortedBy { it.name }
-    val sortedNotes = notes.value.sortedBy { it.title }
+  val sortedFolders = folders.value.sortedBy { it.name }
+  val sortedNotes = notes.value.sortedBy { it.title }
 
-    Box(modifier = modifier) {
-        if (sortedNotes.isNotEmpty() || sortedFolders.isNotEmpty()) {
-            LazyVerticalGrid(
-                columns = GridCells.Adaptive(minSize = 100.dp),
-                contentPadding = PaddingValues(vertical = 20.dp),
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
-                modifier = gridModifier
-            ) {
-                items(sortedFolders.size) { index ->
-                    FolderItem(
-                        folder = sortedFolders[index],
-                        navigationActions = navigationActions,
-                        noteViewModel = noteViewModel,
-                        folderViewModel = folderViewModel
-                    ) {
-                        folderViewModel.selectedFolder(sortedFolders[index])
-                        navigateToFolderContents(sortedFolders[index], navigationActions)
-                    }
-                }
-                items(sortedNotes.size) { index ->
-                    NoteItem(
-                        note = sortedNotes[index],
-                        currentUser = userViewModel.currentUser.collectAsState(),
-                        context = context,
-                        noteViewModel = noteViewModel,
-                        folderViewModel = folderViewModel,
-                        showDialog = false,
-                        navigationActions = navigationActions
-                    ) {
-                        noteViewModel.selectedNote(sortedNotes[index])
-                        navigationActions.navigateTo(Screen.EDIT_NOTE)
-                    }
-                }
+  Box(modifier = modifier) {
+    if (sortedNotes.isNotEmpty() || sortedFolders.isNotEmpty()) {
+      LazyVerticalGrid(
+          columns = GridCells.Adaptive(minSize = 100.dp),
+          contentPadding = PaddingValues(vertical = 20.dp),
+          horizontalArrangement = Arrangement.spacedBy(4.dp),
+          modifier = gridModifier) {
+            items(sortedFolders.size) { index ->
+              FolderItem(
+                  folder = sortedFolders[index],
+                  navigationActions = navigationActions,
+                  noteViewModel = noteViewModel,
+                  folderViewModel = folderViewModel) {
+                    folderViewModel.selectedFolder(sortedFolders[index])
+                    navigateToFolderContents(sortedFolders[index], navigationActions)
+                  }
             }
-        } else {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                columnContent()
+            items(sortedNotes.size) { index ->
+              NoteItem(
+                  note = sortedNotes[index],
+                  currentUser = userViewModel.currentUser.collectAsState(),
+                  context = context,
+                  noteViewModel = noteViewModel,
+                  folderViewModel = folderViewModel,
+                  showDialog = false,
+                  navigationActions = navigationActions) {
+                    noteViewModel.selectedNote(sortedNotes[index])
+                    navigationActions.navigateTo(Screen.EDIT_NOTE)
+                  }
             }
-        }
+          }
+    } else {
+      Column(
+          modifier = Modifier.fillMaxSize().padding(paddingValues),
+          verticalArrangement = Arrangement.Center,
+          horizontalAlignment = Alignment.CenterHorizontally) {
+            columnContent()
+          }
     }
+  }
 }
 
 /**
@@ -573,21 +531,19 @@ fun NoteDataTextField(
     modifier: Modifier = Modifier,
     trailingIcon: @Composable (() -> Unit)? = null
 ) {
-    OutlinedTextField(
-        value = value,
-        onValueChange = onValueChange,
-        label = { Text(label) },
-        placeholder = { Text(placeholder) },
-        modifier = modifier,
-        trailingIcon = trailingIcon,
-        colors =
-        TextFieldDefaults.colors(
-            focusedIndicatorColor = MaterialTheme.colorScheme.primary,
-            unfocusedIndicatorColor = MaterialTheme.colorScheme.onBackground,
-            focusedContainerColor = MaterialTheme.colorScheme.background,
-            unfocusedContainerColor = MaterialTheme.colorScheme.background
-        )
-    )
+  OutlinedTextField(
+      value = value,
+      onValueChange = onValueChange,
+      label = { Text(label) },
+      placeholder = { Text(placeholder) },
+      modifier = modifier,
+      trailingIcon = trailingIcon,
+      colors =
+          TextFieldDefaults.colors(
+              focusedIndicatorColor = MaterialTheme.colorScheme.primary,
+              unfocusedIndicatorColor = MaterialTheme.colorScheme.onBackground,
+              focusedContainerColor = MaterialTheme.colorScheme.background,
+              unfocusedContainerColor = MaterialTheme.colorScheme.background))
 }
 
 /**
@@ -609,29 +565,27 @@ fun ScreenTopBar(
     icon: @Composable () -> Unit,
     iconTestTag: String
 ) {
-    TopAppBar(
-        colors =
-        TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface),
-        title = {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
-            ) {
-                Spacer(modifier = Modifier.weight(1.4f))
+  TopAppBar(
+      colors =
+          TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface),
+      title = {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center) {
+              Spacer(modifier = Modifier.weight(1.4f))
 
-                Text(
-                    title,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.testTag(titleTestTag)
-                )
+              Text(
+                  title,
+                  color = MaterialTheme.colorScheme.onSurface,
+                  modifier = Modifier.testTag(titleTestTag))
 
-                Spacer(modifier = Modifier.weight(2f))
+              Spacer(modifier = Modifier.weight(2f))
             }
-        },
-        navigationIcon = {
-            IconButton(onClick = onBackClick, Modifier.testTag(iconTestTag), content = icon)
-        })
+      },
+      navigationIcon = {
+        IconButton(onClick = onBackClick, Modifier.testTag(iconTestTag), content = icon)
+      })
 }
 
 /**
@@ -660,35 +614,29 @@ fun OptionDropDownMenu(
     modifier: Modifier = Modifier,
     widthFactor: Float = 0.8f
 ) {
-    BoxWithConstraints(modifier = Modifier.fillMaxWidth(widthFactor)) {
-        Button(
-            onClick = { onExpandedChange(!expanded) },
-            modifier = Modifier
-                .width(maxWidth)
-                .testTag(buttonTag)
-        ) {
-            Text(text = value)
-            Icon(Icons.Outlined.ArrowDropDown, "Dropdown icon")
+  BoxWithConstraints(modifier = Modifier.fillMaxWidth(widthFactor)) {
+    Button(
+        onClick = { onExpandedChange(!expanded) },
+        modifier = Modifier.width(maxWidth).testTag(buttonTag)) {
+          Text(text = value)
+          Icon(Icons.Outlined.ArrowDropDown, "Dropdown icon")
         }
 
-        DropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { onExpandedChange(false) },
-            modifier = modifier
-                .width(maxWidth)
-                .testTag(menuTag)
-        ) {
-            items.forEach { item ->
-                DropdownMenuItem(
-                    modifier = Modifier.testTag("item--$item"),
-                    text = { Text(item) },
-                    onClick = {
-                        onItemClick(item)
-                        onExpandedChange(false)
-                    })
-            }
+    DropdownMenu(
+        expanded = expanded,
+        onDismissRequest = { onExpandedChange(false) },
+        modifier = modifier.width(maxWidth).testTag(menuTag)) {
+          items.forEach { item ->
+            DropdownMenuItem(
+                modifier = Modifier.testTag("item--$item"),
+                text = { Text(item) },
+                onClick = {
+                  onItemClick(item)
+                  onExpandedChange(false)
+                })
+          }
         }
-    }
+  }
 }
 
 /**
@@ -700,21 +648,21 @@ fun OptionDropDownMenu(
  * @param navigationActions The navigation instance used to navigate between different screens.
  */
 fun navigateToFolderContents(folder: Folder, navigationActions: NavigationActions) {
-    if (folder.parentFolderId == null) {
-        // Don't add to the screen navigation stack as we are at the root folder
-        navigationActions.navigateTo(Screen.FOLDER_CONTENTS)
+  if (folder.parentFolderId == null) {
+    // Don't add to the screen navigation stack as we are at the root folder
+    navigationActions.navigateTo(Screen.FOLDER_CONTENTS)
+  } else {
+    val poppedId = navigationActions.popFromScreenNavigationStack()
+    if (poppedId == Screen.SEARCH) {
+      // If we come from search, don't push the folderId to the stack
+      navigationActions.pushToScreenNavigationStack(poppedId)
     } else {
-        val poppedId = navigationActions.popFromScreenNavigationStack()
-        if (poppedId == Screen.SEARCH) {
-            // If we come from search, don't push the folderId to the stack
-            navigationActions.pushToScreenNavigationStack(poppedId)
-        } else {
-            if (poppedId != null) {
-                navigationActions.pushToScreenNavigationStack(poppedId)
-            }
-            // Add the previously visited folder Id (parent) to the screen navigation stack
-            navigationActions.pushToScreenNavigationStack(folder.parentFolderId)
-        }
-        navigationActions.navigateTo(Screen.FOLDER_CONTENTS)
+      if (poppedId != null) {
+        navigationActions.pushToScreenNavigationStack(poppedId)
+      }
+      // Add the previously visited folder Id (parent) to the screen navigation stack
+      navigationActions.pushToScreenNavigationStack(folder.parentFolderId)
     }
+    navigationActions.navigateTo(Screen.FOLDER_CONTENTS)
+  }
 }
