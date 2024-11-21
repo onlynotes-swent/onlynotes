@@ -59,7 +59,7 @@ object EditNoteDestinations {
       Destination(
           screen = Screen.EDIT_NOTE_COMMENT,
           icon = Icons.AutoMirrored.Filled.Comment,
-          textId = "Comment")
+          textId = "Comments")
   val PDF =
       Destination(screen = Screen.EDIT_NOTE_PDF, icon = Icons.Filled.PictureAsPdf, textId = "PDF")
   val MARKDOWN =

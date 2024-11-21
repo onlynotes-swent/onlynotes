@@ -5,6 +5,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.sp
 
@@ -19,6 +21,7 @@ import androidx.compose.ui.unit.sp
 @Composable
 fun DeletePopup(title: String, text: String, onConfirm: () -> Unit, onDismiss: () -> Unit) {
   AlertDialog(
+      modifier = Modifier.testTag("deletePopup"),
       onDismissRequest = {
         // Call the dismissal action when the dialog is dismissed
         onDismiss()
@@ -35,6 +38,7 @@ fun DeletePopup(title: String, text: String, onConfirm: () -> Unit, onDismiss: (
       },
       confirmButton = {
         TextButton(
+            modifier = Modifier.testTag("deleteButton"),
             onClick = {
               // Call the confirm action
               onConfirm()
@@ -44,6 +48,7 @@ fun DeletePopup(title: String, text: String, onConfirm: () -> Unit, onDismiss: (
       },
       dismissButton = {
         TextButton(
+            modifier = Modifier.testTag("cancelButton"),
             onClick = {
               // Call the dismissal action
               onDismiss()

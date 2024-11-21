@@ -66,11 +66,13 @@ fun EditNoteNavigationMenu(
   // Discard Changes Dialog
   if (showDiscardChangesDialog) {
     AlertDialog(
+        modifier = Modifier.testTag("discardChangesDialog"),
         onDismissRequest = { showDiscardChangesDialog = false },
         title = { Text("Discard Changes?") },
         text = { Text("You have unsaved changes. Are you sure you want to discard them?") },
         confirmButton = {
           TextButton(
+              modifier = Modifier.testTag("discardChangesButton"),
               onClick = {
                 // Discard changes and navigate away
                 showDiscardChangesDialog = false
@@ -82,6 +84,7 @@ fun EditNoteNavigationMenu(
         },
         dismissButton = {
           TextButton(
+              modifier = Modifier.testTag("cancelDiscardChangesButton"),
               onClick = {
                 // Stay on the page
                 showDiscardChangesDialog = false

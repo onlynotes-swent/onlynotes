@@ -216,11 +216,13 @@ fun EditNoteGeneralTopBar(
   // Discard Changes Dialog
   if (showDiscardChangesDialog) {
     AlertDialog(
+        modifier = Modifier.testTag("discardChangesDialog"),
         onDismissRequest = { showDiscardChangesDialog = false },
         title = { Text("Discard Changes?") },
         text = { Text("You have unsaved changes. Are you sure you want to discard them?") },
         confirmButton = {
           TextButton(
+              modifier = Modifier.testTag("discardChangesButton"),
               onClick = {
                 // Discard changes and navigate away
                 showDiscardChangesDialog = false
@@ -236,6 +238,7 @@ fun EditNoteGeneralTopBar(
         },
         dismissButton = {
           TextButton(
+              modifier = Modifier.testTag("cancelDiscardChangesButton"),
               onClick = {
                 // Stay on the page
                 showDiscardChangesDialog = false
@@ -443,6 +446,7 @@ fun DeleteButton(
   if (currentUser != null && note != null) {
     var showDeleteConfirmation by remember { mutableStateOf(false) }
     FloatingActionButton(
+        modifier = Modifier.testTag("deleteNoteButton"),
         onClick = {
           // Show confirmation dialog when delete button is clicked
           showDeleteConfirmation = true
@@ -461,7 +465,7 @@ fun DeleteButton(
           onConfirm = {
             noteViewModel.deleteNoteById(note.id, note.userId)
             noteViewModel.selectedNote(null)
-            navigationActions.navigateTo(Screen.OVERVIEW)
+            navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
           },
           onDismiss = {
             // Close the dialog without deleting
