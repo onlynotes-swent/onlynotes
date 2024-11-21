@@ -342,9 +342,7 @@ fun handleSubFoldersAndNotes(
     userFolderSubFolders.forEach { subFolder ->
       folderViewModel.updateFolder(subFolder.copy(parentFolderId = null))
     }
-    userFolderNotes.forEach { note ->
-      noteViewModel.updateNote(note.copy(folderId = null))
-    }
+    userFolderNotes.forEach { note -> noteViewModel.updateNote(note.copy(folderId = null)) }
   }
 }
 

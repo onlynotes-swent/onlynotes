@@ -156,11 +156,7 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
    * @param onSuccess The function to call when the addition is successful.
    * @param onFailure The function to call when the addition fails.
    */
-  fun addNote(
-      note: Note,
-      onSuccess: () -> Unit = {},
-      onFailure: (Exception) -> Unit = {}
-  ) {
+  fun addNote(note: Note, onSuccess: () -> Unit = {}, onFailure: (Exception) -> Unit = {}) {
     repository.addNote(
         note = note,
         onSuccess = {
@@ -177,11 +173,7 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
    * @param onSuccess The function to call when the update is successful.
    * @param onFailure The function to call when the update fails.
    */
-  fun updateNote(
-      note: Note,
-      onSuccess: () -> Unit = {},
-      onFailure: (Exception) -> Unit = {}
-  ) {
+  fun updateNote(note: Note, onSuccess: () -> Unit = {}, onFailure: (Exception) -> Unit = {}) {
     repository.updateNote(
         note = note,
         onSuccess = {

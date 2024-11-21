@@ -162,6 +162,5 @@ class NoteViewModelTest {
     }
     noteViewModel.getNotesFromFolder(testNote.folderId!!)
     assertEquals(noteViewModel.folderNotes.value, listOf(testNote))
-
   }
 }

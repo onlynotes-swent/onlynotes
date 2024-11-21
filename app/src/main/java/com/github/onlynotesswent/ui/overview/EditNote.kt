@@ -290,10 +290,7 @@ fun EditNoteScreen(
                 CommentsSection(
                     updatedComments,
                     { updatedComments = it },
-                    {
-                      noteViewModel.updateNote(
-                          note!!.copy(comments = updatedComments))
-                    })
+                    { noteViewModel.updateNote(note!!.copy(comments = updatedComments)) })
               }
         }
       }
