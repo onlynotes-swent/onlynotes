@@ -2,8 +2,8 @@ package com.github.onlynotesswent.model.note
 
 import android.os.Looper
 import androidx.test.core.app.ApplicationProvider
-import com.github.onlynotesswent.utils.Course
-import com.github.onlynotesswent.utils.Visibility
+import com.github.onlynotesswent.model.common.Course
+import com.github.onlynotesswent.model.common.Visibility
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.android.gms.tasks.Task
 import com.google.android.gms.tasks.Tasks

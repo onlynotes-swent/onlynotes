@@ -1,7 +1,7 @@
 package com.github.onlynotesswent.model.note
 
-import com.github.onlynotesswent.utils.Course
-import com.github.onlynotesswent.utils.Visibility
+import com.github.onlynotesswent.model.common.Course
+import com.github.onlynotesswent.model.common.Visibility
 import com.google.firebase.Timestamp
 import java.security.MessageDigest
 

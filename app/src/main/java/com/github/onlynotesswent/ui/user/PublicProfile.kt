@@ -1,12 +1,13 @@
 package com.github.onlynotesswent.ui.user
 
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -17,6 +18,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
@@ -27,13 +29,13 @@ import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Scaffold
@@ -58,6 +60,7 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -71,6 +74,7 @@ import com.github.onlynotesswent.ui.navigation.LIST_TOP_LEVEL_DESTINATION
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
 import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
+import com.github.onlynotesswent.ui.theme.Typography
 import com.google.firebase.auth.FirebaseAuth
 
 // User Profile Home screen:
@@ -125,16 +129,12 @@ fun PublicProfileScreen(
 ) {
   val currentUser = userViewModel.currentUser.collectAsState()
   val profileUser = userViewModel.profileUser.collectAsState()
-  val followButtonText = remember { mutableStateOf("Follow") }
 
   // Display the user's profile information
   ProfileScaffold(navigationActions, userViewModel) {
     ProfileContent(profileUser, navigationActions, userViewModel, fileViewModel)
     if (profileUser.value != null && currentUser.value != null) {
-      followButtonText.value =
-          if (profileUser.value!!.friends.followers.contains(currentUser.value!!.uid)) "Unfollow"
-          else "Follow"
-      FollowUnfollowButton(userViewModel, followButtonText)
+      FollowUnfollowButton(userViewModel, profileUser.value!!.uid)
     }
   }
 }
@@ -276,6 +276,7 @@ fun TopProfileBar(
  * @param user The user whose profile information is to be displayed.
  * @param userViewModel The ViewModel for the user.
  * @param navigationActions The navigation actions.
+ * @param fileViewModel The ViewModel for downloading images.
  */
 @Composable
 fun ProfileContent(
@@ -294,9 +295,7 @@ fun ProfileContent(
   if (user.value == null) {
     Text("User not found", modifier = Modifier.testTag("userNotFound"))
   } else {
-    // ADD PROFILE PICTURE HERE
     ElevatedCard(
-        // TODO: Aisel - change colors here
         modifier = Modifier.fillMaxSize().padding(40.dp).testTag("profileCard"),
     ) {
       val borderPadding = 20.dp
@@ -305,7 +304,7 @@ fun ProfileContent(
           verticalArrangement = Arrangement.Center,
           horizontalAlignment = Alignment.CenterHorizontally) {
 
-            // Profile picture (change later)
+            // Profile picture
             NonModifiableProfilePicture(user, profilePictureUri, fileViewModel)
 
             Spacer(modifier = Modifier.height(20.dp))
@@ -380,11 +379,22 @@ fun ProfileContent(
                         modifier = Modifier.testTag("followersText"))
                   }
             }
-            // Display the dropdown menus for the user's following and followers
-            UserDropdownMenu(
-                isFollowingMenuShown, following, userViewModel, navigationActions, "following")
-            UserDropdownMenu(
-                isFollowerMenuShown, followers, userViewModel, navigationActions, "followers")
+            // Display bottom sheets for the user's following and followers
+            UserBottomSheet(
+                isFollowingMenuShown,
+                following,
+                userViewModel,
+                fileViewModel,
+                navigationActions,
+                "following")
+            UserBottomSheet(
+                isFollowerMenuShown,
+                followers,
+                userViewModel,
+                fileViewModel,
+                navigationActions,
+                "followers",
+                user.value == userViewModel.currentUser.collectAsState().value)
           }
     }
   }
@@ -394,75 +404,180 @@ fun ProfileContent(
  * Displays a button that allows the user to follow or unfollow another user.
  *
  * @param userViewModel The ViewModel for the user.
- * @param followButtonText The text to be displayed on the button.
+ * @param otherUserId The ID of the user to follow or unfollow.
  */
 @Composable
-fun FollowUnfollowButton(userViewModel: UserViewModel, followButtonText: MutableState<String>) {
+fun FollowUnfollowButton(userViewModel: UserViewModel, otherUserId: String) {
+  val followButtonText = remember { mutableStateOf("") }
+  followButtonText.value =
+      if (userViewModel.currentUser
+          .collectAsState()
+          .value!!
+          .friends
+          .following
+          .contains(otherUserId))
+          "Unfollow"
+      else "Follow"
   OutlinedButton(
-      modifier = Modifier.testTag("followUnfollowButton"),
+      contentPadding = PaddingValues(horizontal = 10.dp),
+      shape = RoundedCornerShape(25),
+      modifier = Modifier.testTag("followUnfollowButton--$otherUserId").width(90.dp),
       onClick = {
         if (followButtonText.value == "Follow")
             userViewModel.followUser(
-                userViewModel.profileUser.value!!.uid,
-                { userViewModel.refreshProfileUser(userViewModel.profileUser.value!!.uid) },
+                otherUserId,
+                {
+                  userViewModel.profileUser.value?.let { userViewModel.refreshProfileUser(it.uid) }
+                },
                 {})
         else
             userViewModel.unfollowUser(
-                userViewModel.profileUser.value!!.uid,
-                { userViewModel.refreshProfileUser(userViewModel.profileUser.value!!.uid) },
+                otherUserId,
+                {
+                  userViewModel.profileUser.value?.let { userViewModel.refreshProfileUser(it.uid) }
+                },
                 {})
       }) {
-        Text(followButtonText.value, modifier = Modifier.testTag("followUnfollowButtonText"))
+        Text(
+            followButtonText.value,
+            fontWeight = FontWeight(600),
+            modifier = Modifier.testTag("followUnfollowButtonText--$otherUserId"),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis)
       }
 }
 
 /**
- * Displays a dropdown menu with the list of users.
+ * Displays a button that allows the user to remove a follower.
  *
- * @param expanded The state of the dropdown menu.
- * @param users The state of the list of users to be displayed in the dropdown menu.
  * @param userViewModel The ViewModel for the user.
- * @param navigationActions The navigation actions.
- * @param tag The tag for the dropdown menu (either "following" or "followers"), used for testing.
+ * @param followerId The ID of the follower to remove.
  */
 @Composable
-fun UserDropdownMenu(
+fun RemoveFollowerButton(userViewModel: UserViewModel, followerId: String) {
+  val context = LocalContext.current
+  OutlinedButton(
+      contentPadding = PaddingValues(horizontal = 10.dp),
+      shape = RoundedCornerShape(25),
+      modifier = Modifier.testTag("removeFollowerButton--$followerId").width(90.dp),
+      onClick = {
+        // TODO: Implement remove follower functionality
+        Toast.makeText(context, "Not Implemented Yet", Toast.LENGTH_SHORT).show()
+      }) {
+        Text(
+            "Remove",
+            fontWeight = FontWeight(600),
+            modifier = Modifier.testTag("removeFollowerText--$followerId"),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis)
+      }
+}
+
+/**
+ * Displays a bottom sheet with the list of users.
+ *
+ * @param expanded The state of the bottom sheet.
+ * @param users The state of the list of users to be displayed in the dropdown menu.
+ * @param userViewModel The ViewModel for the user.
+ * @param fileViewModel The ViewModel for downloading images.
+ * @param navigationActions The navigation actions.
+ * @param tag The tag for the dropdown menu (either "following" or "followers"), used for testing.
+ * @param isFollowerSheetOfCurrentUser Whether the sheet is for the current user's followers, in
+ *   which case the "Remove" button is displayed.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun UserBottomSheet(
     expanded: MutableState<Boolean>,
     users: State<List<User>>,
     userViewModel: UserViewModel,
+    fileViewModel: FileViewModel,
     navigationActions: NavigationActions,
-    tag: String = ""
+    tag: String = "",
+    isFollowerSheetOfCurrentUser: Boolean = false
 ) {
-  DropdownMenu(
-      expanded = expanded.value,
-      onDismissRequest = { expanded.value = false },
-      modifier =
-          Modifier.testTag("${tag}DropdownMenu")
-              .fillMaxWidth(0.7f) // Set a fixed width for the dropdown menu
-      ) {
-        Column(modifier = Modifier.fillMaxWidth()) {
-          if (users.value.isEmpty()) {
-            Text("No $tag to display", modifier = Modifier.padding(8.dp).testTag("${tag}Absent"))
-          }
-          users.value.forEach { user ->
-            Text(
-                "${user.fullName()} — @${user.userName}",
-                modifier =
-                    Modifier.testTag("item--${user.userName}")
-                        .clickable {
+  if (expanded.value) {
+    ModalBottomSheet(
+        onDismissRequest = { expanded.value = false },
+        modifier = Modifier.testTag("${tag}BottomSheet")) {
+          Column(
+              modifier = Modifier.fillMaxWidth().padding(bottom = 30.dp),
+              verticalArrangement = Arrangement.Center,
+              horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                    "List of ${tag.replaceFirstChar { it.uppercase()}}:",
+                    style = Typography.headlineMedium,
+                    modifier = Modifier.padding(8.dp).testTag("${tag}Title"))
+                if (users.value.isEmpty()) {
+                  Text(
+                      "No $tag to display",
+                      modifier = Modifier.padding(8.dp).testTag("${tag}Absent"))
+                }
+                Column(
+                    modifier = Modifier.fillMaxWidth().padding(start = 30.dp, end = 10.dp),
+                    horizontalAlignment = Alignment.Start) {
+                      users.value.forEach { user ->
+                        UserItem(user, userViewModel, fileViewModel, isFollowerSheetOfCurrentUser) {
                           expanded.value = false
                           switchProfileTo(user, userViewModel, navigationActions)
                         }
-                        .padding(8.dp) // Add padding for better UI
-                )
-          }
+                      }
+                    }
+              }
         }
-      }
+  }
+}
+
+/**
+ * Displays a user item with a thumbnail picture, full name, handle and follow/unfollow button.
+ *
+ * @param user The user to be displayed.
+ * @param userViewModel The ViewModel for the user.
+ * @param fileViewModel The ViewModel for downloading images.
+ * @param isFollowerSheetOfCurrentUser Whether the sheet is for the current user's followers, in
+ *   which case the "Remove" button is displayed.
+ * @param onClick The action to be performed when the user item is clicked.
+ */
+@Composable
+fun UserItem(
+    user: User,
+    userViewModel: UserViewModel,
+    fileViewModel: FileViewModel,
+    isFollowerSheetOfCurrentUser: Boolean = false,
+    onClick: () -> Unit,
+) {
+  Row(
+      modifier = Modifier.padding(8.dp).testTag("userItem").clickable { onClick() },
+  ) {
+    ThumbnailPic(user, fileViewModel)
+    Column(
+        verticalArrangement = Arrangement.Center,
+        modifier = Modifier.padding(horizontal = 10.dp).weight(1f)) {
+          // Display the user's full name and handle (username)
+          Text(
+              user.fullName(),
+              style = Typography.bodyLarge,
+              fontWeight = FontWeight(500),
+              modifier = Modifier.alpha(0.9f),
+              maxLines = 1,
+              overflow = TextOverflow.Ellipsis)
+          Text(user.userHandle(), style = Typography.bodyLarge, modifier = Modifier.alpha(0.7f))
+        }
+    if (isFollowerSheetOfCurrentUser) {
+      RemoveFollowerButton(userViewModel, user.uid)
+    } else if (user.uid != userViewModel.currentUser.collectAsState().value!!.uid) {
+      FollowUnfollowButton(userViewModel, user.uid)
+    }
+  }
 }
 
 /**
  * Switches the profile to the specified user. If the user is the current user, navigates to the
  * user's profile. Otherwise, sets the profile user and navigates to the public profile.
+ *
+ * @param user The user to switch the profile to.
+ * @param userViewModel The ViewModel for the user.
+ * @param navigationActions The navigation actions.
  */
 fun switchProfileTo(
     user: User,
@@ -501,13 +616,40 @@ fun DisplayBioCard(user: State<User?>) {
   }
 }
 
+/**
+ * Displays the user's thumbnail profile picture, by wrapping the NonModifiableProfilePicture
+ * composable.
+ *
+ * @param user The user whose profile picture is to be displayed.
+ * @param fileViewModel The ViewModel for downloading images.
+ * @param size The size of the profile picture.
+ */
+@Composable
+fun ThumbnailPic(user: User, fileViewModel: FileViewModel, size: Int = 40) {
+  val profilePictureUri = remember { mutableStateOf("") }
+  val userState = remember { mutableStateOf(user) }
+  NonModifiableProfilePicture(
+      userState, profilePictureUri, fileViewModel, size, "thumbnail--${user.uid}")
+}
+
+/**
+ * Displays the user's profile picture.
+ *
+ * @param user The user whose profile picture is to be displayed.
+ * @param profilePictureUri The URI of the profile picture.
+ * @param fileViewModel The ViewModel for downloading images.
+ * @param size The size of the profile picture.
+ * @param testTag The test tag for the profile picture.
+ */
 @Composable
 fun NonModifiableProfilePicture(
     user: State<User?>,
     profilePictureUri: MutableState<String>,
-    fileViewModel: FileViewModel
+    fileViewModel: FileViewModel,
+    size: Int = 150,
+    testTag: String = "profilePicture"
 ) {
-  Box(modifier = Modifier.size(150.dp)) {
+  Box(modifier = Modifier.size(size.dp)) {
     // Download the profile picture from Firebase Storage if it hasn't been downloaded yet
     if (user.value!!.hasProfilePicture && profilePictureUri.value.isBlank()) {
       fileViewModel.downloadFile(
@@ -533,11 +675,7 @@ fun NonModifiableProfilePicture(
     Image(
         painter = painter,
         contentDescription = "Profile Picture",
-        modifier =
-            Modifier.testTag("profilePicture")
-                .size(150.dp)
-                .clip(CircleShape)
-                .border(2.dp, Color.Gray, CircleShape),
+        modifier = Modifier.testTag(testTag).size(size.dp).clip(CircleShape),
         contentScale = ContentScale.Crop)
   }
 }

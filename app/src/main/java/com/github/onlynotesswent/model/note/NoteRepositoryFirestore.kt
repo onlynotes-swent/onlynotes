@@ -1,8 +1,8 @@
 package com.github.onlynotesswent.model.note
 
 import android.util.Log
-import com.github.onlynotesswent.utils.Course
-import com.github.onlynotesswent.utils.Visibility
+import com.github.onlynotesswent.model.common.Course
+import com.github.onlynotesswent.model.common.Visibility
 import com.google.android.gms.tasks.Task
 import com.google.firebase.Firebase
 import com.google.firebase.Timestamp
