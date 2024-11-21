@@ -254,10 +254,10 @@ class FolderRepositoryFirestoreTest {
       mockQuerySnapshotTask
     }
     `when`(mockQuerySnapshot.documents)
-      .thenReturn(listOf(mockDocumentSnapshot, mockDocumentSnapshot2))
+        .thenReturn(listOf(mockDocumentSnapshot, mockDocumentSnapshot2))
     var exceptionThrown: Exception? = null
     folderRepositoryFirestore.deleteFolderContents(
-      testFolder, noteViewModel, onSuccess = {}, onFailure = { e -> exceptionThrown = e })
+        testFolder, noteViewModel, onSuccess = {}, onFailure = { e -> exceptionThrown = e })
     assertNotNull(exceptionThrown)
     assertEquals(errorMessage, exceptionThrown?.message)
   }

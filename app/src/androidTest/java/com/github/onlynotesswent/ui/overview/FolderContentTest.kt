@@ -1,7 +1,6 @@
 package com.github.onlynotesswent.ui.overview
 
 import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.assertIsNotDisplayed
 import androidx.compose.ui.test.filter
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
@@ -56,30 +55,28 @@ class FolderContentTest {
           ))
 
   private val subNoteList1 =
-
-    listOf(
-      Note(
-          id = "2",
-          title = "Sample Sub Note",
-          date = Timestamp.now(),
-          visibility = Visibility.DEFAULT,
-          userId = "2",
-          folderId = "1",
-          noteCourse = Course("CS-100", "Sample Course", 2024, "path"),
-      ))
+      listOf(
+          Note(
+              id = "2",
+              title = "Sample Sub Note",
+              date = Timestamp.now(),
+              visibility = Visibility.DEFAULT,
+              userId = "2",
+              folderId = "1",
+              noteCourse = Course("CS-100", "Sample Course", 2024, "path"),
+          ))
 
   private val subNoteList2 =
-
-    listOf(
-      Note(
-        id = "3",
-        title = "Sample Sub Note3",
-        date = Timestamp.now(),
-        visibility = Visibility.DEFAULT,
-        userId = "1",
-        folderId = "1",
-        noteCourse = Course("CS-100", "Sample Course", 2024, "path"),
-      ))
+      listOf(
+          Note(
+              id = "3",
+              title = "Sample Sub Note3",
+              date = Timestamp.now(),
+              visibility = Visibility.DEFAULT,
+              userId = "1",
+              folderId = "1",
+              noteCourse = Course("CS-100", "Sample Course", 2024, "path"),
+          ))
 
   private val folderList =
       listOf(Folder(id = "1", name = "name", userId = "1", parentFolderId = null))
@@ -219,9 +216,12 @@ class FolderContentTest {
     composeTestRule.onNodeWithTag("MoveOutConfirmButton").assertIsDisplayed()
     composeTestRule.onNodeWithTag("MoveOutConfirmButton").performClick()
     composeTestRule.onNodeWithTag("goBackButton").performClick()
-    composeTestRule.onAllNodesWithTag("noteCard").filter(hasText("Sample Sub Note3"))
-      .onFirst().assertIsDisplayed()
-    //composeTestRule.onNodeWithTag("noteCard").assertIsNotDisplayed()
+    composeTestRule
+        .onAllNodesWithTag("noteCard")
+        .filter(hasText("Sample Sub Note3"))
+        .onFirst()
+        .assertIsDisplayed()
+    // composeTestRule.onNodeWithTag("noteCard").assertIsNotDisplayed()
   }
 
   @Test

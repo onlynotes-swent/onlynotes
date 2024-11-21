@@ -1,6 +1,5 @@
 package com.github.onlynotesswent.model.note
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.initializer
@@ -136,7 +135,8 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
           if (note.folderId != null) {
             getNotesFromFolder(note.folderId)
           }
-        }, onFailure = { })
+        },
+        onFailure = {})
   }
 
   /**
