@@ -1,6 +1,5 @@
 package com.github.onlynotesswent.model.users
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.initializer
@@ -73,7 +72,7 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
       uid: String,
       onSuccess: () -> Unit = {},
       onUserNotFound: () -> Unit = {},
-      onFailure: () -> Unit = {}
+      onFailure: (Exception) -> Unit = {}
   ) {
     repository.getUserById(
         id = uid,
@@ -86,7 +85,7 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
           _profileUser.value = null
         },
         onFailure = {
-          onFailure()
+          onFailure(it)
           _profileUser.value = null
         })
   }
@@ -103,7 +102,7 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
   fun refreshCurrentUser(
       onSuccess: () -> Unit = {},
       onUserNotFound: () -> Unit = {},
-      onFailure: () -> Unit = {}
+      onFailure: (Exception) -> Unit = {}
   ) {
     _currentUser.value?.let { user ->
       repository.getUserById(
@@ -117,7 +116,7 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
             _currentUser.value = null
           },
           onFailure = {
-            onFailure()
+            onFailure(it)
             _currentUser.value = null
           })
     }
@@ -159,10 +158,17 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
 
   /**
    * Retrieves all users from the repository and sets the all users state to the retrieved users.
+   *
+   * @param onSuccess function to call when the users are successfully retrieved.
+   * @param onFailure function to call when the retrieval fails.
    */
-  fun getAllUsers() {
+  fun getAllUsers(onSuccess: (List<User>) -> Unit = {}, onFailure: (Exception) -> Unit = {}) {
     repository.getAllUsers(
-        { _allUsers.value = it }, { Log.e("UserViewModel", "Failed to get all users", it) })
+        onSuccess = {
+          onSuccess(it)
+          _allUsers.value = it
+        },
+        onFailure = onFailure)
   }
 
   /**
@@ -211,10 +217,16 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
    *
    * @param id The ID of the user to delete.
    * @param onSuccess function to call when the user is successfully deleted.
+   * @param onUserNotFound function to call when the user is not found.
    * @param onFailure function to call when the deletion fails.
    */
-  fun deleteUserById(id: String, onSuccess: () -> Unit = {}, onFailure: (Exception) -> Unit = {}) {
-    repository.deleteUserById(id, onSuccess, onFailure)
+  fun deleteUserById(
+      id: String,
+      onSuccess: () -> Unit = {},
+      onUserNotFound: () -> Unit = {},
+      onFailure: (Exception) -> Unit = {}
+  ) {
+    repository.deleteUserById(id, onSuccess, onUserNotFound, onFailure)
   }
 
   // SOCIAL FUNCTIONS:

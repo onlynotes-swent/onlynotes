@@ -97,7 +97,7 @@ class UserViewModelTest {
     }
 
     // Mock the delete user method to call onSuccess
-    `when`(mockRepositoryFirestore.deleteUserById(eq("1"), any(), any())).thenAnswer {
+    `when`(mockRepositoryFirestore.deleteUserById(eq("1"), any(), any(), any())).thenAnswer {
       val onSuccess = it.arguments[1] as () -> Unit
       onSuccess()
     }
@@ -136,7 +136,7 @@ class UserViewModelTest {
     userViewModel.refreshCurrentUser()
     assertNull(userViewModel.currentUser.value) // no current user is set, cannot refresh
 
-    userViewModel.addUser(user, {}, {}) // set current user
+    userViewModel.addUser(user) // set current user
     assert(userViewModel.currentUser.value == user)
 
     // Mock getUserById to return the other user, this will be called by refreshUser
@@ -146,6 +146,76 @@ class UserViewModelTest {
     }
     userViewModel.refreshCurrentUser()
     assert(userViewModel.currentUser.value == otherUser) // user was correctly refreshed
+  }
+
+  @Test
+  fun `refreshUser user not found`() {
+
+    userViewModel.addUser(user) // set current user
+    assert(userViewModel.currentUser.value == user)
+
+    // Mock getUserById, this will be called by refreshUser
+    `when`(mockRepositoryFirestore.getUserById(eq("1"), any(), any(), any())).thenAnswer {
+      val onUserNotFound = it.arguments[2] as () -> Unit
+      onUserNotFound()
+    }
+    userViewModel.refreshCurrentUser(onUserNotFound = { assert(true) })
+    assert(userViewModel.currentUser.value == null)
+  }
+
+  @Test
+  fun `refreshUser failed`() {
+    val testException = Exception("Test exception")
+
+    userViewModel.addUser(user) // set current user
+    assert(userViewModel.currentUser.value == user)
+
+    // Mock getUserById to return failure, this will be called by refreshUser
+    `when`(mockRepositoryFirestore.getUserById(eq("1"), any(), any(), any())).thenAnswer {
+      val onFailure = it.arguments[3] as (Exception) -> Unit
+      onFailure(testException)
+    }
+    userViewModel.refreshCurrentUser(
+        onFailure = {
+          assert(true)
+          assertEquals(it, testException)
+        })
+    assert(userViewModel.currentUser.value == null)
+  }
+
+  @Test
+  fun `refreshProfileUser refreshes user`() {
+    // Mock getUserById to return the other user, this will be called by refreshProfileUser
+    `when`(mockRepositoryFirestore.getUserById(eq(otherUser.uid), any(), any(), any())).thenAnswer {
+      val onSuccess = it.arguments[1] as (User) -> Unit
+      onSuccess(otherUser)
+    }
+    userViewModel.refreshProfileUser(otherUser.uid, onSuccess = { assert(true) })
+    assert(userViewModel.profileUser.value == otherUser) // user was correctly refreshed
+
+    // Mock getUserById to return userNotFound, this will be called by refreshProfileUser
+    `when`(mockRepositoryFirestore.getUserById(eq(otherUser.uid), any(), any(), any())).thenAnswer {
+      val onUserNotFound = it.arguments[2] as () -> Unit
+      onUserNotFound()
+    }
+    userViewModel.refreshProfileUser(otherUser.uid, onUserNotFound = { assert(true) })
+    assert(userViewModel.profileUser.value == null)
+
+    // Mock getUserById to return failure, this will be called by refreshProfileUser
+    val testException = Exception("Test exception")
+
+    // Mock getUserById to return failure, this will be called by refreshUser
+    `when`(mockRepositoryFirestore.getUserById(eq(otherUser.uid), any(), any(), any())).thenAnswer {
+      val onFailure = it.arguments[3] as (Exception) -> Unit
+      onFailure(testException)
+    }
+    userViewModel.refreshProfileUser(
+        uid = otherUser.uid,
+        onFailure = {
+          assert(true)
+          assertEquals(it, testException)
+        })
+    assert(userViewModel.profileUser.value == null)
   }
 
   @Test
@@ -178,7 +248,7 @@ class UserViewModelTest {
 
   @Test
   fun `getAllUsers should call repository getAllUsers`() {
-    userViewModel.getAllUsers()
+    userViewModel.getAllUsers({ assert(true) }, { assert(false) })
     verify(mockRepositoryFirestore, timeout(1000)).getAllUsers(anyOrNull(), anyOrNull())
     assert(userViewModel.allUsers.value.isNotEmpty())
   }
@@ -207,7 +277,7 @@ class UserViewModelTest {
     var onSuccessCalled = false
     userViewModel.deleteUserById(user.uid, { onSuccessCalled = true }, { assert(false) })
     verify(mockRepositoryFirestore, timeout(1000))
-        .deleteUserById(anyString(), anyOrNull(), anyOrNull())
+        .deleteUserById(anyString(), anyOrNull(), anyOrNull(), anyOrNull())
     assert(onSuccessCalled)
   }
 
@@ -359,3 +429,13 @@ class UserViewModelTest {
     assert(returnedUsers.isEmpty())
   }
 }
+
+// private fun verifyErrorLog(msg: String) {
+//  // Get all the logs
+//  val logs = ShadowLog.getLogs()
+//
+//  // Check for the debug log that should be generated
+//  val errorLog = logs.find { it.type == Log.ERROR && it.tag == UserViewModel.TAG && it.msg == msg
+// }
+//  assert(errorLog != null) { "Expected error log was not found!" }
+// }

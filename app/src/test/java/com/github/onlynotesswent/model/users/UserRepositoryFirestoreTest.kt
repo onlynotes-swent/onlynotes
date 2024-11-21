@@ -1,5 +1,6 @@
 package com.github.onlynotesswent.model.users
 
+import android.util.Log
 import com.google.android.gms.tasks.Task
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
@@ -21,13 +22,14 @@ import org.mockito.Mockito.atLeastOnce
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
-import org.mockito.junit.MockitoJUnitRunner
 import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.timeout
 import org.mockito.kotlin.verify
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.shadows.ShadowLog
 
-@RunWith(MockitoJUnitRunner::class)
+@RunWith(RobolectricTestRunner::class)
 class UserRepositoryFirestoreTest {
 
   @Mock private lateinit var mockFirestore: FirebaseFirestore
@@ -150,17 +152,95 @@ class UserRepositoryFirestoreTest {
   }
 
   @Test
+  fun `updateUser username taken`() {
+    `when`(mockQuery.whereNotEqualTo("uid", user.uid)).thenReturn(mockQuery)
+    `when`(mockQuerySnapshot.isEmpty).thenReturn(false)
+
+    var onFailureCalled = false
+    // Call updateUser method
+    userRepositoryFirestore.updateUser(
+        user,
+        { assert(false) },
+        {
+          onFailureCalled = true
+          assert(it is UserRepositoryFirestore.UsernameTakenException)
+        })
+
+    assert(onFailureCalled)
+  }
+
+  @Test
+  fun `updateUser handles failure`() {
+    val testException = Exception("Test exception")
+
+    `when`(mockQuery.whereNotEqualTo("uid", user.uid)).thenReturn(mockQuery)
+
+    // Override stubbing of MockQueryTask to simulate a failure
+    `when`(mockQueryTask.addOnSuccessListener(any())).thenReturn(mockQueryTask)
+
+    `when`(mockQueryTask.addOnFailureListener(any())).thenAnswer {
+      val listener = it.arguments[0] as com.google.android.gms.tasks.OnFailureListener
+      listener.onFailure(testException)
+      mockQueryTask
+    }
+
+    // Call updateUser method
+    var onFailureCalled = false
+    userRepositoryFirestore.updateUser(
+        user,
+        { assert(false) },
+        {
+          assertEquals(testException, it)
+          onFailureCalled = true
+        })
+    assert(onFailureCalled)
+
+    verifyErrorLog("Error updating user")
+  }
+
+  @Test
   fun `deleteUserById should call Firestore collection`() {
     `when`(mockDocumentReference.delete()).thenReturn(mockResolveTask)
 
     // Call deleteUserById method
     var onSuccessCalled = false
-    userRepositoryFirestore.deleteUserById(user.uid, { onSuccessCalled = true }, { assert(false) })
+    userRepositoryFirestore.deleteUserById(
+        user.uid, { onSuccessCalled = true }, { assert(false) }, { assert(false) })
 
     // Verify if Firestore collection was called multiple times
     verify(mockCollectionReference, atLeastOnce()).document(any())
 
     assert(onSuccessCalled)
+  }
+
+  @Test
+  fun `deleteUserById handles failure to delete`() {
+    val testException = Exception("Test exception")
+
+    `when`(mockDocumentReference.delete()).thenReturn(mockResolveTask)
+
+    // Override stubbing of MockResolveTask to simulate a failure
+    `when`(mockResolveTask.addOnSuccessListener(any())).thenReturn(mockResolveTask)
+
+    `when`(mockResolveTask.addOnFailureListener(any())).thenAnswer {
+      val listener = it.arguments[0] as com.google.android.gms.tasks.OnFailureListener
+      listener.onFailure(testException)
+      mockResolveTask
+    }
+
+    var onFailureCalled = false
+    // Call deleteUserById method
+    userRepositoryFirestore.deleteUserById(
+        user.uid,
+        { assert(false) },
+        { assert(false) },
+        {
+          onFailureCalled = true
+          assertEquals(testException, it)
+        })
+
+    assert(onFailureCalled)
+    verifyErrorLog("Error deleting user by id")
   }
 
   @Test
@@ -296,6 +376,33 @@ class UserRepositoryFirestoreTest {
   }
 
   @Test
+  fun `addUser handles failure`() {
+    val testException = Exception("Test exception")
+
+    // Override stubbing of MockQueryTask to simulate a failure
+    `when`(mockQueryTask.addOnSuccessListener(any())).thenReturn(mockQueryTask)
+
+    `when`(mockQueryTask.addOnFailureListener(any())).thenAnswer {
+      val listener = it.arguments[0] as com.google.android.gms.tasks.OnFailureListener
+      listener.onFailure(testException)
+      mockQueryTask
+    }
+
+    var onFailureCalled = false
+    // Call addUser method
+    userRepositoryFirestore.addUser(
+        user,
+        { assert(false) },
+        {
+          onFailureCalled = true
+          assertEquals(testException, it)
+        })
+
+    assert(onFailureCalled)
+    verifyErrorLog("Error adding user")
+  }
+
+  @Test
   fun `init should call FirebaseAuth currentUser`() {
     val mockAuth = mock(FirebaseAuth::class.java)
     val mockUser = mock(FirebaseUser::class.java)
@@ -360,6 +467,38 @@ class UserRepositoryFirestoreTest {
   }
 
   @Test
+  fun `addFollowerTo handles failure`() {
+    val testException = Exception("Test exception")
+
+    // Mock the behavior of the DocumentReference update operation
+    `when`(mockDocumentReference.update(eq("friends.followers"), any())).thenReturn(mockResolveTask)
+    `when`(mockDocumentReference.update(eq("friends.following"), any())).thenReturn(mockResolveTask)
+
+    // Override stubbing of mockResolveTask to simulate a failure
+    `when`(mockResolveTask.addOnSuccessListener(any())).thenReturn(mockResolveTask)
+
+    `when`(mockResolveTask.addOnFailureListener(any())).thenAnswer {
+      val listener = it.arguments[0] as com.google.android.gms.tasks.OnFailureListener
+      listener.onFailure(testException)
+      mockResolveTask
+    }
+
+    // Call addFollowerTo method
+    var onFailureCalled = false
+    userRepositoryFirestore.addFollowerTo(
+        user.uid,
+        "4",
+        { assert(false) },
+        {
+          onFailureCalled = true
+          assertEquals(testException, it)
+        })
+
+    assert(onFailureCalled)
+    verifyErrorLog("Error adding follower to user")
+  }
+
+  @Test
   fun `removeFollowerFrom should call Firestore collection`() {
     // Mock the behavior of the DocumentReference update operation
     `when`(mockDocumentReference.update(eq("friends.followers"), any())).thenReturn(mockResolveTask)
@@ -373,6 +512,37 @@ class UserRepositoryFirestoreTest {
     // Verify if Firestore collection was called
     verify(mockCollectionReference, timeout(1000)).document(user.uid)
     assert(onSuccessCalled)
+  }
+
+  @Test
+  fun `removeFollowerFrom handles failure`() {
+    val testException = Exception("Test exception")
+
+    `when`(mockDocumentReference.update(eq("friends.followers"), any())).thenReturn(mockResolveTask)
+    `when`(mockDocumentReference.update(eq("friends.following"), any())).thenReturn(mockResolveTask)
+
+    // Override stubbing of MockResolveTask to simulate a failure
+    `when`(mockResolveTask.addOnSuccessListener(any())).thenReturn(mockResolveTask)
+
+    `when`(mockResolveTask.addOnFailureListener(any())).thenAnswer {
+      val listener = it.arguments[0] as com.google.android.gms.tasks.OnFailureListener
+      listener.onFailure(testException)
+      mockResolveTask
+    }
+
+    // Call updateUser method
+    var onFailureCalled = false
+    userRepositoryFirestore.removeFollowerFrom(
+        user.uid,
+        "4",
+        { assert(false) },
+        {
+          onFailureCalled = true
+          assertEquals(testException, it)
+        })
+
+    assert(onFailureCalled)
+    verifyErrorLog("Error removing follower from user")
   }
 
   @Test
@@ -393,4 +563,43 @@ class UserRepositoryFirestoreTest {
     assertEquals(1, users!!.size)
     assertEquals(user, users!![0])
   }
+
+  @Test
+  fun `getUsersById handles failure`() {
+    val testException = Exception("Test exception")
+
+    `when`(mockCollectionReference.whereIn("uid", listOf(user.uid))).thenReturn(mockQuery)
+
+    // Override stubbing of mockQueryTask to simulate a failure
+    `when`(mockQueryTask.addOnSuccessListener(any())).thenReturn(mockQueryTask)
+
+    `when`(mockQueryTask.addOnFailureListener(any())).thenAnswer {
+      val listener = it.arguments[0] as com.google.android.gms.tasks.OnFailureListener
+      listener.onFailure(testException)
+      mockQueryTask
+    }
+
+    // Call addFollowerTo method
+    var onFailureCalled = false
+    userRepositoryFirestore.getUsersById(
+        listOf(user.uid),
+        { assert(false) },
+        {
+          onFailureCalled = true
+          assertEquals(testException, it)
+        })
+
+    assert(onFailureCalled)
+    verifyErrorLog("Error getting users by id")
+  }
+}
+
+private fun verifyErrorLog(msg: String) {
+  // Get all the logs
+  val logs = ShadowLog.getLogs()
+
+  // Check for the debug log that should be generated
+  val errorLog =
+      logs.find { it.type == Log.ERROR && it.tag == UserRepositoryFirestore.TAG && it.msg == msg }
+  assert(errorLog != null) { "Expected error log was not found!" }
 }

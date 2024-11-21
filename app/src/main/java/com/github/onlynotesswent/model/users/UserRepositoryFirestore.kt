@@ -63,8 +63,10 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore) : UserRepositor
         .document(id)
         .get()
         .addOnSuccessListener { document ->
-          if (!document.exists()) onUserNotFound()
-          else {
+          if (!document.exists()) {
+            onUserNotFound()
+            Log.e(TAG, "User not found by id")
+          } else {
             val user = documentSnapshotToUser(document)
             if (user == null) onFailure(Exception("Error converting document to User"))
             else onSuccess(user)
@@ -86,8 +88,10 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore) : UserRepositor
         .whereEqualTo("email", email)
         .get()
         .addOnSuccessListener { result ->
-          if (result.isEmpty) onUserNotFound()
-          else {
+          if (result.isEmpty) {
+            onUserNotFound()
+            Log.e(TAG, "User not found by email")
+          } else {
             val user = documentSnapshotToUser(result.documents[0])
             if (user == null) onFailure(Exception("Error converting document to User"))
             else onSuccess(user)
@@ -119,7 +123,12 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore) : UserRepositor
         }
   }
 
-  override fun deleteUserById(id: String, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) {
+  override fun deleteUserById(
+      id: String,
+      onSuccess: () -> Unit,
+      onUserNotFound: () -> Unit,
+      onFailure: (Exception) -> Unit
+  ) {
     getUserById(
         id = id,
         onSuccess = { user ->
@@ -145,14 +154,8 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore) : UserRepositor
                 Log.e(TAG, "Error deleting user by id", exception)
               }
         },
-        onUserNotFound = {
-          onFailure(Exception("User not found"))
-          Log.e(TAG, "User not found")
-        },
-        onFailure = { exception ->
-          onFailure(exception)
-          Log.e(TAG, "Error deleting user by id", exception)
-        })
+        onUserNotFound = onUserNotFound,
+        onFailure = onFailure)
   }
 
   override fun addUser(user: User, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) {
@@ -264,6 +267,6 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore) : UserRepositor
   }
 
   companion object {
-    private const val TAG = "UserRepositoryFirestore"
+    const val TAG = "UserRepositoryFirestore"
   }
 }
