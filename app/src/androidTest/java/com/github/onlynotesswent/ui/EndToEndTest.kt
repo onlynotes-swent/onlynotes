@@ -10,7 +10,6 @@ import androidx.compose.ui.test.assertIsNotDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.filter
-import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
@@ -18,7 +17,6 @@ import androidx.compose.ui.test.onChildren
 import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performTextClearance
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTextReplacement
@@ -292,11 +290,12 @@ class EndToEndTest {
     composeTestRule.onNodeWithTag("createNoteButton").performClick()
 
     // Modify the note title and save the changes
-    composeTestRule.onNodeWithTag("EditTitle textField").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("EditTitle textField").performTextInput("Updated Title")
+    composeTestRule.onNodeWithTag("saveNoteButton").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("saveNoteButton").performClick()
 
-    composeTestRule.onNodeWithTag("editNoteColumn").performScrollToNode(hasTestTag("Save button"))
-    composeTestRule.onNodeWithTag("Save button").performClick()
+    // Exit the note edit screen
+    composeTestRule.onNodeWithTag("closeButton").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("closeButton").performClick()
 
     // Mock retrieval of notes
     `when`(noteRepository.getRootNotesFrom(eq(testUser1.uid), any(), any())).thenAnswer { invocation

@@ -105,8 +105,6 @@ fun EditNoteScreen(
       modifier = Modifier.testTag("editNoteScreen"),
       topBar = {
         EditNoteGeneralTopBar(
-            title = "Edit Note",
-            titleTestTag = "editNoteTitle",
             noteViewModel = noteViewModel,
             navigationActions = navigationActions,
             actions = {
@@ -166,8 +164,6 @@ fun EditNoteScreen(
  * screen and a close button that navigates back to the overview screen. If the user has made
  * changes to the note, a dialog is displayed to confirm discarding the changes.
  *
- * @param title The title of the screen.
- * @param titleTestTag The test tag for the title.
  * @param noteViewModel The ViewModel that provides the current note to be edited and handles note
  *   updates.
  * @param navigationActions The navigation view model used to transition between different screens.
@@ -177,8 +173,6 @@ fun EditNoteScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditNoteGeneralTopBar(
-    title: String,
-    titleTestTag: String,
     noteViewModel: NoteViewModel,
     navigationActions: NavigationActions,
     actions: @Composable RowScope.() -> Unit,
@@ -193,13 +187,14 @@ fun EditNoteGeneralTopBar(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center) {
               Text(
-                  title,
+                  "Edit Note",
                   color = MaterialTheme.colorScheme.onSurface,
-                  modifier = Modifier.testTag(titleTestTag))
+                  modifier = Modifier.testTag("editNoteTitle"))
             }
       },
       navigationIcon = {
         IconButton(
+            modifier = Modifier.testTag("closeButton"),
             onClick = {
               // Check if any fields were modified
               if (isModified) {
