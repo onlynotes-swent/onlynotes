@@ -105,6 +105,20 @@ class FolderViewModelTest {
   }
 
   @Test
+  fun updateFolderUpdatesStatesWhenSuccess() {
+    `when`(mockFolderRepository.updateFolder(eq(testFolder), any(), any())).thenAnswer { invocation
+      ->
+      val onSuccess = invocation.getArgument<() -> Unit>(1)
+      onSuccess()
+    }
+    folderViewModel.updateFolder(testFolder, "1")
+
+    verify(mockFolderRepository).updateFolder(eq(testFolder), any(), any())
+    verify(mockFolderRepository).getRootFoldersFromUid(eq("1"), any(), any())
+    verify(mockFolderRepository).getSubFoldersOf(eq("pid"), any(), any())
+  }
+
+  @Test
   fun draggedFolderUpdatesCorrectly() {
     folderViewModel.draggedFolder(testFolder)
     assertThat(folderViewModel.draggedFolder.value, `is`(testFolder))

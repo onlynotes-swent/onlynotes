@@ -22,6 +22,7 @@ import com.github.onlynotesswent.model.users.UserRepository
 import com.github.onlynotesswent.model.users.UserViewModel
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
+import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
 import com.google.firebase.Timestamp
 import org.junit.Before
 import org.junit.Rule
@@ -81,6 +82,7 @@ class FolderContentTest {
   private val folderList =
       listOf(Folder(id = "1", name = "name", userId = "1", parentFolderId = null))
 
+  private val subFolder = Folder("2", "sub name", "1", "1")
   @get:Rule val composeTestRule = createComposeRule()
 
   @Before
@@ -183,7 +185,32 @@ class FolderContentTest {
   }
 
   @Test
-  fun moveOutDifferentUserDoesNoteMoveNote() {
+  fun deleteRootFolder() {
+    composeTestRule.onNodeWithTag("folderSettingsButton").performClick()
+    composeTestRule.onNodeWithTag("deleteFolderButton").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("deleteFolderButton").performClick()
+
+    verify(mockNavigationActions).navigateTo(TopLevelDestinations.OVERVIEW)
+  }
+
+  @Test
+  fun deleteSubFolder() {
+    `when`(mockFolderRepository.getSubFoldersOf(eq("1"), any(), any())).then { invocation ->
+      val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(1)
+      onSuccess(listOf(subFolder))
+    }
+    folderViewModel.getSubFoldersOf("1")
+    // Go to subfolder
+    composeTestRule.onNodeWithTag("folderCard").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("folderCard").performClick()
+    verify(mockNavigationActions).navigateToFolderContents(subFolder)
+    composeTestRule.onNodeWithTag("folderSettingsButton").performClick()
+    composeTestRule.onNodeWithTag("deleteFolderButton").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("deleteFolderButton").performClick()
+  }
+
+  @Test
+  fun moveOutDifferentUserDoesNotMoveNote() {
     `when`(mockNoteRepository.getNotesFromFolder(eq("1"), any(), any())).then { invocation ->
       val onSuccess = invocation.getArgument<(List<Note>) -> Unit>(1)
       onSuccess(subNoteList1)
@@ -221,7 +248,6 @@ class FolderContentTest {
         .filter(hasText("Sample Sub Note3"))
         .onFirst()
         .assertIsDisplayed()
-    // composeTestRule.onNodeWithTag("noteCard").assertIsNotDisplayed()
   }
 
   @Test

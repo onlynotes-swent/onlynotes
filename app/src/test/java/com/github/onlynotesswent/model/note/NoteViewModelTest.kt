@@ -110,6 +110,19 @@ class NoteViewModelTest {
   }
 
   @Test
+  fun updateNoteUpdatesStatesWhenSuccess() {
+    `when`(mockNoteRepository.updateNote(eq(testNote), any(), any())).thenAnswer { invocation ->
+      val onSuccess = invocation.getArgument<() -> Unit>(1)
+      onSuccess()
+    }
+    noteViewModel.updateNote(testNote, "1")
+
+    verify(mockNoteRepository).updateNote(eq(testNote), any(), any())
+    verify(mockNoteRepository).getRootNotesFrom(eq("1"), any(), any())
+    verify(mockNoteRepository).getNotesFromFolder(eq("1"), any(), any())
+  }
+
+  @Test
   fun draggedNoteUpdatesCorrectly() {
     noteViewModel.draggedNote(testNote)
     assertThat(noteViewModel.draggedNote.value, `is`(testNote))
