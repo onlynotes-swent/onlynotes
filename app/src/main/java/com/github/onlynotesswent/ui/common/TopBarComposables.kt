@@ -2,7 +2,7 @@ package com.github.onlynotesswent.ui.common
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
@@ -32,8 +32,7 @@ fun ScreenTopBar(
     titleTestTag: String,
     onBackClick: () -> Unit,
     icon: @Composable () -> Unit,
-    iconTestTag: String,
-    actions: @Composable RowScope.() -> Unit = {}
+    iconTestTag: String
 ) {
   TopAppBar(
       colors =
@@ -42,15 +41,16 @@ fun ScreenTopBar(
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Start) {
+            horizontalArrangement = Arrangement.Center) {
+              Spacer(modifier = Modifier.weight(1.4f))
               Text(
                   title,
                   color = MaterialTheme.colorScheme.onSurface,
                   modifier = Modifier.testTag(titleTestTag))
+              Spacer(modifier = Modifier.weight(2f))
             }
       },
       navigationIcon = {
         IconButton(onClick = onBackClick, Modifier.testTag(iconTestTag), content = icon)
-      },
-      actions = actions)
+      })
 }

@@ -1,6 +1,5 @@
 package com.github.onlynotesswent.ui.overview.editnote
 
-import androidx.compose.foundation.layout.RowScope
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Icon
@@ -19,7 +18,6 @@ fun EditNoteTopBar(
     noteViewModel: NoteViewModel,
     navigationActions: NavigationActions,
     onClick: () -> Unit = {},
-    actions: @Composable RowScope.() -> Unit = {}
 ) {
   ScreenTopBar(
       title = title,
@@ -40,6 +38,5 @@ fun EditNoteTopBar(
             contentDescription = "Exit Edit Note",
             tint = MaterialTheme.colorScheme.onSurface)
       },
-      iconTestTag = "goToOverviewButton",
-      actions = actions)
+      iconTestTag = "goToOverviewButton")
 }

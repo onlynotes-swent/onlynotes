@@ -1,8 +1,11 @@
 package com.github.onlynotesswent.ui.overview.editnote
 
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -12,8 +15,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.ArrowDropUp
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.outlined.Clear
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -25,8 +30,11 @@ import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -35,6 +43,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.github.onlynotesswent.model.common.Course
@@ -78,11 +87,24 @@ fun EditNoteScreen(
   var courseYear by remember { mutableIntStateOf(note?.noteCourse?.courseYear ?: 0) }
   var visibility by remember { mutableStateOf(note?.visibility ?: Visibility.DEFAULT) }
 
+  var isModified by remember { mutableStateOf(false) }
+
+  // Check if the note has been modified
+  LaunchedEffect(note, noteTitle, courseName, courseCode, courseYear, visibility) {
+    isModified =
+        note != null &&
+            (noteTitle != note!!.title ||
+                courseName != note!!.noteCourse.courseName ||
+                courseCode != note!!.noteCourse.courseCode ||
+                courseYear != note!!.noteCourse.courseYear ||
+                visibility != note!!.visibility)
+  }
+
   Scaffold(
       floatingActionButton = { DeleteButton(currentUser, note, navigationActions, noteViewModel) },
       modifier = Modifier.testTag("editNoteScreen"),
       topBar = {
-        EditNoteTopBar(
+        EditNoteGeneralTopBar(
             title = "Edit Note",
             titleTestTag = "editNoteTitle",
             noteViewModel = noteViewModel,
@@ -97,10 +119,10 @@ fun EditNoteScreen(
                     courseName = courseName,
                     courseYear = courseYear,
                     currentUser = currentUser!!,
-                    navigationActions = navigationActions,
                     noteViewModel = noteViewModel)
               }
-            })
+            },
+            isModified = isModified)
       },
       bottomBar = {
         EditNoteNavigationMenu(
@@ -120,6 +142,7 @@ fun EditNoteScreen(
                       .verticalScroll(rememberScrollState()),
               verticalArrangement = Arrangement.spacedBy(8.dp),
               horizontalAlignment = Alignment.CenterHorizontally) {
+                // Display the note fields
                 NoteSection(
                     noteTitle = noteTitle,
                     onNoteTitleChange = { noteTitle = it },
@@ -136,6 +159,110 @@ fun EditNoteScreen(
       }
 }
 
+/**
+ * Displays the top app bar for the edit note screen. The top app bar includes the title of the
+ * screen and a close button that navigates back to the overview screen. If the user has made
+ * changes to the note, a dialog is displayed to confirm discarding the changes.
+ *
+ * @param title The title of the screen.
+ * @param titleTestTag The test tag for the title.
+ * @param noteViewModel The ViewModel that provides the current note to be edited and handles note
+ *   updates.
+ * @param navigationActions The navigation view model used to transition between different screens.
+ * @param actions The actions to display in the top app bar.
+ * @param isModified A flag indicating whether the note has been modified.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun EditNoteGeneralTopBar(
+    title: String,
+    titleTestTag: String,
+    noteViewModel: NoteViewModel,
+    navigationActions: NavigationActions,
+    actions: @Composable RowScope.() -> Unit,
+    isModified: Boolean
+) {
+  var showDiscardChangesDialog by remember { mutableStateOf(false) }
+
+  TopAppBar(
+      title = {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center) {
+              Text(
+                  title,
+                  color = MaterialTheme.colorScheme.onSurface,
+                  modifier = Modifier.testTag(titleTestTag))
+            }
+      },
+      navigationIcon = {
+        IconButton(
+            onClick = {
+              // Check if any fields were modified
+              if (isModified) {
+                showDiscardChangesDialog = true
+              } else {
+                if (noteViewModel.selectedNote.value?.folderId != null) {
+                  navigationActions.navigateTo(Screen.FOLDER_CONTENTS)
+                } else {
+                  navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
+                }
+                noteViewModel.selectedNote(null)
+              }
+            }) {
+              Icon(Icons.Default.Close, contentDescription = "Close")
+            }
+      },
+      actions = { actions() })
+
+  // Discard Changes Dialog
+  if (showDiscardChangesDialog) {
+    AlertDialog(
+        onDismissRequest = { showDiscardChangesDialog = false },
+        title = { Text("Discard Changes?") },
+        text = { Text("You have unsaved changes. Are you sure you want to discard them?") },
+        confirmButton = {
+          TextButton(
+              onClick = {
+                // Discard changes and navigate away
+                showDiscardChangesDialog = false
+                if (noteViewModel.selectedNote.value?.folderId != null) {
+                  navigationActions.navigateTo(Screen.FOLDER_CONTENTS)
+                } else {
+                  navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
+                }
+                noteViewModel.selectedNote(null)
+              }) {
+                Text("Discard")
+              }
+        },
+        dismissButton = {
+          TextButton(
+              onClick = {
+                // Stay on the page
+                showDiscardChangesDialog = false
+              }) {
+                Text("Cancel")
+              }
+        })
+  }
+}
+
+/**
+ * Displays the note fields for editing. The fields include the note title, visibility, course name,
+ *
+ * @param noteTitle The title of the note.
+ * @param onNoteTitleChange The callback function to update the note title.
+ * @param courseName The name of the course.
+ * @param onCourseNameChange The callback function to update the course name.
+ * @param courseCode The code of the course.
+ * @param onCourseCodeChange The callback function to update the course code.
+ * @param courseYear The year of the course.
+ * @param onCourseYearChange The callback function to update the course year.
+ * @param visibility The visibility of the note.
+ * @param onVisibilityChange The callback function to update the visibility.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NoteSection(
@@ -260,7 +387,6 @@ fun ErrorScreen(errorText: String) {
  * @param courseName The updated course name of the note.
  * @param courseYear The updated course year of the note.
  * @param currentUser The current user.
- * @param navigationActions The navigation view model used to transition between different screens.
  * @param noteViewModel The ViewModel that provides the current note to be edited and handles note
  *   updates.
  */
@@ -273,9 +399,9 @@ fun SaveButton(
     courseName: String,
     courseYear: Int,
     currentUser: User,
-    navigationActions: NavigationActions,
     noteViewModel: NoteViewModel
 ) {
+  val context = LocalContext.current
   IconButton(
       enabled = noteTitle.isNotEmpty(),
       onClick = {
@@ -290,13 +416,8 @@ fun SaveButton(
                 folderId = note.folderId,
                 comments = note.comments),
             currentUser.uid)
-        if (note.folderId != null) {
-          noteViewModel.selectedNote(null)
-          navigationActions.navigateTo(Screen.FOLDER_CONTENTS)
-        } else {
-          noteViewModel.selectedNote(null)
-          navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
-        }
+        noteViewModel.getNoteById(note.id)
+        Toast.makeText(context, "Note saved", Toast.LENGTH_SHORT).show()
       },
       modifier = Modifier.testTag("saveNoteButton")) {
         Icon(
