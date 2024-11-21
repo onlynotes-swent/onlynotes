@@ -225,8 +225,7 @@ fun TopProfileBar(
           } else if (userProfileId != null) {
             // set profile user to userProfileId and navigate to public profile screen
             // If we pop from stack and the profile id corresponds to profile user (we will navigate
-            // to
-            // the current screen), so we pop twice to get to previous visited public profile
+            // to the current screen), so we pop twice to get to previous visited public profile
             userViewModel.getUserById(
                 userProfileId,
                 { userViewModel.setProfileUser(it) },

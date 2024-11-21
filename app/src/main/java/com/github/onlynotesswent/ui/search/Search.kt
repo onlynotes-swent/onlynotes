@@ -238,8 +238,6 @@ fun SearchScreen(
                 items(filteredUsers.value.size) { index ->
                   UserItem(filteredUsers.value[index]) {
                     userViewModel.setProfileUser(filteredUsers.value[index])
-                    // Push search screen to stack to allow back navigation
-                    // navigationActions.pushToScreenNavigationStack(Screen.SEARCH)
                     // Navigate to profile screen and register it in navigation stack
                     switchProfileTo(filteredUsers.value[index], userViewModel, navigationActions)
                   }

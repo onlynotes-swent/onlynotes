@@ -198,6 +198,23 @@ fun UserNotFoundFolderContentScreen() {
   Log.e("FolderContentScreen", "User not found")
 }
 
+/**
+ * Display the top bar of the folder content screen.
+ *
+ * @param folder the folder to display
+ * @param updatedName the updated name of the folder
+ * @param onUpdateName function to update the name of the folder
+ * @param navigationActions actions that can be performed in the app
+ * @param folderViewModel view model for the folder
+ * @param noteViewModel view model for the note
+ * @param currentUser the current user
+ * @param context the context of the app
+ * @param userFolderSubFolders the sub folders of the user
+ * @param userFolderNotes the notes of the user
+ * @param expanded whether the dropdown menu is expanded
+ * @param onExpandedChange function to change the expanded state
+ * @param showRenameDialog function to show the rename dialog
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FolderContentTopBar(
@@ -284,10 +301,11 @@ fun FolderContentTopBar(
                             // Retrieve parent folder id to navigate to the parent folder
                             val parentFolderId = navigationActions.popFromScreenNavigationStack()
                             if(parentFolderId != null) {
-                              folderViewModel.getFolderById(parentFolderId)
+                                folderViewModel.getFolderById(parentFolderId)
                             } else {
                                 navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
                             }
+
                             handleSubFoldersAndNotes(
                                 folder = folder,
                                 userFolderSubFolders = userFolderSubFolders.value,
@@ -362,7 +380,7 @@ fun handleSubFoldersAndNotes(
       noteViewModel.updateNote(note.copy(folderId = folder.parentFolderId), note.userId)
     }
   } else {
-    // folder is root folder
+    // Folder is root folder
     userFolderSubFolders.forEach { subFolder ->
       folderViewModel.updateFolder(subFolder.copy(parentFolderId = null), subFolder.userId)
     }
@@ -447,6 +465,8 @@ fun CreateSubItemFab(
  * @param userFolderSubFolders the sub folders in the folder
  * @param folderViewModel the view model for the folder
  * @param noteViewModel the view model for the note
+ * @param userViewModel the view model for the user
+ * @param context the context of the app
  * @param navigationActions actions that can be performed in the app
  */
 @Composable

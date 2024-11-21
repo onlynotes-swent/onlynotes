@@ -43,15 +43,16 @@ import com.github.onlynotesswent.utils.CustomDropDownMenu
 import com.github.onlynotesswent.utils.CustomDropDownMenuItem
 import com.github.onlynotesswent.utils.CustomLazyGrid
 import com.github.onlynotesswent.utils.FolderDialog
-import kotlinx.coroutines.flow.StateFlow
 
 /**
  * Displays the overview screen which contains a list of publicNotes retrieved from the ViewModel.
  * If there are no publicNotes, it shows a text to the user indicating no publicNotes are available.
  * It also provides a floating action button to add a new note.
  *
- * @param navigationActions The navigation view model used to transition between different screens.
+ * @param navigationActions The navigationActions instance used to transition between different screens.
  * @param noteViewModel The ViewModel that provides the list of publicNotes to display.
+ * @param userViewModel The ViewModel that provides the current user.
+ * @param folderViewModel The ViewModel that provides the list of folders to display.
  */
 @Composable
 fun OverviewScreen(
@@ -198,6 +199,7 @@ fun CreateItemFab(
  * @param folderViewModel The ViewModel that provides the list of folders to display.
  * @param noteViewModel The ViewModel that provides the list of publicNotes to display.
  * @param userViewModel The ViewModel that provides the current user.
+ * @param context The context of the app.
  * @param navigationActions The navigation view model used to transition between different screens.
  */
 @Composable
