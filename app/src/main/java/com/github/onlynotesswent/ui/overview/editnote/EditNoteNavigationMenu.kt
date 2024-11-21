@@ -1,11 +1,17 @@
 package com.github.onlynotesswent.ui.overview.editnote
 
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import com.github.onlynotesswent.ui.navigation.LIST_EDIT_NOTE_DESTINATION
@@ -15,8 +21,12 @@ import com.github.onlynotesswent.ui.navigation.NavigationActions
 fun EditNoteNavigationMenu(
     navigationActions: NavigationActions,
     selectedItem: String,
-    onClick: () -> Unit = {}
+    onClick: () -> Unit = {},
+    isModified: Boolean = false,
 ) {
+  var showDiscardChangesDialog by remember { mutableStateOf(false) }
+  var navigateTo by remember { mutableStateOf<String?>(null) }
+
   NavigationBar(
       modifier = Modifier.testTag("bottomNavigationMenu"),
       containerColor = MaterialTheme.colorScheme.surface,
@@ -26,8 +36,13 @@ fun EditNoteNavigationMenu(
           NavigationBarItem(
               selected = isSelected,
               onClick = {
-                tab.screen?.let { navigationActions.navigateTo(it) }
-                onClick()
+                if (isModified) {
+                  showDiscardChangesDialog = true
+                  navigateTo = tab.screen
+                } else {
+                  tab.screen?.let { navigationActions.navigateTo(it) }
+                  onClick()
+                }
               },
               modifier = Modifier.testTag(tab.textId),
               icon = {
@@ -47,4 +62,32 @@ fun EditNoteNavigationMenu(
               })
         }
       }
+
+  // Discard Changes Dialog
+  if (showDiscardChangesDialog) {
+    AlertDialog(
+        onDismissRequest = { showDiscardChangesDialog = false },
+        title = { Text("Discard Changes?") },
+        text = { Text("You have unsaved changes. Are you sure you want to discard them?") },
+        confirmButton = {
+          TextButton(
+              onClick = {
+                // Discard changes and navigate away
+                showDiscardChangesDialog = false
+                navigateTo?.let { navigationActions.navigateTo(it) }
+                onClick()
+              }) {
+                Text("Discard")
+              }
+        },
+        dismissButton = {
+          TextButton(
+              onClick = {
+                // Stay on the page
+                showDiscardChangesDialog = false
+              }) {
+                Text("Cancel")
+              }
+        })
+  }
 }

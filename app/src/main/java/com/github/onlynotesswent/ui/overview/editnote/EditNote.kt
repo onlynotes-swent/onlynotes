@@ -126,7 +126,9 @@ fun EditNoteScreen(
       },
       bottomBar = {
         EditNoteNavigationMenu(
-            navigationActions = navigationActions, selectedItem = Screen.EDIT_NOTE)
+            navigationActions = navigationActions,
+            selectedItem = Screen.EDIT_NOTE,
+            isModified = isModified)
       }) { paddingValues ->
         if (currentUser == null) {
           ErrorScreen("User not found. Please sign out then in again.")
