@@ -130,9 +130,25 @@ class NavigationActionsTest {
   }
 
   @Test
+  fun testNavigateToFolderContentsWithNonEmptyStack() {
+    val folder = Folder(id = "1", name = "Test Folder", userId = "1", parentFolderId = "1")
+    navigationActions.pushToScreenNavigationStack("2")
+
+    navigationActions.navigateToFolderContents(folder)
+
+    val poppedId = navigationActions.popFromScreenNavigationStack()
+    assertEquals(poppedId, "1")
+    val secondPoppedId = navigationActions.popFromScreenNavigationStack()
+    assertEquals(secondPoppedId, "2")
+
+    verify(navHostController).navigate(Screen.FOLDER_CONTENTS)
+    verifyNoMoreInteractions(navHostController)
+  }
+
+  @Test
   fun testNavigateToFolderContentsFromSearch() {
 
-    val folder = Folder(id = "1", name = "Test Folder", userId = "1", parentFolderId = null)
+    val folder = Folder(id = "1", name = "Test Folder", userId = "1", parentFolderId = "1")
     navigationActions.pushToScreenNavigationStack(Screen.SEARCH)
 
     navigationActions.navigateToFolderContents(folder)
