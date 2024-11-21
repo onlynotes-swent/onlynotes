@@ -185,7 +185,7 @@ class OverviewTest {
     folderViewModel.getRootFoldersFromUid("1")
     composeTestRule.onNodeWithTag("folderCard").assertIsDisplayed()
     composeTestRule.onNodeWithTag("folderCard").performClick()
-    verify(navigationActions).navigateTo(screen = Screen.FOLDER_CONTENTS)
+    verify(navigationActions).navigateToFolderContents(any())
   }
 
   @Test

@@ -3,6 +3,7 @@ package com.github.onlynotesswent.ui.navigation
 import androidx.navigation.NavDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.NavOptionsBuilder
+import com.github.onlynotesswent.model.folder.Folder
 import java.util.EmptyStackException
 import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertNull
@@ -12,7 +13,9 @@ import org.junit.Assert.assertThrows
 import org.junit.Before
 import org.junit.Test
 import org.mockito.Mockito.mock
+import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
+import org.mockito.Mockito.verifyNoMoreInteractions
 import org.mockito.Mockito.`when`
 import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
@@ -98,5 +101,47 @@ class NavigationActionsTest {
     navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
     val overviewId = navigationActions.popFromScreenNavigationStack()
     assertNull(overviewId)
+  }
+
+  @Test
+  fun testNavigateToFolderContentsWithRootFolder() {
+
+    val rootFolder = Folder(id = "1", name = "Root Folder", userId = "1", parentFolderId = null)
+
+    navigationActions.navigateToFolderContents(rootFolder)
+    // Since root folder, dont push id to stack
+    val nullStackElement = navigationActions.popFromScreenNavigationStack()
+    assertNull(nullStackElement)
+
+    verify(navHostController).navigate(Screen.FOLDER_CONTENTS)
+    verifyNoMoreInteractions(navHostController)
+  }
+
+  @Test
+  fun testNavigateToFolderContentsWithSubFolder() {
+    val subFolder = Folder(id = "2", name = "Sub Folder", userId = "1", parentFolderId = "1")
+
+    navigationActions.navigateToFolderContents(subFolder)
+
+    val poppedId = navigationActions.popFromScreenNavigationStack()
+    assertEquals(poppedId, subFolder.parentFolderId)
+
+    verify(navHostController).navigate(Screen.FOLDER_CONTENTS)
+    verifyNoMoreInteractions(navHostController)
+  }
+
+  @Test
+  fun testNavigateToFolderContentsFromSearch() {
+
+    val folder = Folder(id = "1", name = "Test Folder", userId = "1", parentFolderId = null)
+    navigationActions.pushToScreenNavigationStack(Screen.SEARCH)
+
+    navigationActions.navigateToFolderContents(folder)
+
+    val poppedId = navigationActions.popFromScreenNavigationStack()
+    assertEquals(poppedId, Screen.SEARCH)
+
+    verify(navHostController).navigate(Screen.FOLDER_CONTENTS)
+    verifyNoMoreInteractions(navHostController)
   }
 }
