@@ -1,4 +1,4 @@
-package com.github.onlynotesswent.model.users
+package com.github.onlynotesswent.model.user
 
 import com.google.firebase.FirebaseApp
 import com.google.firebase.Timestamp
@@ -11,6 +11,7 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mock
+import org.mockito.Mockito.anyBoolean
 import org.mockito.Mockito.anyString
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
@@ -85,6 +86,11 @@ class UserViewModelTest {
       val onSuccess = it.arguments[1] as (User) -> Unit
       onSuccess(user)
     }
+    // Mock the getUserById method to return a valid user
+    `when`(mockRepositoryFirestore.getUserById(eq("2"), any(), any(), any())).thenAnswer {
+      val onSuccess = it.arguments[1] as (User) -> Unit
+      onSuccess(user)
+    }
     // Mock the getUsers method to return a valid user
     `when`(mockRepositoryFirestore.getUsersById(eq(listOf("1")), any(), any())).thenAnswer {
       val onSuccess = it.arguments[1] as (List<User>) -> Unit
@@ -104,17 +110,17 @@ class UserViewModelTest {
     // Mock the addFollowerTo method to call onSuccess
     `when`(
             mockRepositoryFirestore.addFollowerTo(
-                anyString(), anyString(), anyOrNull(), anyOrNull()))
+                anyString(), anyString(), anyBoolean(), anyOrNull(), anyOrNull()))
         .thenAnswer {
-          val onSuccess = it.arguments[2] as () -> Unit
+          val onSuccess = it.arguments[3] as () -> Unit
           onSuccess()
         }
     // Mock the removeFollowerFrom method to call onSuccess
     `when`(
             mockRepositoryFirestore.removeFollowerFrom(
-                anyString(), anyString(), anyOrNull(), anyOrNull()))
+                anyString(), anyString(), anyBoolean(), anyOrNull(), anyOrNull()))
         .thenAnswer {
-          val onSuccess = it.arguments[2] as () -> Unit
+          val onSuccess = it.arguments[3] as () -> Unit
           onSuccess()
         }
 
@@ -225,9 +231,9 @@ class UserViewModelTest {
     var onSuccessCalled = false
     userViewModel.followUser("2", { onSuccessCalled = true }, { assert(false) })
     verify(mockRepositoryFirestore, timeout(1000))
-        .addFollowerTo(eq("2"), eq("1"), anyOrNull(), anyOrNull())
+        .getUserById(eq("2"), anyOrNull(), anyOrNull(), anyOrNull())
     verify(mockRepositoryFirestore, timeout(1000))
-        .getUserById(eq("1"), anyOrNull(), anyOrNull(), anyOrNull())
+        .addFollowerTo(eq("2"), eq("1"), anyBoolean(), anyOrNull(), anyOrNull())
     assert(onSuccessCalled)
   }
 
@@ -239,13 +245,14 @@ class UserViewModelTest {
     assert(exception is UserViewModel.UserNotLoggedInException)
 
     // Mock the currentUser to be non-null
+
     userViewModel.addUser(user, { assert(true) }, { assert(false) })
 
     // Call unfollowUser with a logged in user
     var onSuccessCalled = false
-    userViewModel.unfollowUser("2", { onSuccessCalled = true }, { assert(false) })
+    userViewModel.unfollowUser("3", { onSuccessCalled = true }, { assert(false) })
     verify(mockRepositoryFirestore, timeout(1000))
-        .removeFollowerFrom(eq("2"), eq("1"), anyOrNull(), anyOrNull())
+        .removeFollowerFrom(eq("3"), eq("1"), anyBoolean(), anyOrNull(), anyOrNull())
     assert(onSuccessCalled)
   }
 
@@ -357,5 +364,26 @@ class UserViewModelTest {
 
     assert(onSuccessCalled)
     assert(returnedUsers.isEmpty())
+  }
+
+  @Test
+  fun `removeFollowerFrom works correctly`() {
+    var onSuccessCalled = false
+    userViewModel.addUser(user, { assert(true) }, { assert(false) })
+    userViewModel.removeFollower("3", { onSuccessCalled = true }, { assert(false) })
+    verify(mockRepositoryFirestore, timeout(1000))
+        .removeFollowerFrom(eq("1"), eq("3"), anyBoolean(), anyOrNull(), anyOrNull())
+    assert(onSuccessCalled)
+  }
+
+  @Test
+  fun `acceptFollower works correctly`() {
+    var onSuccessCalled = false
+    val user2 = user.copy(friends = Friends(), pendingFriends = Friends(followers = listOf("3")))
+    userViewModel.addUser(user2, { assert(true) }, { assert(false) })
+    userViewModel.acceptFollowerRequest("3", { onSuccessCalled = true }, { assert(false) })
+    verify(mockRepositoryFirestore, timeout(1000))
+        .addFollowerTo(eq("1"), eq("3"), anyBoolean(), anyOrNull(), anyOrNull())
+    assert(onSuccessCalled)
   }
 }

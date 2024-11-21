@@ -37,10 +37,10 @@ import com.github.onlynotesswent.model.folder.FolderViewModel
 import com.github.onlynotesswent.model.note.Note
 import com.github.onlynotesswent.model.note.NoteRepository
 import com.github.onlynotesswent.model.note.NoteViewModel
-import com.github.onlynotesswent.model.users.Friends
-import com.github.onlynotesswent.model.users.User
-import com.github.onlynotesswent.model.users.UserRepository
-import com.github.onlynotesswent.model.users.UserViewModel
+import com.github.onlynotesswent.model.user.Friends
+import com.github.onlynotesswent.model.user.User
+import com.github.onlynotesswent.model.user.UserRepository
+import com.github.onlynotesswent.model.user.UserViewModel
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Route
 import com.github.onlynotesswent.ui.navigation.Screen
@@ -348,8 +348,8 @@ class EndToEndTest {
     // Initialize current user
     userViewModel.addUser(testUser1, {}, {})
 
-    `when`(userRepository.addFollowerTo(any(), any(), any(), any())).thenAnswer {
-      val onSuccess = it.arguments[2] as () -> Unit
+    `when`(userRepository.addFollowerTo(any(), any(), any(), any(), any())).thenAnswer {
+      val onSuccess = it.arguments[3] as () -> Unit
       val userId = it.arguments[0] as String // testUser2
       val followerId = it.arguments[1] as String // testUser
       testUser2 =
@@ -365,8 +365,8 @@ class EndToEndTest {
       onSuccess()
     }
 
-    `when`(userRepository.removeFollowerFrom(any(), any(), any(), any())).thenAnswer {
-      val onSuccess = it.arguments[2] as () -> Unit
+    `when`(userRepository.removeFollowerFrom(any(), any(), any(), any(), any())).thenAnswer {
+      val onSuccess = it.arguments[3] as () -> Unit
       val userId = it.arguments[0] as String // testUser2
       val followerId = it.arguments[1] as String // testUser
       testUser2 =

@@ -1,4 +1,4 @@
-package com.github.onlynotesswent.model.users
+package com.github.onlynotesswent.model.user
 
 import com.google.firebase.Timestamp
 import java.text.SimpleDateFormat
@@ -28,7 +28,11 @@ data class User(
     val rating: Double = 0.0,
     val friends: Friends = Friends(),
     val hasProfilePicture: Boolean = false,
-    val bio: String = ""
+    val bio: String = "",
+    val pendingFriends: Friends = Friends(),
+    // for now it's set to true, will be set to false when the notification feature is
+    // implemented
+    val isAccountPublic: Boolean = true
 ) {
   /**
    * Returns the user's handle, which is the username prefixed with an '@' symbol.
