@@ -2,7 +2,6 @@ package com.github.onlynotesswent.ui.overview.editnote
 
 import android.content.Context
 import android.util.Log
-import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -13,16 +12,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.ArrowDropUp
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.UploadFile
 import androidx.compose.material.icons.outlined.Clear
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -48,7 +43,6 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.github.onlynotesswent.model.common.Course
 import com.github.onlynotesswent.model.common.Visibility
-import com.github.onlynotesswent.model.file.FileType
 import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.note.Note
 import com.github.onlynotesswent.model.note.NoteViewModel
@@ -232,37 +226,6 @@ fun NoteSection(
       placeholder = "Set the course year for the note",
       modifier = Modifier.fillMaxWidth().testTag("EditCourseYear textField"))
 
-  PdfCard(
-      modifier = Modifier.fillMaxWidth(),
-      testTagBase = "EditPdf",
-      onViewClick = {
-        fileViewModel.openPdf(
-            uid = note.id,
-            context = context,
-            onSuccess = {},
-            onFileNotFound = {
-              Toast.makeText(context, "No stored Pdf", Toast.LENGTH_SHORT).show()
-            },
-            onFailure = {
-              Toast.makeText(context, "Failed to open Pdf", Toast.LENGTH_SHORT).show()
-            })
-      },
-      onScanClick = {
-        // Todo: Could show error to user, not possible with current functions
-        scanner.scan { fileViewModel.updateFile(note.id, it, FileType.NOTE_PDF) }
-      },
-      onDeleteClick = {
-        // Todo: Could show error to user, not possible with current functions
-        fileViewModel.deleteFile(
-            uid = note.id,
-            fileType = FileType.NOTE_PDF,
-        )
-        // Todo: temporary toast to show the button does something.
-        //  Adapt to work with onSuccess/onFailure when refactor is done.
-        Toast.makeText(context, "Pdf delete started, TODO notify if worked", Toast.LENGTH_SHORT)
-            .show()
-      })
-
   Row {
     SaveButton(
         noteTitle = noteTitle,
@@ -277,65 +240,6 @@ fun NoteSection(
 
     DeleteButton(note = note, navigationActions = navigationActions, noteViewModel = noteViewModel)
   }
-}
-
-/**
- * Card to encompass operations on a note's PDF file. The card includes buttons to view, scan and
- * replace, and delete the PDF file.
- *
- * @param modifier The modifier to apply to the card.
- * @param testTagBase The base test tag for the card and its buttons.
- * @param onViewClick The lambda to call when the view button is clicked.
- * @param onScanClick The lambda to call when the scan button is clicked.
- * @param onDeleteClick The lambda to call when the delete button is clicked.
- */
-@Composable
-fun PdfCard(
-    modifier: Modifier,
-    testTagBase: String,
-    onViewClick: () -> Unit,
-    onScanClick: () -> Unit,
-    onDeleteClick: () -> Unit,
-) {
-  Card(
-      modifier = modifier.testTag("${testTagBase}Card"),
-      content = {
-        Row(
-            modifier = Modifier.fillMaxSize().padding(6.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween) {
-              Text("Note PDF")
-
-              Row {
-                IconButton(
-                    onClick = onViewClick,
-                    modifier = Modifier.testTag("${testTagBase}ViewButton")) {
-                      Icon(
-                          imageVector = Icons.AutoMirrored.Filled.OpenInNew,
-                          contentDescription = "Open PDF",
-                      )
-                    }
-
-                IconButton(
-                    onClick = onScanClick,
-                    modifier = Modifier.testTag("${testTagBase}ScanButton")) {
-                      Icon(
-                          imageVector = Icons.Default.UploadFile,
-                          contentDescription = "Scan and replace PDF",
-                      )
-                    }
-
-                IconButton(
-                    onClick = onDeleteClick,
-                    modifier = Modifier.testTag("${testTagBase}DeleteButton")) {
-                      Icon(
-                          imageVector = Icons.Default.Delete,
-                          contentDescription = "Delete PDF",
-                      )
-                    }
-              }
-            }
-      })
 }
 
 /**
