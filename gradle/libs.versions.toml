@@ -1,4 +1,5 @@
 [versions]
+accompanistFlowlayout = "0.32.0"
 agp = "8.7.2"
 firebaseBom = "33.5.1"
 coilCompose = "2.1.0"
@@ -49,6 +50,7 @@ documentScanner = "16.0.0-beta1"
 textRecognition = "16.0.0"
 
 [libraries]
+accompanist-flowlayout = { module = "com.google.accompanist:accompanist-flowlayout", version.ref = "accompanistFlowlayout" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" } # TODO not used for now,
 firebase-storage = { module = "com.google.firebase:firebase-storage", version.ref = "firebaseStorage" }

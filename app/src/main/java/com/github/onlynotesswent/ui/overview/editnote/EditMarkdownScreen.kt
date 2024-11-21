@@ -9,7 +9,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -154,20 +155,21 @@ fun EditMarkdownScreen(
                       .testTag("editMarkdownColumn")
                       .verticalScroll(rememberScrollState()),
           ) {
-            if (isEditing) {
-              EditorControls(
-                  modifier = Modifier.testTag("EditorControl"),
-                  state = state,
-                  onSaveClick = {
-                    updateMarkdownFile(context, selectedNote!!.id, fileViewModel)
-                    isEditing = false // Switch back to view mode after saving
-                  })
-            }
             RichTextEditor(
                 modifier = Modifier.fillMaxWidth().weight(2f).testTag("RichTextEditor"),
                 state = state,
-                readOnly = !isEditing, // Make editor read-only when not editing
-            )
+                readOnly = !isEditing,
+                label = {
+                  if (isEditing) {
+                    EditorControls(
+                        modifier = Modifier.testTag("EditorControl"),
+                        state = state,
+                        onSaveClick = {
+                          updateMarkdownFile(context, selectedNote!!.id, fileViewModel)
+                          isEditing = false // Switch back to view mode after saving
+                        })
+                  }
+                })
           }
         }
       }
@@ -182,6 +184,7 @@ fun EditMarkdownScreen(
  * @param state RichTextState object to manage the text content and formatting.
  * @param onSaveClick Callback function to save the current text content and formatting.
  */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun EditorControls(modifier: Modifier, state: RichTextState, onSaveClick: () -> Unit) {
   var boldSelected by rememberSaveable { mutableStateOf(false) }
@@ -216,52 +219,54 @@ fun EditorControls(modifier: Modifier, state: RichTextState, onSaveClick: () -> 
     }
   }
 
-  Row(
-      modifier = modifier.fillMaxWidth().padding(all = 10.dp),
-      horizontalArrangement = Arrangement.spacedBy(16.dp),
-  ) {
-    ControlWrapper(
-        modifier = Modifier.testTag("BoldControl"),
-        selected = boldSelected,
-        onChangeClick = { boldSelected = it }) {
-          Icon(imageVector = Icons.Filled.FormatBold, contentDescription = "Bold")
-        }
-    ControlWrapper(
-        modifier = Modifier.testTag("ItalicControl"),
-        selected = italicSelected,
-        onChangeClick = { italicSelected = it }) {
-          Icon(imageVector = Icons.Filled.FormatItalic, contentDescription = "Italic")
-        }
-    ControlWrapper(
-        modifier = Modifier.testTag("UnderlinedControl"),
-        selected = underlineSelected,
-        onChangeClick = { underlineSelected = it }) {
-          Icon(imageVector = Icons.Filled.FormatUnderlined, contentDescription = "Underlined")
-        }
-    ControlWrapper(
-        modifier = Modifier.testTag("StrikethroughControl"),
-        selected = strikethroughSelected,
-        onChangeClick = { strikethroughSelected = it }) {
-          Icon(imageVector = Icons.Filled.FormatStrikethrough, contentDescription = "Strikethrough")
-        }
+  FlowRow(
+      verticalArrangement = Arrangement.Center,
+      horizontalArrangement = Arrangement.spacedBy(10.dp),
+      modifier = modifier) {
+        ControlWrapper(
+            modifier = Modifier.testTag("BoldControl"),
+            selected = boldSelected,
+            onChangeClick = { boldSelected = it }) {
+              Icon(imageVector = Icons.Filled.FormatBold, contentDescription = "Bold")
+            }
+        ControlWrapper(
+            modifier = Modifier.testTag("ItalicControl"),
+            selected = italicSelected,
+            onChangeClick = { italicSelected = it }) {
+              Icon(imageVector = Icons.Filled.FormatItalic, contentDescription = "Italic")
+            }
+        ControlWrapper(
+            modifier = Modifier.testTag("UnderlinedControl"),
+            selected = underlineSelected,
+            onChangeClick = { underlineSelected = it }) {
+              Icon(imageVector = Icons.Filled.FormatUnderlined, contentDescription = "Underlined")
+            }
+        ControlWrapper(
+            modifier = Modifier.testTag("StrikethroughControl"),
+            selected = strikethroughSelected,
+            onChangeClick = { strikethroughSelected = it }) {
+              Icon(
+                  imageVector = Icons.Filled.FormatStrikethrough,
+                  contentDescription = "Strikethrough")
+            }
 
-    IconButton(
-        modifier =
-            Modifier.size(35.dp)
-                .align(Alignment.CenterVertically)
-                .testTag("SaveCheckButton")
-                .background(
-                    color = MaterialTheme.colorScheme.primary,
-                    shape = RoundedCornerShape(6.dp),
-                )
-                .padding(0.dp),
-        onClick = { onSaveClick() }) {
-          Icon(
-              imageVector = Icons.Default.Check,
-              contentDescription = "Save",
-              tint = MaterialTheme.colorScheme.onPrimary)
-        }
-  }
+        IconButton(
+            modifier =
+                Modifier.size(35.dp)
+                    .align(Alignment.CenterVertically)
+                    .testTag("SaveCheckButton")
+                    .background(
+                        color = MaterialTheme.colorScheme.primary,
+                        shape = RoundedCornerShape(6.dp),
+                    )
+                    .padding(0.dp),
+            onClick = { onSaveClick() }) {
+              Icon(
+                  imageVector = Icons.Default.Check,
+                  contentDescription = "Save",
+                  tint = MaterialTheme.colorScheme.onPrimary)
+            }
+      }
 }
 
 /**
