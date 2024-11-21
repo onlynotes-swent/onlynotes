@@ -115,6 +115,7 @@ fun AddCommentButton(
 ) {
   if (currentUser != null && note != null) {
     FloatingActionButton(
+        modifier = Modifier.testTag("addCommentButton"),
         onClick = {
           onCommentsChange(
               updatedComments.addCommentByUser(currentUser.uid, currentUser.userName, ""))
@@ -144,7 +145,7 @@ fun CommentsSection(
     Text(
         text = "No comments yet. Add a comment to start the discussion.",
         color = Color.Gray,
-        modifier = Modifier.padding(8.dp).testTag("NoCommentsText"))
+        modifier = Modifier.padding(8.dp).testTag("noCommentsText"))
   } else {
     updatedComments.commentsList.forEachIndexed { _, comment ->
       Row(

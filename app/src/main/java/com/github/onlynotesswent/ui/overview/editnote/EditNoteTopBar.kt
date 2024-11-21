@@ -38,5 +38,5 @@ fun EditNoteTopBar(
             contentDescription = "Exit Edit Note",
             tint = MaterialTheme.colorScheme.onSurface)
       },
-      iconTestTag = "goToOverviewButton")
+      iconTestTag = "closeButton")
 }
