@@ -20,8 +20,8 @@ interface NoteRepository {
    * @param userId The ID of the user to retrieve notes for.
    * @param onSuccess Callback to be invoked with the retrieved notes.
    * @param onFailure Callback to be invoked if an error occurs.
-   * @param useCache Whether to save/retrieve data from cache. Should be true only if [userId] is
-   *   the current user.
+   * @param useCache Whether to update data from cache. Should be true only if [userId] is the
+   *   current user.
    */
   fun getNotesFrom(
       userId: String,
@@ -36,8 +36,8 @@ interface NoteRepository {
    * @param userId The ID of the user to retrieve root notes for.
    * @param onSuccess Callback to be invoked with the retrieved root notes.
    * @param onFailure Callback to be invoked if an error occurs.
-   * @param useCache Whether to save/retrieve data from cache. Should be true only if [userId] is
-   *   the current user.
+   * @param useCache Whether to update data from cache. Should be true only if [userId] is the
+   *   current user.
    */
   fun getRootNotesFrom(
       userId: String,
@@ -52,8 +52,8 @@ interface NoteRepository {
    * @param id The ID of the note to retrieve.
    * @param onSuccess Callback to be invoked with the retrieved note.
    * @param onFailure Callback to be invoked if an error occurs.
-   * @param useCache Whether to save/retrieve data from cache. Should be true only if userId of the
-   *   note is the current user.
+   * @param useCache Whether to update data from cache. Should be true only if userId of the note is
+   *   the current user.
    */
   fun getNoteById(
       id: String,
@@ -68,8 +68,8 @@ interface NoteRepository {
    * @param note The note to add.
    * @param onSuccess Callback to be invoked if the note is added successfully.
    * @param onFailure Callback to be invoked if an error occurs.
-   * @param useCache Whether to save/retrieve data from cache. Should be true only if userId of the
-   *   note is the current user.
+   * @param useCache Whether to update data from cache. Should be true only if userId of the note is
+   *   the current user.
    */
   fun addNote(
       note: Note,
@@ -84,8 +84,8 @@ interface NoteRepository {
    * @param note The note to update.
    * @param onSuccess Callback to be invoked if the note is updated successfully.
    * @param onFailure Callback to be invoked if an error occurs.
-   * @param useCache Whether to save/retrieve data from cache. Should be true only if userId of the
-   *   note is the current user.
+   * @param useCache Whether to update data from cache. Should be true only if userId of the note is
+   *   the current user.
    */
   fun updateNote(
       note: Note,
@@ -100,8 +100,8 @@ interface NoteRepository {
    * @param id The ID of the note to delete.
    * @param onSuccess Callback to be invoked if the note is deleted successfully.
    * @param onFailure Callback to be invoked if an error occurs.
-   * @param useCache Whether to save/retrieve data from cache. Should be true only if userId of the
-   *   note is the current user.
+   * @param useCache Whether to update data from cache. Should be true only if userId of the note is
+   *   the current user.
    */
   fun deleteNoteById(
       id: String,
@@ -116,8 +116,8 @@ interface NoteRepository {
    * @param userId The ID of the user to delete notes for.
    * @param onSuccess Callback to be invoked if the notes are deleted successfully.
    * @param onFailure Callback to be invoked if an error occurs.
-   * @param useCache Whether to save/retrieve data from cache. Should be true only if [userId] is
-   *   the current user.
+   * @param useCache Whether to update data from cache. Should be true only if [userId] is the
+   *   current user.
    */
   fun deleteNotesByUserId(
       userId: String,
@@ -132,8 +132,8 @@ interface NoteRepository {
    * @param folderId The ID of the folder to retrieve notes for.
    * @param onSuccess Callback to be invoked with the retrieved notes.
    * @param onFailure Callback to be invoked if an error occurs.
-   * @param useCache Whether to save/retrieve data from cache. Should be true only if userId of the
-   *   folder is the current user.
+   * @param useCache Whether to update data from cache. Should be true only if userId of the folder
+   *   is the current user.
    */
   fun getNotesFromFolder(
       folderId: String,
