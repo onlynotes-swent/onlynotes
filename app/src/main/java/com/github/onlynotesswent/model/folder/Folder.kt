@@ -1,5 +1,7 @@
 package com.github.onlynotesswent.model.folder
 
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 import com.github.onlynotesswent.model.common.Visibility
 
 /**
@@ -9,9 +11,11 @@ import com.github.onlynotesswent.model.common.Visibility
  * @param name The name of the folder.
  * @param userId The ID of the user that owns the folder.
  * @param parentFolderId The ID of the parent folder. Has default value null.
+ * @param visibility The visibility setting for the folder.
  */
+@Entity
 data class Folder(
-    val id: String,
+    @PrimaryKey val id: String,
     val name: String,
     val userId: String,
     val parentFolderId: String? = null,

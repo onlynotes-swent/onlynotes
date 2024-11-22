@@ -1,15 +1,18 @@
 package com.github.onlynotesswent.model.folder
 
 import android.util.Log
+import com.github.onlynotesswent.model.cache.FolderDatabase
 import com.github.onlynotesswent.model.common.Visibility
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 
-class FolderRepositoryFirestore(private val db: FirebaseFirestore) : FolderRepository {
+class FolderRepositoryFirestore(private val db: FirebaseFirestore, cache: FolderDatabase) :
+    FolderRepository {
 
   private val folderCollectionPath = "folders"
+  private val folderDao = cache.folderDao()
 
   override fun getNewFolderId(): String {
     return db.collection(folderCollectionPath).document().id
@@ -23,7 +26,15 @@ class FolderRepositoryFirestore(private val db: FirebaseFirestore) : FolderRepos
     }
   }
 
-  override fun addFolder(folder: Folder, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) {
+  override fun addFolder(
+      folder: Folder,
+      onSuccess: () -> Unit,
+      onFailure: (Exception) -> Unit,
+      useCache: Boolean
+  ) {
+    if (useCache) {
+      folderDao.insertFolder(folder)
+    }
     db.collection(folderCollectionPath).document(folder.id).set(folder).addOnCompleteListener {
         result ->
       if (result.isSuccessful) {
@@ -40,8 +51,12 @@ class FolderRepositoryFirestore(private val db: FirebaseFirestore) : FolderRepos
   override fun deleteFolderById(
       folderId: String,
       onSuccess: () -> Unit,
-      onFailure: (Exception) -> Unit
+      onFailure: (Exception) -> Unit,
+      useCache: Boolean
   ) {
+    if (useCache) {
+      folderDao.deleteFolderById(folderId)
+    }
     db.collection(folderCollectionPath).document(folderId).delete().addOnCompleteListener { result
       ->
       if (result.isSuccessful) {
@@ -58,8 +73,12 @@ class FolderRepositoryFirestore(private val db: FirebaseFirestore) : FolderRepos
   override fun deleteFoldersByUserId(
       userId: String,
       onSuccess: () -> Unit,
-      onFailure: (Exception) -> Unit
+      onFailure: (Exception) -> Unit,
+      useCache: Boolean
   ) {
+    if (useCache) {
+      folderDao.deleteFolders()
+    }
     db.collection(folderCollectionPath).get().addOnCompleteListener { task ->
       if (task.isSuccessful) {
         val userFolders =
@@ -82,12 +101,24 @@ class FolderRepositoryFirestore(private val db: FirebaseFirestore) : FolderRepos
   override fun getFolderById(
       folderId: String,
       onSuccess: (Folder) -> Unit,
-      onFailure: (Exception) -> Unit
+      onFailure: (Exception) -> Unit,
+      useCache: Boolean
   ) {
+    if (useCache) {
+      val cachedData = folderDao.getFolderById(folderId)
+      if (cachedData != null) {
+        onSuccess(cachedData)
+        return
+      }
+    }
+    // If cache is not used or cache is empty, fetch data from Firestore
     db.collection(folderCollectionPath).document(folderId).get().addOnCompleteListener { task ->
       if (task.isSuccessful) {
         val folder = task.result?.let { documentSnapshotToFolder(it) }
         if (folder != null) {
+          if (useCache) {
+            folderDao.insertFolder(folder)
+          }
           onSuccess(folder)
         } else {
           val e = Exception("Folder not found")
@@ -106,14 +137,26 @@ class FolderRepositoryFirestore(private val db: FirebaseFirestore) : FolderRepos
   override fun getFoldersFromUid(
       userId: String,
       onSuccess: (List<Folder>) -> Unit,
-      onFailure: (Exception) -> Unit
+      onFailure: (Exception) -> Unit,
+      useCache: Boolean
   ) {
+    if (useCache) {
+      val cachedData = folderDao.getFolders()
+      if (cachedData.isNotEmpty()) {
+        onSuccess(cachedData)
+        return
+      }
+    }
+    // If cache is not used or cache is empty, fetch data from Firestore
     db.collection(folderCollectionPath).get().addOnCompleteListener { task ->
       if (task.isSuccessful) {
         val userFolders =
             task.result.documents
                 .mapNotNull { document -> documentSnapshotToFolder(document) }
                 .filter { it.userId == userId }
+        if (useCache) {
+          folderDao.insertFolders(userFolders)
+        }
         onSuccess(userFolders)
       } else {
         task.exception?.let { e: Exception ->
@@ -127,14 +170,26 @@ class FolderRepositoryFirestore(private val db: FirebaseFirestore) : FolderRepos
   override fun getRootFoldersFromUid(
       userId: String,
       onSuccess: (List<Folder>) -> Unit,
-      onFailure: (Exception) -> Unit
+      onFailure: (Exception) -> Unit,
+      useCache: Boolean
   ) {
+    if (useCache) {
+      val cachedData = folderDao.getRootFolders()
+      if (cachedData.isNotEmpty()) {
+        onSuccess(cachedData)
+        return
+      }
+    }
+    // If cache is not used or cache is empty, fetch data from Firestore
     db.collection(folderCollectionPath).get().addOnCompleteListener { task ->
       if (task.isSuccessful) {
         val rootFolders =
             task.result.documents
                 .mapNotNull { document -> documentSnapshotToFolder(document) }
                 .filter { it.userId == userId && it.parentFolderId == null } // Only root folders
+        if (useCache) {
+          folderDao.insertFolders(rootFolders)
+        }
         onSuccess(rootFolders)
       } else {
         task.exception?.let { e: Exception ->
@@ -145,7 +200,15 @@ class FolderRepositoryFirestore(private val db: FirebaseFirestore) : FolderRepos
     }
   }
 
-  override fun updateFolder(folder: Folder, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) {
+  override fun updateFolder(
+      folder: Folder,
+      onSuccess: () -> Unit,
+      onFailure: (Exception) -> Unit,
+      useCache: Boolean
+  ) {
+    if (useCache) {
+      folderDao.updateFolder(folder)
+    }
     db.collection(folderCollectionPath).document(folder.id).set(folder).addOnCompleteListener {
         result ->
       if (result.isSuccessful) {
@@ -162,14 +225,26 @@ class FolderRepositoryFirestore(private val db: FirebaseFirestore) : FolderRepos
   override fun getSubFoldersOf(
       parentFolderId: String,
       onSuccess: (List<Folder>) -> Unit,
-      onFailure: (Exception) -> Unit
+      onFailure: (Exception) -> Unit,
+      useCache: Boolean
   ) {
+    if (useCache) {
+      val cachedData = folderDao.getFoldersFromParentFolder(parentFolderId)
+      if (cachedData.isNotEmpty()) {
+        onSuccess(cachedData)
+        return
+      }
+    }
+    // If cache is not used or cache is empty, fetch data from Firestore
     db.collection(folderCollectionPath).get().addOnCompleteListener { task ->
       if (task.isSuccessful) {
         val userFolders =
             task.result.documents
                 .mapNotNull { document -> documentSnapshotToFolder(document) }
                 .filter { it.parentFolderId == parentFolderId }
+        if (useCache) {
+          folderDao.insertFolders(userFolders)
+        }
         onSuccess(userFolders)
       } else {
         task.exception?.let { e: Exception ->

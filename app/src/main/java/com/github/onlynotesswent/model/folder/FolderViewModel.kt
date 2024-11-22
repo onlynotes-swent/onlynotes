@@ -1,9 +1,11 @@
 package com.github.onlynotesswent.model.folder
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import com.github.onlynotesswent.model.cache.getFolderDatabase
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.firestore
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -40,8 +42,10 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
   }
 
   companion object {
-    val Factory: ViewModelProvider.Factory = viewModelFactory {
-      initializer { FolderViewModel(FolderRepositoryFirestore(Firebase.firestore)) }
+    fun factory(context: Context): ViewModelProvider.Factory = viewModelFactory {
+      initializer {
+        FolderViewModel(FolderRepositoryFirestore(Firebase.firestore, getFolderDatabase(context)))
+      }
     }
   }
 
