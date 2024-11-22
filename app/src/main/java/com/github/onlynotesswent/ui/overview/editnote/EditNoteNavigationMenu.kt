@@ -14,6 +14,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.unit.sp
 import com.github.onlynotesswent.ui.navigation.LIST_EDIT_NOTE_DESTINATION
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 
@@ -68,8 +70,17 @@ fun EditNoteNavigationMenu(
     AlertDialog(
         modifier = Modifier.testTag("discardChangesDialog"),
         onDismissRequest = { showDiscardChangesDialog = false },
-        title = { Text("Discard Changes?") },
-        text = { Text("You have unsaved changes. Are you sure you want to discard them?") },
+        title = {
+          Text(
+              text = "Discard Changes?",
+              style = TextStyle(fontSize = 18.sp, color = MaterialTheme.colorScheme.onSurface))
+        },
+        text = {
+          Text(
+              text = "You have unsaved changes. Are you sure you want to discard them?",
+              style =
+                  TextStyle(fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurfaceVariant))
+        },
         confirmButton = {
           TextButton(
               modifier = Modifier.testTag("discardChangesButton"),
@@ -79,7 +90,7 @@ fun EditNoteNavigationMenu(
                 navigateTo?.let { navigationActions.navigateTo(it) }
                 onClick()
               }) {
-                Text("Discard")
+                Text(text = "Discard", color = MaterialTheme.colorScheme.error)
               }
         },
         dismissButton = {
@@ -89,7 +100,7 @@ fun EditNoteNavigationMenu(
                 // Stay on the page
                 showDiscardChangesDialog = false
               }) {
-                Text("Cancel")
+                Text(text = "Cancel")
               }
         })
   }

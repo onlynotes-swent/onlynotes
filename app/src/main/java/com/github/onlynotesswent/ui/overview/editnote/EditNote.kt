@@ -45,7 +45,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.github.onlynotesswent.model.common.Course
 import com.github.onlynotesswent.model.common.Visibility
 import com.github.onlynotesswent.model.note.Note
@@ -218,8 +220,17 @@ fun EditNoteGeneralTopBar(
     AlertDialog(
         modifier = Modifier.testTag("discardChangesDialog"),
         onDismissRequest = { showDiscardChangesDialog = false },
-        title = { Text("Discard Changes?") },
-        text = { Text("You have unsaved changes. Are you sure you want to discard them?") },
+        title = {
+          Text(
+              text = "Discard Changes?",
+              style = TextStyle(fontSize = 18.sp, color = MaterialTheme.colorScheme.onSurface))
+        },
+        text = {
+          Text(
+              text = "You have unsaved changes. Are you sure you want to discard them?",
+              style =
+                  TextStyle(fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurfaceVariant))
+        },
         confirmButton = {
           TextButton(
               modifier = Modifier.testTag("discardChangesButton"),
@@ -233,7 +244,7 @@ fun EditNoteGeneralTopBar(
                 }
                 noteViewModel.selectedNote(null)
               }) {
-                Text("Discard")
+                Text(text = "Discard", color = MaterialTheme.colorScheme.error)
               }
         },
         dismissButton = {
@@ -243,7 +254,7 @@ fun EditNoteGeneralTopBar(
                 // Stay on the page
                 showDiscardChangesDialog = false
               }) {
-                Text("Cancel")
+                Text(text = "Cancel")
               }
         })
   }
