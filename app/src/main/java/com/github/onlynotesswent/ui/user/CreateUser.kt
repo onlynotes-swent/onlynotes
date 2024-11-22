@@ -24,9 +24,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
-import com.github.onlynotesswent.model.users.User
-import com.github.onlynotesswent.model.users.UserRepositoryFirestore
-import com.github.onlynotesswent.model.users.UserViewModel
+import com.github.onlynotesswent.model.user.User
+import com.github.onlynotesswent.model.user.UserRepositoryFirestore
+import com.github.onlynotesswent.model.user.UserViewModel
 import com.github.onlynotesswent.ui.authentication.Logo
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
