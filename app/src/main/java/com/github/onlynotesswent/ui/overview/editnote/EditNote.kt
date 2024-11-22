@@ -50,8 +50,8 @@ import com.github.onlynotesswent.model.common.Course
 import com.github.onlynotesswent.model.common.Visibility
 import com.github.onlynotesswent.model.note.Note
 import com.github.onlynotesswent.model.note.NoteViewModel
-import com.github.onlynotesswent.model.users.User
-import com.github.onlynotesswent.model.users.UserViewModel
+import com.github.onlynotesswent.model.user.User
+import com.github.onlynotesswent.model.user.UserViewModel
 import com.github.onlynotesswent.ui.common.DeletePopup
 import com.github.onlynotesswent.ui.common.NoteDataTextField
 import com.github.onlynotesswent.ui.navigation.NavigationActions
