@@ -15,10 +15,10 @@ import com.github.onlynotesswent.model.file.FileRepository
 import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.note.NoteRepository
 import com.github.onlynotesswent.model.note.NoteViewModel
-import com.github.onlynotesswent.model.users.Friends
-import com.github.onlynotesswent.model.users.User
-import com.github.onlynotesswent.model.users.UserRepository
-import com.github.onlynotesswent.model.users.UserViewModel
+import com.github.onlynotesswent.model.user.Friends
+import com.github.onlynotesswent.model.user.User
+import com.github.onlynotesswent.model.user.UserRepository
+import com.github.onlynotesswent.model.user.UserViewModel
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
 import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
@@ -144,10 +144,10 @@ class ProfileScreenTest {
 
     // ----------------- Follow and Unfollow Mechanics -----------------
     // Mock the user repository to add and remove followers
-    `when`(mockUserRepository.addFollowerTo(any(), any(), any(), any())).thenAnswer {
+    `when`(mockUserRepository.addFollowerTo(any(), any(), any(), any(), any())).thenAnswer {
       val userId = it.arguments[0] as String // testUser2
       val followerId = it.arguments[1] as String // testUser
-      val onSuccess = it.getArgument<() -> Unit>(2)
+      val onSuccess = it.getArgument<() -> Unit>(3)
       var user = uidToUser(userId)!!
       var follower = uidToUser(followerId)!!
       user =
@@ -170,10 +170,10 @@ class ProfileScreenTest {
       onSuccess()
     }
 
-    `when`(mockUserRepository.removeFollowerFrom(any(), any(), any(), any())).thenAnswer {
+    `when`(mockUserRepository.removeFollowerFrom(any(), any(), any(), any(), any())).thenAnswer {
       val userId = it.arguments[0] as String // testUser2
       val followerId = it.arguments[1] as String // testUser
-      val onSuccess = it.getArgument<() -> Unit>(2)
+      val onSuccess = it.getArgument<() -> Unit>(3)
       var user = uidToUser(userId)!!
       var follower = uidToUser(followerId)!!
       user =
@@ -310,8 +310,8 @@ class ProfileScreenTest {
     assert(testUser.friends.following.contains(testUser3.uid))
     assert(testUser3.friends.followers.contains(testUser.uid))
 
-    verify(mockUserRepository).addFollowerTo(any(), any(), any(), any())
-    verify(mockUserRepository).removeFollowerFrom(any(), any(), any(), any())
+    verify(mockUserRepository).addFollowerTo(any(), any(), any(), any(), any())
+    verify(mockUserRepository).removeFollowerFrom(any(), any(), any(), any(), any())
   }
 
   @Test

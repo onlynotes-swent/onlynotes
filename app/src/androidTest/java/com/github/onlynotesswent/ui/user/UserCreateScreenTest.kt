@@ -10,10 +10,10 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
 import com.github.onlynotesswent.model.note.NoteRepository
 import com.github.onlynotesswent.model.note.NoteViewModel
-import com.github.onlynotesswent.model.users.User
-import com.github.onlynotesswent.model.users.UserRepository
-import com.github.onlynotesswent.model.users.UserRepositoryFirestore
-import com.github.onlynotesswent.model.users.UserViewModel
+import com.github.onlynotesswent.model.user.User
+import com.github.onlynotesswent.model.user.UserRepository
+import com.github.onlynotesswent.model.user.UserRepositoryFirestore
+import com.github.onlynotesswent.model.user.UserViewModel
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
 import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
