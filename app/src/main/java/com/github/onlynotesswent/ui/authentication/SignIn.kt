@@ -38,7 +38,7 @@ import androidx.compose.ui.unit.sp
 import androidx.credentials.CredentialManager
 import com.github.onlynotesswent.R
 import com.github.onlynotesswent.model.authentication.GoogleCredSignIn
-import com.github.onlynotesswent.model.users.UserViewModel
+import com.github.onlynotesswent.model.user.UserViewModel
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
 import com.github.onlynotesswent.ui.navigation.TopLevelDestinations

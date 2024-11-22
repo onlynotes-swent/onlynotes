@@ -2,8 +2,8 @@ package com.github.onlynotesswent.ui.authentication
 
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
-import com.github.onlynotesswent.model.users.User
-import com.github.onlynotesswent.model.users.UserViewModel
+import com.github.onlynotesswent.model.user.User
+import com.github.onlynotesswent.model.user.UserViewModel
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
 import com.github.onlynotesswent.ui.navigation.TopLevelDestinations

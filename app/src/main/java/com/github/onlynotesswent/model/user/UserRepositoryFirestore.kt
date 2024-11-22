@@ -1,4 +1,4 @@
-package com.github.onlynotesswent.model.users
+package com.github.onlynotesswent.model.user
 
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
@@ -37,8 +37,16 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore) : UserRepositor
                 following = document.get("friends.following") as? List<String> ?: emptyList(),
                 followers = document.get("friends.followers") as? List<String> ?: emptyList(),
             ),
+        pendingFriends =
+            Friends(
+                following =
+                    document.get("pendingFriends.following") as? List<String> ?: emptyList(),
+                followers =
+                    document.get("pendingFriends.followers") as? List<String> ?: emptyList(),
+            ),
         hasProfilePicture = document.getBoolean("hasProfilePicture") ?: false,
-        bio = document.getString("bio") ?: "")
+        bio = document.getString("bio") ?: "",
+        isAccountPublic = document.getBoolean("isAccountPublic") ?: true)
   }
 
   override fun init(auth: FirebaseAuth, onSuccess: () -> Unit) {
@@ -155,16 +163,18 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore) : UserRepositor
   override fun addFollowerTo(
       user: String,
       follower: String,
+      isRequest: Boolean,
       onSuccess: () -> Unit,
       onFailure: (Exception) -> Unit
   ) {
+    val type: String = if (isRequest) "pendingFriends" else "friends"
     db.collection(collectionPath)
         .document(user)
-        .update("friends.followers", FieldValue.arrayUnion(follower))
+        .update("$type.followers", FieldValue.arrayUnion(follower))
         .addOnSuccessListener {
           db.collection(collectionPath)
               .document(follower)
-              .update("friends.following", FieldValue.arrayUnion(user))
+              .update("$type.following", FieldValue.arrayUnion(user))
               .addOnSuccessListener { onSuccess() }
               .addOnFailureListener { exception -> onFailure(exception) }
         }
@@ -174,16 +184,18 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore) : UserRepositor
   override fun removeFollowerFrom(
       user: String,
       follower: String,
+      isRequest: Boolean,
       onSuccess: () -> Unit,
       onFailure: (Exception) -> Unit
   ) {
+    val type: String = if (isRequest) "pendingFriends" else "friends"
     db.collection(collectionPath)
         .document(user)
-        .update("friends.followers", FieldValue.arrayRemove(follower))
+        .update("$type.followers", FieldValue.arrayRemove(follower))
         .addOnSuccessListener {
           db.collection(collectionPath)
               .document(follower)
-              .update("friends.following", FieldValue.arrayRemove(user))
+              .update("$type.following", FieldValue.arrayRemove(user))
               .addOnSuccessListener { onSuccess() }
               .addOnFailureListener { exception -> onFailure(exception) }
         }
