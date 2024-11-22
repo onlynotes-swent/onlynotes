@@ -25,9 +25,25 @@ data class Note(
     val visibility: Visibility = Visibility.DEFAULT,
     val noteCourse: Course,
     val userId: String,
-    val folderId: String? = null, // if note not assigned to a folder, folderId is null
+    val folderId: String? = null,
     val comments: CommentCollection = CommentCollection()
 ) {
+
+  companion object {
+    // note title max length
+    private const val TITLE_MAX_LENGTH = 35
+
+    /**
+     * Formats the note title by trimming leading whitespace and truncating it to the maximum
+     * allowed length.
+     *
+     * @param title The note title to format.
+     * @return The formatted note title.
+     */
+    fun formatTitle(title: String): String {
+      return title.trimStart().take(TITLE_MAX_LENGTH)
+    }
+  }
 
   /** Represents a list of Comments for a Note. The class is immutable. */
   class CommentCollection(val commentsList: List<Comment> = emptyList()) {
