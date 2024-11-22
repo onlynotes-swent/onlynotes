@@ -29,7 +29,7 @@ interface FolderRepository {
       folder: Folder,
       onSuccess: () -> Unit,
       onFailure: (Exception) -> Unit,
-      useCache: Boolean = false
+      useCache: Boolean
   )
 
   /**
@@ -45,7 +45,7 @@ interface FolderRepository {
       folderId: String,
       onSuccess: () -> Unit,
       onFailure: (Exception) -> Unit,
-      useCache: Boolean = false
+      useCache: Boolean
   )
 
   /**
@@ -61,7 +61,7 @@ interface FolderRepository {
       userId: String,
       onSuccess: () -> Unit,
       onFailure: (Exception) -> Unit,
-      useCache: Boolean = false
+      useCache: Boolean
   )
 
   // TODO not sure if this is needed
@@ -78,7 +78,7 @@ interface FolderRepository {
       folderId: String,
       onSuccess: (Folder) -> Unit,
       onFailure: (Exception) -> Unit,
-      useCache: Boolean = false
+      useCache: Boolean
   )
 
   /**
@@ -94,7 +94,7 @@ interface FolderRepository {
       userId: String,
       onSuccess: (List<Folder>) -> Unit,
       onFailure: (Exception) -> Unit,
-      useCache: Boolean = false
+      useCache: Boolean
   )
 
   /**
@@ -110,7 +110,7 @@ interface FolderRepository {
       userId: String,
       onSuccess: (List<Folder>) -> Unit,
       onFailure: (Exception) -> Unit,
-      useCache: Boolean = false
+      useCache: Boolean
   )
 
   /**
@@ -126,7 +126,7 @@ interface FolderRepository {
       folder: Folder,
       onSuccess: () -> Unit,
       onFailure: (Exception) -> Unit,
-      useCache: Boolean = false
+      useCache: Boolean
   )
 
   /**
@@ -142,7 +142,7 @@ interface FolderRepository {
       parentFolderId: String,
       onSuccess: (List<Folder>) -> Unit,
       onFailure: (Exception) -> Unit,
-      useCache: Boolean = false
+      useCache: Boolean
   )
 
   /**

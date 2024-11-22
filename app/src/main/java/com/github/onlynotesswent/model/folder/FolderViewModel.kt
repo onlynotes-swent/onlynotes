@@ -81,8 +81,8 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
    *
    * @param folder The folder to add.
    */
-  fun addFolder(folder: Folder, userId: String) {
-    repository.addFolder(folder, onSuccess = { getRootFoldersFromUid(userId) }, onFailure = {})
+  fun addFolder(folder: Folder, userId: String, useCache: Boolean = false) {
+    repository.addFolder(folder, onSuccess = { getRootFoldersFromUid(userId) }, onFailure = {}, useCache = useCache)
   }
 
   /**
@@ -90,9 +90,9 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
    *
    * @param folderId The ID of the folder to delete.
    */
-  fun deleteFolderById(folderId: String, userId: String) {
+  fun deleteFolderById(folderId: String, userId: String, useCache: Boolean = false) {
     repository.deleteFolderById(
-        folderId, onSuccess = { getRootFoldersFromUid(userId) }, onFailure = {})
+        folderId, onSuccess = { getRootFoldersFromUid(userId) }, onFailure = {}, useCache = useCache)
   }
 
   /**
@@ -100,9 +100,9 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
    *
    * @param userId The ID of the user to delete folders notes for.
    */
-  fun deleteFoldersByUserId(userId: String) {
+  fun deleteFoldersByUserId(userId: String, useCache: Boolean = false) {
     repository.deleteFoldersByUserId(
-        userId, onSuccess = { getRootFoldersFromUid(userId) }, onFailure = {})
+        userId, onSuccess = { getRootFoldersFromUid(userId) }, onFailure = {}, useCache = useCache)
   }
 
   /**
@@ -110,8 +110,8 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
    *
    * @param userId The ID of the user to retrieve folders for.
    */
-  fun getFoldersFromUid(userId: String) {
-    repository.getFoldersFromUid(userId, onSuccess = { _userFolders.value = it }, onFailure = {})
+  fun getFoldersFromUid(userId: String, useCache: Boolean = false) {
+    repository.getFoldersFromUid(userId, onSuccess = { _userFolders.value = it }, onFailure = {}, useCache = useCache)
   }
 
   /**
@@ -119,9 +119,9 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
    *
    * @param userId The ID of the user to retrieve root folders for.
    */
-  fun getRootFoldersFromUid(userId: String) {
+  fun getRootFoldersFromUid(userId: String, useCache: Boolean = false) {
     repository.getRootFoldersFromUid(
-        userId, onSuccess = { _userRootFolders.value = it }, onFailure = {})
+        userId, onSuccess = { _userRootFolders.value = it }, onFailure = {}, useCache = useCache)
   }
 
   /**
@@ -129,8 +129,8 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
    *
    * @param folderId The ID of the folder to retrieve.
    */
-  fun getFolderById(folderId: String) {
-    repository.getFolderById(folderId, onSuccess = { _selectedFolder.value = it }, onFailure = {})
+  fun getFolderById(folderId: String, useCache: Boolean = false) {
+    repository.getFolderById(folderId, onSuccess = { _selectedFolder.value = it }, onFailure = {}, useCache = useCache)
   }
 
   /**
@@ -138,8 +138,8 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
    *
    * @param folder The folder with updated information.
    */
-  fun updateFolder(folder: Folder, userId: String) {
-    repository.updateFolder(folder, onSuccess = { getRootFoldersFromUid(userId) }, onFailure = {})
+  fun updateFolder(folder: Folder, userId: String, useCache: Boolean = false) {
+    repository.updateFolder(folder, onSuccess = { getRootFoldersFromUid(userId) }, onFailure = {}, useCache = useCache)
   }
 
   /**
@@ -147,9 +147,9 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
    *
    * @param parentId The ID of the parent folder.
    */
-  fun getSubFoldersOf(parentId: String) {
+  fun getSubFoldersOf(parentId: String, useCache: Boolean = false) {
     repository.getSubFoldersOf(
-        parentId, onSuccess = { _folderSubFolders.value = it }, onFailure = {})
+        parentId, onSuccess = { _folderSubFolders.value = it }, onFailure = {}, useCache = useCache)
   }
 
   /** Retrieves all public folders. */
