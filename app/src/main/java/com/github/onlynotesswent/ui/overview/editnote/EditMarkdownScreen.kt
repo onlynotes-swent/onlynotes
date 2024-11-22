@@ -133,14 +133,13 @@ fun EditMarkdownScreen(
       floatingActionButton = { // Add FAB here
         if (!isEditing) {
           FloatingActionButton(
+              modifier = Modifier.testTag("editMarkdownFAB"),
               onClick = {
                 isEditing = true // Switch to edit mode
               },
               containerColor = MaterialTheme.colorScheme.primary,
               contentColor = MaterialTheme.colorScheme.onPrimary) {
-                Icon(
-                    imageVector = if (isEditing) Icons.Default.Check else Icons.Default.Edit,
-                    contentDescription = if (isEditing) "Save" else "Edit")
+                Icon(imageVector = Icons.Default.Edit, contentDescription = "Edit")
               }
         }
       }) { paddingValues ->
@@ -254,7 +253,7 @@ fun EditorControls(modifier: Modifier, state: RichTextState, onSaveClick: () -> 
             modifier =
                 Modifier.size(35.dp)
                     .align(Alignment.CenterVertically)
-                    .testTag("SaveCheckButton")
+                    .testTag("SaveButton")
                     .background(
                         color = MaterialTheme.colorScheme.primary,
                         shape = RoundedCornerShape(6.dp),

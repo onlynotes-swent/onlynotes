@@ -1,5 +1,6 @@
 package com.github.onlynotesswent.ui.overview.editnote
 
+import android.util.Log
 import androidx.compose.ui.test.assertContentDescriptionContains
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertTextEquals
@@ -16,14 +17,18 @@ import com.github.onlynotesswent.model.note.NoteRepository
 import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
+import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
 import com.google.firebase.Timestamp
+import java.io.File
+import org.junit.Assert.assertThrows
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.mockito.Mock
 import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
-import org.mockito.kotlin.never
+import org.mockito.kotlin.any
+import org.mockito.kotlin.verify
 
 class EditMarkdownTest {
   @Mock private lateinit var noteRepository: NoteRepository
@@ -52,7 +57,14 @@ class EditMarkdownTest {
     noteViewModel.selectedNote(testNote)
 
     // Mock the current route to be the user create screen
-    `when`(navigationActions.currentRoute()).thenReturn(Screen.EDIT_NOTE)
+    `when`(navigationActions.currentRoute()).thenReturn(Screen.EDIT_NOTE_MARKDOWN)
+
+    `when`(fileRepository.downloadFile(any(), any(), any(), any(), any(), any())).thenAnswer {
+      val onSuccess = it.getArgument<(File) -> Unit>(3)
+      val testFile = File.createTempFile("test", ".md").apply { writeText("Test content") }
+      Log.d("TestDebug", "Mock file created: ${testFile.absolutePath}")
+      onSuccess(testFile)
+    }
     composeTestRule.setContent {
       EditMarkdownScreen(navigationActions, noteViewModel, fileViewModel)
     }
@@ -60,31 +72,68 @@ class EditMarkdownTest {
 
   @Test
   fun displayBaseComponents() {
-    composeTestRule.onNodeWithTag("EditorControl").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("goBackButton").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("Save button").assertIsDisplayed()
+    // Top bar buttons
+    composeTestRule.onNodeWithTag("closeButton").assertIsDisplayed()
+
+    // Edit markdown components
+    composeTestRule.onNodeWithTag("RichTextEditor").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("editMarkdownFAB").assertIsDisplayed()
+
+    // Navigation bar
+    composeTestRule.onNodeWithTag("Detail").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("Comments").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("PDF").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("Content").assertIsDisplayed()
+  }
+
+  @Test
+  fun clickGoBackButton() {
+    composeTestRule.onNodeWithTag("closeButton").performClick()
+    verify(navigationActions).navigateTo(TopLevelDestinations.OVERVIEW)
+  }
+
+  @Test
+  fun clickEditButton() {
+    composeTestRule.onNodeWithTag("editMarkdownFAB").performClick()
+
+    // Check that the edit button is not displayed
+    composeTestRule.onNodeWithTag("editMarkdownFAB").assertDoesNotExist()
+
     composeTestRule.onNodeWithTag("RichTextEditor").assertIsDisplayed()
     composeTestRule.onNodeWithTag("BoldControl").assertIsDisplayed()
     composeTestRule.onNodeWithTag("ItalicControl").assertIsDisplayed()
     composeTestRule.onNodeWithTag("UnderlinedControl").assertIsDisplayed()
     composeTestRule.onNodeWithTag("StrikethroughControl").assertIsDisplayed()
-  }
-
-  @Test
-  fun clickGoBackButton() {
-    composeTestRule.onNodeWithTag("goBackButton").performClick()
-    org.mockito.kotlin.verify(navigationActions).goBack()
-    org.mockito.kotlin.verify(navigationActions, never()).navigateTo(Screen.OVERVIEW)
+    composeTestRule.onNodeWithTag("SaveButton").assertIsDisplayed()
   }
 
   @Test
   fun enterText() {
-    composeTestRule.onNodeWithTag("RichTextEditor").performTextInput("example text")
-    composeTestRule.onNodeWithTag("RichTextEditor").assertTextEquals("example text")
+    // Mock updateFile to do nothing
+    `when`(fileRepository.updateFile(any(), any(), any(), any(), any())).thenAnswer { {} }
+
+    // Should not be able to enter text before clicking the edit button
+    assertThrows(AssertionError::class.java) {
+      composeTestRule.onNodeWithTag("RichTextEditor").performTextInput("This is a test")
+    }
+
+    composeTestRule.onNodeWithTag("RichTextEditor").assertTextEquals("Test content")
+    composeTestRule.onNodeWithTag("SaveButton").assertDoesNotExist()
+
+    // Click the edit button
+    composeTestRule.onNodeWithTag("editMarkdownFAB").performClick()
+    composeTestRule.onNodeWithTag("RichTextEditor").performTextInput("This is a test")
+    composeTestRule.onNodeWithTag("RichTextEditor").assertTextEquals("Test contentThis is a test")
+
+    // Click the save button
+    composeTestRule.onNodeWithTag("SaveButton").performClick()
+    verify(fileRepository).updateFile(any(), any(), any(), any(), any())
   }
 
   @Test
   fun clickComponents() {
+    composeTestRule.onNodeWithTag("editMarkdownFAB").performClick()
+
     composeTestRule.onNodeWithTag("BoldControl").assertContentDescriptionContains("Unselected")
     composeTestRule.onNodeWithTag("BoldControl").performClick()
     composeTestRule.onNodeWithTag("BoldControl").assertContentDescriptionContains("Selected")
