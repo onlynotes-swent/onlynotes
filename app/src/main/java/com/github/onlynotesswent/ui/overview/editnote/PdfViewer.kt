@@ -189,7 +189,8 @@ fun PdfViewerScreen(
             navigationActions = navigationActions, selectedItem = Screen.EDIT_NOTE_PDF)
       }) { paddingValues ->
         if (isLoading) {
-          LoadingIndicator(modifier = Modifier.fillMaxSize().padding(paddingValues))
+          LoadingIndicator(
+              text = "Loading PDF...", modifier = Modifier.fillMaxSize().padding(paddingValues))
         } else if (pdfExists && pdfFile != null) {
           PdfRendererViewCompose(
               file = pdfFile!!,

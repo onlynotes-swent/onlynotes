@@ -16,15 +16,14 @@ import androidx.compose.ui.unit.dp
 
 /** Composable function to display a loading indicator. */
 @Composable
-fun LoadingIndicator(modifier: Modifier = Modifier) {
+fun LoadingIndicator(text: String, modifier: Modifier = Modifier) {
   Column(
       modifier = modifier.fillMaxSize(),
       verticalArrangement = Arrangement.Center,
       horizontalAlignment = Alignment.CenterHorizontally) {
         CircularProgressIndicator(
-            modifier = Modifier.size(48.dp), // Adjust size as needed
-            color = MaterialTheme.colorScheme.primary)
+            modifier = Modifier.size(48.dp), color = MaterialTheme.colorScheme.primary)
         Spacer(modifier = Modifier.height(16.dp))
-        Text(text = "Loading PDF...", style = MaterialTheme.typography.bodyMedium)
+        Text(text = text, style = MaterialTheme.typography.bodyMedium)
       }
 }
