@@ -52,7 +52,7 @@ class CommentsTest {
     userViewModel.addUser(testUser, {}, {})
 
     // Mock the current route to be the note edit screen
-    `when`(navigationActions.currentRoute()).thenReturn(Screen.EDIT_NOTE)
+    `when`(navigationActions.currentRoute()).thenReturn(Screen.EDIT_NOTE_COMMENT)
     val mockNote =
         Note(
             id = "1",
