@@ -125,6 +125,7 @@ fun PdfViewerScreen(
         if (pdfExists) {
           var showDeleteConfirmation by remember { mutableStateOf(false) }
           FloatingActionButton(
+              modifier = Modifier.testTag("deletePdfButton"),
               onClick = {
                 // Show confirmation dialog when delete button is clicked
                 showDeleteConfirmation = true
@@ -169,7 +170,7 @@ fun PdfViewerScreen(
               modifier = Modifier.testTag("scanPdfButton")) {
                 Icon(
                     imageVector = Icons.Default.UploadFile,
-                    contentDescription = "Scan and replace PDF",
+                    contentDescription = "Scan",
                 )
               }
         }
@@ -197,10 +198,10 @@ fun PdfViewerScreen(
           PdfRendererViewCompose(
               file = pdfFile!!,
               lifecycleOwner = LocalLifecycleOwner.current,
-              modifier = Modifier.fillMaxSize().padding(paddingValues))
+              modifier = Modifier.fillMaxSize().padding(paddingValues).testTag("PDFViewer"))
         } else {
           Column(
-              modifier = Modifier.fillMaxSize(),
+              modifier = Modifier.fillMaxSize().testTag("noPdfFound"),
               verticalArrangement = Arrangement.Center,
               horizontalAlignment = Alignment.CenterHorizontally) {
                 Text("No PDF found.")
