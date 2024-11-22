@@ -30,6 +30,7 @@ import com.github.onlynotesswent.model.file.FileType
 import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.ui.common.DeletePopup
+import com.github.onlynotesswent.ui.common.LoadingIndicator
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
 import com.github.onlynotesswent.utils.Scanner
@@ -60,7 +61,7 @@ fun PdfViewerScreen(
   // States to manage the PDF existence, file reference, retry logic, and attempts
   var pdfExists by remember { mutableStateOf(false) }
   var pdfFile by remember { mutableStateOf<File?>(null) }
-  var retryDownload by remember { mutableStateOf(true) }
+  var retryDownload by remember { mutableStateOf(false) }
   var attempt by remember { mutableIntStateOf(0) }
   var isLoading by remember { mutableStateOf(true) }
 
@@ -81,7 +82,7 @@ fun PdfViewerScreen(
               isLoading = false
               retryDownload = false
             },
-            onFileNotFound = {},
+            onFileNotFound = { isLoading = false },
             onFailure = {})
       } catch (e: Exception) {
         Log.e("PdfViewerScreen", "Error downloading PDF: $e")
@@ -188,12 +189,7 @@ fun PdfViewerScreen(
             navigationActions = navigationActions, selectedItem = Screen.EDIT_NOTE_PDF)
       }) { paddingValues ->
         if (isLoading) {
-          Column(
-              modifier = Modifier.fillMaxSize(),
-              verticalArrangement = Arrangement.Center,
-              horizontalAlignment = Alignment.CenterHorizontally) {
-                Text("Loading PDF...")
-              }
+          LoadingIndicator(modifier = Modifier.fillMaxSize().padding(paddingValues))
         } else if (pdfExists && pdfFile != null) {
           PdfRendererViewCompose(
               file = pdfFile!!,
