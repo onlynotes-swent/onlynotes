@@ -115,6 +115,7 @@ interface FolderRepository {
    * Deletes all elements of a folder.
    *
    * @param folder The folder to delete elements from.
+   * @param noteViewModel The ViewModel that provides the list of notes to delete.
    * @param onSuccess Callback to be invoked when the subfolders are deleted successfully.
    * @param onFailure Callback to be invoked if an error occurs.
    */

@@ -94,10 +94,7 @@ fun FolderItem(
                       remember {
                         object : DragAndDropTarget {
                           override fun onDrop(event: DragAndDropEvent): Boolean {
-                            // Get the dragged object Id TODO reviewer: should I extract this logic
-                            // in separate
-                            // functions like handleDraggedNote and handleDraggedFolder or leave it
-                            // as is?
+                            // Get the dragged object Id
                             val draggedObjectId =
                                 event.toAndroidDragEvent().clipData.getItemAt(0).text.toString()
                             val draggedNote = noteViewModel.draggedNote.value
