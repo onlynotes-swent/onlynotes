@@ -59,6 +59,7 @@ import com.github.onlynotesswent.model.file.FileType
 import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.folder.FolderViewModel
 import com.github.onlynotesswent.model.note.NoteViewModel
+import com.github.onlynotesswent.model.notification.NotificationViewModel
 import com.github.onlynotesswent.model.user.UserRepositoryFirestore
 import com.github.onlynotesswent.model.user.UserViewModel
 import com.github.onlynotesswent.ui.navigation.BottomNavigationMenu
@@ -86,7 +87,8 @@ fun EditProfileScreen(
     profilePictureTaker: ProfilePictureTaker,
     fileViewModel: FileViewModel,
     noteViewModel: NoteViewModel,
-    folderViewModel: FolderViewModel
+    folderViewModel: FolderViewModel,
+    notificationViewModel: NotificationViewModel
 ) {
   val user = userViewModel.currentUser.collectAsState()
 
@@ -132,6 +134,7 @@ fun EditProfileScreen(
                 "Edit Profile",
                 navigationActions,
                 userViewModel,
+                notificationViewModel,
                 includeBackButton = true,
                 onBackButtonClick = {
                   if (newFirstName.value != user.value?.firstName ||

@@ -27,6 +27,7 @@ object Screen {
   const val USER_PROFILE = "User Profile Screen"
   const val PUBLIC_PROFILE = "Public Profile Screen"
   const val EDIT_PROFILE = "Edit Profile Screen"
+  const val NOTIFICATIONS = "Notifications Screen"
   const val FOLDER_CONTENTS = "Folder Contents Screen"
 }
 

@@ -25,7 +25,10 @@ import androidx.compose.material.icons.automirrored.outlined.ExitToApp
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Inbox
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ElevatedCard
@@ -66,6 +69,7 @@ import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
 import com.github.onlynotesswent.model.file.FileType
 import com.github.onlynotesswent.model.file.FileViewModel
+import com.github.onlynotesswent.model.notification.NotificationViewModel
 import com.github.onlynotesswent.model.user.User
 import com.github.onlynotesswent.model.user.UserViewModel
 import com.github.onlynotesswent.ui.navigation.BottomNavigationMenu
@@ -88,13 +92,15 @@ import com.google.firebase.auth.FirebaseAuth
 fun UserProfileScreen(
     navigationActions: NavigationActions,
     userViewModel: UserViewModel,
-    fileViewModel: FileViewModel
+    fileViewModel: FileViewModel,
+    notificationViewModel: NotificationViewModel
 ) {
   val user = userViewModel.currentUser.collectAsState()
   // Display the user's profile information
   ProfileScaffold(
       navigationActions = navigationActions,
       userViewModel = userViewModel,
+      notificationViewModel = notificationViewModel,
       includeBackButton = false,
       topBarTitle = "    My Profile",
       floatingActionButton = {
@@ -124,13 +130,14 @@ fun UserProfileScreen(
 fun PublicProfileScreen(
     navigationActions: NavigationActions,
     userViewModel: UserViewModel,
-    fileViewModel: FileViewModel
+    fileViewModel: FileViewModel,
+    notificationViewModel: NotificationViewModel
 ) {
   val currentUser = userViewModel.currentUser.collectAsState()
   val profileUser = userViewModel.profileUser.collectAsState()
 
   // Display the user's profile information
-  ProfileScaffold(navigationActions, userViewModel) {
+  ProfileScaffold(navigationActions, userViewModel, notificationViewModel) {
     ProfileContent(profileUser, navigationActions, userViewModel, fileViewModel)
     if (profileUser.value != null && currentUser.value != null) {
       FollowUnfollowButton(userViewModel, profileUser.value!!.uid)
@@ -152,6 +159,7 @@ fun PublicProfileScreen(
 private fun ProfileScaffold(
     navigationActions: NavigationActions,
     userViewModel: UserViewModel,
+    notificationViewModel: NotificationViewModel,
     includeBackButton: Boolean = true,
     topBarTitle: String = "Public Profile",
     floatingActionButton: @Composable () -> Unit = {},
@@ -177,6 +185,7 @@ private fun ProfileScaffold(
             title = topBarTitle,
             navigationActions = navigationActions,
             userViewModel = userViewModel,
+            notificationViewModel = notificationViewModel,
             includeBackButton = includeBackButton)
       },
       content = { paddingValues ->
@@ -209,6 +218,7 @@ fun TopProfileBar(
     title: String,
     navigationActions: NavigationActions,
     userViewModel: UserViewModel,
+    notificationViewModel: NotificationViewModel,
     includeBackButton: Boolean = true,
     onBackButtonClick: () -> Unit = {
       var userProfileId = navigationActions.popFromScreenNavigationStack()
@@ -261,6 +271,7 @@ fun TopProfileBar(
       },
       actions = {
         if (!includeBackButton) {
+          NotificationButton(navigationActions, userViewModel, notificationViewModel)
           LogoutButton {
             FirebaseAuth.getInstance().signOut()
             navigationActions.navigateTo(Screen.AUTH)
@@ -461,7 +472,6 @@ fun FollowUnfollowButton(userViewModel: UserViewModel, otherUserId: String) {
  */
 @Composable
 fun RemoveFollowerButton(userViewModel: UserViewModel, followerId: String) {
-  val context = LocalContext.current
   OutlinedButton(
       contentPadding = PaddingValues(horizontal = 10.dp),
       shape = RoundedCornerShape(25),
@@ -704,4 +714,41 @@ fun LogoutButton(onClick: () -> Unit) {
       content = {
         Icon(imageVector = Icons.AutoMirrored.Outlined.ExitToApp, contentDescription = "Logout")
       })
+}
+
+/**
+ * Displays the notification button to navigate to the notification screen, with a badge to show the
+ * number of unread notifications.
+ */
+@Composable
+fun NotificationButton(
+    navigationActions: NavigationActions,
+    userViewModel: UserViewModel,
+    notificationViewModel: NotificationViewModel
+) {
+  userViewModel.currentUser.collectAsState().value?.let { user ->
+    notificationViewModel.getNotificationByReceiverId(user.uid)
+  }
+  val userNotifications = notificationViewModel.userNotifications.collectAsState()
+  val unreadNotificationsCount = userNotifications.value.filter { !it.read }.size
+  BadgedBox(
+      modifier =
+          Modifier.testTag("notificationButton").clickable {
+            navigationActions.navigateTo(Screen.NOTIFICATIONS)
+          },
+      badge = {
+        if (unreadNotificationsCount > 0) {
+          Badge(modifier = Modifier.align(Alignment.TopEnd)) {
+            Text(unreadNotificationsCount.toString(), color = Color.White)
+          }
+        }
+      },
+  ) {
+    Icon(
+        imageVector = Icons.Default.Inbox,
+        contentDescription = "Notifications",
+        tint =
+            if (unreadNotificationsCount > 0) MaterialTheme.colorScheme.primary
+            else Color.Unspecified)
+  }
 }
