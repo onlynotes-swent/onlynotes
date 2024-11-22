@@ -60,8 +60,7 @@ import java.util.Calendar
  * @param noteViewModel The ViewModel that provides the current note to be edited and handles note
  *   updates.
  * @param userViewModel The ViewModel that provides the current user and handles user updates.
- * @param fileViewModel The ViewModel that provides the current file to be uploaded and handles
- *   it.
+ * @param fileViewModel The ViewModel that provides the current file to be uploaded and handles it.
  */
 @Composable
 fun AddNoteScreen(
