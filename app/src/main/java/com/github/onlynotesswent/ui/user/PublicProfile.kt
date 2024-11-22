@@ -1,7 +1,6 @@
 package com.github.onlynotesswent.ui.user
 
 import android.util.Log
-import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -67,8 +66,8 @@ import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
 import com.github.onlynotesswent.model.file.FileType
 import com.github.onlynotesswent.model.file.FileViewModel
-import com.github.onlynotesswent.model.users.User
-import com.github.onlynotesswent.model.users.UserViewModel
+import com.github.onlynotesswent.model.user.User
+import com.github.onlynotesswent.model.user.UserViewModel
 import com.github.onlynotesswent.ui.navigation.BottomNavigationMenu
 import com.github.onlynotesswent.ui.navigation.LIST_TOP_LEVEL_DESTINATION
 import com.github.onlynotesswent.ui.navigation.NavigationActions
@@ -417,6 +416,13 @@ fun FollowUnfollowButton(userViewModel: UserViewModel, otherUserId: String) {
           .following
           .contains(otherUserId))
           "Unfollow"
+      else if (userViewModel.currentUser
+          .collectAsState()
+          .value!!
+          .pendingFriends
+          .following
+          .contains(otherUserId))
+          "Pending..."
       else "Follow"
   OutlinedButton(
       contentPadding = PaddingValues(horizontal = 10.dp),
@@ -461,8 +467,10 @@ fun RemoveFollowerButton(userViewModel: UserViewModel, followerId: String) {
       shape = RoundedCornerShape(25),
       modifier = Modifier.testTag("removeFollowerButton--$followerId").width(90.dp),
       onClick = {
-        // TODO: Implement remove follower functionality
-        Toast.makeText(context, "Not Implemented Yet", Toast.LENGTH_SHORT).show()
+        userViewModel.removeFollower(
+            followerId,
+            { userViewModel.profileUser.value?.let { userViewModel.refreshProfileUser(it.uid) } },
+            {})
       }) {
         Text(
             "Remove",

@@ -32,7 +32,7 @@ import androidx.compose.ui.unit.dp
 import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.folder.FolderViewModel
 import com.github.onlynotesswent.model.note.NoteViewModel
-import com.github.onlynotesswent.model.users.UserViewModel
+import com.github.onlynotesswent.model.user.UserViewModel
 import com.github.onlynotesswent.ui.common.CustomLazyGrid
 import com.github.onlynotesswent.ui.common.NoteItem
 import com.github.onlynotesswent.ui.navigation.BottomNavigationMenu
