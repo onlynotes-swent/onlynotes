@@ -80,25 +80,37 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
    * Adds a Folder to the repository.
    *
    * @param folder The folder to add.
+   * @param userId The ID of the user to add the folder to.
+   * @param useCache Whether to update data from cache. Should be true only if [userId] is the
+   *   current user.
    */
   fun addFolder(folder: Folder, userId: String, useCache: Boolean = false) {
-    repository.addFolder(folder, onSuccess = { getRootFoldersFromUid(userId) }, onFailure = {}, useCache = useCache)
+    repository.addFolder(
+        folder, onSuccess = { getRootFoldersFromUid(userId) }, onFailure = {}, useCache = useCache)
   }
 
   /**
    * Deletes a folder by its ID.
    *
    * @param folderId The ID of the folder to delete.
+   * @param userId The ID of the user to delete the folder for.
+   * @param useCache Whether to update data from cache. Should be true only if [userId] is the
+   *   current user.
    */
   fun deleteFolderById(folderId: String, userId: String, useCache: Boolean = false) {
     repository.deleteFolderById(
-        folderId, onSuccess = { getRootFoldersFromUid(userId) }, onFailure = {}, useCache = useCache)
+        folderId,
+        onSuccess = { getRootFoldersFromUid(userId) },
+        onFailure = {},
+        useCache = useCache)
   }
 
   /**
    * Deletes all folders from a user.
    *
    * @param userId The ID of the user to delete folders notes for.
+   * @param useCache Whether to update data from cache. Should be true only if [userId] is the
+   *   current user.
    */
   fun deleteFoldersByUserId(userId: String, useCache: Boolean = false) {
     repository.deleteFoldersByUserId(
@@ -109,15 +121,20 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
    * Retrieves all folders owned by a user.
    *
    * @param userId The ID of the user to retrieve folders for.
+   * @param useCache Whether to update data from cache. Should be true only if [userId] is the
+   *   current user.
    */
   fun getFoldersFromUid(userId: String, useCache: Boolean = false) {
-    repository.getFoldersFromUid(userId, onSuccess = { _userFolders.value = it }, onFailure = {}, useCache = useCache)
+    repository.getFoldersFromUid(
+        userId, onSuccess = { _userFolders.value = it }, onFailure = {}, useCache = useCache)
   }
 
   /**
    * Retrieves all root folders owned by a user.
    *
    * @param userId The ID of the user to retrieve root folders for.
+   * @param useCache Whether to update data from cache. Should be true only if [userId] is the
+   *   current user.
    */
   fun getRootFoldersFromUid(userId: String, useCache: Boolean = false) {
     repository.getRootFoldersFromUid(
@@ -128,24 +145,33 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
    * Retrieves a folder by its ID.
    *
    * @param folderId The ID of the folder to retrieve.
+   * @param useCache Whether to update data from cache. Should be true only if userId of the folder
+   *   is the current user.
    */
   fun getFolderById(folderId: String, useCache: Boolean = false) {
-    repository.getFolderById(folderId, onSuccess = { _selectedFolder.value = it }, onFailure = {}, useCache = useCache)
+    repository.getFolderById(
+        folderId, onSuccess = { _selectedFolder.value = it }, onFailure = {}, useCache = useCache)
   }
 
   /**
    * Updates an existing folder.
    *
    * @param folder The folder with updated information.
+   * @param userId The ID of the user to update the folder for.
+   * @param useCache Whether to update data from cache. Should be true only if [userId] is the
+   *   current user.
    */
   fun updateFolder(folder: Folder, userId: String, useCache: Boolean = false) {
-    repository.updateFolder(folder, onSuccess = { getRootFoldersFromUid(userId) }, onFailure = {}, useCache = useCache)
+    repository.updateFolder(
+        folder, onSuccess = { getRootFoldersFromUid(userId) }, onFailure = {}, useCache = useCache)
   }
 
   /**
    * Retrieves all children folders of a parent folder.
    *
    * @param parentId The ID of the parent folder.
+   * @param useCache Whether to update data from cache. Should be true only if userId of the folder
+   *   is the current user.
    */
   fun getSubFoldersOf(parentId: String, useCache: Boolean = false) {
     repository.getSubFoldersOf(

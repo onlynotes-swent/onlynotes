@@ -84,6 +84,8 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
    * Gets all Note documents from a user, specified by their ID.
    *
    * @param userID The user ID.
+   * @param useCache Whether to update data from cache. Should be true only if [userID] is the
+   *   current user.
    */
   fun getNotesFrom(userID: String, useCache: Boolean = false) {
     repository.getNotesFrom(
@@ -94,6 +96,8 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
    * Gets all root Note documents from a user, specified by their ID.
    *
    * @param userID The user ID.
+   * @param useCache Whether to update data from cache. Should be true only if [userID] is the
+   *   current user.
    */
   fun getRootNotesFrom(userID: String, useCache: Boolean = false) {
     repository.getRootNotesFrom(
@@ -104,6 +108,8 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
    * Gets a Note document with ID noteId.
    *
    * @param noteId The ID of the Note document to be fetched.
+   * @param useCache Whether to update data from cache. Should be true only if userIf of the note is
+   *   the current user.
    */
   fun getNoteById(noteId: String, useCache: Boolean = false) {
     repository.getNoteById(
@@ -115,6 +121,8 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
    *
    * @param note The Note document to be added.
    * @param userID The user ID.
+   * @param useCache Whether to update data from cache. Should be true only if userId of the note is
+   *   the current user.
    */
   fun addNote(note: Note, userID: String, useCache: Boolean = false) {
     repository.addNote(
@@ -126,6 +134,8 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
    *
    * @param note The Note document to be updated.
    * @param userID The user ID.
+   * @param useCache Whether to update data from cache. Should be true only if userId of the note is
+   *   the current user.
    */
   fun updateNote(note: Note, userID: String, useCache: Boolean = false) {
     repository.updateNote(
@@ -137,6 +147,8 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
    *
    * @param noteId The ID of the Note document to be deleted.
    * @param userID The user ID.
+   * @param useCache Whether to update data from cache. Should be true only if userId of the note is
+   *   the current user.
    */
   fun deleteNoteById(noteId: String, userID: String, useCache: Boolean = false) {
     repository.deleteNoteById(
@@ -147,6 +159,8 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
    * Deletes all Note documents from a user, specified by their userId.
    *
    * @param userId The user ID.
+   * @param useCache Whether to update data from cache. Should be true only if [userId] is the
+   *   current user.
    */
   fun deleteNotesByUserId(userId: String, useCache: Boolean = false) {
     repository.deleteNotesByUserId(
@@ -157,6 +171,8 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
    * Retrieves all notes from a folder.
    *
    * @param folderId The ID of the folder to retrieve notes from.
+   * @param useCache Whether to update data from cache. Should be true only if userId of the folder
+   *   is the current user.
    */
   fun getNotesFromFolder(folderId: String, useCache: Boolean = false) {
     repository.getNotesFromFolder(
