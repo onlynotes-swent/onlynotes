@@ -1,5 +1,8 @@
 package com.github.onlynotesswent.model.note
 
+import androidx.room.Embedded
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 import com.github.onlynotesswent.model.common.Course
 import com.github.onlynotesswent.model.common.Visibility
 import com.google.firebase.Timestamp
@@ -18,12 +21,13 @@ import java.security.MessageDigest
  *   assigned to a folder, this value is `null`.
  * @property comments A collection of comments associated with the note.
  */
+@Entity
 data class Note(
-    val id: String,
+    @PrimaryKey val id: String,
     val title: String,
     val date: Timestamp,
     val visibility: Visibility = Visibility.DEFAULT,
-    val noteCourse: Course,
+    @Embedded val noteCourse: Course,
     val userId: String,
     val folderId: String? = null, // if note not assigned to a folder, folderId is null
     val comments: CommentCollection = CommentCollection()

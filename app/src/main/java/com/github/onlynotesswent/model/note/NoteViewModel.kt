@@ -1,9 +1,11 @@
 package com.github.onlynotesswent.model.note
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import com.github.onlynotesswent.model.cache.getNoteDatabase
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.firestore
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -39,8 +41,10 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
   }
 
   companion object {
-    val Factory: ViewModelProvider.Factory = viewModelFactory {
-      initializer { NoteViewModel(NoteRepositoryFirestore(Firebase.firestore)) }
+    fun factory(context: Context): ViewModelProvider.Factory = viewModelFactory {
+      initializer {
+        NoteViewModel(NoteRepositoryFirestore(Firebase.firestore, getNoteDatabase(context)))
+      }
     }
   }
 

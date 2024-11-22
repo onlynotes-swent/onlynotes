@@ -1,6 +1,7 @@
 package com.github.onlynotesswent.model.note
 
 import android.util.Log
+import com.github.onlynotesswent.model.cache.NoteDatabase
 import com.github.onlynotesswent.model.common.Course
 import com.github.onlynotesswent.model.common.Visibility
 import com.google.android.gms.tasks.Task
@@ -10,7 +11,8 @@ import com.google.firebase.auth.auth
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 
-class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepository {
+class NoteRepositoryFirestore(private val db: FirebaseFirestore, cache: NoteDatabase) :
+    NoteRepository {
   private val commentDelimiter: String = '\u001F'.toString()
 
   private data class FirebaseNote(
@@ -26,6 +28,7 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
       val folderId: String?,
       val commentsList: List<String>
   )
+
   /**
    * Converts a single Comment object into a formatted string for Firestore storage.
    *
@@ -48,6 +51,7 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
         commentDelimiter +
         comment.editedDate.seconds.toString()
   }
+
   /**
    * Converts a formatted string snapshot of a comment back into a Comment object.
    *
@@ -67,6 +71,7 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
         creationDate = Timestamp(commentValues[4].toLong(), 0),
         editedDate = Timestamp(commentValues[5].toLong(), 0))
   }
+
   /**
    * Converts a list of Comment objects to a list of snapshot strings for Firestore storage.
    *
@@ -77,6 +82,7 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
   private fun convertCommentsList(commentsList: List<Note.Comment>): List<String> {
     return commentsList.map { convertCommentToString(it) }
   }
+
   /**
    * Converts a list of snapshot strings to a list of Comment objects.
    *
@@ -110,6 +116,7 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
   }
 
   private val collectionPath = "notes"
+  private val noteDao = cache.noteDao()
 
   override fun getNewUid(): String {
     return db.collection(collectionPath).document().id
@@ -150,14 +157,26 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
   override fun getNotesFrom(
       userId: String,
       onSuccess: (List<Note>) -> Unit,
-      onFailure: (Exception) -> Unit
+      onFailure: (Exception) -> Unit,
+      useCache: Boolean
   ) {
+    if (useCache) {
+      val cachedData = noteDao.getNotes()
+      if (cachedData.isNotEmpty()) {
+        onSuccess(cachedData)
+        return
+      }
+    }
+    // If cache is not used or cache is empty, fetch data from Firestore
     db.collection(collectionPath).get().addOnCompleteListener { task ->
       if (task.isSuccessful) {
         val userNotes =
             task.result.documents
                 .mapNotNull { document -> documentSnapshotToNote(document) }
                 .filter { it.userId == userId }
+        if (useCache) {
+          noteDao.insertNotes(userNotes)
+        }
         onSuccess(userNotes)
       } else {
         task.exception?.let { e ->
@@ -171,8 +190,17 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
   override fun getRootNotesFrom(
       userId: String,
       onSuccess: (List<Note>) -> Unit,
-      onFailure: (Exception) -> Unit
+      onFailure: (Exception) -> Unit,
+      useCache: Boolean
   ) {
+    if (useCache) {
+      val cachedData = noteDao.getRootNotes()
+      if (cachedData.isNotEmpty()) {
+        onSuccess(cachedData)
+        return
+      }
+    }
+    // If cache is not used or cache is empty, fetch data from Firestore
     db.collection(collectionPath).get().addOnCompleteListener { task ->
       if (task.isSuccessful) {
         val userRootNotes =
@@ -181,6 +209,9 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
                 .filter {
                   it.userId == userId && it.folderId == null
                 } // filter out notes that are in folders
+        if (useCache) {
+          noteDao.insertNotes(userRootNotes)
+        }
         onSuccess(userRootNotes)
       } else {
         task.exception?.let { e ->
@@ -191,11 +222,27 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
     }
   }
 
-  override fun getNoteById(id: String, onSuccess: (Note) -> Unit, onFailure: (Exception) -> Unit) {
+  override fun getNoteById(
+      id: String,
+      onSuccess: (Note) -> Unit,
+      onFailure: (Exception) -> Unit,
+      useCache: Boolean
+  ) {
+    if (useCache) {
+      val cachedData = noteDao.getNoteById(id)
+      if (cachedData != null) {
+        onSuccess(cachedData)
+        return
+      }
+    }
+    // If cache is not used or cache is empty, fetch data from Firestore
     db.collection(collectionPath).document(id).get().addOnCompleteListener { task ->
       if (task.isSuccessful) {
         val note = task.result?.let { documentSnapshotToNote(it) }
         if (note != null) {
+          if (useCache) {
+            noteDao.insertNote(note)
+          }
           onSuccess(note)
         } else {
           onFailure(Exception("Note not found"))
@@ -209,21 +256,45 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
     }
   }
 
-  override fun addNote(note: Note, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) {
+  override fun addNote(
+      note: Note,
+      onSuccess: () -> Unit,
+      onFailure: (Exception) -> Unit,
+      useCache: Boolean
+  ) {
+    if (useCache) {
+      noteDao.insertNote(note)
+    }
     performFirestoreOperation(
         db.collection(collectionPath).document(note.id).set(convertNotes(note)),
         onSuccess,
         onFailure)
   }
 
-  override fun updateNote(note: Note, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) {
+  override fun updateNote(
+      note: Note,
+      onSuccess: () -> Unit,
+      onFailure: (Exception) -> Unit,
+      useCache: Boolean
+  ) {
+    if (useCache) {
+      noteDao.updateNote(note)
+    }
     performFirestoreOperation(
         db.collection(collectionPath).document(note.id).set(convertNotes(note)),
         onSuccess,
         onFailure)
   }
 
-  override fun deleteNoteById(id: String, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) {
+  override fun deleteNoteById(
+      id: String,
+      onSuccess: () -> Unit,
+      onFailure: (Exception) -> Unit,
+      useCache: Boolean
+  ) {
+    if (useCache) {
+      noteDao.deleteNoteById(id)
+    }
     performFirestoreOperation(
         db.collection(collectionPath).document(id).delete(), onSuccess, onFailure)
   }
@@ -231,8 +302,12 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
   override fun deleteNotesByUserId(
       userId: String,
       onSuccess: () -> Unit,
-      onFailure: (Exception) -> Unit
+      onFailure: (Exception) -> Unit,
+      useCache: Boolean
   ) {
+    if (useCache) {
+      noteDao.deleteNotes()
+    }
     db.collection(collectionPath).get().addOnCompleteListener { task ->
       if (task.isSuccessful) {
         val userNotes =
@@ -253,14 +328,26 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
   override fun getNotesFromFolder(
       folderId: String,
       onSuccess: (List<Note>) -> Unit,
-      onFailure: (Exception) -> Unit
+      onFailure: (Exception) -> Unit,
+      useCache: Boolean
   ) {
+    if (useCache) {
+      val cachedData = noteDao.getNotesFromFolder(folderId)
+      if (cachedData.isNotEmpty()) {
+        onSuccess(cachedData)
+        return
+      }
+    }
+    // If cache is not used or cache is empty, fetch data from Firestore
     db.collection(collectionPath).get().addOnCompleteListener { task ->
       if (task.isSuccessful) {
         val folderNotes =
             task.result.documents
                 .mapNotNull { document -> documentSnapshotToNote(document) }
                 .filter { it.folderId == folderId }
+        if (useCache) {
+          noteDao.insertNotes(folderNotes)
+        }
         onSuccess(folderNotes)
       } else {
         task.exception?.let { e ->

@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -63,7 +64,7 @@ fun OnlyNotesApp(
   val navController = rememberNavController()
   val navigationActions = NavigationActions(navController)
   val userViewModel: UserViewModel = viewModel(factory = UserViewModel.Factory)
-  val noteViewModel: NoteViewModel = viewModel(factory = NoteViewModel.Factory)
+  val noteViewModel: NoteViewModel = viewModel(factory = NoteViewModel.factory(context = LocalContext.current))
   val fileViewModel: FileViewModel = viewModel(factory = FileViewModel.Factory)
   val folderViewModel: FolderViewModel = viewModel(factory = FolderViewModel.Factory)
 
