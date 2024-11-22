@@ -106,6 +106,7 @@ fun EditMarkdownScreen(
         })
   }
 
+  @Suppress("kotlin:S6300") // as there is no need to encrypt file
   fun updateMarkdownFile(context: Context, uid: String, fileViewModel: FileViewModel) {
     try {
       if (markdownContent != null) {
