@@ -86,7 +86,8 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
    * @param userID The user ID.
    */
   fun getNotesFrom(userID: String, useCache: Boolean = false) {
-    repository.getNotesFrom(userID, onSuccess = { _userNotes.value = it }, onFailure = {}, useCache = useCache)
+    repository.getNotesFrom(
+        userID, onSuccess = { _userNotes.value = it }, onFailure = {}, useCache = useCache)
   }
 
   /**
@@ -95,7 +96,8 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
    * @param userID The user ID.
    */
   fun getRootNotesFrom(userID: String, useCache: Boolean = false) {
-    repository.getRootNotesFrom(userID, onSuccess = { _userRootNotes.value = it }, onFailure = {}, useCache = useCache)
+    repository.getRootNotesFrom(
+        userID, onSuccess = { _userRootNotes.value = it }, onFailure = {}, useCache = useCache)
   }
 
   /**
@@ -104,7 +106,8 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
    * @param noteId The ID of the Note document to be fetched.
    */
   fun getNoteById(noteId: String, useCache: Boolean = false) {
-    repository.getNoteById(id = noteId, onSuccess = { _selectedNote.value = it }, onFailure = {}, useCache = useCache)
+    repository.getNoteById(
+        id = noteId, onSuccess = { _selectedNote.value = it }, onFailure = {}, useCache = useCache)
   }
 
   /**
@@ -114,7 +117,8 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
    * @param userID The user ID.
    */
   fun addNote(note: Note, userID: String, useCache: Boolean = false) {
-    repository.addNote(note = note, onSuccess = { getRootNotesFrom(userID) }, onFailure = {}, useCache = useCache)
+    repository.addNote(
+        note = note, onSuccess = { getRootNotesFrom(userID) }, onFailure = {}, useCache = useCache)
   }
 
   /**
@@ -124,7 +128,8 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
    * @param userID The user ID.
    */
   fun updateNote(note: Note, userID: String, useCache: Boolean = false) {
-    repository.updateNote(note = note, onSuccess = { getRootNotesFrom(userID) }, onFailure = {}, useCache = useCache)
+    repository.updateNote(
+        note = note, onSuccess = { getRootNotesFrom(userID) }, onFailure = {}, useCache = useCache)
   }
 
   /**
@@ -134,7 +139,8 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
    * @param userID The user ID.
    */
   fun deleteNoteById(noteId: String, userID: String, useCache: Boolean = false) {
-    repository.deleteNoteById(id = noteId, onSuccess = { getRootNotesFrom(userID) }, onFailure = {}, useCache = useCache)
+    repository.deleteNoteById(
+        id = noteId, onSuccess = { getRootNotesFrom(userID) }, onFailure = {}, useCache = useCache)
   }
 
   /**
@@ -143,7 +149,8 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
    * @param userId The user ID.
    */
   fun deleteNotesByUserId(userId: String, useCache: Boolean = false) {
-    repository.deleteNotesByUserId(userId, onSuccess = { getRootNotesFrom(userId) }, onFailure = {}, useCache = useCache)
+    repository.deleteNotesByUserId(
+        userId, onSuccess = { getRootNotesFrom(userId) }, onFailure = {}, useCache = useCache)
   }
 
   /**
@@ -152,6 +159,7 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
    * @param folderId The ID of the folder to retrieve notes from.
    */
   fun getNotesFromFolder(folderId: String, useCache: Boolean = false) {
-    repository.getNotesFromFolder(folderId, onSuccess = { _folderNotes.value = it }, onFailure = {}, useCache = useCache)
+    repository.getNotesFromFolder(
+        folderId, onSuccess = { _folderNotes.value = it }, onFailure = {}, useCache = useCache)
   }
 }
