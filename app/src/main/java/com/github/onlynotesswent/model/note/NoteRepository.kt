@@ -27,7 +27,7 @@ interface NoteRepository {
       userId: String,
       onSuccess: (List<Note>) -> Unit,
       onFailure: (Exception) -> Unit,
-      useCache: Boolean = false
+      useCache: Boolean
   )
 
   /**
@@ -43,7 +43,7 @@ interface NoteRepository {
       userId: String,
       onSuccess: (List<Note>) -> Unit,
       onFailure: (Exception) -> Unit,
-      useCache: Boolean = false
+      useCache: Boolean
   )
 
   /**
@@ -59,7 +59,7 @@ interface NoteRepository {
       id: String,
       onSuccess: (Note) -> Unit,
       onFailure: (Exception) -> Unit,
-      useCache: Boolean = false
+      useCache: Boolean
   )
 
   /**
@@ -75,7 +75,7 @@ interface NoteRepository {
       note: Note,
       onSuccess: () -> Unit,
       onFailure: (Exception) -> Unit,
-      useCache: Boolean = false
+      useCache: Boolean
   )
 
   /**
@@ -91,7 +91,7 @@ interface NoteRepository {
       note: Note,
       onSuccess: () -> Unit,
       onFailure: (Exception) -> Unit,
-      useCache: Boolean = false
+      useCache: Boolean
   )
 
   /**
@@ -107,7 +107,7 @@ interface NoteRepository {
       id: String,
       onSuccess: () -> Unit,
       onFailure: (Exception) -> Unit,
-      useCache: Boolean = false
+      useCache: Boolean
   )
 
   /**
@@ -123,7 +123,7 @@ interface NoteRepository {
       userId: String,
       onSuccess: () -> Unit,
       onFailure: (Exception) -> Unit,
-      useCache: Boolean = false
+      useCache: Boolean
   )
 
   /**
@@ -139,6 +139,6 @@ interface NoteRepository {
       folderId: String,
       onSuccess: (List<Note>) -> Unit,
       onFailure: (Exception) -> Unit,
-      useCache: Boolean = false
+      useCache: Boolean
   )
 }

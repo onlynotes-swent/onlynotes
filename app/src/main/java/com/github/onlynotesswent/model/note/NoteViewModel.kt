@@ -85,8 +85,8 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
    *
    * @param userID The user ID.
    */
-  fun getNotesFrom(userID: String) {
-    repository.getNotesFrom(userID, onSuccess = { _userNotes.value = it }, onFailure = {})
+  fun getNotesFrom(userID: String, useCache: Boolean = false) {
+    repository.getNotesFrom(userID, onSuccess = { _userNotes.value = it }, onFailure = {}, useCache = useCache)
   }
 
   /**
@@ -94,8 +94,8 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
    *
    * @param userID The user ID.
    */
-  fun getRootNotesFrom(userID: String) {
-    repository.getRootNotesFrom(userID, onSuccess = { _userRootNotes.value = it }, onFailure = {})
+  fun getRootNotesFrom(userID: String, useCache: Boolean = false) {
+    repository.getRootNotesFrom(userID, onSuccess = { _userRootNotes.value = it }, onFailure = {}, useCache = useCache)
   }
 
   /**
@@ -103,8 +103,8 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
    *
    * @param noteId The ID of the Note document to be fetched.
    */
-  fun getNoteById(noteId: String) {
-    repository.getNoteById(id = noteId, onSuccess = { _selectedNote.value = it }, onFailure = {})
+  fun getNoteById(noteId: String, useCache: Boolean = false) {
+    repository.getNoteById(id = noteId, onSuccess = { _selectedNote.value = it }, onFailure = {}, useCache = useCache)
   }
 
   /**
@@ -113,8 +113,8 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
    * @param note The Note document to be added.
    * @param userID The user ID.
    */
-  fun addNote(note: Note, userID: String) {
-    repository.addNote(note = note, onSuccess = { getRootNotesFrom(userID) }, onFailure = {})
+  fun addNote(note: Note, userID: String, useCache: Boolean = false) {
+    repository.addNote(note = note, onSuccess = { getRootNotesFrom(userID) }, onFailure = {}, useCache = useCache)
   }
 
   /**
@@ -123,8 +123,8 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
    * @param note The Note document to be updated.
    * @param userID The user ID.
    */
-  fun updateNote(note: Note, userID: String) {
-    repository.updateNote(note = note, onSuccess = { getRootNotesFrom(userID) }, onFailure = {})
+  fun updateNote(note: Note, userID: String, useCache: Boolean = false) {
+    repository.updateNote(note = note, onSuccess = { getRootNotesFrom(userID) }, onFailure = {}, useCache = useCache)
   }
 
   /**
@@ -133,8 +133,8 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
    * @param noteId The ID of the Note document to be deleted.
    * @param userID The user ID.
    */
-  fun deleteNoteById(noteId: String, userID: String) {
-    repository.deleteNoteById(id = noteId, onSuccess = { getRootNotesFrom(userID) }, onFailure = {})
+  fun deleteNoteById(noteId: String, userID: String, useCache: Boolean = false) {
+    repository.deleteNoteById(id = noteId, onSuccess = { getRootNotesFrom(userID) }, onFailure = {}, useCache = useCache)
   }
 
   /**
@@ -142,8 +142,8 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
    *
    * @param userId The user ID.
    */
-  fun deleteNotesByUserId(userId: String) {
-    repository.deleteNotesByUserId(userId, onSuccess = { getRootNotesFrom(userId) }, onFailure = {})
+  fun deleteNotesByUserId(userId: String, useCache: Boolean = false) {
+    repository.deleteNotesByUserId(userId, onSuccess = { getRootNotesFrom(userId) }, onFailure = {}, useCache = useCache)
   }
 
   /**
@@ -151,7 +151,7 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
    *
    * @param folderId The ID of the folder to retrieve notes from.
    */
-  fun getNotesFromFolder(folderId: String) {
-    repository.getNotesFromFolder(folderId, onSuccess = { _folderNotes.value = it }, onFailure = {})
+  fun getNotesFromFolder(folderId: String, useCache: Boolean = false) {
+    repository.getNotesFromFolder(folderId, onSuccess = { _folderNotes.value = it }, onFailure = {}, useCache = useCache)
   }
 }
