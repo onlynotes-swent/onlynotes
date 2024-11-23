@@ -34,6 +34,10 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
   private val _selectedNote = MutableStateFlow<Note?>(null)
   val selectedNote: StateFlow<Note?> = _selectedNote.asStateFlow()
 
+  // Dragged note
+  private val _draggedNote = MutableStateFlow<Note?>(null)
+  val draggedNote: StateFlow<Note?> = _draggedNote.asStateFlow()
+
   init {
     repository.init { getPublicNotes() }
   }
@@ -51,6 +55,10 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
    */
   fun selectedFolderId(folderId: String?) {
     _currentFolderId.value = folderId
+  }
+
+  fun draggedNote(draggedNote: Note?) {
+    _draggedNote.value = draggedNote
   }
 
   /**
@@ -120,7 +128,15 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
    * @param userID The user ID.
    */
   fun updateNote(note: Note, userID: String) {
-    repository.updateNote(note = note, onSuccess = { getRootNotesFrom(userID) }, onFailure = {})
+    repository.updateNote(
+        note = note,
+        onSuccess = {
+          getRootNotesFrom(userID)
+          if (note.folderId != null) {
+            getNotesFromFolder(note.folderId)
+          }
+        },
+        onFailure = {})
   }
 
   /**
@@ -149,5 +165,15 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
    */
   fun getNotesFromFolder(folderId: String) {
     repository.getNotesFromFolder(folderId, onSuccess = { _folderNotes.value = it }, onFailure = {})
+  }
+
+  /**
+   * Deletes all notes from a folder.
+   *
+   * @param folderId The ID of the folder to delete notes from.
+   */
+  fun deleteNotesFromFolder(folderId: String) {
+    repository.deleteNotesFromFolder(
+        folderId, onSuccess = { getNotesFromFolder(folderId) }, onFailure = {})
   }
 }

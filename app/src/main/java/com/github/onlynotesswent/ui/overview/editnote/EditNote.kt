@@ -266,7 +266,7 @@ fun NoteSection(
 
   NoteDataTextField(
       value = noteTitle,
-      onValueChange = onNoteTitleChange,
+      onValueChange = { onNoteTitleChange(Note.formatTitle(it)) },
       label = "Note Title",
       placeholder = "Enter the new title here",
       modifier = Modifier.fillMaxWidth().testTag("EditTitle textField"),

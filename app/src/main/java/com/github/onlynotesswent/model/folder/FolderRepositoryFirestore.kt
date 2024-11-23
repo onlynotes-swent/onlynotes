@@ -2,6 +2,7 @@ package com.github.onlynotesswent.model.folder
 
 import android.util.Log
 import com.github.onlynotesswent.model.common.Visibility
+import com.github.onlynotesswent.model.note.NoteViewModel
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.DocumentSnapshot
@@ -197,6 +198,28 @@ class FolderRepositoryFirestore(private val db: FirebaseFirestore) : FolderRepos
     }
   }
 
+  override fun deleteFolderContents(
+      folder: Folder,
+      noteViewModel: NoteViewModel,
+      onSuccess: () -> Unit,
+      onFailure: (Exception) -> Unit
+  ) {
+    getSubFoldersOf(
+        folder.id,
+        onSuccess = { subFolders ->
+          subFolders.forEach { subFolder ->
+            deleteFolderContents(subFolder, noteViewModel, onSuccess = {}, onFailure = onFailure)
+            noteViewModel.deleteNotesFromFolder(subFolder.id)
+            deleteFolderById(subFolder.id, onSuccess = {}, onFailure = onFailure)
+          }
+          onSuccess()
+        },
+        onFailure = { e: Exception ->
+          onFailure(e)
+          Log.e(TAG, "Failed to delete folder contents: ${e.message}")
+        })
+  }
+
   /**
    * Converts a DocumentSnapshot to a Folder object.
    *
@@ -213,6 +236,6 @@ class FolderRepositoryFirestore(private val db: FirebaseFirestore) : FolderRepos
   }
 
   companion object {
-    const val TAG = "FolderRepositoryFirestore"
+    private const val TAG = "FolderRepositoryFirestore"
   }
 }

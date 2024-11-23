@@ -78,7 +78,6 @@ fun FolderContentScreen(
   currentUser.let { folderViewModel.getSubFoldersOf(folder.value?.id ?: "") }
 
   val parentFolderId = folderViewModel.parentFolderId.collectAsState()
-
   val context = LocalContext.current
 
   var expanded by remember { mutableStateOf(false) }
@@ -199,6 +198,23 @@ fun UserNotFoundFolderContentScreen() {
   Log.e("FolderContentScreen", "User not found")
 }
 
+/**
+ * Display the top bar of the folder content screen.
+ *
+ * @param folder the folder to display
+ * @param updatedName the updated name of the folder
+ * @param onUpdateName function to update the name of the folder
+ * @param navigationActions actions that can be performed in the app
+ * @param folderViewModel view model for the folder
+ * @param noteViewModel view model for the note
+ * @param currentUser the current user
+ * @param context the context of the app
+ * @param userFolderSubFolders the sub folders of the user
+ * @param userFolderNotes the notes of the user
+ * @param expanded whether the dropdown menu is expanded
+ * @param onExpandedChange function to change the expanded state
+ * @param showRenameDialog function to show the rename dialog
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FolderContentTopBar(
@@ -279,11 +295,16 @@ fun FolderContentTopBar(
                         },
                         onClick = {
                           onExpandedChange(false)
-                          // Clear the folder navigation stack as we go back to overview
-                          // screen
+
                           if (currentUser.value!!.uid == folder?.userId) {
-                            navigationActions.clearScreenNavigationStack()
                             folderViewModel.deleteFolderById(folder.id, folder.userId)
+                            // Retrieve parent folder id to navigate to the parent folder
+                            val parentFolderId = navigationActions.popFromScreenNavigationStack()
+                            if (parentFolderId != null) {
+                              folderViewModel.getFolderById(parentFolderId)
+                            } else {
+                              navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
+                            }
 
                             handleSubFoldersAndNotes(
                                 folder = folder,
@@ -291,11 +312,6 @@ fun FolderContentTopBar(
                                 userFolderNotes = userFolderNotes.value,
                                 folderViewModel = folderViewModel,
                                 noteViewModel = noteViewModel)
-                            navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
-                            // TODO for now we just delete the folder directly and set the
-                            // folderId field of sub elements to null, later on we will
-                            // implement a recursive delete to delete all elements of a folder
-                            // (folders and notes)
                           } else {
                             Toast.makeText(
                                     context,
@@ -304,7 +320,30 @@ fun FolderContentTopBar(
                                 .show()
                           }
                         },
-                        modifier = Modifier.testTag("deleteFolderButton"))),
+                        modifier = Modifier.testTag("deleteFolderButton")),
+                    CustomDropDownMenuItem(
+                        text = { Text("Delete folder contents") },
+                        icon = {
+                          Icon(
+                              painter = painterResource(id = R.drawable.delete_folder_contents),
+                              contentDescription = "DeleteFolderContents")
+                        },
+                        onClick = {
+                          onExpandedChange(false)
+                          if (currentUser.value!!.uid == folder?.userId) {
+                            // Delete all notes from the folder and call delete folder contents to
+                            // delete everything except the folder itself
+                            noteViewModel.deleteNotesFromFolder(folder.id)
+                            folderViewModel.deleteFolderContents(folder, noteViewModel)
+                          } else {
+                            Toast.makeText(
+                                    context,
+                                    "You are not the owner of this folder",
+                                    Toast.LENGTH_SHORT)
+                                .show()
+                          }
+                        },
+                        modifier = Modifier.testTag("deleteFolderContentsButton"))),
             fabIcon = {
               Icon(imageVector = Icons.Default.MoreVert, contentDescription = "settings")
             },
@@ -341,7 +380,7 @@ fun handleSubFoldersAndNotes(
       noteViewModel.updateNote(note.copy(folderId = folder.parentFolderId), note.userId)
     }
   } else {
-    // folder is root folder
+    // Folder is root folder
     userFolderSubFolders.forEach { subFolder ->
       folderViewModel.updateFolder(subFolder.copy(parentFolderId = null), subFolder.userId)
     }
@@ -426,6 +465,8 @@ fun CreateSubItemFab(
  * @param userFolderSubFolders the sub folders in the folder
  * @param folderViewModel the view model for the folder
  * @param noteViewModel the view model for the note
+ * @param userViewModel the view model for the user
+ * @param context the context of the app
  * @param navigationActions actions that can be performed in the app
  */
 @Composable

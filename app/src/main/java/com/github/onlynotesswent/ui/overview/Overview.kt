@@ -49,8 +49,11 @@ import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
  * If there are no publicNotes, it shows a text to the user indicating no publicNotes are available.
  * It also provides a floating action button to add a new note.
  *
- * @param navigationActions The navigation view model used to transition between different screens.
+ * @param navigationActions The navigationActions instance used to transition between different
+ *   screens.
  * @param noteViewModel The ViewModel that provides the list of publicNotes to display.
+ * @param userViewModel The ViewModel that provides the current user.
+ * @param folderViewModel The ViewModel that provides the list of folders to display.
  */
 @Composable
 fun OverviewScreen(
@@ -68,7 +71,6 @@ fun OverviewScreen(
   }
 
   val parentFolderId = folderViewModel.parentFolderId.collectAsState()
-
   val context = LocalContext.current
 
   var expanded by remember { mutableStateOf(false) }
@@ -198,6 +200,7 @@ fun CreateItemFab(
  * @param folderViewModel The ViewModel that provides the list of folders to display.
  * @param noteViewModel The ViewModel that provides the list of publicNotes to display.
  * @param userViewModel The ViewModel that provides the current user.
+ * @param context The context of the app.
  * @param navigationActions The navigation view model used to transition between different screens.
  */
 @Composable
