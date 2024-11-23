@@ -82,10 +82,10 @@ class EditNoteTest {
 
     // Edit note components
     composeTestRule.onNodeWithTag("EditTitle textField").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("VisibilityEditMenu").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("EditCourseName textField").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("EditCourseCode textField").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("EditCourseYear textField").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("VisibilityEditMenuPublic").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("VisibilityEditMenuFriends Only").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("VisibilityEditMenuPrivate").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("CourseFullName textField").assertIsDisplayed()
 
     // Delete button
     composeTestRule.onNodeWithTag("deleteNoteButton").assertIsDisplayed()
@@ -190,5 +190,14 @@ class EditNoteTest {
 
     verify(navigationActions).navigateTo(Screen.EDIT_NOTE_COMMENT)
     verify(noteRepository, never()).updateNote(any(), any(), any())
+  }
+
+  @Test
+  fun clickingOnCourseNameShowsCourseDetails() {
+    composeTestRule.onNodeWithTag("CourseFullName textField").performClick()
+    composeTestRule.onNodeWithTag("CourseFullName textField").assertIsNotDisplayed()
+    composeTestRule.onNodeWithTag("EditCourseCode textField").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("EditCourseName textField").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("EditCourseYear textField").assertIsDisplayed()
   }
 }

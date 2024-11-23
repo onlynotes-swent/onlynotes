@@ -2,8 +2,14 @@ package com.github.onlynotesswent.ui.overview.editnote
 
 import android.util.Log
 import android.widget.Toast
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
@@ -13,6 +19,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.ArrowDropUp
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
@@ -27,6 +35,7 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -41,6 +50,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
@@ -261,20 +271,27 @@ fun NoteSection(
     onVisibilityChange: (Visibility) -> Unit
 ) {
   val currentYear = Calendar.getInstance().get(Calendar.YEAR)
+  var showCourseDetails by remember { mutableStateOf(false) }
 
-  NoteDataTextField(
-      value = noteTitle,
-      onValueChange = { onNoteTitleChange(Note.formatTitle(it)) },
-      label = "Note Title",
-      placeholder = "Enter the new title here",
-      modifier = Modifier.fillMaxWidth().testTag("EditTitle textField"),
-      trailingIcon = {
-        IconButton(onClick = { onNoteTitleChange("") }) {
-          Icon(Icons.Outlined.Clear, contentDescription = "Clear Title")
-        }
-      })
+  Column(modifier = Modifier.fillMaxWidth()) {
+    Text(
+        text = "Title",
+        style = MaterialTheme.typography.titleMedium,
+        modifier = Modifier.padding(bottom = 8.dp))
+    NoteDataTextField(
+        value = noteTitle,
+        onValueChange = { onNoteTitleChange(Note.formatTitle(it)) },
+        label = "",
+        placeholder = "Enter the new title here",
+        modifier = Modifier.fillMaxWidth().testTag("EditTitle textField"),
+        trailingIcon = {
+          IconButton(onClick = { onNoteTitleChange("") }) {
+            Icon(Icons.Outlined.Clear, contentDescription = "Clear Title")
+          }
+        })
+  }
 
-  Column(modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp)) {
+  Column(modifier = Modifier.fillMaxWidth()) {
     Text(
         text = "Visibility",
         style = MaterialTheme.typography.titleMedium,
@@ -297,9 +314,9 @@ fun NoteSection(
                         else MaterialTheme.colorScheme.onSurface),
             modifier =
                 Modifier.weight(1f)
-                    .padding(horizontal = 4.dp) // Reduce space between buttons
-                    .scale(animatedScale.value) // Apply scale animation
-            ) {
+                    .padding(horizontal = 7.dp)
+                    .scale(animatedScale.value)
+                    .testTag("VisibilityEditMenu" + visibilityOption.toReadableString())) {
               Icon(
                   imageVector =
                       when (visibilityOption) {
@@ -308,33 +325,82 @@ fun NoteSection(
                         Visibility.PRIVATE -> Icons.Default.Lock
                       },
                   contentDescription = visibilityOption.toReadableString(),
-                  modifier = Modifier.padding(end = 4.dp))
+                  modifier =
+                      Modifier.padding(end = 4.dp).testTag(visibilityOption.toReadableString()))
               Text(visibilityOption.toReadableString())
             }
       }
     }
   }
 
-  NoteDataTextField(
-      value = courseName,
-      onValueChange = { onCourseNameChange(Course.formatCourseName(it)) },
-      label = "Course Name",
-      placeholder = "Set the course name for the note",
-      modifier = Modifier.fillMaxWidth().testTag("EditCourseName textField"))
+  // Course Section
+  Column(modifier = Modifier.fillMaxWidth()) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween, // Align title and button
+        verticalAlignment = Alignment.CenterVertically // Align text and button vertically
+        ) {
+          Text(
+              text = "Course",
+              style = MaterialTheme.typography.titleMedium,
+              modifier = Modifier.padding(bottom = 8.dp))
 
-  NoteDataTextField(
-      value = courseCode,
-      onValueChange = { onCourseCodeChange(Course.formatCourseCode(it)) },
-      label = "Course Code",
-      placeholder = "Set the course code for the note",
-      modifier = Modifier.fillMaxWidth().testTag("EditCourseCode textField"))
+          IconButton(onClick = { showCourseDetails = !showCourseDetails }) {
+            Icon(
+                imageVector =
+                    if (showCourseDetails) Icons.Default.ArrowDropUp
+                    else Icons.Default.ArrowDropDown,
+                contentDescription =
+                    if (showCourseDetails) "Hide Course Details" else "Show Course Details")
+          }
+        }
 
-  NoteDataTextField(
-      value = courseYear.toString(),
-      onValueChange = { onCourseYearChange(it.toIntOrNull() ?: currentYear) },
-      label = "Course Year",
-      placeholder = "Set the course year for the note",
-      modifier = Modifier.fillMaxWidth().testTag("EditCourseYear textField"))
+    // Course Full Name
+    if (!showCourseDetails) {
+      Box(
+          modifier =
+              Modifier.fillMaxWidth()
+                  .testTag("CourseFullName textField")
+                  .clickable { showCourseDetails = !showCourseDetails } // Handle click
+                  .border(1.dp, Color.Black, OutlinedTextFieldDefaults.shape)) {
+            Text(
+                text = Course(courseCode, courseName, courseYear, "").fullName(),
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.padding(16.dp))
+          }
+    }
+
+    // Animated dropdown for course details
+    AnimatedVisibility(
+        visible = showCourseDetails, enter = expandVertically(), exit = shrinkVertically()) {
+          Column(modifier = Modifier.fillMaxWidth()) {
+            // Course Code
+            NoteDataTextField(
+                value = courseCode,
+                onValueChange = { onCourseCodeChange(Course.formatCourseCode(it)) },
+                label = "Course Code",
+                placeholder = "Set the course code for the note",
+                modifier = Modifier.fillMaxWidth().testTag("EditCourseCode textField"))
+
+            // Course Name
+            NoteDataTextField(
+                value = courseName,
+                onValueChange = { onCourseNameChange(Course.formatCourseName(it)) },
+                label = "Course Name",
+                placeholder = "Set the course name for the note",
+                modifier = Modifier.fillMaxWidth().testTag("EditCourseName textField"))
+
+            // Course Year
+            NoteDataTextField(
+                value = courseYear.toString(),
+                onValueChange = { onCourseYearChange(it.toIntOrNull() ?: currentYear) },
+                label = "Course Year",
+                placeholder = "Set the course year for the note",
+                modifier = Modifier.fillMaxWidth().testTag("EditCourseYear textField"))
+          }
+        }
+  }
 }
 
 /**
