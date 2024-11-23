@@ -115,8 +115,8 @@ class EditNoteTest {
   fun clickDeleteButton() {
     composeTestRule.onNodeWithTag("deleteNoteButton").performClick()
 
-    composeTestRule.onNodeWithTag("deletePopup").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("deleteButton").performClick()
+    composeTestRule.onNodeWithTag("popup").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("confirmButton").performClick()
     verify(navigationActions).navigateTo(TopLevelDestinations.OVERVIEW)
     verify(noteRepository).deleteNoteById(any(), any(), any())
   }
@@ -125,9 +125,9 @@ class EditNoteTest {
   fun clickDeleteButtonAndCancel() {
     composeTestRule.onNodeWithTag("deleteNoteButton").performClick()
 
-    composeTestRule.onNodeWithTag("deletePopup").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("popup").assertIsDisplayed()
     composeTestRule.onNodeWithTag("cancelButton").performClick()
-    composeTestRule.onNodeWithTag("deletePopup").assertIsNotDisplayed()
+    composeTestRule.onNodeWithTag("popup").assertIsNotDisplayed()
     verify(noteRepository, never()).deleteNoteById(any(), any(), any())
     verify(navigationActions, never()).navigateTo(TopLevelDestinations.OVERVIEW)
   }
@@ -166,11 +166,11 @@ class EditNoteTest {
     composeTestRule.onNodeWithTag("EditTitle textField").performTextInput(newTitle)
     composeTestRule.onNodeWithTag("closeButton").performClick()
 
-    composeTestRule.onNodeWithTag("discardChangesDialog").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("discardChangesButton").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("cancelDiscardChangesButton").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("popup").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("confirmButton").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("cancelButton").assertIsDisplayed()
 
-    composeTestRule.onNodeWithTag("discardChangesButton").performClick()
+    composeTestRule.onNodeWithTag("confirmButton").performClick()
 
     verify(navigationActions).navigateTo(TopLevelDestinations.OVERVIEW)
     verify(noteRepository, never()).updateNote(any(), any(), any())
@@ -182,11 +182,11 @@ class EditNoteTest {
     composeTestRule.onNodeWithTag("EditTitle textField").performTextInput(newTitle)
     composeTestRule.onNodeWithTag("Comments").performClick()
 
-    composeTestRule.onNodeWithTag("discardChangesDialog").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("discardChangesButton").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("cancelDiscardChangesButton").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("popup").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("confirmButton").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("cancelButton").assertIsDisplayed()
 
-    composeTestRule.onNodeWithTag("discardChangesButton").performClick()
+    composeTestRule.onNodeWithTag("confirmButton").performClick()
 
     verify(navigationActions).navigateTo(Screen.EDIT_NOTE_COMMENT)
     verify(noteRepository, never()).updateNote(any(), any(), any())

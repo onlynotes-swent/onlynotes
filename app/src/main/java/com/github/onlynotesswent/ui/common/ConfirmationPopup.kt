@@ -11,17 +11,18 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.sp
 
 /**
- * Composable function to display a delete popup dialog.
+ * Composable function to display a popup dialog with a title, text, and confirm and dismiss
+ * buttons.
  *
  * @param title The title of the dialog.
  * @param text The text of the dialog.
- * @param onConfirm The action to perform when the user confirms the deletion.
+ * @param onConfirm The action to perform when the user confirms the action.
  * @param onDismiss The action to perform when the user dismisses the dialog.
  */
 @Composable
-fun DeletePopup(title: String, text: String, onConfirm: () -> Unit, onDismiss: () -> Unit) {
+fun ConfirmationPopup(title: String, text: String, onConfirm: () -> Unit, onDismiss: () -> Unit) {
   AlertDialog(
-      modifier = Modifier.testTag("deletePopup"),
+      modifier = Modifier.testTag("popup"),
       onDismissRequest = {
         // Call the dismissal action when the dialog is dismissed
         onDismiss()
@@ -38,12 +39,12 @@ fun DeletePopup(title: String, text: String, onConfirm: () -> Unit, onDismiss: (
       },
       confirmButton = {
         TextButton(
-            modifier = Modifier.testTag("deleteButton"),
+            modifier = Modifier.testTag("confirmButton"),
             onClick = {
               // Call the confirm action
               onConfirm()
             }) {
-              Text(text = "Delete", color = MaterialTheme.colorScheme.error)
+              Text(text = "Yes", color = MaterialTheme.colorScheme.error)
             }
       },
       dismissButton = {
@@ -53,7 +54,7 @@ fun DeletePopup(title: String, text: String, onConfirm: () -> Unit, onDismiss: (
               // Call the dismissal action
               onDismiss()
             }) {
-              Text(text = "Cancel")
+              Text(text = "No")
             }
       })
 }

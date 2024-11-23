@@ -18,7 +18,6 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.outlined.Clear
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -30,7 +29,6 @@ import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -45,16 +43,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.github.onlynotesswent.model.common.Course
 import com.github.onlynotesswent.model.common.Visibility
 import com.github.onlynotesswent.model.note.Note
 import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.model.user.User
 import com.github.onlynotesswent.model.user.UserViewModel
-import com.github.onlynotesswent.ui.common.DeletePopup
+import com.github.onlynotesswent.ui.common.ConfirmationPopup
 import com.github.onlynotesswent.ui.common.NoteDataTextField
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
@@ -217,45 +213,22 @@ fun EditNoteGeneralTopBar(
 
   // Discard Changes Dialog
   if (showDiscardChangesDialog) {
-    AlertDialog(
-        modifier = Modifier.testTag("discardChangesDialog"),
-        onDismissRequest = { showDiscardChangesDialog = false },
-        title = {
-          Text(
-              text = "Discard Changes?",
-              style = TextStyle(fontSize = 18.sp, color = MaterialTheme.colorScheme.onSurface))
+    ConfirmationPopup(
+        title = "Discard Changes?",
+        text = "You have unsaved changes. Are you sure you want to discard them?",
+        onConfirm = {
+          // Discard changes and navigate away
+          showDiscardChangesDialog = false
+          if (noteViewModel.selectedNote.value?.folderId != null) {
+            navigationActions.navigateTo(Screen.FOLDER_CONTENTS)
+          } else {
+            navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
+          }
+          noteViewModel.selectedNote(null)
         },
-        text = {
-          Text(
-              text = "You have unsaved changes. Are you sure you want to discard them?",
-              style =
-                  TextStyle(fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurfaceVariant))
-        },
-        confirmButton = {
-          TextButton(
-              modifier = Modifier.testTag("discardChangesButton"),
-              onClick = {
-                // Discard changes and navigate away
-                showDiscardChangesDialog = false
-                if (noteViewModel.selectedNote.value?.folderId != null) {
-                  navigationActions.navigateTo(Screen.FOLDER_CONTENTS)
-                } else {
-                  navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
-                }
-                noteViewModel.selectedNote(null)
-              }) {
-                Text(text = "Discard", color = MaterialTheme.colorScheme.error)
-              }
-        },
-        dismissButton = {
-          TextButton(
-              modifier = Modifier.testTag("cancelDiscardChangesButton"),
-              onClick = {
-                // Stay on the page
-                showDiscardChangesDialog = false
-              }) {
-                Text(text = "Cancel")
-              }
+        onDismiss = {
+          // Close the dialog without discarding
+          showDiscardChangesDialog = false
         })
   }
 }
@@ -470,7 +443,7 @@ fun DeleteButton(
 
     // Confirmation dialog for deletion
     if (showDeleteConfirmation) {
-      DeletePopup(
+      ConfirmationPopup(
           title = "Delete Note?",
           text = "Are you sure you want to delete this note? This action cannot be undone.",
           onConfirm = {

@@ -124,12 +124,12 @@ class PdfViewerTest {
 
     // Delete PDF
     composeTestRule.onNodeWithTag("deletePdfButton").performClick()
-    composeTestRule.onNodeWithTag("deletePopup").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("deleteButton").performClick()
+    composeTestRule.onNodeWithTag("popup").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("confirmButton").performClick()
     verify(fileRepository).deleteFile(any(), any(), any(), any(), any())
 
     // Ensure components update
-    composeTestRule.onNodeWithTag("deletePopup").assertDoesNotExist()
+    composeTestRule.onNodeWithTag("popup").assertDoesNotExist()
     composeTestRule.onNodeWithTag("PDFViewer").assertDoesNotExist()
     composeTestRule.onNodeWithTag("noPdfFound").assertIsDisplayed()
 

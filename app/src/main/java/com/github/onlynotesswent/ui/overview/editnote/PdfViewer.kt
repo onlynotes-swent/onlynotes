@@ -29,7 +29,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.github.onlynotesswent.model.file.FileType
 import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.note.NoteViewModel
-import com.github.onlynotesswent.ui.common.DeletePopup
+import com.github.onlynotesswent.ui.common.ConfirmationPopup
 import com.github.onlynotesswent.ui.common.LoadingIndicator
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
@@ -139,7 +139,7 @@ fun PdfViewerScreen(
 
           // Confirmation dialog for deletion
           if (showDeleteConfirmation) {
-            DeletePopup(
+            ConfirmationPopup(
                 title = "Delete PDF?",
                 text = "Are you sure you want to delete this PDF? This action cannot be undone.",
                 onConfirm = {
