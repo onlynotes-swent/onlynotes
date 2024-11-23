@@ -2,6 +2,7 @@ package com.github.onlynotesswent.ui.overview.editnote
 
 import android.util.Log
 import android.widget.Toast
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -12,24 +13,22 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.material.icons.filled.ArrowDropUp
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Group
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Public
 import androidx.compose.material.icons.outlined.Clear
-import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MenuAnchorType
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -41,6 +40,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
@@ -247,7 +247,6 @@ fun EditNoteGeneralTopBar(
  * @param visibility The visibility of the note.
  * @param onVisibilityChange The callback function to update the visibility.
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NoteSection(
     noteTitle: String,
@@ -262,7 +261,6 @@ fun NoteSection(
     onVisibilityChange: (Visibility) -> Unit
 ) {
   val currentYear = Calendar.getInstance().get(Calendar.YEAR)
-  var expandedVisibility by remember { mutableStateOf(false) }
 
   NoteDataTextField(
       value = noteTitle,
@@ -276,61 +274,57 @@ fun NoteSection(
         }
       })
 
-  ExposedDropdownMenuBox(
-      modifier = Modifier.fillMaxWidth().testTag("VisibilityEditMenu"),
-      expanded = expandedVisibility,
-      onExpandedChange = { expandedVisibility = it },
-  ) {
-    OutlinedTextField(
-        value = visibility.toReadableString(),
-        onValueChange = {},
-        readOnly = true,
-        modifier =
-            Modifier.menuAnchor(
-                    type =
-                        MenuAnchorType.PrimaryEditable, // Ensures proper alignment for text fields
-                    enabled = true // Enables the anchor functionality
-                    )
-                .fillMaxWidth(),
-        label = { Text("Visibility") },
-        trailingIcon = {
-          IconButton(onClick = { expandedVisibility = !expandedVisibility }) {
-            Icon(
-                imageVector =
-                    if (expandedVisibility) Icons.Default.ArrowDropUp
-                    else Icons.Default.ArrowDropDown,
-                contentDescription = "Toggle Visibility Dropdown")
-          }
-        },
-        colors =
-            TextFieldDefaults.colors(
-                focusedIndicatorColor = MaterialTheme.colorScheme.primary,
-                unfocusedIndicatorColor = MaterialTheme.colorScheme.onBackground,
-                focusedContainerColor = MaterialTheme.colorScheme.background,
-                unfocusedContainerColor = MaterialTheme.colorScheme.background))
-    ExposedDropdownMenu(
-        expanded = expandedVisibility, onDismissRequest = { expandedVisibility = false }) {
-          Visibility.entries.forEach { visibilityOption ->
-            DropdownMenuItem(
-                onClick = {
-                  onVisibilityChange(visibilityOption)
-                  expandedVisibility = false
-                },
-                text = { Text(visibilityOption.toReadableString()) })
-          }
-        }
+  Column(modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp)) {
+    Text(
+        text = "Visibility",
+        style = MaterialTheme.typography.titleMedium,
+        modifier = Modifier.padding(bottom = 8.dp))
+
+    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
+      Visibility.entries.forEach { visibilityOption ->
+        val isSelected = visibility == visibilityOption
+        val animatedScale = animateFloatAsState(if (isSelected) 1.1f else 1.0f, label = "")
+
+        Button(
+            onClick = { onVisibilityChange(visibilityOption) },
+            colors =
+                ButtonDefaults.buttonColors(
+                    containerColor =
+                        if (isSelected) MaterialTheme.colorScheme.primary
+                        else MaterialTheme.colorScheme.surface,
+                    contentColor =
+                        if (isSelected) MaterialTheme.colorScheme.onPrimary
+                        else MaterialTheme.colorScheme.onSurface),
+            modifier =
+                Modifier.weight(1f)
+                    .padding(horizontal = 4.dp) // Reduce space between buttons
+                    .scale(animatedScale.value) // Apply scale animation
+            ) {
+              Icon(
+                  imageVector =
+                      when (visibilityOption) {
+                        Visibility.PUBLIC -> Icons.Default.Public
+                        Visibility.FRIENDS -> Icons.Default.Group
+                        Visibility.PRIVATE -> Icons.Default.Lock
+                      },
+                  contentDescription = visibilityOption.toReadableString(),
+                  modifier = Modifier.padding(end = 4.dp))
+              Text(visibilityOption.toReadableString())
+            }
+      }
+    }
   }
 
   NoteDataTextField(
       value = courseName,
-      onValueChange = onCourseNameChange,
+      onValueChange = { onCourseNameChange(Course.formatCourseName(it)) },
       label = "Course Name",
       placeholder = "Set the course name for the note",
       modifier = Modifier.fillMaxWidth().testTag("EditCourseName textField"))
 
   NoteDataTextField(
       value = courseCode,
-      onValueChange = onCourseCodeChange,
+      onValueChange = { onCourseCodeChange(Course.formatCourseCode(it)) },
       label = "Course Code",
       placeholder = "Set the course code for the note",
       modifier = Modifier.fillMaxWidth().testTag("EditCourseCode textField"))
