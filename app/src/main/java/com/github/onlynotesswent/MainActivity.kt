@@ -89,7 +89,12 @@ fun OnlyNotesApp(
       composable(Screen.EDIT_NOTE) {
         EditNoteScreen(navigationActions, scanner, noteViewModel, userViewModel, fileViewModel)
       }
-      composable(Screen.FOLDER_CONTENTS) {
+      composable(Screen.FOLDER_CONTENTS) { navBackStackEntry ->
+
+        val folderId = navBackStackEntry.arguments?.getString("folderId")
+        folderId?.let{
+            folderViewModel.getFolderById(it)
+        }
         FolderContentScreen(navigationActions, folderViewModel, noteViewModel, userViewModel)
       }
       composable(Screen.EDIT_MARKDOWN) {
@@ -114,7 +119,12 @@ fun OnlyNotesApp(
       composable(Screen.USER_PROFILE) {
         UserProfileScreen(navigationActions, userViewModel, fileViewModel)
       }
-      composable(Screen.PUBLIC_PROFILE) {
+      composable(Screen.PUBLIC_PROFILE) { navBackStackEntry ->
+
+        val userId = navBackStackEntry.arguments?.getString("userId")
+        userId?.let{
+            userViewModel.refreshProfileUser(it)
+        }
         PublicProfileScreen(navigationActions, userViewModel, fileViewModel)
       }
       composable(Screen.EDIT_PROFILE) {

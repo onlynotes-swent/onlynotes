@@ -26,9 +26,9 @@ object Screen {
   const val EDIT_MARKDOWN = "Edit Note Markdown Screen"
   const val SEARCH = "Search Screen"
   const val USER_PROFILE = "User Profile Screen"
-  const val PUBLIC_PROFILE = "Public Profile Screen"
+  const val PUBLIC_PROFILE = "Public Profile Screen/{userId}"
   const val EDIT_PROFILE = "Edit Profile Screen"
-  const val FOLDER_CONTENTS = "Folder Contents Screen"
+  const val FOLDER_CONTENTS = "Folder Contents Screen/{folderId}"
 }
 
 data class TopLevelDestination(val route: String, val icon: ImageVector, val textId: String)
