@@ -39,6 +39,8 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.github.onlynotesswent.model.common.Visibility
+import com.github.onlynotesswent.model.folder.Folder
 import com.github.onlynotesswent.model.folder.FolderViewModel
 import com.github.onlynotesswent.model.note.Note
 import com.github.onlynotesswent.model.note.NoteViewModel
@@ -77,114 +79,181 @@ fun NoteItem(
     navigationActions: NavigationActions,
     onClick: () -> Unit
 ) {
-  // Mutable state to show the move out dialog
-  var showMoveOutDialog by remember { mutableStateOf(showDialog) }
+    // Mutable state to show the move out dialog
+    var showMoveOutDialog by remember { mutableStateOf(showDialog) }
 
-  if (showMoveOutDialog && note.folderId != null) {
-    AlertDialog(
-        modifier = Modifier.testTag("MoveOutDialog"),
-        onDismissRequest = { showMoveOutDialog = false },
-        title = {
-          Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-            Text("Move note out of folder")
-          }
-        },
-        confirmButton = {
-          Button(
-              modifier = Modifier.testTag("MoveOutConfirmButton"),
-              onClick = {
-                if (currentUser.value!!.uid == note.userId) {
-                  // Move out will move the given note to the parent folder
-                  val parentFolderId = navigationActions.popFromScreenNavigationStack()
-                  if (parentFolderId != null) {
-                    noteViewModel.updateNote(note.copy(folderId = parentFolderId), note.userId)
-                    folderViewModel.getFolderById(parentFolderId)
-                  } else {
-                    noteViewModel.updateNote(note.copy(folderId = null), note.userId)
-                    navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
-                  }
-                } else {
-                  Toast.makeText(
-                          context,
-                          "You can't move out a note that you didn't create",
-                          Toast.LENGTH_SHORT)
-                      .show()
+    if (showMoveOutDialog && note.folderId != null) {
+        AlertDialog(
+            modifier = Modifier.testTag("MoveOutDialog"),
+            onDismissRequest = { showMoveOutDialog = false },
+            title = {
+                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                    Text("Move note out of folder")
                 }
-                showMoveOutDialog = false
-              }) {
-                Text("Move")
-              }
-        },
-        dismissButton = { Button(onClick = { showMoveOutDialog = false }) { Text("Cancel") } })
-  }
-  Card(
-      modifier =
-          Modifier.testTag("noteCard")
-              .semantics(mergeDescendants = true, properties = {})
-              .fillMaxWidth()
-              .padding(vertical = 4.dp)
-              // Enable drag and drop for the note card (as a source)
-              .dragAndDropSource {
+            },
+            confirmButton = {
+                Button(
+                    modifier = Modifier.testTag("MoveOutConfirmButton"),
+                    onClick = {
+                        if (currentUser.value!!.uid == note.userId) {
+                            // Move out will move the given note to the parent folder
+                            val parentFolderId = navigationActions.popFromScreenNavigationStack()
+                            if (parentFolderId != null) {
+                                noteViewModel.updateNote(note.copy(folderId = parentFolderId), note.userId)
+                                folderViewModel.getFolderById(parentFolderId)
+                            } else {
+                                noteViewModel.updateNote(note.copy(folderId = null), note.userId)
+                                navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
+                            }
+                        } else {
+                            Toast.makeText(
+                                context,
+                                "You can't move out a note that you didn't create",
+                                Toast.LENGTH_SHORT)
+                                .show()
+                        }
+                        showMoveOutDialog = false
+                    }) {
+                    Text("Move")
+                }
+            },
+            dismissButton = { Button(onClick = { showMoveOutDialog = false }) { Text("Cancel") } })
+    }
+    Card(
+        modifier =
+        Modifier.testTag("noteCard")
+            .semantics(mergeDescendants = true, properties = {})
+            .fillMaxWidth()
+            .padding(vertical = 4.dp)
+            // Enable drag and drop for the note card (as a source)
+            .dragAndDropSource {
                 detectTapGestures(
                     onTap = { onClick() },
                     onLongPress = {
-                      noteViewModel.draggedNote(note)
-                      // Start a drag-and-drop operation to transfer the data which is being dragged
-                      startTransfer(
-                          // Transfer the note Id as a ClipData object
-                          DragAndDropTransferData(ClipData.newPlainText("Note", note.id)))
+                        noteViewModel.draggedNote(note)
+                        // Start a drag-and-drop operation to transfer the data which is being dragged
+                        startTransfer(
+                            // Transfer the note Id as a ClipData object
+                            DragAndDropTransferData(ClipData.newPlainText("Note", note.id)))
                     },
                 )
-              },
-      colors =
-          CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)) {
+            },
+        colors =
+        CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)) {
         Column(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
-          Row(
-              modifier = Modifier.fillMaxWidth(),
-              horizontalArrangement = Arrangement.SpaceBetween) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween) {
                 Text(
                     text =
-                        SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-                            .format(note.date.toDate()),
+                    SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+                        .format(note.date.toDate()),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onPrimaryContainer)
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                  Icon(
-                      // Show move out menu when clicking on the Icon
-                      modifier =
-                          Modifier.testTag("MoveOutButton").clickable(
-                              enabled =
-                                  note.folderId != null &&
-                                      navigationActions.currentRoute() == Screen.FOLDER_CONTENTS) {
-                                showMoveOutDialog = true
-                              },
-                      imageVector = Icons.Filled.MoreVert,
-                      contentDescription = null,
-                      tint = MaterialTheme.colorScheme.onPrimaryContainer)
+                    Icon(
+                        // Show move out menu when clicking on the Icon
+                        modifier =
+                        Modifier.testTag("MoveOutButton").clickable(
+                            enabled =
+                            note.folderId != null &&
+                                    navigationActions.currentRoute() == Screen.FOLDER_CONTENTS) {
+                            showMoveOutDialog = true
+                        },
+                        imageVector = Icons.Filled.MoreVert,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer)
                 }
-              }
+            }
 
-          Spacer(modifier = Modifier.height(4.dp))
-          Text(
-              text = note.title,
-              style = MaterialTheme.typography.bodyMedium,
-              fontWeight = FontWeight.Bold,
-              color = MaterialTheme.colorScheme.onPrimaryContainer)
-          if (author != null) {
+            Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = author,
+                text = note.title,
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onPrimaryContainer)
+            if (author != null) {
+                Text(
+                    text = author,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer)
+            }
+            Text(
+                text = note.noteCourse.fullName(),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onPrimaryContainer)
-          }
-          Text(
-              text = note.noteCourse.fullName(),
-              style = MaterialTheme.typography.bodySmall,
-              color = MaterialTheme.colorScheme.onPrimaryContainer)
         }
-      }
+    }
 }
 
+
+@Composable
+fun NoteDialog(
+    onDismiss: () -> Unit,
+    onConfirm: (String, Visibility) -> Unit,
+    action: String,
+    oldVisibility: Visibility? = Visibility.PRIVATE,
+    oldName: String = ""
+){
+    var name by remember { mutableStateOf(oldName) }
+    var visibility: Visibility? by remember { mutableStateOf(oldVisibility) }
+    var expandedVisibility by remember { mutableStateOf(false) }
+
+    androidx.compose.ui.window.Dialog(onDismissRequest = onDismiss) {
+        Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
+            Column(
+                modifier = Modifier.padding(16.dp).testTag("noteDialog"),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(0.92f),
+                    horizontalArrangement = Arrangement.Start
+                ) {
+                    Text("$action Note", style = MaterialTheme.typography.titleLarge)
+                }
+                OutlinedTextField(
+                    value = name,
+                    onValueChange = { name = Folder.formatName(it) },
+                    label = { Text("Note Name") },
+                    modifier = Modifier.testTag("inputNoteName")
+                )
+                OptionDropDownMenu(
+                    value = visibility?.toReadableString() ?: "Choose visibility",
+                    expanded = expandedVisibility,
+                    buttonTag = "visibilityButton",
+                    menuTag = "visibilityMenu",
+                    onExpandedChange = { expandedVisibility = it },
+                    items = Visibility.READABLE_STRINGS,
+                    onItemClick = { visibility = Visibility.fromReadableString(it) },
+                    modifier = Modifier.testTag("visibilityDropDown"),
+                    widthFactor = 0.94f
+                )
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(0.92f),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    Button(
+                        onClick = onDismiss,
+                        modifier = Modifier.testTag("dismissNoteAction")
+                    ) {
+                        Text("Cancel")
+                    }
+                    Button(
+                        enabled = name.isNotEmpty() && visibility != null,
+                        onClick = { onConfirm(name, visibility ?: Visibility.DEFAULT) },
+                        modifier = Modifier.testTag("confirmNoteAction")
+                    ) {
+                        Text(action)
+                    }
+                }
+            }
+        }
+    }
+
+}
 /**
  * A composable function that displays an `OutlinedTextField` with an optional trailing icon.
  *
@@ -205,17 +274,17 @@ fun NoteDataTextField(
     modifier: Modifier = Modifier,
     trailingIcon: @Composable (() -> Unit)? = null
 ) {
-  OutlinedTextField(
-      value = value,
-      onValueChange = onValueChange,
-      label = { Text(label) },
-      placeholder = { Text(placeholder) },
-      modifier = modifier,
-      trailingIcon = trailingIcon,
-      colors =
-          TextFieldDefaults.colors(
-              focusedIndicatorColor = MaterialTheme.colorScheme.primary,
-              unfocusedIndicatorColor = MaterialTheme.colorScheme.onBackground,
-              focusedContainerColor = MaterialTheme.colorScheme.background,
-              unfocusedContainerColor = MaterialTheme.colorScheme.background))
+    OutlinedTextField(
+        value = value,
+        onValueChange = onValueChange,
+        label = { Text(label) },
+        placeholder = { Text(placeholder) },
+        modifier = modifier,
+        trailingIcon = trailingIcon,
+        colors =
+        TextFieldDefaults.colors(
+            focusedIndicatorColor = MaterialTheme.colorScheme.primary,
+            unfocusedIndicatorColor = MaterialTheme.colorScheme.onBackground,
+            focusedContainerColor = MaterialTheme.colorScheme.background,
+            unfocusedContainerColor = MaterialTheme.colorScheme.background))
 }
