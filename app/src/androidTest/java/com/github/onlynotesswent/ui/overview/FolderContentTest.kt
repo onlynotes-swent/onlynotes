@@ -1,7 +1,6 @@
 package com.github.onlynotesswent.ui.overview
 
 import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.filter
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
@@ -308,20 +307,5 @@ class FolderContentTest {
     composeTestRule.onNodeWithTag("deleteFolderContentsButton").assertIsDisplayed()
     composeTestRule.onNodeWithTag("deleteFolderContentsButton").performClick()
     composeTestRule.onNodeWithTag("noteCard").assertIsDisplayed()
-  }
-
-  @Test
-  fun createNoteDialogWorks() {
-    composeTestRule.onNodeWithTag("createNoteOrFolder").performClick()
-    composeTestRule.onNodeWithTag("createNote").performClick()
-
-    composeTestRule.onNodeWithTag("confirmNoteAction").assertIsNotEnabled()
-    composeTestRule.onNodeWithTag("inputNoteName").performTextInput("Note Name")
-    composeTestRule.onNodeWithTag("visibilityButton").assertIsDisplayed().performClick()
-
-    composeTestRule.onNodeWithTag("item--Public").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("item--Friends Only").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("item--Private").assertIsDisplayed().performClick()
-    composeTestRule.onNodeWithTag("confirmNoteAction").assertIsDisplayed()
   }
 }

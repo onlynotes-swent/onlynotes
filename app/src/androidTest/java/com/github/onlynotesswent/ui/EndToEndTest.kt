@@ -3,7 +3,21 @@ package com.github.onlynotesswent.ui
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsEnabled
+import androidx.compose.ui.test.assertIsNotDisplayed
+import androidx.compose.ui.test.assertTextContains
+import androidx.compose.ui.test.filter
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithTag
+import androidx.compose.ui.test.onFirst
+import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTextClearance
+import androidx.compose.ui.test.performTextInput
+import androidx.compose.ui.test.performTextReplacement
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -26,6 +40,7 @@ import com.github.onlynotesswent.model.user.UserViewModel
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Route
 import com.github.onlynotesswent.ui.navigation.Screen
+import com.github.onlynotesswent.ui.overview.AddNoteScreen
 import com.github.onlynotesswent.ui.overview.FolderContentScreen
 import com.github.onlynotesswent.ui.overview.OverviewScreen
 import com.github.onlynotesswent.ui.overview.editnote.EditMarkdownScreen
@@ -149,11 +164,10 @@ class EndToEndTest {
                   composable(Screen.OVERVIEW) {
                     OverviewScreen(navigationActions, noteViewModel, userViewModel, folderViewModel)
                   }
-                  /*
                   composable(Screen.ADD_NOTE) {
                     AddNoteScreen(
                         navigationActions, scanner, noteViewModel, userViewModel, fileViewModel)
-                  }*/
+                  }
                   composable(Screen.EDIT_NOTE) {
                     EditNoteScreen(navigationActions, noteViewModel, userViewModel)
                   }
@@ -228,7 +242,7 @@ class EndToEndTest {
   @Test
   fun testEndToEndFlow1() {
     testEndToEndFlow1_init()
-    /*
+
     // Interact with the input fields for creating a user
     composeTestRule.onNodeWithTag("inputFirstName").performTextInput(testUser1.firstName)
     composeTestRule.onNodeWithTag("inputLastName").performTextInput(testUser1.lastName)
@@ -241,60 +255,15 @@ class EndToEndTest {
     // Interact with the note creation flow
     composeTestRule.onNodeWithTag("createNoteOrFolder").assertIsDisplayed()
     composeTestRule.onNodeWithTag("createNoteOrFolder").performClick()
-    composeTestRule.onNodeWithTag("createNote").assertIsDisplayed()
-
-
     composeTestRule.onNodeWithTag("createNote").performClick()
-
-    // Verify that the "Create Note" button is initially disabled
-    composeTestRule.onNodeWithTag("createNoteButton").assertIsNotEnabled()
-
-    // Input note details and interact with dropdowns
-    composeTestRule.onNodeWithTag("inputNoteTitle").performTextInput(testNote.title)
-
-    // Set visibility to "Public"
+    composeTestRule.onNodeWithTag("confirmNoteAction").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("inputNoteName").performTextInput(testNote.title)
     composeTestRule.onNodeWithTag("visibilityButton").performClick()
-    composeTestRule
-        .onNodeWithTag("visibilityMenu")
-        .onChildren()
-        .filter(hasText("Public"))
-        .onFirst()
-        .performClick()
-
-    // Set template to "Create Note"
-    composeTestRule.onNodeWithTag("templateButton").performClick()
-    composeTestRule
-        .onNodeWithTag("templateMenu")
-        .onChildren()
-        .filter(hasText("Create note"))
-        .onFirst()
-        .performClick()
-
-    // Verify that the "Create Note" button is now enabled and click it
-    composeTestRule.onNodeWithTag("createNoteButton").assertIsEnabled()
-    composeTestRule.onNodeWithTag("createNoteButton").performClick()
-
-    // Modify the note title and save the changes
-    composeTestRule.onNodeWithTag("saveNoteButton").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("saveNoteButton").performClick()
-
-    // Exit the note edit screen
-    composeTestRule.onNodeWithTag("closeButton").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("closeButton").performClick()
-
-    // Mock retrieval of notes
-    `when`(noteRepository.getRootNotesFrom(eq(testUser1.uid), any(), any())).thenAnswer { invocation
-      ->
-      val onSuccess = invocation.getArgument<(List<Note>) -> Unit>(1)
-      onSuccess(listOf(testNote))
-    }
-
-    // Trigger note retrieval and verify the notes are displayed
-    noteViewModel.getRootNotesFrom(testUser1.uid)
-    composeTestRule.onNodeWithTag("noteAndFolderList").assertIsDisplayed()
-
-    // Verify that the note card is displayed
-    composeTestRule.onNodeWithTag("noteCard").assertIsDisplayed()*/
+    composeTestRule.onNodeWithTag("item--Public").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("item--Friends Only").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("item--Private").assertIsDisplayed().performClick()
+    composeTestRule.onNodeWithTag("confirmNoteAction").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("confirmNoteAction").performClick()
   }
 
   // Creates the mock behavior needed for the end-to-end flow of searching for testUser2 and viewing
@@ -377,10 +346,9 @@ class EndToEndTest {
   @Test
   fun testEndToEndFlow2() {
     testEndToEndFlow2_init()
-    /*
+
     // Go to search screen
     composeTestRule.onNodeWithTag("Search").performClick()
-
 
     // Search for testUser2
     composeTestRule.onNodeWithTag("searchTextField").performTextReplacement("User")
@@ -474,6 +442,6 @@ class EndToEndTest {
     composeTestRule.onNodeWithTag("inputLastName").performTextInput("New Last Name")
     assert(userViewModel.currentUser.value?.lastName == testUser1.lastName)
     composeTestRule.onNodeWithTag("saveButton").performClick()
-    assert(userViewModel.currentUser.value?.lastName == "New Last Name")*/
+    assert(userViewModel.currentUser.value?.lastName == "New Last Name")
   }
 }

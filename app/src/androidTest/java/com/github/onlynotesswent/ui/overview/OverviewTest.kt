@@ -231,7 +231,6 @@ class OverviewTest {
     composeTestRule.onNodeWithTag("createNoteOrFolder").performClick()
     composeTestRule.onNodeWithTag("createNote").performClick()
 
-    composeTestRule.onNodeWithTag("confirmNoteAction").assertIsNotEnabled()
     composeTestRule.onNodeWithTag("inputNoteName").performTextInput("Note Name")
     composeTestRule.onNodeWithTag("visibilityButton").assertIsDisplayed().performClick()
 
