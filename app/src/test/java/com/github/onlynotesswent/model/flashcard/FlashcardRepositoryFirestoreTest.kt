@@ -70,7 +70,8 @@ class FlashcardRepositoryFirestoreTest {
           lastReviewed = Timestamp.now(),
           userId = "2",
           folderId = "3",
-          noteId = "4",)
+          noteId = "4",
+      )
 
   @Before
   fun setUp() {
@@ -121,29 +122,62 @@ class FlashcardRepositoryFirestoreTest {
     // Mock the DocumentSnapshot to return expected fields for a Flashcard
     `when`(mockDocumentSnapshot.exists()).thenReturn(true)
     `when`(mockDocumentSnapshot.id).thenReturn(textFlashcard.id)
-    `when`(mockDocumentSnapshot.getString("front")).thenReturn(textFlashcard.front)
-    `when`(mockDocumentSnapshot.getString("back")).thenReturn(textFlashcard.back)
-    `when`(mockDocumentSnapshot.getTimestamp("nextReview")).thenReturn(textFlashcard.lastReviewed)
-    `when`(mockDocumentSnapshot.getString("userId")).thenReturn(textFlashcard.userId)
-    `when`(mockDocumentSnapshot.getString("folderId")).thenReturn(textFlashcard.folderId)
-    `when`(mockDocumentSnapshot.getString("noteId")).thenReturn(textFlashcard.noteId)
     `when`(mockDocumentSnapshot.getString("type")).thenReturn(Flashcard.Type.TEXT.toString())
-
+    `when`(mockDocumentSnapshot.data)
+        .thenReturn(
+            mapOf(
+                "id" to textFlashcard.id,
+                "front" to textFlashcard.front,
+                "back" to textFlashcard.back,
+                "lastReviewed" to textFlashcard.lastReviewed,
+                "userId" to textFlashcard.userId,
+                "folderId" to textFlashcard.folderId,
+                "noteId" to textFlashcard.noteId,
+                "type" to Flashcard.Type.TEXT.toString()))
   }
 
   @Test
   fun documentSnapshotToFlashcardConvertsToFlashcard() {
-    `when`(mockDocumentSnapshot.id).thenReturn(textFlashcard.id)
-    `when`(mockDocumentSnapshot.getString("front")).thenReturn(textFlashcard.front)
-    `when`(mockDocumentSnapshot.getString("back")).thenReturn(textFlashcard.back)
-    `when`(mockDocumentSnapshot.getTimestamp("nextReview")).thenReturn(textFlashcard.lastReviewed)
-    `when`(mockDocumentSnapshot.getString("userId")).thenReturn(textFlashcard.userId)
-    `when`(mockDocumentSnapshot.getString("folderId")).thenReturn(textFlashcard.folderId)
-
-    val convertedFlashcard =
+    // Mock the DocumentSnapshot to return expected fields for a TextFlashcard
+    val convertedTextFlashcard =
         flashcardRepositoryFirestore.documentSnapshotToFlashcard(mockDocumentSnapshot)
+    assertEquals(textFlashcard, convertedTextFlashcard)
 
-    assertEquals(textFlashcard, convertedFlashcard)
+    // Mock the DocumentSnapshot to return expected fields for an ImageFlashcard
+    `when`(mockDocumentSnapshot.getString("type")).thenReturn(Flashcard.Type.IMAGE.toString())
+    `when`(mockDocumentSnapshot.data)
+        .thenReturn(
+            mapOf(
+                "id" to imageFlashcard.id,
+                "front" to imageFlashcard.front,
+                "back" to imageFlashcard.back,
+                "lastReviewed" to imageFlashcard.lastReviewed,
+                "userId" to imageFlashcard.userId,
+                "folderId" to imageFlashcard.folderId,
+                "noteId" to imageFlashcard.noteId,
+                "imageUrl" to imageFlashcard.imageUrl,
+                "type" to Flashcard.Type.IMAGE.toString()))
+    val convertedImageFlashcard =
+        flashcardRepositoryFirestore.documentSnapshotToFlashcard(mockDocumentSnapshot)
+    assertEquals(imageFlashcard, convertedImageFlashcard)
+
+    // Mock the DocumentSnapshot to return expected fields for an MCQFlashcard
+    `when`(mockDocumentSnapshot.getString("type")).thenReturn(Flashcard.Type.MCQ.toString())
+    `when`(mockDocumentSnapshot.data)
+        .thenReturn(
+            mapOf(
+                "id" to mcqFlashcard.id,
+                "front" to mcqFlashcard.front,
+                "back" to mcqFlashcard.back,
+                "fakeBacks" to mcqFlashcard.fakeBacks,
+                "lastReviewed" to mcqFlashcard.lastReviewed,
+                "userId" to mcqFlashcard.userId,
+                "folderId" to mcqFlashcard.folderId,
+                "noteId" to mcqFlashcard.noteId,
+                "type" to Flashcard.Type.MCQ.toString()))
+    val convertedMCQFlashcard =
+        flashcardRepositoryFirestore.documentSnapshotToFlashcard(mockDocumentSnapshot)
+    assertEquals(mcqFlashcard, convertedMCQFlashcard)
   }
 
   @Test

@@ -31,13 +31,13 @@ abstract class Flashcard(
     MCQ;
 
     companion object {
-        /**
-         * Converts the given string to a [Type].
-         *
-         * @param type The string to convert.
-         * @return The [Type] corresponding to the given string.
-         * @throws IllegalArgumentException If the given string does not correspond to a [Type].
-         */
+      /**
+       * Converts the given string to a [Type].
+       *
+       * @param type The string to convert.
+       * @return The [Type] corresponding to the given string.
+       * @throws IllegalArgumentException If the given string does not correspond to a [Type].
+       */
       fun fromString(type: String): Type {
         return when (type) {
           TEXT.toString() -> TEXT
@@ -63,44 +63,39 @@ abstract class Flashcard(
      */
     fun from(type: Type, map: Map<String, Any?>): Flashcard {
       return try {
-          when (type) {
-              Type.TEXT ->
-                  TextFlashcard(
-                      map["id"] as String,
-                      map["front"] as String,
-                      map["back"] as String,
-                      map["lastReviewed"] as Timestamp?,
-                      map["userId"] as String,
-                      map["folderId"] as String?,
-                      map["noteId"] as String?
-                  )
-
-              Type.IMAGE ->
-                  ImageFlashcard(
-                      map["id"] as String,
-                      map["front"] as String,
-                      map["back"] as String,
-                      map["imageUrl"] as String,
-                      map["lastReviewed"] as Timestamp?,
-                      map["userId"] as String,
-                      map["folderId"] as String?,
-                      map["noteId"] as String?
-                  )
-
-              Type.MCQ ->
-                  MCQFlashcard(
-                      map["id"] as String,
-                      map["front"] as String,
-                      map["back"] as String,
-                      map["fakeBacks"] as List<String>,
-                      map["lastReviewed"] as Timestamp?,
-                      map["userId"] as String,
-                      map["folderId"] as String?,
-                      map["noteId"] as String?
-                  )
-          }
-      }   catch (e: Exception) {
-          throw IllegalArgumentException("Invalid flashcard data")
+        when (type) {
+          Type.TEXT ->
+              TextFlashcard(
+                  map["id"] as String,
+                  map["front"] as String,
+                  map["back"] as String,
+                  map["lastReviewed"] as Timestamp?,
+                  map["userId"] as String,
+                  map["folderId"] as String?,
+                  map["noteId"] as String?)
+          Type.IMAGE ->
+              ImageFlashcard(
+                  map["id"] as String,
+                  map["front"] as String,
+                  map["back"] as String,
+                  map["imageUrl"] as String,
+                  map["lastReviewed"] as Timestamp?,
+                  map["userId"] as String,
+                  map["folderId"] as String?,
+                  map["noteId"] as String?)
+          Type.MCQ ->
+              MCQFlashcard(
+                  map["id"] as String,
+                  map["front"] as String,
+                  map["back"] as String,
+                  map["fakeBacks"] as List<String>,
+                  map["lastReviewed"] as Timestamp?,
+                  map["userId"] as String,
+                  map["folderId"] as String?,
+                  map["noteId"] as String?)
+        }
+      } catch (e: Exception) {
+        throw IllegalArgumentException("Invalid flashcard data")
       }
     }
   }
@@ -188,4 +183,3 @@ data class MCQFlashcard(
         "type" to type.toString())
   }
 }
-
