@@ -131,32 +131,6 @@ class FlashcardRepositoryFirestoreTest {
     assert(uid == flashcard.id)
   }
 
-  //  @Test
-  //  fun `init should call FirebaseAuth currentUser`() {
-  //    val mockAuth = mock(FirebaseAuth::class.java)
-  //    val mockUser = mock(FirebaseUser::class.java)
-  //
-  //    val MockFirebaseAuth = Mockito.mockStatic(FirebaseAuth::class.java)
-  //
-  //    MockFirebaseAuth.`when`<FirebaseAuth> { FirebaseAuth.getInstance() }.thenReturn(mockAuth)
-  //    `when`(mockAuth.addAuthStateListener(any())).thenAnswer({ invocation ->
-  //      val listener = invocation.arguments[0] as FirebaseAuth.AuthStateListener
-  //      listener.
-  //      onAuthStateChanged(mockAuth)
-  //    })
-  //
-  //    var onSuccessCalled = false
-  //    flashcardRepositoryFirestore.init{ onSuccessCalled = true }
-  //    verify(mockAuth).currentUser
-  //    assert(onSuccessCalled)
-  //
-  //    // Mock failure:
-  //    `when`(mockAuth.currentUser).thenReturn(null)
-  //    flashcardRepositoryFirestore.init{ assert(false) }
-  //
-  //    MockFirebaseAuth.close()
-  //  }
-
   @Test
   fun getFlashcards_success() {
     // Ensure that mockQuerySnapshot is properly initialized and mocked
