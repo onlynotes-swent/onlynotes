@@ -115,6 +115,10 @@ class UserRepositoryFirestoreTest {
     `when`(mockDocumentSnapshot.getBoolean("hasProfilePicture")).thenReturn(user.hasProfilePicture)
     `when`(mockDocumentSnapshot.getString("bio")).thenReturn(user.bio)
     `when`(mockDocumentSnapshot.getBoolean("isAccountPublic")).thenReturn(user.isAccountPublic)
+    `when`(mockDocumentSnapshot.get("pendingFriends.following"))
+        .thenReturn(user.pendingFriends.following)
+    `when`(mockDocumentSnapshot.get("pendingFriends.followers"))
+        .thenReturn(user.pendingFriends.followers)
   }
 
   @Test
