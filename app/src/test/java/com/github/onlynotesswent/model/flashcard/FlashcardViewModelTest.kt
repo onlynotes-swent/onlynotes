@@ -21,11 +21,11 @@ class FlashcardViewModelTest {
   private lateinit var flashcardViewModel: FlashcardViewModel
 
   private val flashcard =
-      Flashcard(
+      TextFlashcard(
           id = "1",
           front = "front",
           back = "back",
-          nextReview = Timestamp.now(),
+          lastReviewed = Timestamp.now(),
           userId = "2",
           folderId = "3",
           noteId = "4")
@@ -72,13 +72,13 @@ class FlashcardViewModelTest {
 
   @Test
   fun getFlashcardsByFolderCallsRepository() {
-    flashcardViewModel.getFlashcardsByFolder(flashcard.folderId)
+    flashcardViewModel.getFlashcardsByFolder(flashcard.folderId!!)
     verify(flashcardRepository).getFlashcardsByFolder(eq(flashcard.folderId), any(), any())
   }
 
   @Test
   fun getFlashcardsByNoteCallsRepository() {
-    flashcardViewModel.getFlashcardsByNote(flashcard.noteId)
+    flashcardViewModel.getFlashcardsByNote(flashcard.noteId!!)
     verify(flashcardRepository).getFlashcardsByNote(eq(flashcard.noteId), any(), any())
   }
 

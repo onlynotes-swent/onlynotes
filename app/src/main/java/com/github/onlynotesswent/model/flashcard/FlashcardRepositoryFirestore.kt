@@ -2,7 +2,6 @@ package com.github.onlynotesswent.model.flashcard
 
 import android.util.Log
 import com.google.firebase.Firebase
-import com.google.firebase.Timestamp
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
@@ -20,14 +19,10 @@ class FlashcardRepositoryFirestore(private val db: FirebaseFirestore) : Flashcar
    */
   fun documentSnapshotToFlashcard(document: DocumentSnapshot): Flashcard? {
     return try {
-      val id = document.id
-      val front = document.getString("front") ?: ""
-      val back = document.getString("back") ?: ""
-      val nextReview = document.getTimestamp("nextReview") ?: Timestamp.now()
-      val userId = document.getString("userId") ?: ""
-      val folderId = document.getString("folderId") ?: ""
-      val noteId = document.getString("noteId") ?: ""
-      Flashcard(id, front, back, nextReview, userId, folderId, noteId)
+      val type =
+          Flashcard.Type.fromString(
+              document.getString("type") ?: throw Exception("Invalid flashcard type"))
+      Flashcard.from(type, document.data?.toMap() ?: throw Exception("Invalid flashcard data"))
     } catch (e: Exception) {
       Log.e("Firestore", "Error converting document to Flashcard", e)
       null
@@ -113,7 +108,7 @@ class FlashcardRepositoryFirestore(private val db: FirebaseFirestore) : Flashcar
   ) {
     db.collection(collectionPath)
         .document(flashcard.id)
-        .set(flashcard)
+        .set(flashcard.toMap())
         .addOnSuccessListener { onSuccess() }
         .addOnFailureListener { exception -> onFailure(exception) }
   }
@@ -125,7 +120,7 @@ class FlashcardRepositoryFirestore(private val db: FirebaseFirestore) : Flashcar
   ) {
     db.collection(collectionPath)
         .document(flashcard.id)
-        .set(flashcard)
+        .set(flashcard.toMap())
         .addOnSuccessListener { onSuccess() }
         .addOnFailureListener { exception -> onFailure(exception) }
   }

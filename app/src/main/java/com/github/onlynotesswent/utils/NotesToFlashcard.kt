@@ -81,7 +81,7 @@ class NotesToFlashcard(
                   id = flashcardViewModel.getNewUid(),
                   front = question,
                   back = answer,
-                  nextReview = Timestamp.now(),
+                  lastReviewed = Timestamp.now(),
                   userId = note.userId,
                   folderId = note.folderId ?: "",
                   noteId = note.id)
