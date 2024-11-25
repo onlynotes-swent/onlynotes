@@ -9,6 +9,13 @@ interface NotificationRepository {
    */
   fun init(onSuccess: () -> Unit)
 
+
+    /**
+     * get a new notification id
+     * @return new uid
+     */
+  fun getNewUid(): String
+
   /**
    * Retrieves a notification by its ID.
    *

@@ -19,7 +19,7 @@ class NotificationRepositoryFirestore(private val db: FirebaseFirestore) : Notif
         receiverId = document.getString("receiverId") ?: "",
         timestamp = document.getTimestamp("timestamp") ?: Timestamp.now(),
         read = document.getBoolean("read") ?: false,
-        type = Notification.Type.valueOf(document.getString("type") ?: "DEFAULT"))
+        type = Notification.NotificationType.valueOf(document.getString("type") ?: "DEFAULT"))
   }
 
   override fun init(onSuccess: () -> Unit) {
@@ -30,7 +30,11 @@ class NotificationRepositoryFirestore(private val db: FirebaseFirestore) : Notif
     }
   }
 
-  override fun getNotificationById(
+    override fun getNewUid(): String {
+        return db.collection(collectionPath).document().id
+    }
+
+    override fun getNotificationById(
       id: String,
       onSuccess: (Notification) -> Unit,
       onNotificationNotFound: () -> Unit,

@@ -1,10 +1,7 @@
 package com.github.onlynotesswent.ui.user
 
-import android.util.Log
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -13,10 +10,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -52,11 +47,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.rememberVectorPainter
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -66,12 +57,12 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.rememberAsyncImagePainter
-import com.github.onlynotesswent.model.file.FileType
 import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.notification.NotificationViewModel
 import com.github.onlynotesswent.model.user.User
 import com.github.onlynotesswent.model.user.UserViewModel
+import com.github.onlynotesswent.ui.common.NonModifiableProfilePicture
+import com.github.onlynotesswent.ui.common.ThumbnailPic
 import com.github.onlynotesswent.ui.navigation.BottomNavigationMenu
 import com.github.onlynotesswent.ui.navigation.LIST_TOP_LEVEL_DESTINATION
 import com.github.onlynotesswent.ui.navigation.NavigationActions
@@ -631,70 +622,6 @@ fun DisplayBioCard(user: State<User?>) {
           }
         },
         modifier = Modifier.padding(10.dp).testTag("userBio"))
-  }
-}
-
-/**
- * Displays the user's thumbnail profile picture, by wrapping the NonModifiableProfilePicture
- * composable.
- *
- * @param user The user whose profile picture is to be displayed.
- * @param fileViewModel The ViewModel for downloading images.
- * @param size The size of the profile picture.
- */
-@Composable
-fun ThumbnailPic(user: User, fileViewModel: FileViewModel, size: Int = 40) {
-  val profilePictureUri = remember { mutableStateOf("") }
-  val userState = remember { mutableStateOf(user) }
-  NonModifiableProfilePicture(
-      userState, profilePictureUri, fileViewModel, size, "thumbnail--${user.uid}")
-}
-
-/**
- * Displays the user's profile picture.
- *
- * @param user The user whose profile picture is to be displayed.
- * @param profilePictureUri The URI of the profile picture.
- * @param fileViewModel The ViewModel for downloading images.
- * @param size The size of the profile picture.
- * @param testTag The test tag for the profile picture.
- */
-@Composable
-fun NonModifiableProfilePicture(
-    user: State<User?>,
-    profilePictureUri: MutableState<String>,
-    fileViewModel: FileViewModel,
-    size: Int = 150,
-    testTag: String = "profilePicture"
-) {
-  Box(modifier = Modifier.size(size.dp)) {
-    // Download the profile picture from Firebase Storage if it hasn't been downloaded yet
-    if (user.value!!.hasProfilePicture && profilePictureUri.value.isBlank()) {
-      fileViewModel.downloadFile(
-          user.value!!.uid,
-          FileType.PROFILE_PIC_JPEG,
-          context = LocalContext.current,
-          onSuccess = { file -> profilePictureUri.value = file.absolutePath },
-          onFileNotFound = { Log.e("ProfilePicture", "Profile picture not found") },
-          onFailure = { e -> Log.e("ProfilePicture", "Error downloading profile picture", e) })
-    }
-
-    // Profile Picture Painter
-    val painter =
-        if (user.value!!.hasProfilePicture && profilePictureUri.value.isNotBlank()) {
-          // Load the profile picture if it exists
-          rememberAsyncImagePainter(profilePictureUri.value)
-        } else {
-          // Load the default profile picture if it doesn't exist
-          rememberVectorPainter(Icons.Default.AccountCircle)
-        }
-
-    // Profile Picture
-    Image(
-        painter = painter,
-        contentDescription = "Profile Picture",
-        modifier = Modifier.testTag(testTag).size(size.dp).clip(CircleShape),
-        contentScale = ContentScale.Crop)
   }
 }
 
