@@ -90,10 +90,9 @@ fun OnlyNotesApp(
         EditNoteScreen(navigationActions, scanner, noteViewModel, userViewModel, fileViewModel)
       }
       composable(Screen.FOLDER_CONTENTS) { navBackStackEntry ->
-
         val folderId = navBackStackEntry.arguments?.getString("folderId")
-        if(folderId != null && folderId != "{folderId}") {
-            folderViewModel.getFolderById(folderId)
+        if (folderId != null && folderId != "{folderId}") {
+          folderViewModel.getFolderById(folderId)
         }
         FolderContentScreen(navigationActions, folderViewModel, noteViewModel, userViewModel)
       }
@@ -120,10 +119,9 @@ fun OnlyNotesApp(
         UserProfileScreen(navigationActions, userViewModel, fileViewModel)
       }
       composable(Screen.PUBLIC_PROFILE) { navBackStackEntry ->
-
         val userId = navBackStackEntry.arguments?.getString("userId")
         if (userId != null && userId != "{userId}") {
-            userViewModel.refreshProfileUser(userId)
+          userViewModel.refreshProfileUser(userId)
         }
         PublicProfileScreen(navigationActions, userViewModel, fileViewModel)
       }

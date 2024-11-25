@@ -42,7 +42,6 @@ import com.github.onlynotesswent.ui.navigation.BottomNavigationMenu
 import com.github.onlynotesswent.ui.navigation.LIST_TOP_LEVEL_DESTINATION
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
-import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
 
 /**
  * Displays the overview screen which contains a list of publicNotes retrieved from the ViewModel.
@@ -117,11 +116,9 @@ fun OverviewScreen(
                         visibility = visibility),
                     userViewModel.currentUser.value!!.uid)
                 showCreateDialog = false
-                  val folderContentsScreen = Screen.FOLDER_CONTENTS.replace(
-                      oldValue = "{folderId}",
-                      newValue = folderId
-                  )
-                  navigationActions.navigateTo(folderContentsScreen)
+                val folderContentsScreen =
+                    Screen.FOLDER_CONTENTS.replace(oldValue = "{folderId}", newValue = folderId)
+                navigationActions.navigateTo(folderContentsScreen)
               },
               action = "Create")
         }

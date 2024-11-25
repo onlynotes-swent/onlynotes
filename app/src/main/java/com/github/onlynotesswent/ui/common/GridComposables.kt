@@ -73,10 +73,8 @@ fun CustomLazyGrid(
                   folderViewModel = folderViewModel) {
                     folderViewModel.selectedFolder(sortedFolders[index])
                     folderViewModel.selectedParentFolderId(sortedFolders[index].parentFolderId)
-                    val folderContentsScreen = Screen.FOLDER_CONTENTS.replace(
-                        "{folderId}",
-                        sortedFolders[index].id
-                    )
+                    val folderContentsScreen =
+                        Screen.FOLDER_CONTENTS.replace("{folderId}", sortedFolders[index].id)
                     navigationActions.navigateTo(folderContentsScreen)
                   }
             }

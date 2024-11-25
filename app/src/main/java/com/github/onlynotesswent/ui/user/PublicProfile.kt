@@ -205,7 +205,7 @@ fun TopProfileBar(
     userViewModel: UserViewModel,
     includeBackButton: Boolean = true,
     onBackButtonClick: () -> Unit = {
-        navigationActions.goBack()
+      navigationActions.goBack()
       /*var userProfileId = navigationActions.popFromScreenNavigationStack()
       when {
         userProfileId == Screen.SEARCH -> {
@@ -592,11 +592,9 @@ fun switchProfileTo(
   } else {
     userViewModel.setProfileUser(user)
     // Add the visited user profile to the screen navigation stack
-    //navigationActions.pushToScreenNavigationStack(user.uid)
-    val publicProfileScreen = Screen.PUBLIC_PROFILE.replace(
-        oldValue = "{userId}",
-        newValue = user.uid
-    )
+    // navigationActions.pushToScreenNavigationStack(user.uid)
+    val publicProfileScreen =
+        Screen.PUBLIC_PROFILE.replace(oldValue = "{userId}", newValue = user.uid)
     navigationActions.navigateTo(publicProfileScreen)
   }
 }
