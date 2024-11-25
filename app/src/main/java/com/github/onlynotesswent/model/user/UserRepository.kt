@@ -57,9 +57,15 @@ interface UserRepository {
    *
    * @param id The ID of the user to delete.
    * @param onSuccess Callback to be invoked when the deletion is successful.
+   * @param onUserNotFound Callback to be invoked if the user is not found.
    * @param onFailure Callback to be invoked if an error occurs.
    */
-  fun deleteUserById(id: String, onSuccess: () -> Unit, onFailure: (Exception) -> Unit)
+  fun deleteUserById(
+      id: String,
+      onSuccess: () -> Unit,
+      onUserNotFound: () -> Unit,
+      onFailure: (Exception) -> Unit
+  )
 
   /**
    * Adds a new user to the repository. The user must have a unique username and uid.

@@ -458,8 +458,7 @@ fun SaveButton(
                 noteCourse = Course(courseCode, courseName, courseYear, "path"),
                 userId = note.userId,
                 folderId = note.folderId,
-                comments = note.comments),
-            currentUser.uid)
+                comments = note.comments))
         noteViewModel.getNoteById(note.id)
         Toast.makeText(context, "Note saved", Toast.LENGTH_SHORT).show()
       },

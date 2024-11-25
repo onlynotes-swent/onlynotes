@@ -24,7 +24,7 @@ class FlashcardRepositoryFirestore(private val db: FirebaseFirestore) : Flashcar
               document.getString("type") ?: throw Exception("Invalid flashcard type"))
       Flashcard.from(type, document.data?.toMap() ?: throw Exception("Invalid flashcard data"))
     } catch (e: Exception) {
-      Log.e("Firestore", "Error converting document to Flashcard", e)
+      Log.e(TAG, "Error converting document to Flashcard", e)
       null
     }
   }
@@ -53,22 +53,29 @@ class FlashcardRepositoryFirestore(private val db: FirebaseFirestore) : Flashcar
           val flashcards = querySnapshot.documents.mapNotNull { documentSnapshotToFlashcard(it) }
           onSuccess(flashcards)
         }
-        .addOnFailureListener { exception -> onFailure(exception) }
+        .addOnFailureListener { exception ->
+          onFailure(exception)
+          Log.e(TAG, "Error getting flashcards from user", exception)
+        }
   }
 
   override fun getFlashcardById(
       id: String,
-      onSuccess: (Flashcard?) -> Unit,
+      onSuccess: (Flashcard) -> Unit,
       onFailure: (Exception) -> Unit
   ) {
     db.collection(collectionPath)
         .document(id)
         .get()
         .addOnSuccessListener { document ->
-          if (!document.exists()) onFailure(Exception("Flashcard not found"))
-          else onSuccess(documentSnapshotToFlashcard(document))
+          val flashcard = documentSnapshotToFlashcard(document)
+          if (flashcard == null) onFailure(Exception("Error converting document to Flashcard"))
+          else onSuccess(flashcard)
         }
-        .addOnFailureListener { exception -> onFailure(exception) }
+        .addOnFailureListener { exception ->
+          onFailure(exception)
+          Log.e(TAG, "Error getting flashcard by id", exception)
+        }
   }
 
   override fun getFlashcardsByFolder(
@@ -83,7 +90,10 @@ class FlashcardRepositoryFirestore(private val db: FirebaseFirestore) : Flashcar
           val flashcards = querySnapshot.documents.mapNotNull { documentSnapshotToFlashcard(it) }
           onSuccess(flashcards)
         }
-        .addOnFailureListener { exception -> onFailure(exception) }
+        .addOnFailureListener { exception ->
+          onFailure(exception)
+          Log.e(TAG, "Error getting flashcards by folder", exception)
+        }
   }
 
   override fun getFlashcardsByNote(
@@ -98,7 +108,10 @@ class FlashcardRepositoryFirestore(private val db: FirebaseFirestore) : Flashcar
           val flashcards = querySnapshot.documents.mapNotNull { documentSnapshotToFlashcard(it) }
           onSuccess(flashcards)
         }
-        .addOnFailureListener { exception -> onFailure(exception) }
+        .addOnFailureListener { exception ->
+          onFailure(exception)
+          Log.e(TAG, "Error getting flashcards by note", exception)
+        }
   }
 
   override fun addFlashcard(
@@ -110,7 +123,10 @@ class FlashcardRepositoryFirestore(private val db: FirebaseFirestore) : Flashcar
         .document(flashcard.id)
         .set(flashcard.toMap())
         .addOnSuccessListener { onSuccess() }
-        .addOnFailureListener { exception -> onFailure(exception) }
+        .addOnFailureListener { exception ->
+          onFailure(exception)
+          Log.e(TAG, "Error adding flashcard", exception)
+        }
   }
 
   override fun updateFlashcard(
@@ -122,7 +138,10 @@ class FlashcardRepositoryFirestore(private val db: FirebaseFirestore) : Flashcar
         .document(flashcard.id)
         .set(flashcard.toMap())
         .addOnSuccessListener { onSuccess() }
-        .addOnFailureListener { exception -> onFailure(exception) }
+        .addOnFailureListener { exception ->
+          onFailure(exception)
+          Log.e(TAG, "Error updating flashcard", exception)
+        }
   }
 
   override fun deleteFlashcard(
@@ -134,6 +153,13 @@ class FlashcardRepositoryFirestore(private val db: FirebaseFirestore) : Flashcar
         .document(flashcard.id)
         .delete()
         .addOnSuccessListener { onSuccess() }
-        .addOnFailureListener { exception -> onFailure(exception) }
+        .addOnFailureListener { exception ->
+          onFailure(exception)
+          Log.e(TAG, "Error deleting flashcard", exception)
+        }
+  }
+
+  companion object {
+    const val TAG = "FlashcardRepositoryFirestore"
   }
 }
