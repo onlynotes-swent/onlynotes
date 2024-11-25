@@ -3,22 +3,23 @@ package com.github.onlynotesswent.model.note
 import com.github.onlynotesswent.model.common.Course
 import com.github.onlynotesswent.model.common.Visibility
 import com.google.firebase.Timestamp
+import junit.framework.TestCase.assertEquals
 import org.hamcrest.CoreMatchers.`is`
 import org.hamcrest.MatcherAssert.assertThat
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.Mock
+import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
-import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
+import org.mockito.kotlin.times
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
 class NoteViewModelTest {
-  @Mock private lateinit var mockNoteRepository: NoteRepository
+  private lateinit var mockNoteRepository: NoteRepository
   private lateinit var noteViewModel: NoteViewModel
 
   private val testNote =
@@ -34,7 +35,7 @@ class NoteViewModelTest {
 
   @Before
   fun setUp() {
-    MockitoAnnotations.openMocks(this)
+    mockNoteRepository = mock(NoteRepository::class.java)
     noteViewModel = NoteViewModel(mockNoteRepository)
   }
 
@@ -51,56 +52,116 @@ class NoteViewModelTest {
 
   @Test
   fun getPublicNotesCallsRepository() {
+    `when`(mockNoteRepository.getPublicNotes(any(), any())).thenAnswer {
+      val onSuccess: (List<Note>) -> Unit = it.getArgument(0)
+      onSuccess(listOf(testNote))
+    }
     noteViewModel.getPublicNotes()
-    verify(mockNoteRepository).getPublicNotes(any(), any())
+    assertEquals(noteViewModel.publicNotes.value, listOf(testNote))
   }
 
   @Test
   fun getNotesFromCallsRepository() {
-    noteViewModel.getNotesFrom("1")
-    verify(mockNoteRepository).getNotesFrom(eq("1"), any(), any())
+    `when`(mockNoteRepository.getNotesFrom(any(), any(), any())).thenAnswer {
+      val onSuccess: (List<Note>) -> Unit = it.getArgument(1)
+      onSuccess(listOf(testNote))
+    }
+    noteViewModel.getNotesFrom(testNote.userId)
+    assertEquals(noteViewModel.userNotes.value, listOf(testNote))
   }
 
   @Test
   fun getRootNotesFromCallsRepository() {
-    noteViewModel.getRootNotesFrom("1")
-    verify(mockNoteRepository).getRootNotesFrom(eq("1"), any(), any())
+    `when`(mockNoteRepository.getRootNotesFrom(any(), any(), any())).thenAnswer {
+      val onSuccess: (List<Note>) -> Unit = it.getArgument(1)
+      onSuccess(listOf(testNote))
+    }
+    noteViewModel.getRootNotesFrom(testNote.userId)
+    assertEquals(noteViewModel.userRootNotes.value, listOf(testNote))
   }
 
   @Test
   fun getNoteByIdCallsRepository() {
-    noteViewModel.getNoteById("1")
-    verify(mockNoteRepository).getNoteById(eq("1"), any(), any())
+    `when`(mockNoteRepository.getNoteById(any(), any(), any())).thenAnswer {
+      val onSuccess: (Note) -> Unit = it.getArgument(1)
+      onSuccess(testNote)
+    }
+    noteViewModel.getNoteById(testNote.userId)
+    assertEquals(noteViewModel.selectedNote.value, testNote)
   }
 
   @Test
   fun addNoteCallsRepository() {
-    noteViewModel.addNote(testNote, "1")
-    verify(mockNoteRepository).addNote(eq(testNote), any(), any())
+    `when`(mockNoteRepository.addNote(any(), any(), any())).thenAnswer {
+      val onSuccess: () -> Unit = it.getArgument(1)
+      onSuccess()
+    }
+
+    var onSuccessCalled = false
+    noteViewModel.addNote(testNote, { onSuccessCalled = true })
+    assert(onSuccessCalled)
+
+    // To test default parameters
+    noteViewModel.addNote(testNote)
+    verify(mockNoteRepository, times(2)).addNote(eq(testNote), any(), any())
   }
 
   @Test
   fun updateNoteCallsRepository() {
-    noteViewModel.updateNote(testNote, "1")
-    verify(mockNoteRepository).updateNote(eq(testNote), any(), any())
+    `when`(mockNoteRepository.updateNote(any(), any(), any())).thenAnswer {
+      val onSuccess: () -> Unit = it.getArgument(1)
+      onSuccess()
+    }
+
+    var onSuccessCalled = false
+    noteViewModel.updateNote(testNote, { onSuccessCalled = true })
+    assert(onSuccessCalled)
+
+    // To test default parameters
+    noteViewModel.updateNote(testNote)
+    verify(mockNoteRepository, times(2)).updateNote(eq(testNote), any(), any())
   }
 
   @Test
   fun deleteNoteByIdCallsRepository() {
+    `when`(mockNoteRepository.deleteNoteById(any(), any(), any())).thenAnswer {
+      val onSuccess: () -> Unit = it.getArgument(1)
+      onSuccess()
+    }
+
+    var onSuccessCalled = false
+    noteViewModel.deleteNoteById(testNote.id, testNote.userId, { onSuccessCalled = true })
+    assert(onSuccessCalled)
+
+    // To test default parameters
     noteViewModel.deleteNoteById("1", "1")
-    verify(mockNoteRepository).deleteNoteById(eq("1"), any(), any())
+    verify(mockNoteRepository, times(2)).deleteNoteById(eq("1"), any(), any())
   }
 
   @Test
   fun deleteNotesFromUser() {
+    `when`(mockNoteRepository.deleteNotesByUserId(any(), any(), any())).thenAnswer {
+      val onSuccess: () -> Unit = it.getArgument(1)
+      onSuccess()
+    }
+
+    var onSuccessCalled = false
+    noteViewModel.deleteNotesByUserId(testNote.userId, { onSuccessCalled = true })
+    assert(onSuccessCalled)
+
+    // To test default parameters
     noteViewModel.deleteNotesByUserId("1")
-    verify(mockNoteRepository).deleteNotesByUserId(eq("1"), any(), any())
+    verify(mockNoteRepository, times(2)).deleteNotesByUserId(eq("1"), any(), any())
   }
 
   @Test
   fun getNotesFromFolderCallsRepository() {
-    noteViewModel.getNotesFromFolder("1")
-    verify(mockNoteRepository).getNotesFromFolder(eq("1"), any(), any())
+    `when`(mockNoteRepository.getNotesFromFolder(any(), any(), any())).thenAnswer {
+      val onSuccess: (List<Note>) -> Unit = it.getArgument(1)
+      onSuccess(listOf(testNote))
+    }
+    noteViewModel.getNotesFromFolder(testNote.folderId!!)
+    assertEquals(noteViewModel.folderNotes.value, listOf(testNote))
   }
 
   @Test
@@ -115,7 +176,7 @@ class NoteViewModelTest {
       val onSuccess = invocation.getArgument<() -> Unit>(1)
       onSuccess()
     }
-    noteViewModel.updateNote(testNote, "1")
+    noteViewModel.updateNote(testNote)
 
     verify(mockNoteRepository).updateNote(eq(testNote), any(), any())
     verify(mockNoteRepository).getRootNotesFrom(eq("1"), any(), any())
