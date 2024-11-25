@@ -20,6 +20,7 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mock
+import org.mockito.Mockito.times
 import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
@@ -348,5 +349,37 @@ class NoteRepositoryFirestoreTest {
     assertNotNull(receivedNotes)
 
     verify(timeout(100)) { (mockQuerySnapshot).documents }
+  }
+
+  @Test
+  fun deleteNotesFromFolder_callsDocuments() {
+    `when`(mockDocumentReference.delete()).thenReturn(Tasks.forResult(null))
+
+    noteRepositoryFirestore.deleteNotesFromFolder("1", onSuccess = {}, onFailure = {})
+
+    shadowOf(Looper.getMainLooper()).idle()
+
+    // Ensure the delete method was called twice (once for each sub note)
+    verify(mockDocumentReference, times(2)).delete()
+  }
+
+  @Test
+  fun deleteNotesFromFolder_fails() {
+    val errorMessage = "TestError"
+    `when`(mockQuerySnapshotTask.isSuccessful).thenReturn(false)
+    `when`(mockQuerySnapshotTask.exception).thenReturn(Exception(errorMessage))
+    `when`(mockQuerySnapshotTask.addOnCompleteListener(any())).thenAnswer { invocation ->
+      val listener = invocation.getArgument<OnCompleteListener<QuerySnapshot>>(0)
+      // Simulate a result being passed to the listener
+      listener.onComplete(mockQuerySnapshotTask)
+      mockQuerySnapshotTask
+    }
+    `when`(mockQuerySnapshot.documents)
+        .thenReturn(listOf(mockDocumentSnapshot3, mockDocumentSnapshot4))
+    var exceptionThrown: Exception? = null
+    noteRepositoryFirestore.deleteNotesFromFolder(
+        "1", onSuccess = {}, onFailure = { e -> exceptionThrown = e })
+    assertNotNull(exceptionThrown)
+    assertEquals(errorMessage, exceptionThrown?.message)
   }
 }

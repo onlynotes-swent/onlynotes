@@ -217,6 +217,7 @@ fun SearchScreen(
                       currentUser = userViewModel.currentUser.collectAsState(),
                       context = context,
                       noteViewModel = noteViewModel,
+                      folderViewModel = folderViewModel,
                       showDialog = false,
                       navigationActions = navigationActions,
                   ) {

@@ -59,6 +59,8 @@ import java.util.Calendar
  * @param scanner The scanner used to scan images and create notes.
  * @param noteViewModel The ViewModel that provides the current note to be edited and handles note
  *   updates.
+ * @param userViewModel The ViewModel that provides the current user and handles user updates.
+ * @param fileViewModel The ViewModel that provides the current file to be uploaded and handles it.
  */
 @Composable
 fun AddNoteScreen(
@@ -108,7 +110,7 @@ fun AddNoteScreen(
 
               NoteDataTextField(
                   value = title,
-                  onValueChange = { title = it },
+                  onValueChange = { title = Note.formatTitle(it) },
                   label = "Title",
                   placeholder = "Add a note title",
                   modifier = Modifier.fillMaxWidth().testTag("inputNoteTitle"),

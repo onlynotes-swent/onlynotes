@@ -1,8 +1,12 @@
 package com.github.onlynotesswent.ui.common
 
+import android.content.ClipData
 import android.content.Context
 import android.widget.Toast
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.draganddrop.dragAndDropSource
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -30,9 +34,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draganddrop.DragAndDropTransferData
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.github.onlynotesswent.model.folder.FolderViewModel
 import com.github.onlynotesswent.model.note.Note
 import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.model.user.User
@@ -52,10 +59,12 @@ import java.util.Locale
  * @param currentUser The current user.
  * @param context The context used to display the dialog.
  * @param noteViewModel The ViewModel that provides the list of notes to display.
+ * @param folderViewModel The ViewModel that provides the list of folders to display.
  * @param showDialog A boolean indicating whether the move out dialog should be displayed.
  * @param navigationActions The navigation instance used to transition between different screens.
  * @param onClick The lambda function to be invoked when the note card is clicked.
  */
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun NoteItem(
     note: Note,
@@ -63,6 +72,7 @@ fun NoteItem(
     currentUser: State<User?>,
     context: Context,
     noteViewModel: NoteViewModel,
+    folderViewModel: FolderViewModel,
     showDialog: Boolean,
     navigationActions: NavigationActions,
     onClick: () -> Unit
@@ -72,6 +82,7 @@ fun NoteItem(
 
   if (showMoveOutDialog && note.folderId != null) {
     AlertDialog(
+        modifier = Modifier.testTag("MoveOutDialog"),
         onDismissRequest = { showMoveOutDialog = false },
         title = {
           Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
@@ -80,13 +91,18 @@ fun NoteItem(
         },
         confirmButton = {
           Button(
+              modifier = Modifier.testTag("MoveOutConfirmButton"),
               onClick = {
                 if (currentUser.value!!.uid == note.userId) {
-                  // Move out will move the given note to the overview menu
-                  noteViewModel.updateNote(note.copy(folderId = null), note.userId)
-                  // Clear the screen navigation stack as we navigate to the overview screen
-                  navigationActions.clearScreenNavigationStack()
-                  navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
+                  // Move out will move the given note to the parent folder
+                  val parentFolderId = navigationActions.popFromScreenNavigationStack()
+                  if (parentFolderId != null) {
+                    noteViewModel.updateNote(note.copy(folderId = parentFolderId), note.userId)
+                    folderViewModel.getFolderById(parentFolderId)
+                  } else {
+                    noteViewModel.updateNote(note.copy(folderId = null), note.userId)
+                    navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
+                  }
                 } else {
                   Toast.makeText(
                           context,
@@ -104,9 +120,22 @@ fun NoteItem(
   Card(
       modifier =
           Modifier.testTag("noteCard")
+              .semantics(mergeDescendants = true, properties = {})
               .fillMaxWidth()
               .padding(vertical = 4.dp)
-              .clickable(onClick = onClick),
+              // Enable drag and drop for the note card (as a source)
+              .dragAndDropSource {
+                detectTapGestures(
+                    onTap = { onClick() },
+                    onLongPress = {
+                      noteViewModel.draggedNote(note)
+                      // Start a drag-and-drop operation to transfer the data which is being dragged
+                      startTransfer(
+                          // Transfer the note Id as a ClipData object
+                          DragAndDropTransferData(ClipData.newPlainText("Note", note.id)))
+                    },
+                )
+              },
       colors =
           CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)) {
         Column(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
@@ -124,7 +153,7 @@ fun NoteItem(
                   Icon(
                       // Show move out menu when clicking on the Icon
                       modifier =
-                          Modifier.clickable(
+                          Modifier.testTag("MoveOutButton").clickable(
                               enabled =
                                   note.folderId != null &&
                                       navigationActions.currentRoute() == Screen.FOLDER_CONTENTS) {
