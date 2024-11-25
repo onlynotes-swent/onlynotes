@@ -158,7 +158,7 @@ fun FolderContentScreen(
                 },
                 action = "Rename",
                 oldName = updatedName,
-                oldVis = folder.value!!.visibility)
+                oldVisibility = folder.value!!.visibility)
           }
           if (showCreateNoteDialog) {
             NoteDialog(
