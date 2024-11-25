@@ -207,13 +207,13 @@ class OverviewTest {
   }
 
   @Test
-  fun createNoteButtonCallsNavActions() {
+  fun createNoteButtonShowsDialog() {
     composeTestRule.onNodeWithTag("overviewScreen").assertIsDisplayed()
     composeTestRule.onNodeWithTag("createNoteOrFolder").assertIsDisplayed()
     composeTestRule.onNodeWithTag("createNoteOrFolder").performClick()
     composeTestRule.onNodeWithTag("createNote").assertIsDisplayed()
     composeTestRule.onNodeWithTag("createNote").performClick()
-    verify(navigationActions).navigateTo(screen = Screen.ADD_NOTE)
+    composeTestRule.onNodeWithTag("noteDialog").assertIsDisplayed()
   }
 
   @Test
@@ -224,6 +224,21 @@ class OverviewTest {
     composeTestRule.onNodeWithTag("createFolder").assertIsDisplayed()
     composeTestRule.onNodeWithTag("createFolder").performClick()
     composeTestRule.onNodeWithTag("folderDialog").assertIsDisplayed()
+  }
+
+  @Test
+  fun createNoteDialogWorks() {
+    composeTestRule.onNodeWithTag("createNoteOrFolder").performClick()
+    composeTestRule.onNodeWithTag("createNote").performClick()
+
+    composeTestRule.onNodeWithTag("confirmNoteAction").assertIsNotEnabled()
+    composeTestRule.onNodeWithTag("inputNoteName").performTextInput("Note Name")
+    composeTestRule.onNodeWithTag("visibilityButton").assertIsDisplayed().performClick()
+
+    composeTestRule.onNodeWithTag("item--Public").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("item--Friends Only").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("item--Private").assertIsDisplayed().performClick()
+    composeTestRule.onNodeWithTag("confirmNoteAction").assertIsDisplayed()
   }
 
   @Test
