@@ -40,10 +40,8 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore) : UserRepositor
               ),
           pendingFriends =
               Friends(
-                  following =
-                      document.get("pendingFriends.following") as? List<String> ?: emptyList(),
-                  followers =
-                      document.get("pendingFriends.followers") as? List<String> ?: emptyList(),
+                  following = document.get("pendingFriends.following") as List<String>,
+                  followers = document.get("pendingFriends.followers") as List<String>,
               ),
           hasProfilePicture = document.getBoolean("hasProfilePicture")!!,
           bio = document.getString("bio")!!,

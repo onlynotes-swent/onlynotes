@@ -34,6 +34,10 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
   private val _selectedNote = MutableStateFlow<Note?>(null)
   val selectedNote: StateFlow<Note?> = _selectedNote.asStateFlow()
 
+  // Dragged note
+  private val _draggedNote = MutableStateFlow<Note?>(null)
+  val draggedNote: StateFlow<Note?> = _draggedNote.asStateFlow()
+
   init {
     repository.init { getPublicNotes() }
   }
@@ -51,6 +55,10 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
    */
   fun selectedFolderId(folderId: String?) {
     _currentFolderId.value = folderId
+  }
+
+  fun draggedNote(draggedNote: Note?) {
+    _draggedNote.value = draggedNote
   }
 
   /**
@@ -179,6 +187,9 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
         onSuccess = {
           onSuccess()
           getRootNotesFrom(note.userId)
+          if (note.folderId != null) {
+            getNotesFromFolder(note.folderId)
+          }
         },
         onFailure = onFailure)
   }
@@ -242,6 +253,27 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
         onSuccess = {
           onSuccess(it)
           _folderNotes.value = it
+        },
+        onFailure = onFailure)
+  }
+
+  /**
+   * Deletes all notes from a folder.
+   *
+   * @param folderId The ID of the folder to delete notes from.
+   * @param onSuccess The function to call when the deletion is successful.
+   * @param onFailure The function to call when the deletion fails.
+   */
+  fun deleteNotesFromFolder(
+      folderId: String,
+      onSuccess: () -> Unit = {},
+      onFailure: (Exception) -> Unit = {}
+  ) {
+    repository.deleteNotesFromFolder(
+        folderId = folderId,
+        onSuccess = {
+          onSuccess()
+          getNotesFromFolder(folderId)
         },
         onFailure = onFailure)
   }

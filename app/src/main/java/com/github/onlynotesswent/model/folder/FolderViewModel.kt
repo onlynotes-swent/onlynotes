@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import com.github.onlynotesswent.model.note.NoteViewModel
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.firestore
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -35,6 +36,10 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
   private val _selectedFolder = MutableStateFlow<Folder?>(null)
   val selectedFolder: StateFlow<Folder?> = _selectedFolder.asStateFlow()
 
+  // Dragged folder
+  private val _draggedFolder = MutableStateFlow<Folder?>(null)
+  val draggedFolder: StateFlow<Folder?> = _draggedFolder.asStateFlow()
+
   init {
     repository.init {}
   }
@@ -61,6 +66,15 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
    */
   fun selectedFolder(folder: Folder) {
     _selectedFolder.value = folder
+  }
+
+  /**
+   * Sets the dragged folder.
+   *
+   * @param folder The dragged folder.
+   */
+  fun draggedFolder(folder: Folder?) {
+    _draggedFolder.value = folder
   }
 
   /**
@@ -213,6 +227,9 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
         onSuccess = {
           onSuccess()
           getRootFoldersFromUid(folder.userId)
+          if (folder.parentFolderId != null) {
+            getSubFoldersOf(folder.parentFolderId)
+          }
         },
         onFailure = onFailure)
   }
@@ -249,6 +266,30 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
         onSuccess = {
           onSuccess()
           _publicFolders.value = it
+        },
+        onFailure = onFailure)
+  }
+
+  /**
+   * Deletes all elements from a folder.
+   *
+   * @param folder The folder to delete notes from.
+   * @param noteViewModel The Note view model used to delete the folder notes.
+   * @param onSuccess The function to call when the folder contents are deleted successfully.
+   * @param onFailure The function to call when the folder contents fail to be deleted.
+   */
+  fun deleteFolderContents(
+      folder: Folder,
+      noteViewModel: NoteViewModel,
+      onSuccess: () -> Unit = {},
+      onFailure: (Exception) -> Unit = {}
+  ) {
+    repository.deleteFolderContents(
+        folder = folder,
+        noteViewModel = noteViewModel,
+        onSuccess = {
+          onSuccess()
+          getSubFoldersOf(folder.id)
         },
         onFailure = onFailure)
   }

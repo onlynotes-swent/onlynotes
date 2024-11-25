@@ -11,8 +11,8 @@ import androidx.compose.ui.platform.testTag
 
 @Composable
 fun BottomNavigationMenu(
-    onTabSelect: (TopLevelDestination) -> Unit,
-    tabList: List<TopLevelDestination>,
+    onTabSelect: (Destination) -> Unit,
+    tabList: List<Destination>,
     selectedItem: String
 ) {
   NavigationBar(

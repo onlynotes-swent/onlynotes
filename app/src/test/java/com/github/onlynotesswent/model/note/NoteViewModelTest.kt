@@ -19,7 +19,7 @@ import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
 class NoteViewModelTest {
-  private lateinit var noteRepository: NoteRepository
+  private lateinit var mockNoteRepository: NoteRepository
   private lateinit var noteViewModel: NoteViewModel
 
   private val testNote =
@@ -35,24 +35,24 @@ class NoteViewModelTest {
 
   @Before
   fun setUp() {
-    noteRepository = mock(NoteRepository::class.java)
-    noteViewModel = NoteViewModel(noteRepository)
+    mockNoteRepository = mock(NoteRepository::class.java)
+    noteViewModel = NoteViewModel(mockNoteRepository)
   }
 
   @Test
   fun getNewUid() {
-    `when`(noteRepository.getNewUid()).thenReturn("uid")
+    `when`(mockNoteRepository.getNewUid()).thenReturn("uid")
     assertThat(noteViewModel.getNewUid(), `is`("uid"))
   }
 
   @Test
   fun initCallsRepository() {
-    verify(noteRepository).init(any())
+    verify(mockNoteRepository).init(any())
   }
 
   @Test
   fun getPublicNotesCallsRepository() {
-    `when`(noteRepository.getPublicNotes(any(), any())).thenAnswer {
+    `when`(mockNoteRepository.getPublicNotes(any(), any())).thenAnswer {
       val onSuccess: (List<Note>) -> Unit = it.getArgument(0)
       onSuccess(listOf(testNote))
     }
@@ -62,7 +62,7 @@ class NoteViewModelTest {
 
   @Test
   fun getNotesFromCallsRepository() {
-    `when`(noteRepository.getNotesFrom(any(), any(), any())).thenAnswer {
+    `when`(mockNoteRepository.getNotesFrom(any(), any(), any())).thenAnswer {
       val onSuccess: (List<Note>) -> Unit = it.getArgument(1)
       onSuccess(listOf(testNote))
     }
@@ -72,7 +72,7 @@ class NoteViewModelTest {
 
   @Test
   fun getRootNotesFromCallsRepository() {
-    `when`(noteRepository.getRootNotesFrom(any(), any(), any())).thenAnswer {
+    `when`(mockNoteRepository.getRootNotesFrom(any(), any(), any())).thenAnswer {
       val onSuccess: (List<Note>) -> Unit = it.getArgument(1)
       onSuccess(listOf(testNote))
     }
@@ -82,7 +82,7 @@ class NoteViewModelTest {
 
   @Test
   fun getNoteByIdCallsRepository() {
-    `when`(noteRepository.getNoteById(any(), any(), any())).thenAnswer {
+    `when`(mockNoteRepository.getNoteById(any(), any(), any())).thenAnswer {
       val onSuccess: (Note) -> Unit = it.getArgument(1)
       onSuccess(testNote)
     }
@@ -92,7 +92,7 @@ class NoteViewModelTest {
 
   @Test
   fun addNoteCallsRepository() {
-    `when`(noteRepository.addNote(any(), any(), any())).thenAnswer {
+    `when`(mockNoteRepository.addNote(any(), any(), any())).thenAnswer {
       val onSuccess: () -> Unit = it.getArgument(1)
       onSuccess()
     }
@@ -103,12 +103,12 @@ class NoteViewModelTest {
 
     // To test default parameters
     noteViewModel.addNote(testNote)
-    verify(noteRepository, times(2)).addNote(eq(testNote), any(), any())
+    verify(mockNoteRepository, times(2)).addNote(eq(testNote), any(), any())
   }
 
   @Test
   fun updateNoteCallsRepository() {
-    `when`(noteRepository.updateNote(any(), any(), any())).thenAnswer {
+    `when`(mockNoteRepository.updateNote(any(), any(), any())).thenAnswer {
       val onSuccess: () -> Unit = it.getArgument(1)
       onSuccess()
     }
@@ -119,12 +119,12 @@ class NoteViewModelTest {
 
     // To test default parameters
     noteViewModel.updateNote(testNote)
-    verify(noteRepository, times(2)).updateNote(eq(testNote), any(), any())
+    verify(mockNoteRepository, times(2)).updateNote(eq(testNote), any(), any())
   }
 
   @Test
   fun deleteNoteByIdCallsRepository() {
-    `when`(noteRepository.deleteNoteById(any(), any(), any())).thenAnswer {
+    `when`(mockNoteRepository.deleteNoteById(any(), any(), any())).thenAnswer {
       val onSuccess: () -> Unit = it.getArgument(1)
       onSuccess()
     }
@@ -135,12 +135,12 @@ class NoteViewModelTest {
 
     // To test default parameters
     noteViewModel.deleteNoteById("1", "1")
-    verify(noteRepository, times(2)).deleteNoteById(eq("1"), any(), any())
+    verify(mockNoteRepository, times(2)).deleteNoteById(eq("1"), any(), any())
   }
 
   @Test
   fun deleteNotesFromUser() {
-    `when`(noteRepository.deleteNotesByUserId(any(), any(), any())).thenAnswer {
+    `when`(mockNoteRepository.deleteNotesByUserId(any(), any(), any())).thenAnswer {
       val onSuccess: () -> Unit = it.getArgument(1)
       onSuccess()
     }
@@ -151,16 +151,41 @@ class NoteViewModelTest {
 
     // To test default parameters
     noteViewModel.deleteNotesByUserId("1")
-    verify(noteRepository, times(2)).deleteNotesByUserId(eq("1"), any(), any())
+    verify(mockNoteRepository, times(2)).deleteNotesByUserId(eq("1"), any(), any())
   }
 
   @Test
   fun getNotesFromFolderCallsRepository() {
-    `when`(noteRepository.getNotesFromFolder(any(), any(), any())).thenAnswer {
+    `when`(mockNoteRepository.getNotesFromFolder(any(), any(), any())).thenAnswer {
       val onSuccess: (List<Note>) -> Unit = it.getArgument(1)
       onSuccess(listOf(testNote))
     }
     noteViewModel.getNotesFromFolder(testNote.folderId!!)
     assertEquals(noteViewModel.folderNotes.value, listOf(testNote))
+  }
+
+  @Test
+  fun deleteNotesFromFolderCallsRepository() {
+    noteViewModel.deleteNotesFromFolder("1")
+    verify(mockNoteRepository).deleteNotesFromFolder(eq("1"), any(), any())
+  }
+
+  @Test
+  fun updateNoteUpdatesStatesWhenSuccess() {
+    `when`(mockNoteRepository.updateNote(eq(testNote), any(), any())).thenAnswer { invocation ->
+      val onSuccess = invocation.getArgument<() -> Unit>(1)
+      onSuccess()
+    }
+    noteViewModel.updateNote(testNote)
+
+    verify(mockNoteRepository).updateNote(eq(testNote), any(), any())
+    verify(mockNoteRepository).getRootNotesFrom(eq("1"), any(), any())
+    verify(mockNoteRepository).getNotesFromFolder(eq("1"), any(), any())
+  }
+
+  @Test
+  fun draggedNoteUpdatesCorrectly() {
+    noteViewModel.draggedNote(testNote)
+    assertThat(noteViewModel.draggedNote.value, `is`(testNote))
   }
 }
