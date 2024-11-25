@@ -25,6 +25,7 @@ class FolderRepositoryFirestore(private val db: FirebaseFirestore) : FolderRepos
   }
 
   override fun addFolder(folder: Folder, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) {
+    Log.e(TAG, "Adding folder: $folder")
     db.collection(folderCollectionPath).document(folder.id).set(folder).addOnCompleteListener {
         result ->
       if (result.isSuccessful) {
@@ -226,13 +227,20 @@ class FolderRepositoryFirestore(private val db: FirebaseFirestore) : FolderRepos
    * @param document The DocumentSnapshot to convert.
    * @return The converted Folder object.
    */
-  fun documentSnapshotToFolder(document: DocumentSnapshot): Folder {
-    return Folder(
-        id = document.id,
-        name = document.getString("name")!!,
-        userId = document.getString("userId")!!,
-        parentFolderId = document.getString("parentFolderId"),
-        Visibility.fromString(document.getString("visibility") ?: Visibility.DEFAULT.toString()))
+  fun documentSnapshotToFolder(document: DocumentSnapshot): Folder? {
+      Log.e(TAG, "Converting document to Folder: $document")
+      Log.e(TAG, "Document id: ${document.id} name: ${document.getString("name")} userId ${document.getString("userId")} parentFolderId ${document.getString("parentFolderId")} visibility ${document.getString("visibility")}")
+      return try {
+          Folder(
+              id = document.id,
+              name = document.getString("name")!!,
+              userId = document.getString("userId")!!,
+              parentFolderId = document.getString("parentFolderId"),
+              visibility = Visibility.fromString(document.getString("visibility")!!))
+      } catch (e: Exception) {
+          Log.e(TAG, "Error converting document to Folder", e)
+          null
+      }
   }
 
   companion object {

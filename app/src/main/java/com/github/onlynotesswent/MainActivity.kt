@@ -92,8 +92,8 @@ fun OnlyNotesApp(
       composable(Screen.FOLDER_CONTENTS) { navBackStackEntry ->
 
         val folderId = navBackStackEntry.arguments?.getString("folderId")
-        folderId?.let{
-            folderViewModel.getFolderById(it)
+        if(folderId != null && folderId != "{folderId}") {
+            folderViewModel.getFolderById(folderId)
         }
         FolderContentScreen(navigationActions, folderViewModel, noteViewModel, userViewModel)
       }
@@ -122,8 +122,8 @@ fun OnlyNotesApp(
       composable(Screen.PUBLIC_PROFILE) { navBackStackEntry ->
 
         val userId = navBackStackEntry.arguments?.getString("userId")
-        userId?.let{
-            userViewModel.refreshProfileUser(it)
+        if (userId != null && userId != "{userId}") {
+            userViewModel.refreshProfileUser(userId)
         }
         PublicProfileScreen(navigationActions, userViewModel, fileViewModel)
       }

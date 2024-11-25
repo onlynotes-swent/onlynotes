@@ -165,9 +165,10 @@ private fun ProfileScaffold(
             onTabSelect = { route ->
               // Navigate to route will clear navigation stack
               navigationActions.navigateTo(route)
-              if (route == TopLevelDestinations.SEARCH) {
-                navigationActions.pushToScreenNavigationStack(Screen.SEARCH)
-              }
+              //navigationActions.clearBackStack()
+              //if (route == TopLevelDestinations.SEARCH) {
+              //  navigationActions.pushToScreenNavigationStack(Screen.SEARCH)
+              //}
             },
             tabList = LIST_TOP_LEVEL_DESTINATION,
             selectedItem = navigationActions.currentRoute())
@@ -211,7 +212,8 @@ fun TopProfileBar(
     userViewModel: UserViewModel,
     includeBackButton: Boolean = true,
     onBackButtonClick: () -> Unit = {
-      var userProfileId = navigationActions.popFromScreenNavigationStack()
+        navigationActions.goBack()
+      /*var userProfileId = navigationActions.popFromScreenNavigationStack()
       when {
         userProfileId == Screen.SEARCH -> {
           // If we come from search screen, we go back to search screen
@@ -247,7 +249,7 @@ fun TopProfileBar(
           // If no user profile id is found, navigate to profile screen
           navigationActions.navigateTo(TopLevelDestinations.PROFILE)
         }
-      }
+      }*/
     }
 ) {
   TopAppBar(

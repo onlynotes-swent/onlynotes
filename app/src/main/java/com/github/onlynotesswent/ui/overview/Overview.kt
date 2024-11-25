@@ -91,10 +91,11 @@ fun OverviewScreen(
         BottomNavigationMenu(
             onTabSelect = { route ->
               navigationActions.navigateTo(route)
+              //navigationActions.clearBackStack()
               // Keep track of navigation to search screen to allow for back navigation
-              if (route == TopLevelDestinations.SEARCH) {
-                navigationActions.pushToScreenNavigationStack(Screen.SEARCH)
-              }
+              //if (route == TopLevelDestinations.SEARCH) {
+                //navigationActions.pushToScreenNavigationStack(Screen.SEARCH)
+              //}
             },
             tabList = LIST_TOP_LEVEL_DESTINATION,
             selectedItem = navigationActions.currentRoute())

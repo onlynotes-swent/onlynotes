@@ -254,7 +254,7 @@ fun FolderContentTopBar(
       navigationIcon = {
         IconButton(
             onClick = {
-              val previousFolderId = navigationActions.popFromScreenNavigationStack()
+              /*val previousFolderId = navigationActions.popFromScreenNavigationStack()
               // If we pop from the stack the current folder, we call pop twice to get the
               // previous folder
               if (previousFolderId == Screen.SEARCH) {
@@ -264,7 +264,8 @@ fun FolderContentTopBar(
                 folderViewModel.getFolderById(previousFolderId)
               } else {
                 navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
-              }
+              }*/
+              navigationActions.goBack()
             },
             modifier = Modifier.testTag("goBackButton")) {
               Icon(imageVector = Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "Back")

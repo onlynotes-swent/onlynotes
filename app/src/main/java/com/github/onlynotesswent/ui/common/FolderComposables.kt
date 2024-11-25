@@ -41,6 +41,7 @@ import com.github.onlynotesswent.model.folder.Folder
 import com.github.onlynotesswent.model.folder.FolderViewModel
 import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.ui.navigation.NavigationActions
+import com.github.onlynotesswent.ui.navigation.Screen
 
 /**
  * Displays a single folder item in a card format. The card contains the folder's name. When
@@ -126,7 +127,12 @@ fun FolderItem(
                           override fun onEnded(event: DragAndDropEvent) {
                             if (dropSuccess.value) {
                               folderViewModel.selectedFolder(folder)
-                              navigationActions.navigateToFolderContents(folder)
+                              //navigationActions.navigateToFolderContents(folder)
+                              val folderContentsScreen = Screen.FOLDER_CONTENTS.replace(
+                                  oldValue = "{folderId}",
+                                  newValue = folder.id
+                              )
+                              navigationActions.navigateTo(folderContentsScreen)
                             }
                             // Reset dropSuccess value
                             dropSuccess.value = false
