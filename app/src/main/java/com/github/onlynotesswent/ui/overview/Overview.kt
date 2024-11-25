@@ -89,14 +89,7 @@ fun OverviewScreen(
       },
       bottomBar = {
         BottomNavigationMenu(
-            onTabSelect = { route ->
-              navigationActions.navigateTo(route)
-              //navigationActions.clearBackStack()
-              // Keep track of navigation to search screen to allow for back navigation
-              //if (route == TopLevelDestinations.SEARCH) {
-                //navigationActions.pushToScreenNavigationStack(Screen.SEARCH)
-              //}
-            },
+            onTabSelect = { route -> navigationActions.navigateTo(route) },
             tabList = LIST_TOP_LEVEL_DESTINATION,
             selectedItem = navigationActions.currentRoute())
       }) { paddingValues ->
@@ -114,20 +107,21 @@ fun OverviewScreen(
           FolderDialog(
               onDismiss = { showCreateDialog = false },
               onConfirm = { newName, visibility ->
+                val folderId = folderViewModel.getNewFolderId()
                 folderViewModel.addFolder(
                     Folder(
-                        id = folderViewModel.getNewFolderId(),
+                        id = folderId,
                         name = newName,
                         userId = userViewModel.currentUser.value!!.uid,
                         parentFolderId = parentFolderId.value,
                         visibility = visibility),
                     userViewModel.currentUser.value!!.uid)
                 showCreateDialog = false
-                if (parentFolderId.value != null) {
-                  navigationActions.navigateTo(Screen.FOLDER_CONTENTS)
-                } else {
-                  navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
-                }
+                  val folderContentsScreen = Screen.FOLDER_CONTENTS.replace(
+                      oldValue = "{folderId}",
+                      newValue = folderId
+                  )
+                  navigationActions.navigateTo(folderContentsScreen)
               },
               action = "Create")
         }

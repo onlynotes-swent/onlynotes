@@ -162,14 +162,7 @@ private fun ProfileScaffold(
       floatingActionButton = floatingActionButton,
       bottomBar = {
         BottomNavigationMenu(
-            onTabSelect = { route ->
-              // Navigate to route will clear navigation stack
-              navigationActions.navigateTo(route)
-              //navigationActions.clearBackStack()
-              //if (route == TopLevelDestinations.SEARCH) {
-              //  navigationActions.pushToScreenNavigationStack(Screen.SEARCH)
-              //}
-            },
+            onTabSelect = { route -> navigationActions.navigateTo(route) },
             tabList = LIST_TOP_LEVEL_DESTINATION,
             selectedItem = navigationActions.currentRoute())
       },

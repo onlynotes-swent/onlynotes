@@ -127,7 +127,7 @@ fun FolderItem(
                           override fun onEnded(event: DragAndDropEvent) {
                             if (dropSuccess.value) {
                               folderViewModel.selectedFolder(folder)
-                              //navigationActions.navigateToFolderContents(folder)
+                              folderViewModel.selectedParentFolderId(folder.parentFolderId)
                               val folderContentsScreen = Screen.FOLDER_CONTENTS.replace(
                                   oldValue = "{folderId}",
                                   newValue = folder.id

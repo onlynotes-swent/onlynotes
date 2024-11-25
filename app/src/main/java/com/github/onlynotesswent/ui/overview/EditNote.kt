@@ -418,7 +418,11 @@ fun SaveButton(
             currentUser.uid)
         if (note.folderId != null) {
           noteViewModel.selectedNote(null)
-          navigationActions.navigateTo(Screen.FOLDER_CONTENTS)
+          val folderContentsScreen = Screen.FOLDER_CONTENTS.replace(
+              oldValue = "{folderId}",
+              newValue = note.folderId
+          )
+          navigationActions.navigateTo(folderContentsScreen)
         } else {
           noteViewModel.selectedNote(null)
           navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
