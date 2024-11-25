@@ -6,6 +6,9 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
@@ -90,11 +93,19 @@ fun OnlyNotesApp(
         EditNoteScreen(navigationActions, scanner, noteViewModel, userViewModel, fileViewModel)
       }
       composable(Screen.FOLDER_CONTENTS) { navBackStackEntry ->
+
         val folderId = navBackStackEntry.arguments?.getString("folderId")
-        if (folderId != null && folderId != "{folderId}") {
-          folderViewModel.getFolderById(folderId)
+        val selectedFolder by folderViewModel.selectedFolder.collectAsState()
+        // Update the selected folder when the folder ID changes
+        LaunchedEffect(folderId) {
+            if (folderId != null && folderId != "{folderId}") {
+                folderViewModel.getFolderById(folderId)
+            }
         }
-        FolderContentScreen(navigationActions, folderViewModel, noteViewModel, userViewModel)
+        // Wait until selected folder is updated to display the screen
+        if (selectedFolder != null) {
+            FolderContentScreen(navigationActions, folderViewModel, noteViewModel, userViewModel)
+        }
       }
       composable(Screen.EDIT_MARKDOWN) {
         EditMarkdownScreen(navigationActions, noteViewModel, userViewModel, fileViewModel)

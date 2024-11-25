@@ -96,10 +96,13 @@ fun NoteItem(
                 if (currentUser.value!!.uid == note.userId) {
                   // Move out will move the given note to the parent folder
                   val parentFolderId = folderViewModel.parentFolderId.value
-                  // val parentFolderId = navigationActions.popFromScreenNavigationStack()
                   if (parentFolderId != null) {
                     noteViewModel.updateNote(note.copy(folderId = parentFolderId), note.userId)
-                    folderViewModel.getFolderById(parentFolderId)
+                    val folderContentsScreen = Screen.FOLDER_CONTENTS.replace(
+                        oldValue = "{folderId}",
+                        newValue = parentFolderId)
+                    navigationActions.navigateTo(folderContentsScreen)
+                    //folderViewModel.getFolderById(parentFolderId)
                   } else {
                     noteViewModel.updateNote(note.copy(folderId = null), note.userId)
                     navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
