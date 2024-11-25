@@ -65,46 +65,45 @@ fun OverviewScreen(
     userViewModel: UserViewModel,
     folderViewModel: FolderViewModel
 ) {
-    val userRootNotes = noteViewModel.userRootNotes.collectAsState()
-    userViewModel.currentUser.collectAsState().value?.let { noteViewModel.getRootNotesFrom(it.uid) }
+  val userRootNotes = noteViewModel.userRootNotes.collectAsState()
+  userViewModel.currentUser.collectAsState().value?.let { noteViewModel.getRootNotesFrom(it.uid) }
 
-    val userRootFolders = folderViewModel.userRootFolders.collectAsState()
-    userViewModel.currentUser.collectAsState().value?.let {
-        folderViewModel.getRootFoldersFromUid(it.uid)
-    }
+  val userRootFolders = folderViewModel.userRootFolders.collectAsState()
+  userViewModel.currentUser.collectAsState().value?.let {
+    folderViewModel.getRootFoldersFromUid(it.uid)
+  }
 
-    val parentFolderId = folderViewModel.parentFolderId.collectAsState()
-    val context = LocalContext.current
+  val parentFolderId = folderViewModel.parentFolderId.collectAsState()
+  val context = LocalContext.current
 
-    var expanded by remember { mutableStateOf(false) }
-    var showCreateFolderDialog by remember { mutableStateOf(false) }
-    var showCreateNoteDialog by remember { mutableStateOf(false) }
+  var expanded by remember { mutableStateOf(false) }
+  var showCreateFolderDialog by remember { mutableStateOf(false) }
+  var showCreateNoteDialog by remember { mutableStateOf(false) }
 
-
-    Scaffold(
-        modifier = Modifier.testTag("overviewScreen"),
-        floatingActionButton = {
-            CreateItemFab(
-                expandedFab = expanded,
-                onExpandedFabChange = { expanded = it },
-                showCreateFolderDialog = { showCreateFolderDialog = it },
-                showCreateNoteDialog = {showCreateNoteDialog = it},
-                noteViewModel = noteViewModel,
-                folderViewModel = folderViewModel,
-                navigationActions = navigationActions)
-        },
-        bottomBar = {
-            BottomNavigationMenu(
-                onTabSelect = { route ->
-                    navigationActions.navigateTo(route)
-                    // Keep track of navigation to search screen to allow for back navigation
-                    if (route == TopLevelDestinations.SEARCH) {
-                        navigationActions.pushToScreenNavigationStack(Screen.SEARCH)
-                    }
-                },
-                tabList = LIST_TOP_LEVEL_DESTINATION,
-                selectedItem = navigationActions.currentRoute())
-        }) { paddingValues ->
+  Scaffold(
+      modifier = Modifier.testTag("overviewScreen"),
+      floatingActionButton = {
+        CreateItemFab(
+            expandedFab = expanded,
+            onExpandedFabChange = { expanded = it },
+            showCreateFolderDialog = { showCreateFolderDialog = it },
+            showCreateNoteDialog = { showCreateNoteDialog = it },
+            noteViewModel = noteViewModel,
+            folderViewModel = folderViewModel,
+            navigationActions = navigationActions)
+      },
+      bottomBar = {
+        BottomNavigationMenu(
+            onTabSelect = { route ->
+              navigationActions.navigateTo(route)
+              // Keep track of navigation to search screen to allow for back navigation
+              if (route == TopLevelDestinations.SEARCH) {
+                navigationActions.pushToScreenNavigationStack(Screen.SEARCH)
+              }
+            },
+            tabList = LIST_TOP_LEVEL_DESTINATION,
+            selectedItem = navigationActions.currentRoute())
+      }) { paddingValues ->
         OverviewScreenGrid(
             paddingValues = paddingValues,
             userRootNotes = userRootNotes,
@@ -114,53 +113,50 @@ fun OverviewScreen(
             userViewModel = userViewModel,
             context = context,
             navigationActions = navigationActions)
-        if (showCreateNoteDialog){
-            NoteDialog(
-                onDismiss = { showCreateNoteDialog = false },
-                onConfirm = { newName, visibility ->
-                    val note = Note(
+        if (showCreateNoteDialog) {
+          NoteDialog(
+              onDismiss = { showCreateNoteDialog = false },
+              onConfirm = { newName, visibility ->
+                val note =
+                    Note(
                         id = noteViewModel.getNewUid(),
                         title = newName,
                         date = Timestamp.now(),
                         visibility = visibility,
                         noteCourse = Course.EMPTY,
                         userId = userViewModel.currentUser.value!!.uid,
-                        folderId = parentFolderId.value
-                    )
-                    noteViewModel.addNote(note, userViewModel.currentUser.value!!.uid)
-                    noteViewModel.selectedNote(note)
-                    showCreateNoteDialog = false
-                    navigationActions.navigateTo(Screen.EDIT_NOTE)
-                },
-                action = "Create"
-            )
-
+                        folderId = parentFolderId.value)
+                noteViewModel.addNote(note, userViewModel.currentUser.value!!.uid)
+                noteViewModel.selectedNote(note)
+                showCreateNoteDialog = false
+                navigationActions.navigateTo(Screen.EDIT_NOTE)
+              },
+              action = "Create")
         }
-
 
         // Logic to show the dialog to create a folder
         if (showCreateFolderDialog) {
-            FolderDialog(
-                onDismiss = { showCreateFolderDialog = false },
-                onConfirm = { newName, visibility ->
-                    folderViewModel.addFolder(
-                        Folder(
-                            id = folderViewModel.getNewFolderId(),
-                            name = newName,
-                            userId = userViewModel.currentUser.value!!.uid,
-                            parentFolderId = parentFolderId.value,
-                            visibility = visibility),
-                        userViewModel.currentUser.value!!.uid)
-                    showCreateFolderDialog = false
-                    if (parentFolderId.value != null) {
-                        navigationActions.navigateTo(Screen.FOLDER_CONTENTS)
-                    } else {
-                        navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
-                    }
-                },
-                action = "Create")
+          FolderDialog(
+              onDismiss = { showCreateFolderDialog = false },
+              onConfirm = { newName, visibility ->
+                folderViewModel.addFolder(
+                    Folder(
+                        id = folderViewModel.getNewFolderId(),
+                        name = newName,
+                        userId = userViewModel.currentUser.value!!.uid,
+                        parentFolderId = parentFolderId.value,
+                        visibility = visibility),
+                    userViewModel.currentUser.value!!.uid)
+                showCreateFolderDialog = false
+                if (parentFolderId.value != null) {
+                  navigationActions.navigateTo(Screen.FOLDER_CONTENTS)
+                } else {
+                  navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
+                }
+              },
+              action = "Create")
         }
-    }
+      }
 }
 
 /**
@@ -184,40 +180,40 @@ fun CreateItemFab(
     folderViewModel: FolderViewModel,
     navigationActions: NavigationActions
 ) {
-    CustomDropDownMenu(
-        modifier = Modifier.testTag("createNoteOrFolder"),
-        menuItems =
-        listOf(
-            CustomDropDownMenuItem(
-                text = { Text("Create note") },
-                icon = {
+  CustomDropDownMenu(
+      modifier = Modifier.testTag("createNoteOrFolder"),
+      menuItems =
+          listOf(
+              CustomDropDownMenuItem(
+                  text = { Text("Create note") },
+                  icon = {
                     Icon(
                         painter = painterResource(id = R.drawable.add_note_icon),
                         contentDescription = "AddNote")
-                },
-                onClick = {
+                  },
+                  onClick = {
                     onExpandedFabChange(false)
                     showCreateNoteDialog(true)
                     noteViewModel.selectedFolderId(null)
-                },
-                modifier = Modifier.testTag("createNote")),
-            CustomDropDownMenuItem(
-                text = { Text("Create folder") },
-                icon = {
+                  },
+                  modifier = Modifier.testTag("createNote")),
+              CustomDropDownMenuItem(
+                  text = { Text("Create folder") },
+                  icon = {
                     Icon(
                         painter = painterResource(id = R.drawable.folder_create_icon),
                         contentDescription = "createFolder")
-                },
-                onClick = {
+                  },
+                  onClick = {
                     onExpandedFabChange(false)
                     showCreateFolderDialog(true)
                     folderViewModel.selectedParentFolderId(null)
-                },
-                modifier = Modifier.testTag("createFolder"))),
-        fabIcon = { Icon(imageVector = Icons.Default.Add, contentDescription = "AddNote") },
-        expanded = expandedFab,
-        onFabClick = { onExpandedFabChange(true) },
-        onDismissRequest = { onExpandedFabChange(false) })
+                  },
+                  modifier = Modifier.testTag("createFolder"))),
+      fabIcon = { Icon(imageVector = Icons.Default.Add, contentDescription = "AddNote") },
+      expanded = expandedFab,
+      onFabClick = { onExpandedFabChange(true) },
+      onDismissRequest = { onExpandedFabChange(false) })
 }
 
 /**
@@ -245,35 +241,35 @@ fun OverviewScreenGrid(
     context: Context,
     navigationActions: NavigationActions
 ) {
-    CustomLazyGrid(
-        modifier =
-        Modifier.fillMaxSize()
-            .padding(top = 20.dp, bottom = paddingValues.calculateBottomPadding()),
-        notes = userRootNotes,
-        folders = userRootFolders,
-        gridModifier =
-        Modifier.fillMaxWidth()
-            .padding(horizontal = 16.dp)
-            .padding(paddingValues)
-            .testTag("noteAndFolderList"),
-        folderViewModel = folderViewModel,
-        noteViewModel = noteViewModel,
-        userViewModel = userViewModel,
-        context = context,
-        navigationActions = navigationActions,
-        paddingValues = paddingValues,
-        columnContent = {
-            Text(
-                modifier = Modifier.testTag("emptyNoteAndFolderPrompt"),
-                text = "You have no notes or folders yet.",
-                color = MaterialTheme.colorScheme.onBackground)
-            Spacer(modifier = Modifier.height(50.dp))
-            RefreshButton {
-                userViewModel.currentUser.value?.let { noteViewModel.getRootNotesFrom(it.uid) }
-                userViewModel.currentUser.value?.let { folderViewModel.getRootFoldersFromUid(it.uid) }
-            }
-            Spacer(modifier = Modifier.height(20.dp))
-        })
+  CustomLazyGrid(
+      modifier =
+          Modifier.fillMaxSize()
+              .padding(top = 20.dp, bottom = paddingValues.calculateBottomPadding()),
+      notes = userRootNotes,
+      folders = userRootFolders,
+      gridModifier =
+          Modifier.fillMaxWidth()
+              .padding(horizontal = 16.dp)
+              .padding(paddingValues)
+              .testTag("noteAndFolderList"),
+      folderViewModel = folderViewModel,
+      noteViewModel = noteViewModel,
+      userViewModel = userViewModel,
+      context = context,
+      navigationActions = navigationActions,
+      paddingValues = paddingValues,
+      columnContent = {
+        Text(
+            modifier = Modifier.testTag("emptyNoteAndFolderPrompt"),
+            text = "You have no notes or folders yet.",
+            color = MaterialTheme.colorScheme.onBackground)
+        Spacer(modifier = Modifier.height(50.dp))
+        RefreshButton {
+          userViewModel.currentUser.value?.let { noteViewModel.getRootNotesFrom(it.uid) }
+          userViewModel.currentUser.value?.let { folderViewModel.getRootFoldersFromUid(it.uid) }
+        }
+        Spacer(modifier = Modifier.height(20.dp))
+      })
 }
 
 /**
@@ -283,14 +279,14 @@ fun OverviewScreenGrid(
  */
 @Composable
 fun RefreshButton(onClick: () -> Unit) {
-    ElevatedButton(
-        onClick = onClick,
-        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surface),
-        modifier = Modifier.testTag("refreshButton")) {
+  ElevatedButton(
+      onClick = onClick,
+      colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surface),
+      modifier = Modifier.testTag("refreshButton")) {
         Text("Refresh", color = MaterialTheme.colorScheme.onSurface)
         Icon(
             imageVector = Icons.Default.Refresh,
             contentDescription = "Refresh",
             tint = MaterialTheme.colorScheme.onSurface)
-    }
+      }
 }
