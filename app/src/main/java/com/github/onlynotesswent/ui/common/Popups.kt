@@ -76,6 +76,17 @@ fun ConfirmationPopup(title: String, text: String, onConfirm: () -> Unit, onDism
       })
 }
 
+/**
+ * Generic dialog for creating or renaming an item, such as a folder or a note.
+ *
+ * @param onDismiss callback to be invoked when the dialog is dismissed
+ * @param onConfirm callback to be invoked when the user confirms the new name and visibility
+ * @param action the action to be performed (e.g., "Create" or "Rename")
+ * @param oldVisibility the previous visibility of the item (if renaming), defaults to
+ *   [Visibility.PRIVATE]
+ * @param oldName the previous name of the item (if renaming), defaults to an empty string
+ * @param type the type of item (e.g., "Folder" or "Note") displayed in the dialog
+ */
 @Composable
 fun CreationDialog(
     onDismiss: () -> Unit,
