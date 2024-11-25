@@ -98,11 +98,11 @@ fun NoteItem(
                   val parentFolderId = folderViewModel.parentFolderId.value
                   if (parentFolderId != null) {
                     noteViewModel.updateNote(note.copy(folderId = parentFolderId), note.userId)
-                    val folderContentsScreen = Screen.FOLDER_CONTENTS.replace(
-                        oldValue = "{folderId}",
-                        newValue = parentFolderId)
+                    val folderContentsScreen =
+                        Screen.FOLDER_CONTENTS.replace(
+                            oldValue = "{folderId}", newValue = parentFolderId)
                     navigationActions.navigateTo(folderContentsScreen)
-                    //folderViewModel.getFolderById(parentFolderId)
+                    // folderViewModel.getFolderById(parentFolderId)
                   } else {
                     noteViewModel.updateNote(note.copy(folderId = null), note.userId)
                     navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)

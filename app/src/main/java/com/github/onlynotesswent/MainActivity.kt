@@ -93,18 +93,17 @@ fun OnlyNotesApp(
         EditNoteScreen(navigationActions, scanner, noteViewModel, userViewModel, fileViewModel)
       }
       composable(Screen.FOLDER_CONTENTS) { navBackStackEntry ->
-
         val folderId = navBackStackEntry.arguments?.getString("folderId")
         val selectedFolder by folderViewModel.selectedFolder.collectAsState()
         // Update the selected folder when the folder ID changes
         LaunchedEffect(folderId) {
-            if (folderId != null && folderId != "{folderId}") {
-                folderViewModel.getFolderById(folderId)
-            }
+          if (folderId != null && folderId != "{folderId}") {
+            folderViewModel.getFolderById(folderId)
+          }
         }
         // Wait until selected folder is updated to display the screen
         if (selectedFolder != null) {
-            FolderContentScreen(navigationActions, folderViewModel, noteViewModel, userViewModel)
+          FolderContentScreen(navigationActions, folderViewModel, noteViewModel, userViewModel)
         }
       }
       composable(Screen.EDIT_MARKDOWN) {
