@@ -96,8 +96,7 @@ class FlashcardRepositoryFirestoreTest {
     // Mock the behavior of the QuerySnapshot task
     `when`(mockQuery.get()).thenReturn(mockQueryTask)
     `when`(mockQueryTask.addOnSuccessListener(any())).thenAnswer { invocation ->
-      val listener =
-          invocation.getArgument<OnSuccessListener<QuerySnapshot>>(0)
+      val listener = invocation.getArgument<OnSuccessListener<QuerySnapshot>>(0)
       // Simulate a result being passed to the listener
       listener.onSuccess(mockQuerySnapshot)
       mockQueryTask
@@ -116,8 +115,7 @@ class FlashcardRepositoryFirestoreTest {
     // Mock the behavior of the DocumentReference get operation
     `when`(mockDocumentReference.get()).thenReturn(mockDocumentTask)
     `when`(mockDocumentTask.addOnSuccessListener(any())).thenAnswer { invocation ->
-      val listener =
-          invocation.getArgument<OnSuccessListener<DocumentSnapshot>>(0)
+      val listener = invocation.getArgument<OnSuccessListener<DocumentSnapshot>>(0)
       listener.onSuccess(mockDocumentSnapshot)
       mockDocumentTask
     }

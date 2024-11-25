@@ -87,7 +87,7 @@ class FlashcardViewModelTest {
       onSuccess(listOf(flashcard))
     }
     flashcardViewModel.getFlashcardsByFolder(flashcard.folderId!!, { assert(true) })
-      assertEquals(flashcardViewModel.folderFlashcards.value, listOf(flashcard))
+    assertEquals(flashcardViewModel.folderFlashcards.value, listOf(flashcard))
   }
 
   @Test
