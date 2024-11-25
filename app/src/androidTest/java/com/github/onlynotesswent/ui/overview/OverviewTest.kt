@@ -213,7 +213,7 @@ class OverviewTest {
     composeTestRule.onNodeWithTag("createNoteOrFolder").performClick()
     composeTestRule.onNodeWithTag("createNote").assertIsDisplayed()
     composeTestRule.onNodeWithTag("createNote").performClick()
-    composeTestRule.onNodeWithTag("noteDialog").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("NoteDialog").assertIsDisplayed()
   }
 
   @Test
@@ -223,7 +223,7 @@ class OverviewTest {
     composeTestRule.onNodeWithTag("createNoteOrFolder").performClick()
     composeTestRule.onNodeWithTag("createFolder").assertIsDisplayed()
     composeTestRule.onNodeWithTag("createFolder").performClick()
-    composeTestRule.onNodeWithTag("folderDialog").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("FolderDialog").assertIsDisplayed()
   }
 
   @Test
