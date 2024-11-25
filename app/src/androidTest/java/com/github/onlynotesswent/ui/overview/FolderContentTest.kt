@@ -165,7 +165,7 @@ class FolderContentTest {
     composeTestRule.onNodeWithTag("renameFolderButton").assertIsDisplayed()
     composeTestRule.onNodeWithTag("deleteFolderButton").assertIsDisplayed()
     composeTestRule.onNodeWithTag("renameFolderButton").performClick()
-    composeTestRule.onNodeWithTag("folderDialog").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("FolderDialog").assertIsDisplayed()
     composeTestRule.onNodeWithTag("confirmFolderAction").assertIsDisplayed()
     composeTestRule.onNodeWithTag("confirmFolderAction").performClick()
   }
