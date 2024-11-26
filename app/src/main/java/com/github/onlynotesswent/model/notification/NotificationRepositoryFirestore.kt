@@ -20,12 +20,16 @@ class NotificationRepositoryFirestore(private val db: FirebaseFirestore) : Notif
           receiverId = document.getString("receiverId")!!,
           timestamp = document.getTimestamp("timestamp")!!,
           read = document.getBoolean("read")!!,
-          type = Notification.Type.valueOf(document.getString("type")!!))
+          type = Notification.NotificationType.valueOf(document.getString("type")!!))
     } catch (e: Exception) {
       Log.e(TAG, "Failed to convert document snapshot to notification", e)
       null
     }
   }
+
+    override fun getNewUid(): String {
+        return db.collection(collectionPath).document().id
+    }
 
   override fun init(onSuccess: () -> Unit) {
     Firebase.auth.addAuthStateListener {
