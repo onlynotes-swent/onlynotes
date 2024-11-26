@@ -20,6 +20,7 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.timeout
+import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
@@ -106,14 +107,14 @@ class UserViewModelTest {
     }
 
     // Mock the delete user method to call onSuccess
-    `when`(mockRepositoryFirestore.deleteUserById(eq("1"), any(), any())).thenAnswer {
+    `when`(mockRepositoryFirestore.deleteUserById(eq("1"), any(), any(), any())).thenAnswer {
       val onSuccess = it.arguments[1] as () -> Unit
       onSuccess()
     }
     // Mock the addFollowerTo method to call onSuccess
     `when`(
             mockRepositoryFirestore.addFollowerTo(
-                anyString(), anyString(), anyBoolean(), anyOrNull(), anyOrNull()))
+                anyString(), anyString(), anyBoolean(), any(), any()))
         .thenAnswer {
           val onSuccess = it.arguments[3] as () -> Unit
           onSuccess()
@@ -121,7 +122,7 @@ class UserViewModelTest {
     // Mock the removeFollowerFrom method to call onSuccess
     `when`(
             mockRepositoryFirestore.removeFollowerFrom(
-                anyString(), anyString(), anyBoolean(), anyOrNull(), anyOrNull()))
+                anyString(), anyString(), anyBoolean(), any(), any()))
         .thenAnswer {
           val onSuccess = it.arguments[3] as () -> Unit
           onSuccess()
@@ -138,7 +139,7 @@ class UserViewModelTest {
 
   @Test
   fun `init should call repository init`() {
-    verify(mockRepositoryFirestore, timeout(1000)).init(any(), any())
+    verify(mockRepositoryFirestore).init(any(), any())
   }
 
   @Test
@@ -146,7 +147,7 @@ class UserViewModelTest {
     userViewModel.refreshCurrentUser()
     assertNull(userViewModel.currentUser.value) // no current user is set, cannot refresh
 
-    userViewModel.addUser(user, {}, {}) // set current user
+    userViewModel.addUser(user) // set current user
     assert(userViewModel.currentUser.value == user)
 
     // Mock getUserById to return the other user, this will be called by refreshUser
@@ -156,6 +157,76 @@ class UserViewModelTest {
     }
     userViewModel.refreshCurrentUser()
     assert(userViewModel.currentUser.value == otherUser) // user was correctly refreshed
+  }
+
+  @Test
+  fun `refreshUser user not found`() {
+
+    userViewModel.addUser(user) // set current user
+    assert(userViewModel.currentUser.value == user)
+
+    // Mock getUserById, this will be called by refreshUser
+    `when`(mockRepositoryFirestore.getUserById(eq("1"), any(), any(), any())).thenAnswer {
+      val onUserNotFound = it.arguments[2] as () -> Unit
+      onUserNotFound()
+    }
+    userViewModel.refreshCurrentUser(onUserNotFound = { assert(true) })
+    assert(userViewModel.currentUser.value == null)
+  }
+
+  @Test
+  fun `refreshUser failed`() {
+    val testException = Exception("Test exception")
+
+    userViewModel.addUser(user) // set current user
+    assert(userViewModel.currentUser.value == user)
+
+    // Mock getUserById to return failure, this will be called by refreshUser
+    `when`(mockRepositoryFirestore.getUserById(eq("1"), any(), any(), any())).thenAnswer {
+      val onFailure = it.arguments[3] as (Exception) -> Unit
+      onFailure(testException)
+    }
+    userViewModel.refreshCurrentUser(
+        onFailure = {
+          assert(true)
+          assertEquals(it, testException)
+        })
+    assert(userViewModel.currentUser.value == null)
+  }
+
+  @Test
+  fun `refreshProfileUser refreshes user`() {
+    // Mock getUserById to return the other user, this will be called by refreshProfileUser
+    `when`(mockRepositoryFirestore.getUserById(eq(otherUser.uid), any(), any(), any())).thenAnswer {
+      val onSuccess = it.arguments[1] as (User) -> Unit
+      onSuccess(otherUser)
+    }
+    userViewModel.refreshProfileUser(otherUser.uid, onSuccess = { assert(true) })
+    assert(userViewModel.profileUser.value == otherUser) // user was correctly refreshed
+
+    // Mock getUserById to return userNotFound, this will be called by refreshProfileUser
+    `when`(mockRepositoryFirestore.getUserById(eq(otherUser.uid), any(), any(), any())).thenAnswer {
+      val onUserNotFound = it.arguments[2] as () -> Unit
+      onUserNotFound()
+    }
+    userViewModel.refreshProfileUser(otherUser.uid, onUserNotFound = { assert(true) })
+    assert(userViewModel.profileUser.value == null)
+
+    // Mock getUserById to return failure, this will be called by refreshProfileUser
+    val testException = Exception("Test exception")
+
+    // Mock getUserById to return failure, this will be called by refreshUser
+    `when`(mockRepositoryFirestore.getUserById(eq(otherUser.uid), any(), any(), any())).thenAnswer {
+      val onFailure = it.arguments[3] as (Exception) -> Unit
+      onFailure(testException)
+    }
+    userViewModel.refreshProfileUser(
+        uid = otherUser.uid,
+        onFailure = {
+          assert(true)
+          assertEquals(it, testException)
+        })
+    assert(userViewModel.profileUser.value == null)
   }
 
   @Test
@@ -169,7 +240,7 @@ class UserViewModelTest {
   fun `addUser should call repository addUser and set current user`() {
     var onSuccessCalled = false
     userViewModel.addUser(user, { onSuccessCalled = true }, { assert(false) })
-    verify(mockRepositoryFirestore, timeout(1000)).addUser(any(), anyOrNull(), anyOrNull())
+    verify(mockRepositoryFirestore).addUser(any(), any(), any())
     assertEquals(user, userViewModel.currentUser.value)
     assert(onSuccessCalled)
   }
@@ -177,19 +248,19 @@ class UserViewModelTest {
   @Test
   fun `updateUser should call repository updateUser and set current user`() {
     // Initialize the currentUser
-    userViewModel.addUser(user, {}, {})
+    userViewModel.addUser(user)
 
     var onSuccessCalled = false
     userViewModel.updateUser(user, { onSuccessCalled = true }, { assert(false) })
-    verify(mockRepositoryFirestore, timeout(1000)).updateUser(any(), anyOrNull(), anyOrNull())
+    verify(mockRepositoryFirestore).updateUser(any(), any(), any())
     assertEquals(user, userViewModel.currentUser.value)
     assert(onSuccessCalled)
   }
 
   @Test
   fun `getAllUsers should call repository getAllUsers`() {
-    userViewModel.getAllUsers()
-    verify(mockRepositoryFirestore, timeout(1000)).getAllUsers(anyOrNull(), anyOrNull())
+    userViewModel.getAllUsers({ assert(true) }, { assert(false) })
+    verify(mockRepositoryFirestore).getAllUsers(any(), any())
     assert(userViewModel.allUsers.value.isNotEmpty())
   }
 
@@ -197,9 +268,15 @@ class UserViewModelTest {
   fun `getUserById should call repository getUserById`() {
     var returnedUser: User? = null
     userViewModel.getUserById(user.uid, { returnedUser = it }, { assert(false) }, { assert(false) })
-    verify(mockRepositoryFirestore, timeout(1000)).getUserById(anyString(), any(), any(), any())
+    verify(mockRepositoryFirestore).getUserById(anyString(), any(), any(), any())
     assertNotNull(returnedUser)
     assertEquals(user, returnedUser!!)
+  }
+
+  @Test
+  fun `getUserById with default parameters calls repository`() {
+    userViewModel.getUserById(user.uid)
+    verify(mockRepositoryFirestore).getUserById(anyString(), any(), any(), any())
   }
 
   @Test
@@ -207,18 +284,29 @@ class UserViewModelTest {
     var returnedUser: User? = null
     userViewModel.getCurrentUserByEmail(
         user.email, { returnedUser = it }, { assert(false) }, { assert(false) })
-    verify(mockRepositoryFirestore, timeout(1000)).getUserByEmail(anyString(), any(), any(), any())
+    verify(mockRepositoryFirestore).getUserByEmail(anyString(), any(), any(), any())
     assertNotNull(returnedUser)
     assertEquals(user, returnedUser!!)
+  }
+
+  @Test
+  fun `getCurrentUserByEmail with default parameters calls repository`() {
+    userViewModel.getCurrentUserByEmail(user.email)
+    verify(mockRepositoryFirestore).getUserByEmail(anyString(), any(), any(), any())
   }
 
   @Test
   fun `deleteUserById should call repository deleteUserById`() {
     var onSuccessCalled = false
     userViewModel.deleteUserById(user.uid, { onSuccessCalled = true }, { assert(false) })
-    verify(mockRepositoryFirestore, timeout(1000))
-        .deleteUserById(anyString(), anyOrNull(), anyOrNull())
+    verify(mockRepositoryFirestore).deleteUserById(anyString(), any(), any(), any())
     assert(onSuccessCalled)
+  }
+
+  @Test
+  fun `deleteUserById with default parameters calls repository`() {
+    userViewModel.deleteUserById(user.uid)
+    verify(mockRepositoryFirestore).deleteUserById(any(), any(), any(), any())
   }
 
   @Test
@@ -234,11 +322,16 @@ class UserViewModelTest {
     // Call followUser with a logged in user
     var onSuccessCalled = false
     userViewModel.followUser("2", { onSuccessCalled = true }, { assert(false) })
-    verify(mockRepositoryFirestore, timeout(1000))
-        .getUserById(eq("2"), anyOrNull(), anyOrNull(), anyOrNull())
-    verify(mockRepositoryFirestore, timeout(1000))
-        .addFollowerTo(eq("2"), eq("1"), anyBoolean(), anyOrNull(), anyOrNull())
+    verify(mockRepositoryFirestore).addFollowerTo(eq("2"), eq("1"), anyBoolean(), any(), any())
+    verify(mockRepositoryFirestore).getUserById(eq("2"), any(), any(), any())
     assert(onSuccessCalled)
+  }
+
+  @Test
+  fun `followUser with default parameters calls repository`() {
+    userViewModel.addUser(user)
+    userViewModel.followUser("1")
+    verify(mockRepositoryFirestore).addFollowerTo(any(), eq("1"), any(), any(), any())
   }
 
   @Test
@@ -252,11 +345,12 @@ class UserViewModelTest {
 
     userViewModel.addUser(user, { assert(true) }, { assert(false) })
 
-    // Call unfollowUser with a logged in user
+    // Call unfollowUser with a logged in user, and also test with default value
     var onSuccessCalled = false
     userViewModel.unfollowUser("3", { onSuccessCalled = true }, { assert(false) })
-    verify(mockRepositoryFirestore, timeout(1000))
-        .removeFollowerFrom(eq("3"), eq("1"), anyBoolean(), anyOrNull(), anyOrNull())
+    userViewModel.unfollowUser("3")
+    verify(mockRepositoryFirestore, times(2))
+        .removeFollowerFrom(eq("3"), eq("1"), anyBoolean(), any(), any())
     assert(onSuccessCalled)
   }
 
@@ -281,10 +375,8 @@ class UserViewModelTest {
           onSuccessCalled = true
         },
         { assert(false) })
-    verify(mockRepositoryFirestore, timeout(1000))
-        .getUserById(eq("1"), anyOrNull(), anyOrNull(), anyOrNull())
-    verify(mockRepositoryFirestore, timeout(1000))
-        .getUsersById(eq(listOf("3")), anyOrNull(), anyOrNull())
+    verify(mockRepositoryFirestore).getUserById(eq("1"), any(), any(), any())
+    verify(mockRepositoryFirestore).getUsersById(eq(listOf("3")), any(), any())
 
     assert(onSuccessCalled)
     assert(returnedUsers.isNotEmpty())
@@ -308,11 +400,16 @@ class UserViewModelTest {
           onSuccessCalled = true
         },
         { assert(false) })
-    verify(mockRepositoryFirestore, timeout(1000))
-        .getUserById(eq("1"), anyOrNull(), anyOrNull(), anyOrNull())
+    verify(mockRepositoryFirestore).getUserById(eq("1"), any(), any(), any())
 
     assert(onSuccessCalled)
     assert(returnedUsers.isEmpty())
+  }
+
+  @Test
+  fun `getFollowersFrom with default parameters calls repository`() {
+    userViewModel.getFollowersFrom("1")
+    verify(mockRepositoryFirestore).getUserById(eq("1"), any(), any(), any())
   }
 
   @Test
@@ -336,10 +433,8 @@ class UserViewModelTest {
           onSuccessCalled = true
         },
         { assert(false) })
-    verify(mockRepositoryFirestore, timeout(1000))
-        .getUserById(eq("1"), anyOrNull(), anyOrNull(), anyOrNull())
-    verify(mockRepositoryFirestore, timeout(1000))
-        .getUsersById(eq(listOf("3")), anyOrNull(), anyOrNull())
+    verify(mockRepositoryFirestore).getUserById(eq("1"), any(), any(), any())
+    verify(mockRepositoryFirestore).getUsersById(eq(listOf("3")), any(), any())
 
     assert(onSuccessCalled)
     assert(returnedUsers.isNotEmpty())
@@ -363,11 +458,16 @@ class UserViewModelTest {
           onSuccessCalled = true
         },
         { assert(false) })
-    verify(mockRepositoryFirestore, timeout(1000))
-        .getUserById(eq("1"), anyOrNull(), anyOrNull(), anyOrNull())
+    verify(mockRepositoryFirestore).getUserById(eq("1"), any(), any(), any())
 
     assert(onSuccessCalled)
     assert(returnedUsers.isEmpty())
+  }
+
+  @Test
+  fun `getFollowingFrom with default parameters calls repository`() {
+    userViewModel.getFollowingFrom("1")
+    verify(mockRepositoryFirestore).getUserById(eq("1"), any(), any(), any())
   }
 
   @Test

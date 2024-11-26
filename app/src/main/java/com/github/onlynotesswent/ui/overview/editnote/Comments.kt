@@ -68,8 +68,7 @@ fun CommentsScreen(
             onClick = {
               val commentsNotEmpty = updatedComments.commentsList.filter { it.content.isNotEmpty() }
               noteViewModel.updateNote(
-                  note!!.copy(comments = Note.CommentCollection(commentsNotEmpty)),
-                  currentUser!!.uid)
+                  note!!.copy(comments = Note.CommentCollection(commentsNotEmpty)))
             })
       },
       bottomBar = {
@@ -79,8 +78,7 @@ fun CommentsScreen(
             onClick = {
               val commentsNotEmpty = updatedComments.commentsList.filter { it.content.isNotEmpty() }
               noteViewModel.updateNote(
-                  note!!.copy(comments = Note.CommentCollection(commentsNotEmpty)),
-                  currentUser!!.uid)
+                  note!!.copy(comments = Note.CommentCollection(commentsNotEmpty)))
               noteViewModel.getNoteById(note!!.id)
             })
       }) { paddingValues ->

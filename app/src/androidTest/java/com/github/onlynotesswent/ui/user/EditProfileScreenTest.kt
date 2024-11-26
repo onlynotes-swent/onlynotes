@@ -107,7 +107,7 @@ class EditProfileScreenTest {
         onSuccess()
       }
     }
-    `when`(mockUserRepository.deleteUserById(any(), any(), any())).thenAnswer {
+    `when`(mockUserRepository.deleteUserById(any(), any(), any(), any())).thenAnswer {
       val onSuccess = it.arguments[1] as () -> Unit
       onSuccess()
     }
@@ -429,7 +429,7 @@ class EditProfileScreenTest {
     composeTestRule.onNodeWithTag("confirmDeleteButton").assertIsEnabled()
     composeTestRule.onNodeWithTag("confirmDeleteButton").performClick()
 
-    verify(mockUserRepository).deleteUserById(eq(testUid), any(), any())
+    verify(mockUserRepository).deleteUserById(eq(testUid), any(), any(), any())
     verify(mockNoteRepository).deleteNotesByUserId(eq(testUid), any(), any())
     verify(mockFolderRepository).deleteFoldersByUserId(eq(testUid), any(), any())
     verify(mockFileRepository).deleteFile(eq(testUid), any(), any(), any(), any())
