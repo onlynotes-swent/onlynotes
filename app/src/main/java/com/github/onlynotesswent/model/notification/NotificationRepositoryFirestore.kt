@@ -30,11 +30,11 @@ class NotificationRepositoryFirestore(private val db: FirebaseFirestore) : Notif
     }
   }
 
-    override fun getNewUid(): String {
-        return db.collection(collectionPath).document().id
-    }
+  override fun getNewUid(): String {
+    return db.collection(collectionPath).document().id
+  }
 
-    override fun getNotificationById(
+  override fun getNotificationById(
       id: String,
       onSuccess: (Notification) -> Unit,
       onNotificationNotFound: () -> Unit,

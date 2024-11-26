@@ -20,7 +20,7 @@ import androidx.compose.material.icons.automirrored.outlined.ExitToApp
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.filled.Inbox
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
@@ -462,7 +462,11 @@ fun FollowUnfollowButton(userViewModel: UserViewModel, otherUserId: String) {
  * @param followerId The ID of the follower to remove.
  */
 @Composable
-fun RemoveFollowerButton(userViewModel: UserViewModel, followerId: String) {
+fun RemoveFollowerButton(
+    userViewModel: UserViewModel,
+    followerId: String,
+    expanded: MutableState<Boolean>?
+) {
   OutlinedButton(
       contentPadding = PaddingValues(horizontal = 10.dp),
       shape = RoundedCornerShape(25),
@@ -470,8 +474,20 @@ fun RemoveFollowerButton(userViewModel: UserViewModel, followerId: String) {
       onClick = {
         userViewModel.removeFollower(
             followerId,
-            { userViewModel.profileUser.value?.let { userViewModel.refreshProfileUser(it.uid) } },
+            {
+              userViewModel.profileUser.value?.let { userViewModel.refreshProfileUser(it.uid) }
+              // this code will close the bottom sheet after removing the follower (this is a
+              // workaround to refresh the bottom sheet)
+              if (expanded != null) {
+                expanded.value = false
+              }
+            },
             {})
+        // this will re-open the bottom sheet after removing the follower (this is a workaround to
+        // refresh the bottom sheet)
+        if (expanded != null) {
+          expanded.value = true
+        }
       }) {
         Text(
             "Remove",
@@ -526,10 +542,15 @@ fun UserBottomSheet(
                     modifier = Modifier.fillMaxWidth().padding(start = 30.dp, end = 10.dp),
                     horizontalAlignment = Alignment.Start) {
                       users.value.forEach { user ->
-                        UserItem(user, userViewModel, fileViewModel, isFollowerSheetOfCurrentUser) {
-                          expanded.value = false
-                          switchProfileTo(user, userViewModel, navigationActions)
-                        }
+                        UserItem(
+                            user,
+                            userViewModel,
+                            fileViewModel,
+                            isFollowerSheetOfCurrentUser,
+                            expanded) {
+                              expanded.value = false
+                              switchProfileTo(user, userViewModel, navigationActions)
+                            }
                       }
                     }
               }
@@ -553,6 +574,7 @@ fun UserItem(
     userViewModel: UserViewModel,
     fileViewModel: FileViewModel,
     isFollowerSheetOfCurrentUser: Boolean = false,
+    expanded: MutableState<Boolean>? = null,
     onClick: () -> Unit,
 ) {
   Row(
@@ -573,7 +595,7 @@ fun UserItem(
           Text(user.userHandle(), style = Typography.bodyLarge, modifier = Modifier.alpha(0.7f))
         }
     if (isFollowerSheetOfCurrentUser) {
-      RemoveFollowerButton(userViewModel, user.uid)
+      RemoveFollowerButton(userViewModel, user.uid, expanded)
     } else if (user.uid != userViewModel.currentUser.collectAsState().value!!.uid) {
       FollowUnfollowButton(userViewModel, user.uid)
     }
@@ -672,7 +694,8 @@ fun NotificationButton(
       },
   ) {
     Icon(
-        imageVector = Icons.Default.Inbox,
+        // notification icon
+        imageVector = Icons.Default.Notifications,
         contentDescription = "Notifications",
         tint =
             if (unreadNotificationsCount > 0) MaterialTheme.colorScheme.primary

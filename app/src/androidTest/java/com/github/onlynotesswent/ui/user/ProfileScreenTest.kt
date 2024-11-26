@@ -15,6 +15,7 @@ import com.github.onlynotesswent.model.file.FileRepository
 import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.note.NoteRepository
 import com.github.onlynotesswent.model.note.NoteViewModel
+import com.github.onlynotesswent.model.notification.NotificationRepository
 import com.github.onlynotesswent.model.user.Friends
 import com.github.onlynotesswent.model.user.User
 import com.github.onlynotesswent.model.user.UserRepository
@@ -39,9 +40,11 @@ class ProfileScreenTest {
   @Mock private lateinit var mockNavigationActions: NavigationActions
   @Mock private lateinit var mockNoteRepository: NoteRepository
   @Mock private lateinit var mockFileRepository: FileRepository
+  @Mock private lateinit var mockNotificationRepository: NotificationRepository
   private lateinit var noteViewModel: NoteViewModel
   private lateinit var userViewModel: UserViewModel
   private lateinit var fileViewModel: FileViewModel
+
 
   private val testUid = "testUid"
   private val testUid2 = "testUid2"

@@ -1,5 +1,6 @@
 package com.github.onlynotesswent.model.user
 
+import com.github.onlynotesswent.model.notification.NotificationRepositoryFirestore
 import com.google.firebase.FirebaseApp
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
@@ -29,6 +30,7 @@ import org.robolectric.annotation.Config
 class UserViewModelTest {
 
   @Mock private lateinit var mockRepositoryFirestore: UserRepositoryFirestore
+  @Mock private lateinit var mockRepostioryFirestoreNotification: NotificationRepositoryFirestore
   private lateinit var userViewModel: UserViewModel
 
   private val user =
@@ -56,6 +58,7 @@ class UserViewModelTest {
   @Before
   fun setUp() {
     mockRepositoryFirestore = mock(UserRepositoryFirestore::class.java)
+    mockRepostioryFirestoreNotification = mock(NotificationRepositoryFirestore::class.java)
     val mockFirebaseAuth = mock(FirebaseAuth::class.java)
     val mockFirebaseUser = mock(FirebaseUser::class.java)
 
@@ -124,12 +127,13 @@ class UserViewModelTest {
           onSuccess()
         }
 
+    `when`(mockRepostioryFirestoreNotification.getNewUid()).thenReturn("1")
     // Initialize FirebaseApp with Robolectric context
     val context = org.robolectric.RuntimeEnvironment.getApplication()
     FirebaseApp.initializeApp(context)
 
     // Initialize UserViewModel with the mocked repository and FirebaseAuth
-    userViewModel = UserViewModel(mockRepositoryFirestore)
+    userViewModel = UserViewModel(mockRepositoryFirestore,mockRepostioryFirestoreNotification)
   }
 
   @Test

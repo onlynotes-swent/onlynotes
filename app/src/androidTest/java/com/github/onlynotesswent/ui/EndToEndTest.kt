@@ -35,6 +35,8 @@ import com.github.onlynotesswent.model.folder.FolderViewModel
 import com.github.onlynotesswent.model.note.Note
 import com.github.onlynotesswent.model.note.NoteRepository
 import com.github.onlynotesswent.model.note.NoteViewModel
+import com.github.onlynotesswent.model.notification.NotificationRepository
+import com.github.onlynotesswent.model.notification.NotificationViewModel
 import com.github.onlynotesswent.model.user.Friends
 import com.github.onlynotesswent.model.user.User
 import com.github.onlynotesswent.model.user.UserRepository
@@ -79,6 +81,8 @@ class EndToEndTest {
   private lateinit var folderViewModel: FolderViewModel
   @Mock private lateinit var fileRepository: FileRepository
   private lateinit var fileViewModel: FileViewModel
+  @Mock private lateinit var notificationRepository: NotificationRepository
+  private lateinit var notificationViewModel: NotificationViewModel
 
   @Mock private lateinit var profilePictureTaker: ProfilePictureTaker
   @Mock private lateinit var scanner: Scanner
@@ -136,6 +140,7 @@ class EndToEndTest {
     noteViewModel = NoteViewModel(noteRepository)
     folderViewModel = FolderViewModel(folderRepository)
     fileViewModel = FileViewModel(fileRepository)
+    notificationViewModel  = NotificationViewModel(notificationRepository)
 
     // Initialize Intents for handling navigation intents in the test
     Intents.init()
@@ -200,10 +205,10 @@ class EndToEndTest {
                     route = Route.PROFILE,
                 ) {
                   composable(Screen.USER_PROFILE) {
-                    UserProfileScreen(navigationActions, userViewModel, fileViewModel)
+                    UserProfileScreen(navigationActions, userViewModel, fileViewModel,notificationViewModel)
                   }
                   composable(Screen.PUBLIC_PROFILE) {
-                    PublicProfileScreen(navigationActions, userViewModel, fileViewModel)
+                    PublicProfileScreen(navigationActions, userViewModel, fileViewModel,notificationViewModel)
                   }
                   composable(Screen.EDIT_PROFILE) {
                     EditProfileScreen(
@@ -212,7 +217,7 @@ class EndToEndTest {
                         profilePictureTaker,
                         fileViewModel,
                         noteViewModel,
-                        folderViewModel)
+                        folderViewModel, notificationViewModel)
                   }
                 }
               }

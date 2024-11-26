@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
-class NotificationViewModel(private val repository: NotificationRepository): ViewModel() {
+class NotificationViewModel(private val repository: NotificationRepository) : ViewModel() {
   private val _userNotifications = MutableStateFlow<List<Notification>>(emptyList())
   val userNotifications: StateFlow<List<Notification>> = _userNotifications.asStateFlow()
 

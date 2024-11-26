@@ -13,9 +13,9 @@ data class Notification(
     val type: NotificationType = NotificationType.DEFAULT
 ) {
   enum class NotificationType {
-                              FOLLOW_REQUEST,
-      FOLLOW_REQUEST_ACCEPTED,
-      FOLLOW_REQUEST_REJECTED,
+    FOLLOW_REQUEST,
+    FOLLOW_REQUEST_ACCEPTED,
+    FOLLOW_REQUEST_REJECTED,
     CHAT_MESSAGE,
     COMMENT,
     LIKE,

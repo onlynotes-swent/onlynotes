@@ -70,7 +70,8 @@ fun OnlyNotesApp(
   val noteViewModel: NoteViewModel = viewModel(factory = NoteViewModel.Factory)
   val fileViewModel: FileViewModel = viewModel(factory = FileViewModel.Factory)
   val folderViewModel: FolderViewModel = viewModel(factory = FolderViewModel.Factory)
-  val notificationViewModel: NotificationViewModel = viewModel(factory = NotificationViewModel.Factory)
+  val notificationViewModel: NotificationViewModel =
+      viewModel(factory = NotificationViewModel.Factory)
 
   NavHost(navController = navController, startDestination = Route.AUTH) {
     navigation(

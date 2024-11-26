@@ -21,7 +21,11 @@ import kotlinx.coroutines.flow.asStateFlow
  *
  * @property repository The repository for managing user data.
  */
-class UserViewModel(private val repository: UserRepository,private val notificationRepository: NotificationRepository) : ViewModel() {
+class UserViewModel(
+    private val repository: UserRepository,
+    private val notificationRepository: NotificationRepository = NotificationRepositoryFirestore(
+        Firebase.firestore)
+) : ViewModel() {
 
   private val _allUsers = MutableStateFlow<List<User>>(emptyList())
   val allUsers: StateFlow<List<User>> = _allUsers.asStateFlow()
@@ -43,7 +47,11 @@ class UserViewModel(private val repository: UserRepository,private val notificat
   // Create factory
   companion object {
     val Factory: ViewModelProvider.Factory = viewModelFactory {
-      initializer { UserViewModel(UserRepositoryFirestore(Firebase.firestore), NotificationRepositoryFirestore(Firebase.firestore)) }
+      initializer {
+        UserViewModel(
+            UserRepositoryFirestore(Firebase.firestore),
+            NotificationRepositoryFirestore(Firebase.firestore))
+      }
     }
   }
 
@@ -219,24 +227,38 @@ class UserViewModel(private val repository: UserRepository,private val notificat
                 onSuccess()
               },
               onFailure)
+
+          // send notification to the user
+          if (!user.isAccountPublic) {
+            notificationRepository.addNotification(
+                Notification(
+                    notificationRepository.getNewUid(),
+                    "New Follow Request",
+                    _currentUser.value!!.userHandle() + " wants to follow you",
+                    _currentUser.value!!.uid,
+                    followingUID,
+                    Timestamp.now(),
+                    false,
+                    Notification.NotificationType.FOLLOW_REQUEST),
+                {},
+                { Log.e("UserViewModel", "Failed to send notification", it) })
+          } else {
+            notificationRepository.addNotification(
+                Notification(
+                    notificationRepository.getNewUid(),
+                    "New Follower",
+                    _currentUser.value!!.userHandle() + " is now following you",
+                    _currentUser.value!!.uid,
+                    followingUID,
+                    Timestamp.now(),
+                    false,
+                    Notification.NotificationType.FOLLOW),
+                {},
+                { Log.e("UserViewModel", "Failed to send notification", it) })
+          }
         },
         onUserNotFound = { onFailure(Exception("User not found")) },
         onFailure = onFailure)
-
-      notificationRepository.addNotification(
-          Notification(
-               notificationRepository.getNewUid(),
-                "New Follow Request",
-                _currentUser.value!!. userHandle()+" wants to follow you",
-                  _currentUser.value!!.uid,
-                 followingUID,
-                 Timestamp.now(),
-                    false,
-              Notification.NotificationType.FOLLOW_REQUEST
-            ),
-            {},
-          { Log.e("UserViewModel", "Failed to send notification", it) }
-      )
   }
 
   /**
@@ -279,18 +301,22 @@ class UserViewModel(private val repository: UserRepository,private val notificat
         },
         onFailure)
 
-      if(isRequest){
-          notificationRepository.getNotificationByReceiverId(followingUID, {notifications ->
-              notifications.forEach({
-                  notification ->
-                  if(notification.senderId == _currentUser.value!!.uid && notification.type == Notification.NotificationType.FOLLOW_REQUEST) {
-                      notificationRepository.deleteNotification(
-                          notification.id,
-                          {},
-                          { Log.e("UserViewModel", "Failed to delete notification", it) })
-                  }
-              })},{})
-      }
+    if (isRequest) {
+      notificationRepository.getNotificationByReceiverId(
+          followingUID,
+          { notifications ->
+            notifications.forEach({ notification ->
+              if (notification.senderId == _currentUser.value!!.uid &&
+                  notification.type == Notification.NotificationType.FOLLOW_REQUEST) {
+                notificationRepository.deleteNotification(
+                    notification.id,
+                    {},
+                    { Log.e("UserViewModel", "Failed to delete notification", it) })
+              }
+            })
+          },
+          {})
+    }
   }
 
   /**

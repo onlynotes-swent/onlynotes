@@ -25,7 +25,6 @@ import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.user.User
 import com.github.onlynotesswent.model.user.UserViewModel
 
-
 /**
  * Displays the user's thumbnail profile picture, by wrapping the NonModifiableProfilePicture
  * composable.
@@ -38,9 +37,8 @@ import com.github.onlynotesswent.model.user.UserViewModel
 fun ThumbnailPic(user: User?, fileViewModel: FileViewModel, size: Int = 40) {
   val profilePictureUri = remember { mutableStateOf("") }
   val userState = remember { mutableStateOf(user) }
-    NonModifiableProfilePicture(
-        userState, profilePictureUri, fileViewModel, size, "thumbnail--${user?.uid?:"default"}"
-    )
+  NonModifiableProfilePicture(
+      userState, profilePictureUri, fileViewModel, size, "thumbnail--${user?.uid?:"default"}")
 }
 
 /**
@@ -52,20 +50,19 @@ fun ThumbnailPic(user: User?, fileViewModel: FileViewModel, size: Int = 40) {
  * @param size The size of the profile picture.
  */
 @Composable
-fun ThumbnailPic(userid: String,userViewModel: UserViewModel, fileViewModel: FileViewModel, size: Int = 40) {
-    val profilePictureUri = remember { mutableStateOf("") }
-    val userState: MutableState<User?> = remember{(mutableStateOf(null))}
-    userViewModel.getUserById(userid, { user ->
-        userState.value=user
-    }, {
-    },{
-    })
+fun ThumbnailPic(
+    userid: String,
+    userViewModel: UserViewModel,
+    fileViewModel: FileViewModel,
+    size: Int = 40
+) {
+  val profilePictureUri = remember { mutableStateOf("") }
+  val userState: MutableState<User?> = remember { (mutableStateOf(null)) }
+  userViewModel.getUserById(userid, { user -> userState.value = user }, {}, {})
 
-    NonModifiableProfilePicture(
-        userState, profilePictureUri, fileViewModel, size, "thumbnail--${userid}"
-    )
+  NonModifiableProfilePicture(
+      userState, profilePictureUri, fileViewModel, size, "thumbnail--${userid}")
 }
-
 
 /**
  * Displays the user's profile picture.
@@ -84,40 +81,35 @@ fun NonModifiableProfilePicture(
     size: Int = 150,
     testTag: String = "profilePicture"
 ) {
-    Box(modifier = Modifier.size(size.dp)) {
-        // Download the profile picture from Firebase Storage if it hasn't been downloaded yet
-        if (user.value!=null&&user.value!!.hasProfilePicture && profilePictureUri.value.isBlank()) {
-            fileViewModel.downloadFile(
-                user.value!!.uid,
-                FileType.PROFILE_PIC_JPEG,
-                context = LocalContext.current,
-                onSuccess = { file -> profilePictureUri.value = file.absolutePath },
-                onFileNotFound = { Log.e("ProfilePicture", "Profile picture not found") },
-                onFailure = { e ->
-                    Log.e(
-                        "ProfilePicture",
-                        "Error downloading profile picture",
-                        e
-                    )
-                })
+  Box(modifier = Modifier.size(size.dp)) {
+    // Download the profile picture from Firebase Storage if it hasn't been downloaded yet
+    if (user.value != null && user.value!!.hasProfilePicture && profilePictureUri.value.isBlank()) {
+      fileViewModel.downloadFile(
+          user.value!!.uid,
+          FileType.PROFILE_PIC_JPEG,
+          context = LocalContext.current,
+          onSuccess = { file -> profilePictureUri.value = file.absolutePath },
+          onFileNotFound = { Log.e("ProfilePicture", "Profile picture not found") },
+          onFailure = { e -> Log.e("ProfilePicture", "Error downloading profile picture", e) })
+    }
+
+    // Profile Picture Painter
+    val painter =
+        if (user.value != null &&
+            user.value!!.hasProfilePicture &&
+            profilePictureUri.value.isNotBlank()) {
+          // Load the profile picture if it exists
+          rememberAsyncImagePainter(profilePictureUri.value)
+        } else {
+          // Load the default profile picture if it doesn't exist
+          rememberVectorPainter(Icons.Default.AccountCircle)
         }
 
-        // Profile Picture Painter
-        val painter =
-            if(user.value!=null&&user.value!!.hasProfilePicture && profilePictureUri.value.isNotBlank()) {
-                // Load the profile picture if it exists
-                rememberAsyncImagePainter(profilePictureUri.value)
-            } else {
-                // Load the default profile picture if it doesn't exist
-                rememberVectorPainter(Icons.Default.AccountCircle)
-            }
-
-        // Profile Picture
-        Image(
-            painter = painter,
-            contentDescription = "Profile Picture",
-            modifier = Modifier.testTag(testTag).size(size.dp).clip(CircleShape),
-            contentScale = ContentScale.Crop
-        )
-    }
+    // Profile Picture
+    Image(
+        painter = painter,
+        contentDescription = "Profile Picture",
+        modifier = Modifier.testTag(testTag).size(size.dp).clip(CircleShape),
+        contentScale = ContentScale.Crop)
+  }
 }
