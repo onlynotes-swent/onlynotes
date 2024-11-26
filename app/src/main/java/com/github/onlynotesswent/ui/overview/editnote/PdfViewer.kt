@@ -25,7 +25,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.github.onlynotesswent.R
 import com.github.onlynotesswent.model.file.FileType
 import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.note.NoteViewModel
@@ -140,8 +142,8 @@ fun PdfViewerScreen(
           // Confirmation dialog for deletion
           if (showDeleteConfirmation) {
             ConfirmationPopup(
-                title = "Delete PDF?",
-                text = "Are you sure you want to delete this PDF? This action cannot be undone.",
+                title = stringResource(R.string.delete_pdf),
+                text = stringResource(R.string.delete_pdf_text),
                 onConfirm = {
                   // Perform delete action
                   fileViewModel.deleteFile(uid = note!!.id, fileType = FileType.NOTE_PDF)
@@ -178,7 +180,7 @@ fun PdfViewerScreen(
       },
       topBar = {
         EditNoteTopBar(
-            title = "PDF",
+            title = stringResource(R.string.pdf),
             titleTestTag = "pdfTitle",
             noteViewModel = noteViewModel,
             navigationActions = navigationActions)
@@ -190,7 +192,8 @@ fun PdfViewerScreen(
       }) { paddingValues ->
         if (isLoading) {
           LoadingIndicator(
-              text = "Loading PDF...", modifier = Modifier.fillMaxSize().padding(paddingValues))
+              text = stringResource(R.string.loading_pdf),
+              modifier = Modifier.fillMaxSize().padding(paddingValues))
         } else if (pdfExists && pdfFile != null) {
           PdfRendererViewCompose(
               file = pdfFile!!,
@@ -201,7 +204,7 @@ fun PdfViewerScreen(
               modifier = Modifier.fillMaxSize().testTag("noPdfFound"),
               verticalArrangement = Arrangement.Center,
               horizontalAlignment = Alignment.CenterHorizontally) {
-                Text("No PDF found.")
+                Text(stringResource(R.string.no_pdf_found))
               }
         }
       }

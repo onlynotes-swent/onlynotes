@@ -31,6 +31,7 @@ import androidx.compose.ui.draganddrop.DragAndDropTransferData
 import androidx.compose.ui.draganddrop.toAndroidDragEvent
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -191,7 +192,8 @@ fun FolderDialog(
                 modifier = Modifier.testTag("inputFolderName"))
 
             OptionDropDownMenu(
-                value = visibility?.toReadableString() ?: "Choose visibility",
+                value =
+                    visibility?.toReadableString() ?: stringResource(R.string.choose_visibility),
                 expanded = expandedVisibility,
                 buttonTag = "visibilityButton",
                 menuTag = "visibilityMenu",
@@ -203,7 +205,7 @@ fun FolderDialog(
 
             Row(modifier = Modifier.fillMaxWidth(0.92f), horizontalArrangement = Arrangement.End) {
               Button(onClick = onDismiss, modifier = Modifier.testTag("dismissFolderAction")) {
-                Text("Cancel")
+                Text(stringResource(R.string.cancel))
               }
               Button(
                   enabled = name.isNotEmpty() && visibility != null,
