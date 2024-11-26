@@ -140,7 +140,7 @@ class EndToEndTest {
     noteViewModel = NoteViewModel(noteRepository)
     folderViewModel = FolderViewModel(folderRepository)
     fileViewModel = FileViewModel(fileRepository)
-    notificationViewModel  = NotificationViewModel(notificationRepository)
+    notificationViewModel = NotificationViewModel(notificationRepository)
 
     // Initialize Intents for handling navigation intents in the test
     Intents.init()
@@ -205,10 +205,12 @@ class EndToEndTest {
                     route = Route.PROFILE,
                 ) {
                   composable(Screen.USER_PROFILE) {
-                    UserProfileScreen(navigationActions, userViewModel, fileViewModel,notificationViewModel)
+                    UserProfileScreen(
+                        navigationActions, userViewModel, fileViewModel, notificationViewModel)
                   }
                   composable(Screen.PUBLIC_PROFILE) {
-                    PublicProfileScreen(navigationActions, userViewModel, fileViewModel,notificationViewModel)
+                    PublicProfileScreen(
+                        navigationActions, userViewModel, fileViewModel, notificationViewModel)
                   }
                   composable(Screen.EDIT_PROFILE) {
                     EditProfileScreen(
@@ -217,7 +219,8 @@ class EndToEndTest {
                         profilePictureTaker,
                         fileViewModel,
                         noteViewModel,
-                        folderViewModel, notificationViewModel)
+                        folderViewModel,
+                        notificationViewModel)
                   }
                 }
               }

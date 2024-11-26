@@ -10,7 +10,7 @@ class NotificationRepositoryFirestore(private val db: FirebaseFirestore) : Notif
 
   private val collectionPath = "notifications"
 
-  fun documentSnapshotToNotification(document: DocumentSnapshot): Notification? {
+  private fun documentSnapshotToNotification(document: DocumentSnapshot): Notification? {
     return try {
       Notification(
           id = document.getString("id")!!,
@@ -27,9 +27,9 @@ class NotificationRepositoryFirestore(private val db: FirebaseFirestore) : Notif
     }
   }
 
-    override fun getNewUid(): String {
-        return db.collection(collectionPath).document().id
-    }
+  override fun getNewUid(): String {
+    return db.collection(collectionPath).document().id
+  }
 
   override fun init(onSuccess: () -> Unit) {
     Firebase.auth.addAuthStateListener {

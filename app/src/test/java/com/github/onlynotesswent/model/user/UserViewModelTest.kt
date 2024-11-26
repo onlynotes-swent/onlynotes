@@ -134,7 +134,7 @@ class UserViewModelTest {
     FirebaseApp.initializeApp(context)
 
     // Initialize UserViewModel with the mocked repository and FirebaseAuth
-    userViewModel = UserViewModel(mockRepositoryFirestore,mockRepostioryFirestoreNotification)
+    userViewModel = UserViewModel(mockRepositoryFirestore, mockRepostioryFirestoreNotification)
   }
 
   @Test

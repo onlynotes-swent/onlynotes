@@ -16,6 +16,7 @@ import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.note.NoteRepository
 import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.model.notification.NotificationRepository
+import com.github.onlynotesswent.model.notification.NotificationViewModel
 import com.github.onlynotesswent.model.user.Friends
 import com.github.onlynotesswent.model.user.User
 import com.github.onlynotesswent.model.user.UserRepository
@@ -44,7 +45,7 @@ class ProfileScreenTest {
   private lateinit var noteViewModel: NoteViewModel
   private lateinit var userViewModel: UserViewModel
   private lateinit var fileViewModel: FileViewModel
-
+  private lateinit var notificationViewModel: NotificationViewModel
 
   private val testUid = "testUid"
   private val testUid2 = "testUid2"
@@ -111,7 +112,7 @@ class ProfileScreenTest {
     userViewModel = UserViewModel(mockUserRepository)
     noteViewModel = NoteViewModel(mockNoteRepository)
     fileViewModel = FileViewModel(mockFileRepository)
-
+    notificationViewModel = NotificationViewModel(mockNotificationRepository)
     // Mock the current route to be the user create screen
     `when`(mockNavigationActions.currentRoute()).thenReturn(Screen.USER_PROFILE)
 
@@ -205,7 +206,7 @@ class ProfileScreenTest {
   @Test
   fun displayAllComponents() {
     composeTestRule.setContent {
-      UserProfileScreen(mockNavigationActions, userViewModel, fileViewModel)
+      UserProfileScreen(mockNavigationActions, userViewModel, fileViewModel, notificationViewModel)
     }
 
     composeTestRule.onNodeWithTag("profileScaffold").assertExists()
@@ -230,7 +231,7 @@ class ProfileScreenTest {
   @Test
   fun displayAndNavigateToFollowersAndFollowing() {
     composeTestRule.setContent {
-      UserProfileScreen(mockNavigationActions, userViewModel, fileViewModel)
+      UserProfileScreen(mockNavigationActions, userViewModel, fileViewModel, notificationViewModel)
     }
 
     composeTestRule.onNodeWithTag("followingButton").assertIsDisplayed().performClick()
@@ -261,7 +262,7 @@ class ProfileScreenTest {
   @Test
   fun editProfileButtonNavigatesCorrectly() {
     composeTestRule.setContent {
-      UserProfileScreen(mockNavigationActions, userViewModel, fileViewModel)
+      UserProfileScreen(mockNavigationActions, userViewModel, fileViewModel, notificationViewModel)
     }
 
     composeTestRule.onNodeWithTag("editProfileButton").assertIsDisplayed().performClick()
@@ -271,7 +272,8 @@ class ProfileScreenTest {
   @Test
   fun followUnfollowButtonsWork() {
     composeTestRule.setContent {
-      PublicProfileScreen(mockNavigationActions, userViewModel, fileViewModel)
+      PublicProfileScreen(
+          mockNavigationActions, userViewModel, fileViewModel, notificationViewModel)
     }
 
     composeTestRule.onNodeWithTag("userNotFound").assertIsDisplayed()
@@ -320,7 +322,8 @@ class ProfileScreenTest {
   @Test
   fun profileLinkRedirectsToUserProfile() {
     composeTestRule.setContent {
-      PublicProfileScreen(mockNavigationActions, userViewModel, fileViewModel)
+      PublicProfileScreen(
+          mockNavigationActions, userViewModel, fileViewModel, notificationViewModel)
     }
 
     userViewModel.setProfileUser(testUser2)
@@ -337,7 +340,8 @@ class ProfileScreenTest {
   @Test
   fun goBackButtonNavigatesCorrectly() {
     composeTestRule.setContent {
-      PublicProfileScreen(mockNavigationActions, userViewModel, fileViewModel)
+      PublicProfileScreen(
+          mockNavigationActions, userViewModel, fileViewModel, notificationViewModel)
     }
 
     composeTestRule.onNodeWithTag("goBackButton").assertIsDisplayed().performClick()
@@ -348,7 +352,7 @@ class ProfileScreenTest {
   @Test
   fun logoutButtonWorksCorrectly() {
     composeTestRule.setContent {
-      UserProfileScreen(mockNavigationActions, userViewModel, fileViewModel)
+      UserProfileScreen(mockNavigationActions, userViewModel, fileViewModel, notificationViewModel)
     }
 
     composeTestRule.onNodeWithTag("logoutButton").assertIsDisplayed().performClick()

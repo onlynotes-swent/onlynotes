@@ -23,8 +23,8 @@ import kotlinx.coroutines.flow.asStateFlow
  */
 class UserViewModel(
     private val repository: UserRepository,
-    private val notificationRepository: NotificationRepository = NotificationRepositoryFirestore(
-        Firebase.firestore)
+    private val notificationRepository: NotificationRepository =
+        NotificationRepositoryFirestore(Firebase.firestore)
 ) : ViewModel() {
 
   private val _allUsers = MutableStateFlow<List<User>>(emptyList())
