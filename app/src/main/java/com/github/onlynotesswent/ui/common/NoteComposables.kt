@@ -14,10 +14,10 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -74,7 +74,6 @@ fun NoteItem(
     navigationActions: NavigationActions,
     onClick: () -> Unit
 ) {
-  // Mutable state to show the move out dialog
   var showMoveOutDialog by remember { mutableStateOf(showDialog) }
 
   if (showMoveOutDialog && note.folderId != null) {
@@ -83,7 +82,6 @@ fun NoteItem(
         text = "Are you sure you want to move this note out of the folder?",
         onConfirm = {
           if (currentUser.value!!.uid == note.userId) {
-            // Move out will move the given note to the parent folder
             val parentFolderId = navigationActions.popFromScreenNavigationStack()
             if (parentFolderId != null) {
               noteViewModel.updateNote(note.copy(folderId = parentFolderId))
@@ -101,12 +99,14 @@ fun NoteItem(
         },
         onDismiss = { showMoveOutDialog = false })
   }
+
   Card(
       modifier =
           Modifier.testTag("noteCard")
+              .height(140.dp)
+              .padding(4.dp)
               .semantics(mergeDescendants = true, properties = {})
               .fillMaxWidth()
-              .padding(vertical = 4.dp)
               // Enable drag and drop for the note card (as a source)
               .dragAndDropSource {
                 detectTapGestures(
@@ -119,9 +119,7 @@ fun NoteItem(
                           DragAndDropTransferData(ClipData.newPlainText("Note", note.id)))
                     },
                 )
-              },
-      colors =
-          CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)) {
+              }) {
         Column(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
           Row(
               modifier = Modifier.fillMaxWidth(),
@@ -137,7 +135,7 @@ fun NoteItem(
                   Icon(
                       // Show move out menu when clicking on the Icon
                       modifier =
-                          Modifier.testTag("MoveOutButton").clickable(
+                          Modifier.testTag("MoveOutButton").size(24.dp).clickable(
                               enabled =
                                   note.folderId != null &&
                                       navigationActions.currentRoute() == Screen.FOLDER_CONTENTS) {
@@ -149,22 +147,27 @@ fun NoteItem(
                 }
               }
 
-          Spacer(modifier = Modifier.height(4.dp))
+          Spacer(modifier = Modifier.height(8.dp))
+
           Text(
               text = note.title,
               style = MaterialTheme.typography.bodyMedium,
               fontWeight = FontWeight.Bold,
-              color = MaterialTheme.colorScheme.onPrimaryContainer)
+              color = MaterialTheme.colorScheme.onSurface)
+
           if (author != null) {
+            Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = author,
                 style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onPrimaryContainer)
+                color = MaterialTheme.colorScheme.onSurfaceVariant)
           }
+
+          Spacer(modifier = Modifier.height(4.dp))
           Text(
               text = note.noteCourse.fullName(),
               style = MaterialTheme.typography.bodySmall,
-              color = MaterialTheme.colorScheme.onPrimaryContainer)
+              color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
       }
 }

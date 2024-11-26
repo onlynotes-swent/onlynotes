@@ -221,7 +221,7 @@ fun OverviewScreenGrid(
       folders = userRootFolders,
       gridModifier =
           Modifier.fillMaxWidth()
-              .padding(horizontal = 16.dp)
+              .padding(horizontal = 20.dp)
               .padding(paddingValues)
               .testTag("noteAndFolderList"),
       folderViewModel = folderViewModel,
