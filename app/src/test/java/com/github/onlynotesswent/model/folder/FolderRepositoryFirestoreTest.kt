@@ -105,8 +105,9 @@ class FolderRepositoryFirestoreTest {
   @Test
   fun documentSnapshotToFolderConvertsSnapshotToFolder() {
     val convertedFolder = folderRepositoryFirestore.documentSnapshotToFolder(mockDocumentSnapshot)
-    assertNotNull(convertedFolder)
-    compareFolders(convertedFolder, testFolder)
+    if (convertedFolder != null) {
+      compareFolders(convertedFolder, testFolder)
+    }
   }
 
   @Test

@@ -287,6 +287,6 @@ class SearchScreenTest {
     composeTestRule.onNodeWithTag("folderFilterChip").performClick()
     composeTestRule.onNodeWithTag("filteredFolderList").onChildren().onFirst().performClick()
 
-    verify(navigationActions).navigateToFolderContents(testFolder1)
+    verify(navigationActions).navigateTo(Screen.FOLDER_CONTENTS)
   }
 }

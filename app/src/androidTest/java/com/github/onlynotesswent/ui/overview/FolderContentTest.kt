@@ -206,7 +206,7 @@ class FolderContentTest {
     // Go to subfolder
     composeTestRule.onNodeWithTag("folderCard").assertIsDisplayed()
     composeTestRule.onNodeWithTag("folderCard").performClick()
-    verify(mockNavigationActions).navigateToFolderContents(subFolder)
+    verify(mockNavigationActions).navigateTo(Screen.FOLDER_CONTENTS)
     composeTestRule.onNodeWithTag("folderSettingsButton").performClick()
     composeTestRule.onNodeWithTag("deleteFolderButton").assertIsDisplayed()
     composeTestRule.onNodeWithTag("deleteFolderButton").performClick()
@@ -302,7 +302,7 @@ class FolderContentTest {
     composeTestRule.onNodeWithTag("noteCard").assertIsDisplayed()
     composeTestRule.onNodeWithTag("folderCard").assertIsDisplayed()
     composeTestRule.onNodeWithTag("folderCard").performClick()
-    verify(mockNavigationActions).navigateToFolderContents(folderListDifferentUser[0])
+    verify(mockNavigationActions).navigateTo(Screen.FOLDER_CONTENTS)
     composeTestRule.onNodeWithTag("folderSettingsButton").performClick()
     composeTestRule.onNodeWithTag("deleteFolderContentsButton").assertIsDisplayed()
     composeTestRule.onNodeWithTag("deleteFolderContentsButton").performClick()

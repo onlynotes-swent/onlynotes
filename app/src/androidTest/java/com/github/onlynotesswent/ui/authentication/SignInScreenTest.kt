@@ -68,4 +68,15 @@ class SignInScreenTest {
         .assertIsDisplayed()
         .assertTextEquals("Sign in with Google")
   }
+
+  @Test
+  fun backButtonPressClosesApp() {
+    // Simulate back button press
+    activityRule.activity.onBackPressedDispatcher.onBackPressed()
+
+    // Verify the expected behavior, e.g., the app should exit
+    // This can be done by checking if the activity is finishing
+    assert(activityRule.activity.isFinishing)
+  }
+
 }
