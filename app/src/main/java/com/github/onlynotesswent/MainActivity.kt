@@ -3,6 +3,11 @@ package com.github.onlynotesswent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.core.EaseOut
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
@@ -86,26 +91,47 @@ fun OnlyNotesApp(
       composable(Screen.OVERVIEW) {
         OverviewScreen(navigationActions, noteViewModel, userViewModel, folderViewModel)
       }
-      composable(Screen.ADD_NOTE) {
-        AddNoteScreen(navigationActions, scanner, noteViewModel, userViewModel, fileViewModel)
-      }
-      composable(Screen.EDIT_NOTE) {
-        EditNoteScreen(navigationActions, scanner, noteViewModel, userViewModel, fileViewModel)
-      }
-      composable(Screen.FOLDER_CONTENTS) { navBackStackEntry ->
-        val folderId = navBackStackEntry.arguments?.getString("folderId")
-        val selectedFolder by folderViewModel.selectedFolder.collectAsState()
-        // Update the selected folder when the folder ID changes
-        LaunchedEffect(folderId) {
-          if (folderId != null && folderId != "{folderId}") {
-            folderViewModel.getFolderById(folderId)
+      composable(
+          route = Screen.ADD_NOTE,
+          exitTransition = {
+            fadeOut(animationSpec = tween(300, easing = LinearEasing)) +
+                slideOutOfContainer(
+                    animationSpec = tween(300, easing = EaseOut),
+                    towards = AnimatedContentTransitionScope.SlideDirection.End)
+          }) {
+            AddNoteScreen(navigationActions, scanner, noteViewModel, userViewModel, fileViewModel)
           }
-        }
-        // Wait until selected folder is updated to display the screen
-        if (selectedFolder != null) {
-          FolderContentScreen(navigationActions, folderViewModel, noteViewModel, userViewModel)
-        }
-      }
+      composable(
+          route = Screen.EDIT_NOTE,
+          exitTransition = {
+            fadeOut(animationSpec = tween(300, easing = LinearEasing)) +
+                slideOutOfContainer(
+                    animationSpec = tween(300, easing = EaseOut),
+                    towards = AnimatedContentTransitionScope.SlideDirection.End)
+          }) {
+            EditNoteScreen(navigationActions, scanner, noteViewModel, userViewModel, fileViewModel)
+          }
+      composable(
+          route = Screen.FOLDER_CONTENTS,
+          exitTransition = {
+            fadeOut(animationSpec = tween(300, easing = LinearEasing)) +
+                slideOutOfContainer(
+                    animationSpec = tween(300, easing = EaseOut),
+                    towards = AnimatedContentTransitionScope.SlideDirection.End)
+          }) { navBackStackEntry ->
+            val folderId = navBackStackEntry.arguments?.getString("folderId")
+            val selectedFolder by folderViewModel.selectedFolder.collectAsState()
+            // Update the selected folder when the folder ID changes
+            LaunchedEffect(folderId) {
+              if (folderId != null && folderId != "{folderId}") {
+                folderViewModel.getFolderById(folderId)
+              }
+            }
+            // Wait until selected folder is updated to display the screen
+            if (selectedFolder != null) {
+              FolderContentScreen(navigationActions, folderViewModel, noteViewModel, userViewModel)
+            }
+          }
       composable(Screen.EDIT_MARKDOWN) {
         EditMarkdownScreen(navigationActions, noteViewModel, userViewModel, fileViewModel)
       }
@@ -128,22 +154,36 @@ fun OnlyNotesApp(
       composable(Screen.USER_PROFILE) {
         UserProfileScreen(navigationActions, userViewModel, fileViewModel)
       }
-      composable(Screen.PUBLIC_PROFILE) { navBackStackEntry ->
-        val userId = navBackStackEntry.arguments?.getString("userId")
-        if (userId != null && userId != "{userId}") {
-          userViewModel.refreshProfileUser(userId)
-        }
-        PublicProfileScreen(navigationActions, userViewModel, fileViewModel)
-      }
-      composable(Screen.EDIT_PROFILE) {
-        EditProfileScreen(
-            navigationActions,
-            userViewModel,
-            profilePictureTaker,
-            fileViewModel,
-            noteViewModel,
-            folderViewModel)
-      }
+      composable(
+          route = Screen.PUBLIC_PROFILE,
+          exitTransition = {
+            fadeOut(animationSpec = tween(300, easing = LinearEasing)) +
+                slideOutOfContainer(
+                    animationSpec = tween(300, easing = EaseOut),
+                    towards = AnimatedContentTransitionScope.SlideDirection.End)
+          }) { navBackStackEntry ->
+            val userId = navBackStackEntry.arguments?.getString("userId")
+            if (userId != null && userId != "{userId}") {
+              userViewModel.refreshProfileUser(userId)
+            }
+            PublicProfileScreen(navigationActions, userViewModel, fileViewModel)
+          }
+      composable(
+          route = Screen.EDIT_PROFILE,
+          exitTransition = {
+            fadeOut(animationSpec = tween(300, easing = LinearEasing)) +
+                slideOutOfContainer(
+                    animationSpec = tween(300, easing = EaseOut),
+                    towards = AnimatedContentTransitionScope.SlideDirection.End)
+          }) {
+            EditProfileScreen(
+                navigationActions,
+                userViewModel,
+                profilePictureTaker,
+                fileViewModel,
+                noteViewModel,
+                folderViewModel)
+          }
     }
   }
 }
