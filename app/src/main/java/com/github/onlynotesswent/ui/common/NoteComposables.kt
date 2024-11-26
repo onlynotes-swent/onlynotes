@@ -8,7 +8,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.draganddrop.dragAndDropSource
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -17,8 +16,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -81,41 +78,28 @@ fun NoteItem(
   var showMoveOutDialog by remember { mutableStateOf(showDialog) }
 
   if (showMoveOutDialog && note.folderId != null) {
-    AlertDialog(
-        modifier = Modifier.testTag("MoveOutDialog"),
-        onDismissRequest = { showMoveOutDialog = false },
-        title = {
-          Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-            Text("Move note out of folder")
+    ConfirmationPopup(
+        title = "Move note out of folder",
+        text = "Are you sure you want to move this note out of the folder?",
+        onConfirm = {
+          if (currentUser.value!!.uid == note.userId) {
+            // Move out will move the given note to the parent folder
+            val parentFolderId = navigationActions.popFromScreenNavigationStack()
+            if (parentFolderId != null) {
+              noteViewModel.updateNote(note.copy(folderId = parentFolderId))
+              folderViewModel.getFolderById(parentFolderId)
+            } else {
+              noteViewModel.updateNote(note.copy(folderId = null))
+              navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
+            }
+          } else {
+            Toast.makeText(
+                    context, "You can't move out a note that you didn't create", Toast.LENGTH_SHORT)
+                .show()
           }
+          showMoveOutDialog = false
         },
-        confirmButton = {
-          Button(
-              modifier = Modifier.testTag("MoveOutConfirmButton"),
-              onClick = {
-                if (currentUser.value!!.uid == note.userId) {
-                  // Move out will move the given note to the parent folder
-                  val parentFolderId = navigationActions.popFromScreenNavigationStack()
-                  if (parentFolderId != null) {
-                    noteViewModel.updateNote(note.copy(folderId = parentFolderId))
-                    folderViewModel.getFolderById(parentFolderId)
-                  } else {
-                    noteViewModel.updateNote(note.copy(folderId = null))
-                    navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
-                  }
-                } else {
-                  Toast.makeText(
-                          context,
-                          "You can't move out a note that you didn't create",
-                          Toast.LENGTH_SHORT)
-                      .show()
-                }
-                showMoveOutDialog = false
-              }) {
-                Text("Move")
-              }
-        },
-        dismissButton = { Button(onClick = { showMoveOutDialog = false }) { Text("Cancel") } })
+        onDismiss = { showMoveOutDialog = false })
   }
   Card(
       modifier =
