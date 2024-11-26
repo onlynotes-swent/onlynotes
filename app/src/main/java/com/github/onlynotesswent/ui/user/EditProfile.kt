@@ -199,7 +199,9 @@ fun EditProfileScreen(
                                 firstName = newFirstName.value.trim(),
                                 lastName = newLastName.value.trim(),
                                 userName = newUserName.value.trim(),
-                                hasProfilePicture = profilePictureUri.value.isNotBlank())
+                                hasProfilePicture = profilePictureUri.value.isNotBlank(),
+                                isAccountPublic = newIsAccountPublic.value,
+                            )
 
                         userViewModel.updateUser(
                             user = updatedUser,
