@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
@@ -66,28 +67,28 @@ fun CustomLazyGrid(
           contentPadding = PaddingValues(vertical = 20.dp),
           horizontalArrangement = Arrangement.spacedBy(4.dp),
           modifier = gridModifier) {
-            items(sortedFolders.size) { index ->
+            items(sortedFolders, key = { it.id }) { folder ->
               FolderItem(
-                  folder = sortedFolders[index],
+                  folder = folder,
                   navigationActions = navigationActions,
                   noteViewModel = noteViewModel,
                   folderViewModel = folderViewModel) {
-                    folderViewModel.selectedParentFolderId(sortedFolders[index].parentFolderId)
+                    folderViewModel.selectedParentFolderId(folder.parentFolderId)
                     val folderContentsScreen =
-                        Screen.FOLDER_CONTENTS.replace("{folderId}", sortedFolders[index].id)
+                        Screen.FOLDER_CONTENTS.replace("{folderId}", folder.id)
                     navigationActions.navigateTo(folderContentsScreen)
                   }
             }
-            items(sortedNotes.size) { index ->
+            items(sortedNotes , key = { it.id }) { note ->
               NoteItem(
-                  note = sortedNotes[index],
+                  note = note,
                   currentUser = userViewModel.currentUser.collectAsState(),
                   context = context,
                   noteViewModel = noteViewModel,
                   folderViewModel = folderViewModel,
                   showDialog = false,
                   navigationActions = navigationActions) {
-                    noteViewModel.selectedNote(sortedNotes[index])
+                    noteViewModel.selectedNote(note)
                     navigationActions.navigateTo(Screen.EDIT_NOTE)
                   }
             }

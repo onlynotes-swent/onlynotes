@@ -115,8 +115,8 @@ fun OnlyNotesApp(
           }
       composable(
           route = Screen.FOLDER_CONTENTS,
-          enterTransition = { scaleIn(animationSpec = tween(400, easing = EaseIn))
-          }) { navBackStackEntry ->
+          enterTransition = { scaleIn(animationSpec = tween(300, easing = EaseIn)) }
+          ) { navBackStackEntry ->
             val folderId = navBackStackEntry.arguments?.getString("folderId")
             val selectedFolder by folderViewModel.selectedFolder.collectAsState()
             // Update the selected folder when the folder ID changes
