@@ -78,5 +78,4 @@ class SignInScreenTest {
     // This can be done by checking if the activity is finishing
     assert(activityRule.activity.isFinishing)
   }
-
 }
