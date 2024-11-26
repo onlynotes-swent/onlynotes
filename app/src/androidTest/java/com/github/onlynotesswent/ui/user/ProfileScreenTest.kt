@@ -201,6 +201,13 @@ class ProfileScreenTest {
       }
       onSuccess()
     }
+
+
+      `when`(mockNotificationRepository.addNotification(any(), any(), any(), )).thenAnswer {
+        val onSuccess= it.getArgument<() -> Unit>(1)
+        onSuccess()
+      }
+      `when`(mockNotificationRepository.getNewUid()).thenReturn(testUid)
   }
 
   @Test
