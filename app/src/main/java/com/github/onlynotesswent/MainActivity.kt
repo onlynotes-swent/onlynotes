@@ -115,12 +115,7 @@ fun OnlyNotesApp(
           }
       composable(
           route = Screen.FOLDER_CONTENTS,
-          enterTransition = { scaleIn(animationSpec = tween(500, easing = EaseIn)) },
-          exitTransition = {
-            fadeOut(animationSpec = tween(300, easing = LinearEasing)) +
-                slideOutOfContainer(
-                    animationSpec = tween(300, easing = EaseOut),
-                    towards = AnimatedContentTransitionScope.SlideDirection.End)
+          enterTransition = { scaleIn(animationSpec = tween(400, easing = EaseIn))
           }) { navBackStackEntry ->
             val folderId = navBackStackEntry.arguments?.getString("folderId")
             val selectedFolder by folderViewModel.selectedFolder.collectAsState()

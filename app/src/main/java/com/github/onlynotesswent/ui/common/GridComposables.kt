@@ -13,6 +13,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -55,10 +56,10 @@ fun CustomLazyGrid(
     paddingValues: PaddingValues,
     columnContent: @Composable (ColumnScope.() -> Unit)
 ) {
-  val sortedFolders = folders.value.sortedBy { it.name }
-  val sortedNotes = notes.value.sortedBy { it.title }
+  val sortedFolders = remember(folders.value) { folders.value.sortedBy { it.name } }
+  val sortedNotes = remember(notes.value) { notes.value.sortedBy { it.title } }
 
-  Box(modifier = modifier) {
+    Box(modifier = modifier) {
     if (sortedNotes.isNotEmpty() || sortedFolders.isNotEmpty()) {
       LazyVerticalGrid(
           columns = GridCells.Adaptive(minSize = 100.dp),

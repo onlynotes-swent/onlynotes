@@ -228,10 +228,6 @@ class FolderRepositoryFirestore(private val db: FirebaseFirestore) : FolderRepos
    * @return The converted Folder object.
    */
   fun documentSnapshotToFolder(document: DocumentSnapshot): Folder? {
-    Log.e(TAG, "Converting document to Folder: $document")
-    Log.e(
-        TAG,
-        "Document id: ${document.id} name: ${document.getString("name")} userId ${document.getString("userId")} parentFolderId ${document.getString("parentFolderId")} visibility ${document.getString("visibility")}")
     return try {
       Folder(
           id = document.id,
