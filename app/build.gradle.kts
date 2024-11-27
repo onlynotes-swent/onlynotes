@@ -219,7 +219,11 @@ dependencies {
     globalTestImplementation(libs.kaspresso.compose)
 
     // ----------       Robolectric     ------------
-    testImplementation(libs.robolectric)
+    testImplementation(libs.robolectric){
+        exclude(group = "com.google.protobuf", module = "protobuf-javalite")
+    }
+    testImplementation(libs.protobuf.javalite.v32112) // Use a compatible version
+
 
     // ----------         ML Kit        ------------
     implementation(libs.mlkit.document.scanner)
