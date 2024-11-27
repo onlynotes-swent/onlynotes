@@ -209,7 +209,11 @@ fun EditNoteGeneralTopBar(
                 showDiscardChangesDialog = true
               } else {
                 if (noteViewModel.selectedNote.value?.folderId != null) {
-                  navigationActions.navigateTo(Screen.FOLDER_CONTENTS)
+                  val folderContentsScreen =
+                      Screen.FOLDER_CONTENTS.replace(
+                          oldValue = "{folderId}",
+                          newValue = noteViewModel.selectedNote.value?.folderId!!)
+                  navigationActions.navigateTo(folderContentsScreen)
                 } else {
                   navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
                 }
@@ -230,7 +234,11 @@ fun EditNoteGeneralTopBar(
           // Discard changes and navigate away
           showDiscardChangesDialog = false
           if (noteViewModel.selectedNote.value?.folderId != null) {
-            navigationActions.navigateTo(Screen.FOLDER_CONTENTS)
+            val folderContentsScreen =
+                Screen.FOLDER_CONTENTS.replace(
+                    oldValue = "{folderId}",
+                    newValue = noteViewModel.selectedNote.value?.folderId!!)
+            navigationActions.navigateTo(folderContentsScreen)
           } else {
             navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
           }
