@@ -81,7 +81,7 @@ class EndToEndTest {
   private lateinit var folderViewModel: FolderViewModel
   @Mock private lateinit var fileRepository: FileRepository
   private lateinit var fileViewModel: FileViewModel
-  @Mock private lateinit var notificationRepository: NotificationRepository
+  @Mock private lateinit var mockNotificationRepository: NotificationRepository
   private lateinit var notificationViewModel: NotificationViewModel
 
   @Mock private lateinit var profilePictureTaker: ProfilePictureTaker
@@ -136,11 +136,11 @@ class EndToEndTest {
     // Mock objects for dependencies
     MockitoAnnotations.openMocks(this)
 
-    userViewModel = UserViewModel(userRepository, notificationRepository)
+    userViewModel = UserViewModel(userRepository, mockNotificationRepository)
     noteViewModel = NoteViewModel(noteRepository)
     folderViewModel = FolderViewModel(folderRepository)
     fileViewModel = FileViewModel(fileRepository)
-    notificationViewModel = NotificationViewModel(notificationRepository)
+    notificationViewModel = NotificationViewModel(mockNotificationRepository)
 
     // Initialize Intents for handling navigation intents in the test
     Intents.init()
@@ -393,6 +393,13 @@ class EndToEndTest {
 
     // Start at overview screen
     composeTestRule.runOnUiThread { navController.navigate(Route.OVERVIEW) }
+
+    `when`(mockNotificationRepository.getNewUid()).thenReturn(testUid)
+
+    `when`(mockNotificationRepository.addNotification(any(), any(), any())).thenAnswer {
+      val onSuccess = it.getArgument<() -> Unit>(1)
+      onSuccess()
+    }
   }
 
   // Test the end-to-end flow of searching for testUser2 and viewing their profile and following
