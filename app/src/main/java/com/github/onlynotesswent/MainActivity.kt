@@ -114,7 +114,7 @@ fun OnlyNotesApp(
                     towards = AnimatedContentTransitionScope.SlideDirection.End)
           }) {
             EditNoteScreen(navigationActions, noteViewModel, userViewModel)
-      }
+          }
       composable(Screen.EDIT_NOTE_COMMENT) {
         CommentsScreen(navigationActions, noteViewModel, userViewModel)
       }
@@ -123,7 +123,7 @@ fun OnlyNotesApp(
       }
       composable(Screen.EDIT_NOTE_MARKDOWN) {
         EditMarkdownScreen(navigationActions, noteViewModel, fileViewModel)
-          }
+      }
       composable(
           route = Screen.FOLDER_CONTENTS,
           enterTransition = { scaleIn(animationSpec = tween(300, easing = EaseIn)) }) {
