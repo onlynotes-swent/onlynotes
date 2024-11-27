@@ -26,6 +26,7 @@ import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.never
 
 class EditNoteTest {
@@ -54,7 +55,7 @@ class EditNoteTest {
 
     // Mock the current route to be the note edit screen
     `when`(navigationActions.currentRoute()).thenReturn(Screen.EDIT_NOTE)
-    val mockNote =
+    val mockNote1 =
         Note(
             id = "1",
             title = "Sample Title",
@@ -64,18 +65,34 @@ class EditNoteTest {
             noteCourse = Course("CS-100", "Sample Class", 2024, "path"),
         )
 
-    `when`(noteRepository.getNoteById(any(), any(), any())).thenAnswer { invocation ->
+    val mockNote2 =
+        Note(
+            id = "2",
+            title = "Sample Title2",
+            date = Timestamp.now(), // Use current timestamp
+            visibility = Visibility.DEFAULT,
+            userId = "1",
+            folderId = "1",
+            noteCourse = Course("CS-100", "Sample Class", 2024, "path"),
+        )
+
+    `when`(noteRepository.getNoteById(eq("1"), any(), any())).thenAnswer { invocation ->
       val onSuccess = invocation.getArgument<(Note) -> Unit>(1)
-      onSuccess(mockNote)
+      onSuccess(mockNote1)
     }
 
-    noteViewModel.getNoteById("mockNoteId")
-
-    composeTestRule.setContent { EditNoteScreen(navigationActions, noteViewModel, userViewModel) }
+    `when`(noteRepository.getNoteById(eq("2"), any(), any())).thenAnswer { invocation ->
+      val onSuccess = invocation.getArgument<(Note) -> Unit>(1)
+      onSuccess(mockNote2)
+    }
   }
 
   @Test
   fun displayBaseComponents() {
+
+    noteViewModel.getNoteById("1")
+
+    composeTestRule.setContent { EditNoteScreen(navigationActions, noteViewModel, userViewModel) }
     // Top bar buttons
     composeTestRule.onNodeWithTag("closeButton").assertIsDisplayed()
     composeTestRule.onNodeWithTag("saveNoteButton").assertIsDisplayed()
@@ -99,13 +116,29 @@ class EditNoteTest {
 
   @Test
   fun clickGoBackButton() {
+    noteViewModel.getNoteById("1")
+    composeTestRule.setContent { EditNoteScreen(navigationActions, noteViewModel, userViewModel) }
+
     composeTestRule.onNodeWithTag("closeButton").performClick()
 
     verify(navigationActions).navigateTo(TopLevelDestinations.OVERVIEW)
   }
 
   @Test
+  fun clickGoBackButtonInsideFolder() {
+    noteViewModel.getNoteById("2")
+    composeTestRule.setContent { EditNoteScreen(navigationActions, noteViewModel, userViewModel) }
+
+    composeTestRule.onNodeWithTag("closeButton").performClick()
+
+    verify(navigationActions).navigateTo(Screen.FOLDER_CONTENTS.replace("{folderId}", "1"))
+  }
+
+  @Test
   fun clickSaveButton() {
+    noteViewModel.getNoteById("1")
+    composeTestRule.setContent { EditNoteScreen(navigationActions, noteViewModel, userViewModel) }
+
     composeTestRule.onNodeWithTag("saveNoteButton").performClick()
 
     verify(noteRepository).updateNote(any(), any(), any())
@@ -113,6 +146,9 @@ class EditNoteTest {
 
   @Test
   fun clickDeleteButton() {
+    noteViewModel.getNoteById("1")
+    composeTestRule.setContent { EditNoteScreen(navigationActions, noteViewModel, userViewModel) }
+
     composeTestRule.onNodeWithTag("deleteNoteButton").performClick()
 
     composeTestRule.onNodeWithTag("popup").assertIsDisplayed()
@@ -123,6 +159,9 @@ class EditNoteTest {
 
   @Test
   fun clickDeleteButtonAndCancel() {
+    noteViewModel.getNoteById("1")
+    composeTestRule.setContent { EditNoteScreen(navigationActions, noteViewModel, userViewModel) }
+
     composeTestRule.onNodeWithTag("deleteNoteButton").performClick()
 
     composeTestRule.onNodeWithTag("popup").assertIsDisplayed()
@@ -134,6 +173,9 @@ class EditNoteTest {
 
   @Test
   fun clickDetailButton() {
+    noteViewModel.getNoteById("1")
+    composeTestRule.setContent { EditNoteScreen(navigationActions, noteViewModel, userViewModel) }
+
     composeTestRule.onNodeWithTag("Detail").performClick()
 
     verify(navigationActions).navigateTo(Screen.EDIT_NOTE)
@@ -141,6 +183,9 @@ class EditNoteTest {
 
   @Test
   fun clickCommentsButton() {
+    noteViewModel.getNoteById("1")
+    composeTestRule.setContent { EditNoteScreen(navigationActions, noteViewModel, userViewModel) }
+
     composeTestRule.onNodeWithTag("Comments").performClick()
 
     verify(navigationActions).navigateTo(Screen.EDIT_NOTE_COMMENT)
@@ -148,6 +193,9 @@ class EditNoteTest {
 
   @Test
   fun pdfButtonNavigatesToPdf() {
+    noteViewModel.getNoteById("1")
+    composeTestRule.setContent { EditNoteScreen(navigationActions, noteViewModel, userViewModel) }
+
     composeTestRule.onNodeWithTag("PDF").performClick()
 
     verify(navigationActions).navigateTo(Screen.EDIT_NOTE_PDF)
@@ -155,6 +203,9 @@ class EditNoteTest {
 
   @Test
   fun contentButtonNavigatesToContent() {
+    noteViewModel.getNoteById("1")
+    composeTestRule.setContent { EditNoteScreen(navigationActions, noteViewModel, userViewModel) }
+
     composeTestRule.onNodeWithTag("Content").performClick()
 
     verify(navigationActions).navigateTo(Screen.EDIT_NOTE_MARKDOWN)
@@ -162,6 +213,9 @@ class EditNoteTest {
 
   @Test
   fun modifyTitleAndExitingShowsPopup() {
+    noteViewModel.getNoteById("1")
+    composeTestRule.setContent { EditNoteScreen(navigationActions, noteViewModel, userViewModel) }
+
     val newTitle = "New Title"
     composeTestRule.onNodeWithTag("EditTitle textField").performTextInput(newTitle)
     composeTestRule.onNodeWithTag("closeButton").performClick()
@@ -177,7 +231,27 @@ class EditNoteTest {
   }
 
   @Test
+  fun clickDiscardChangesPopUpInsideFolderNavigatesToFolderContents() {
+    noteViewModel.getNoteById("2")
+    composeTestRule.setContent { EditNoteScreen(navigationActions, noteViewModel, userViewModel) }
+
+    val newTitle = "New Title"
+    composeTestRule.onNodeWithTag("EditTitle textField").performTextInput(newTitle)
+    composeTestRule.onNodeWithTag("closeButton").performClick()
+
+    composeTestRule.onNodeWithTag("popup").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("confirmButton").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("cancelButton").assertIsDisplayed()
+
+    composeTestRule.onNodeWithTag("confirmButton").performClick()
+    verify(navigationActions).navigateTo(Screen.FOLDER_CONTENTS.replace("{folderId}", "1"))
+  }
+
+  @Test
   fun modifyTitleAndGoingToCommentsShowsPopup() {
+    noteViewModel.getNoteById("1")
+    composeTestRule.setContent { EditNoteScreen(navigationActions, noteViewModel, userViewModel) }
+
     val newTitle = "New Title"
     composeTestRule.onNodeWithTag("EditTitle textField").performTextInput(newTitle)
     composeTestRule.onNodeWithTag("Comments").performClick()
@@ -194,6 +268,9 @@ class EditNoteTest {
 
   @Test
   fun clickingOnCourseNameShowsCourseDetails() {
+    noteViewModel.getNoteById("1")
+    composeTestRule.setContent { EditNoteScreen(navigationActions, noteViewModel, userViewModel) }
+
     composeTestRule.onNodeWithTag("CourseFullName textField").performClick()
     composeTestRule.onNodeWithTag("CourseFullName textField").assertIsNotDisplayed()
     composeTestRule.onNodeWithTag("EditCourseCode textField").assertIsDisplayed()

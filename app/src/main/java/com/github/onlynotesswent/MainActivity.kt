@@ -95,24 +95,10 @@ fun OnlyNotesApp(
       composable(Screen.OVERVIEW) {
         OverviewScreen(navigationActions, noteViewModel, userViewModel, folderViewModel)
       }
-      composable(
-          route = Screen.ADD_NOTE,
-          exitTransition = {
-            fadeOut(animationSpec = tween(300, easing = LinearEasing)) +
-                slideOutOfContainer(
-                    animationSpec = tween(300, easing = EaseOut),
-                    towards = AnimatedContentTransitionScope.SlideDirection.End)
-          }) {
+      composable(route = Screen.ADD_NOTE) {
             AddNoteScreen(navigationActions, scanner, noteViewModel, userViewModel, fileViewModel)
           }
-      composable(
-          route = Screen.EDIT_NOTE,
-          exitTransition = {
-            fadeOut(animationSpec = tween(300, easing = LinearEasing)) +
-                slideOutOfContainer(
-                    animationSpec = tween(300, easing = EaseOut),
-                    towards = AnimatedContentTransitionScope.SlideDirection.End)
-          }) {
+      composable(Screen.EDIT_NOTE) {
             EditNoteScreen(navigationActions, noteViewModel, userViewModel)
           }
       composable(Screen.EDIT_NOTE_COMMENT) {
@@ -160,14 +146,7 @@ fun OnlyNotesApp(
       composable(Screen.USER_PROFILE) {
         UserProfileScreen(navigationActions, userViewModel, fileViewModel)
       }
-      composable(
-          route = Screen.PUBLIC_PROFILE,
-          exitTransition = {
-            fadeOut(animationSpec = tween(300, easing = LinearEasing)) +
-                slideOutOfContainer(
-                    animationSpec = tween(300, easing = EaseOut),
-                    towards = AnimatedContentTransitionScope.SlideDirection.End)
-          }) { navBackStackEntry ->
+      composable(Screen.PUBLIC_PROFILE) { navBackStackEntry ->
             val userId = navBackStackEntry.arguments?.getString("userId")
 
             // Refresh the user profile when the user Id changes
@@ -178,14 +157,7 @@ fun OnlyNotesApp(
             }
             PublicProfileScreen(navigationActions, userViewModel, fileViewModel)
           }
-      composable(
-          route = Screen.EDIT_PROFILE,
-          exitTransition = {
-            fadeOut(animationSpec = tween(300, easing = LinearEasing)) +
-                slideOutOfContainer(
-                    animationSpec = tween(300, easing = EaseOut),
-                    towards = AnimatedContentTransitionScope.SlideDirection.End)
-          }) {
+      composable(Screen.EDIT_PROFILE) {
             EditProfileScreen(
                 navigationActions,
                 userViewModel,
