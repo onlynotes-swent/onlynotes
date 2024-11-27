@@ -3,7 +3,6 @@ package com.github.onlynotesswent.ui.overview.editnote
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.border
@@ -24,12 +23,7 @@ import androidx.compose.material.icons.filled.ArrowDropUp
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Group
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Public
 import androidx.compose.material.icons.outlined.Clear
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -49,7 +43,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
@@ -62,6 +55,7 @@ import com.github.onlynotesswent.model.user.User
 import com.github.onlynotesswent.model.user.UserViewModel
 import com.github.onlynotesswent.ui.common.ConfirmationPopup
 import com.github.onlynotesswent.ui.common.NoteDataTextField
+import com.github.onlynotesswent.ui.common.SelectVisibility
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
 import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
@@ -291,47 +285,7 @@ fun NoteSection(
         })
   }
 
-  Column(modifier = Modifier.fillMaxWidth()) {
-    Text(
-        text = "Visibility",
-        style = MaterialTheme.typography.titleMedium,
-        modifier = Modifier.padding(bottom = 8.dp))
-
-    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
-      Visibility.entries.forEach { visibilityOption ->
-        val isSelected = visibility == visibilityOption
-        val animatedScale = animateFloatAsState(if (isSelected) 1.1f else 1.0f, label = "")
-
-        Button(
-            onClick = { onVisibilityChange(visibilityOption) },
-            colors =
-                ButtonDefaults.buttonColors(
-                    containerColor =
-                        if (isSelected) MaterialTheme.colorScheme.primary
-                        else MaterialTheme.colorScheme.surface,
-                    contentColor =
-                        if (isSelected) MaterialTheme.colorScheme.onPrimary
-                        else MaterialTheme.colorScheme.onSurface),
-            modifier =
-                Modifier.weight(1f)
-                    .padding(horizontal = 7.dp)
-                    .scale(animatedScale.value)
-                    .testTag("VisibilityEditMenu" + visibilityOption.toReadableString())) {
-              Icon(
-                  imageVector =
-                      when (visibilityOption) {
-                        Visibility.PUBLIC -> Icons.Default.Public
-                        Visibility.FRIENDS -> Icons.Default.Group
-                        Visibility.PRIVATE -> Icons.Default.Lock
-                      },
-                  contentDescription = visibilityOption.toReadableString(),
-                  modifier =
-                      Modifier.padding(end = 4.dp).testTag(visibilityOption.toReadableString()))
-              Text(visibilityOption.toReadableString())
-            }
-      }
-    }
-  }
+  SelectVisibility(visibility) { onVisibilityChange(it) }
 
   // Course Section
   Column(modifier = Modifier.fillMaxWidth()) {
