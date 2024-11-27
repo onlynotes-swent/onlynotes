@@ -3,12 +3,8 @@ package com.github.onlynotesswent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.EaseIn
-import androidx.compose.animation.core.EaseOut
-import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
@@ -96,11 +92,11 @@ fun OnlyNotesApp(
         OverviewScreen(navigationActions, noteViewModel, userViewModel, folderViewModel)
       }
       composable(route = Screen.ADD_NOTE) {
-            AddNoteScreen(navigationActions, scanner, noteViewModel, userViewModel, fileViewModel)
-          }
+        AddNoteScreen(navigationActions, scanner, noteViewModel, userViewModel, fileViewModel)
+      }
       composable(Screen.EDIT_NOTE) {
-            EditNoteScreen(navigationActions, noteViewModel, userViewModel)
-          }
+        EditNoteScreen(navigationActions, noteViewModel, userViewModel)
+      }
       composable(Screen.EDIT_NOTE_COMMENT) {
         CommentsScreen(navigationActions, noteViewModel, userViewModel)
       }
@@ -147,25 +143,25 @@ fun OnlyNotesApp(
         UserProfileScreen(navigationActions, userViewModel, fileViewModel)
       }
       composable(Screen.PUBLIC_PROFILE) { navBackStackEntry ->
-            val userId = navBackStackEntry.arguments?.getString("userId")
+        val userId = navBackStackEntry.arguments?.getString("userId")
 
-            // Refresh the user profile when the user Id changes
-            LaunchedEffect(userId) {
-              if (userId != null && userId != "{userId}") {
-                userViewModel.refreshProfileUser(userId)
-              }
-            }
-            PublicProfileScreen(navigationActions, userViewModel, fileViewModel)
+        // Refresh the user profile when the user Id changes
+        LaunchedEffect(userId) {
+          if (userId != null && userId != "{userId}") {
+            userViewModel.refreshProfileUser(userId)
           }
+        }
+        PublicProfileScreen(navigationActions, userViewModel, fileViewModel)
+      }
       composable(Screen.EDIT_PROFILE) {
-            EditProfileScreen(
-                navigationActions,
-                userViewModel,
-                profilePictureTaker,
-                fileViewModel,
-                noteViewModel,
-                folderViewModel)
-          }
+        EditProfileScreen(
+            navigationActions,
+            userViewModel,
+            profilePictureTaker,
+            fileViewModel,
+            noteViewModel,
+            folderViewModel)
+      }
     }
   }
 }

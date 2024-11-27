@@ -81,16 +81,16 @@ class FolderContentTest {
           ))
 
   private val subNoteList3 =
-        listOf(
-            Note(
-                id = "7",
-                title = "Sample Sub Note4",
-                date = Timestamp.now(),
-                visibility = Visibility.DEFAULT,
-                userId = "1",
-                folderId = "4",
-                noteCourse = Course("CS-100", "Sample Course", 2024, "path"),
-            ))
+      listOf(
+          Note(
+              id = "7",
+              title = "Sample Sub Note4",
+              date = Timestamp.now(),
+              visibility = Visibility.DEFAULT,
+              userId = "1",
+              folderId = "4",
+              noteCourse = Course("CS-100", "Sample Course", 2024, "path"),
+          ))
 
   private val folderList =
       listOf(Folder(id = "1", name = "name", userId = "1", parentFolderId = null))
@@ -259,7 +259,6 @@ class FolderContentTest {
     composeTestRule.onNodeWithTag("folderSettingsButton").performClick()
     composeTestRule.onNodeWithTag("deleteFolderButton").assertIsDisplayed()
     composeTestRule.onNodeWithTag("deleteFolderButton").performClick()
-
   }
 
   @Test
