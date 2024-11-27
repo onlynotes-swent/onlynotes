@@ -206,10 +206,8 @@ class FolderContentTest {
     // Go to subfolder
     composeTestRule.onNodeWithTag("folderCard").assertIsDisplayed()
     composeTestRule.onNodeWithTag("folderCard").performClick()
-    val folderContentScreen = Screen.FOLDER_CONTENTS.replace(
-        oldValue = "{folderId}",
-        newValue = subFolder.id
-    )
+    val folderContentScreen =
+        Screen.FOLDER_CONTENTS.replace(oldValue = "{folderId}", newValue = subFolder.id)
     verify(mockNavigationActions).navigateTo(folderContentScreen)
     composeTestRule.onNodeWithTag("folderSettingsButton").performClick()
     composeTestRule.onNodeWithTag("deleteFolderButton").assertIsDisplayed()
@@ -306,10 +304,9 @@ class FolderContentTest {
     composeTestRule.onNodeWithTag("noteCard").assertIsDisplayed()
     composeTestRule.onNodeWithTag("folderCard").assertIsDisplayed()
     composeTestRule.onNodeWithTag("folderCard").performClick()
-    val folderContentsScreen = Screen.FOLDER_CONTENTS.replace(
-        oldValue = "{folderId}",
-        newValue = folderListDifferentUser[0].id
-    )
+    val folderContentsScreen =
+        Screen.FOLDER_CONTENTS.replace(
+            oldValue = "{folderId}", newValue = folderListDifferentUser[0].id)
     verify(mockNavigationActions).navigateTo(folderContentsScreen)
     composeTestRule.onNodeWithTag("folderSettingsButton").performClick()
     composeTestRule.onNodeWithTag("deleteFolderContentsButton").assertIsDisplayed()

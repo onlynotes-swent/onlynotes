@@ -256,7 +256,7 @@ class ProfileScreenTest {
     val publicProfileScreen2 = Screen.PUBLIC_PROFILE.replace("{userId}", testUid3)
 
     verify(mockNavigationActions).navigateTo(publicProfileScreen1)
-      verify(mockNavigationActions).navigateTo(publicProfileScreen2)
+    verify(mockNavigationActions).navigateTo(publicProfileScreen2)
   }
 
   @Test
