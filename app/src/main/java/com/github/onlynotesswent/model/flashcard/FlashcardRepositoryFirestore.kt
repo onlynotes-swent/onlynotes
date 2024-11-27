@@ -22,7 +22,7 @@ class FlashcardRepositoryFirestore(private val db: FirebaseFirestore) : Flashcar
       val type =
           Flashcard.Type.fromString(
               document.getString("type") ?: throw Exception("Invalid flashcard type"))
-      Flashcard.from(type, document.data?.toMap() ?: throw Exception("Invalid flashcard data"))
+      Flashcard.from(type, document.data!!)
     } catch (e: Exception) {
       Log.e(TAG, "Error converting document to Flashcard", e)
       null
