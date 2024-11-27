@@ -412,6 +412,7 @@ fun ProfileContent(
 @Composable
 fun FollowUnfollowButton(userViewModel: UserViewModel, otherUserId: String) {
   val followButtonText = remember { mutableStateOf("") }
+  val followText = stringResource(R.string.follow)
   followButtonText.value =
       if (userViewModel.currentUser
           .collectAsState()
@@ -433,20 +434,20 @@ fun FollowUnfollowButton(userViewModel: UserViewModel, otherUserId: String) {
       shape = RoundedCornerShape(25),
       modifier = Modifier.testTag("followUnfollowButton--$otherUserId").width(90.dp),
       onClick = {
-        if (followButtonText.value == "Follow")
+        if (followButtonText.value == followText)
             userViewModel.followUser(
-                otherUserId,
-                {
+                followingUID = otherUserId,
+                onSuccess = {
                   userViewModel.profileUser.value?.let { userViewModel.refreshProfileUser(it.uid) }
                 },
-                {})
+                onFailure = {})
         else
             userViewModel.unfollowUser(
-                otherUserId,
-                {
+                followingUID = otherUserId,
+                onSuccess = {
                   userViewModel.profileUser.value?.let { userViewModel.refreshProfileUser(it.uid) }
                 },
-                {})
+                onFailure = {})
       }) {
         Text(
             followButtonText.value,
