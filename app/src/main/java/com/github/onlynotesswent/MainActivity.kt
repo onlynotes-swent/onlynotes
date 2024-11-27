@@ -31,10 +31,12 @@ import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Route
 import com.github.onlynotesswent.ui.navigation.Screen
 import com.github.onlynotesswent.ui.overview.AddNoteScreen
-import com.github.onlynotesswent.ui.overview.EditMarkdownScreen
-import com.github.onlynotesswent.ui.overview.EditNoteScreen
 import com.github.onlynotesswent.ui.overview.FolderContentScreen
 import com.github.onlynotesswent.ui.overview.OverviewScreen
+import com.github.onlynotesswent.ui.overview.editnote.CommentsScreen
+import com.github.onlynotesswent.ui.overview.editnote.EditMarkdownScreen
+import com.github.onlynotesswent.ui.overview.editnote.EditNoteScreen
+import com.github.onlynotesswent.ui.overview.editnote.PdfViewerScreen
 import com.github.onlynotesswent.ui.search.SearchScreen
 import com.github.onlynotesswent.ui.theme.AppTheme
 import com.github.onlynotesswent.ui.user.CreateUserScreen
@@ -111,7 +113,16 @@ fun OnlyNotesApp(
                     animationSpec = tween(300, easing = EaseOut),
                     towards = AnimatedContentTransitionScope.SlideDirection.End)
           }) {
-            EditNoteScreen(navigationActions, scanner, noteViewModel, userViewModel, fileViewModel)
+            EditNoteScreen(navigationActions, noteViewModel, userViewModel)
+      }
+      composable(Screen.EDIT_NOTE_COMMENT) {
+        CommentsScreen(navigationActions, noteViewModel, userViewModel)
+      }
+      composable(Screen.EDIT_NOTE_PDF) {
+        PdfViewerScreen(noteViewModel, fileViewModel, scanner, navigationActions)
+      }
+      composable(Screen.EDIT_NOTE_MARKDOWN) {
+        EditMarkdownScreen(navigationActions, noteViewModel, fileViewModel)
           }
       composable(
           route = Screen.FOLDER_CONTENTS,
@@ -130,9 +141,6 @@ fun OnlyNotesApp(
               FolderContentScreen(navigationActions, folderViewModel, noteViewModel, userViewModel)
             }
           }
-      composable(Screen.EDIT_MARKDOWN) {
-        EditMarkdownScreen(navigationActions, noteViewModel, userViewModel, fileViewModel)
-      }
     }
 
     navigation(

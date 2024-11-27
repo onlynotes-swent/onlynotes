@@ -113,8 +113,7 @@ fun OverviewScreen(
                         name = newName,
                         userId = userViewModel.currentUser.value!!.uid,
                         parentFolderId = parentFolderId.value,
-                        visibility = visibility),
-                    userViewModel.currentUser.value!!.uid)
+                        visibility = visibility))
                 showCreateDialog = false
                 val folderContentsScreen =
                     Screen.FOLDER_CONTENTS.replace(oldValue = "{folderId}", newValue = folderId)

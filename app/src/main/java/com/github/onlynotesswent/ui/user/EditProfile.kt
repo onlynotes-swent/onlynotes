@@ -180,16 +180,29 @@ fun EditProfileScreen(
                                 if (profilePictureUri.value.isNotBlank()) {
                                   if (user.value!!.hasProfilePicture) {
                                     fileViewModel.updateFile(
-                                        userViewModel.currentUser.value!!.uid,
-                                        profilePictureUri.value.toUri(),
-                                        FileType.PROFILE_PIC_JPEG,
+                                        uid = userViewModel.currentUser.value!!.uid,
+                                        fileUri = profilePictureUri.value.toUri(),
+                                        fileType = FileType.PROFILE_PIC_JPEG,
+                                        onFailure = {
+                                          Toast.makeText(
+                                                  localContext,
+                                                  "Error updating profile picture",
+                                                  Toast.LENGTH_SHORT)
+                                              .show()
+                                        },
                                     )
                                   } else {
                                     fileViewModel.uploadFile(
-                                        userViewModel.currentUser.value!!.uid,
-                                        profilePictureUri.value.toUri(),
-                                        FileType.PROFILE_PIC_JPEG,
-                                    )
+                                        uid = userViewModel.currentUser.value!!.uid,
+                                        fileUri = profilePictureUri.value.toUri(),
+                                        fileType = FileType.PROFILE_PIC_JPEG,
+                                        onFailure = {
+                                          Toast.makeText(
+                                                  localContext,
+                                                  "Error uploading profile picture",
+                                                  Toast.LENGTH_SHORT)
+                                              .show()
+                                        })
                                   }
                                 } else {
                                   fileViewModel.deleteFile(
@@ -207,7 +220,6 @@ fun EditProfileScreen(
                                     else -> "Oops! Something went wrong. Please try again later."
                                   }
                               Toast.makeText(localContext, errorMessage, Toast.LENGTH_SHORT).show()
-                              Log.e("EditProfileScreen", "Error while updating user ", exception)
                               userNameError.value =
                                   exception is UserRepositoryFirestore.UsernameTakenException
                             })
@@ -246,10 +258,7 @@ fun EditProfileScreen(
 
                                 userViewModel.deleteUserById(
                                     user.value!!.uid,
-                                    onSuccess = { navigationActions.navigateTo(Route.AUTH) },
-                                    onFailure = { e ->
-                                      Log.e("EditProfileScreen", "Error deleting user", e)
-                                    })
+                                    onSuccess = { navigationActions.navigateTo(Route.AUTH) })
                               },
                               content = { Text("Yes") })
                         },

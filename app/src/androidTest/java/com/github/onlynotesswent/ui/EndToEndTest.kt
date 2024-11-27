@@ -10,7 +10,6 @@ import androidx.compose.ui.test.assertIsNotDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.filter
-import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
@@ -18,7 +17,6 @@ import androidx.compose.ui.test.onChildren
 import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performTextClearance
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTextReplacement
@@ -45,10 +43,10 @@ import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Route
 import com.github.onlynotesswent.ui.navigation.Screen
 import com.github.onlynotesswent.ui.overview.AddNoteScreen
-import com.github.onlynotesswent.ui.overview.EditMarkdownScreen
-import com.github.onlynotesswent.ui.overview.EditNoteScreen
 import com.github.onlynotesswent.ui.overview.FolderContentScreen
 import com.github.onlynotesswent.ui.overview.OverviewScreen
+import com.github.onlynotesswent.ui.overview.editnote.EditMarkdownScreen
+import com.github.onlynotesswent.ui.overview.editnote.EditNoteScreen
 import com.github.onlynotesswent.ui.search.SearchScreen
 import com.github.onlynotesswent.ui.theme.AppTheme
 import com.github.onlynotesswent.ui.user.CreateUserScreen
@@ -174,16 +172,14 @@ class EndToEndTest {
                         navigationActions, scanner, noteViewModel, userViewModel, fileViewModel)
                   }
                   composable(Screen.EDIT_NOTE) {
-                    EditNoteScreen(
-                        navigationActions, scanner, noteViewModel, userViewModel, fileViewModel)
+                    EditNoteScreen(navigationActions, noteViewModel, userViewModel)
                   }
                   composable(Screen.FOLDER_CONTENTS) {
                     FolderContentScreen(
                         navigationActions, folderViewModel, noteViewModel, userViewModel)
                   }
-                  composable(Screen.EDIT_MARKDOWN) {
-                    EditMarkdownScreen(
-                        navigationActions, noteViewModel, userViewModel, fileViewModel)
+                  composable(Screen.EDIT_NOTE_MARKDOWN) {
+                    EditMarkdownScreen(navigationActions, noteViewModel, fileViewModel)
                   }
                 }
                 navigation(
@@ -294,11 +290,12 @@ class EndToEndTest {
     composeTestRule.onNodeWithTag("createNoteButton").performClick()
 
     // Modify the note title and save the changes
-    composeTestRule.onNodeWithTag("EditTitle textField").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("EditTitle textField").performTextInput("Updated Title")
+    composeTestRule.onNodeWithTag("saveNoteButton").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("saveNoteButton").performClick()
 
-    composeTestRule.onNodeWithTag("editNoteColumn").performScrollToNode(hasTestTag("Save button"))
-    composeTestRule.onNodeWithTag("Save button").performClick()
+    // Exit the note edit screen
+    composeTestRule.onNodeWithTag("closeButton").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("closeButton").performClick()
 
     // Mock retrieval of notes
     `when`(noteRepository.getRootNotesFrom(eq(testUser1.uid), any(), any())).thenAnswer { invocation

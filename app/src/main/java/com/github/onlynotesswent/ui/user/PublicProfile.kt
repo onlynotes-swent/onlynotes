@@ -1,6 +1,5 @@
 package com.github.onlynotesswent.ui.user
 
-import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -622,9 +621,7 @@ fun NonModifiableProfilePicture(
           user.value!!.uid,
           FileType.PROFILE_PIC_JPEG,
           context = LocalContext.current,
-          onSuccess = { file -> profilePictureUri.value = file.absolutePath },
-          onFileNotFound = { Log.e("ProfilePicture", "Profile picture not found") },
-          onFailure = { e -> Log.e("ProfilePicture", "Error downloading profile picture", e) })
+          onSuccess = { file -> profilePictureUri.value = file.absolutePath })
     }
 
     // Profile Picture Painter
