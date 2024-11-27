@@ -465,7 +465,6 @@ fun FollowUnfollowButton(userViewModel: UserViewModel, otherUserId: String) {
  */
 @Composable
 fun RemoveFollowerButton(userViewModel: UserViewModel, followerId: String) {
-  val context = LocalContext.current
   OutlinedButton(
       contentPadding = PaddingValues(horizontal = 10.dp),
       shape = RoundedCornerShape(25),
