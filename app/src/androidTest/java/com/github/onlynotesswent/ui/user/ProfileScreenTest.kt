@@ -109,7 +109,7 @@ class ProfileScreenTest {
   fun setUp() {
     // Mock is a way to create a fake object that can be used in place of a real object
     MockitoAnnotations.openMocks(this)
-    userViewModel = UserViewModel(mockUserRepository)
+    userViewModel = UserViewModel(mockUserRepository, mockNotificationRepository)
     noteViewModel = NoteViewModel(mockNoteRepository)
     fileViewModel = FileViewModel(mockFileRepository)
     notificationViewModel = NotificationViewModel(mockNotificationRepository)

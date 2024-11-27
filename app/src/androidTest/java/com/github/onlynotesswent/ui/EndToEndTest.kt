@@ -136,7 +136,7 @@ class EndToEndTest {
     // Mock objects for dependencies
     MockitoAnnotations.openMocks(this)
 
-    userViewModel = UserViewModel(userRepository)
+    userViewModel = UserViewModel(userRepository, notificationRepository)
     noteViewModel = NoteViewModel(noteRepository)
     folderViewModel = FolderViewModel(folderRepository)
     fileViewModel = FileViewModel(fileRepository)
