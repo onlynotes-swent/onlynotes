@@ -47,7 +47,7 @@ class FolderContentTest {
   private val noteList =
       listOf(
           Note(
-              id = "1",
+              id = "4",
               title = "Sample Title",
               date = Timestamp.now(),
               visibility = Visibility.DEFAULT,
@@ -58,7 +58,7 @@ class FolderContentTest {
   private val subNoteList1 =
       listOf(
           Note(
-              id = "2",
+              id = "5",
               title = "Sample Sub Note",
               date = Timestamp.now(),
               visibility = Visibility.DEFAULT,
@@ -70,7 +70,7 @@ class FolderContentTest {
   private val subNoteList2 =
       listOf(
           Note(
-              id = "3",
+              id = "6",
               title = "Sample Sub Note3",
               date = Timestamp.now(),
               visibility = Visibility.DEFAULT,
@@ -85,7 +85,7 @@ class FolderContentTest {
   private val folderListDifferentUser =
       listOf(Folder(id = "2", name = "name", userId = "2", parentFolderId = "1"))
 
-  private val subFolder = Folder("2", "sub name", "1", "1")
+  private val subFolder = Folder("3", "sub name", "1", "1")
   @get:Rule val composeTestRule = createComposeRule()
 
   @Before
@@ -206,7 +206,11 @@ class FolderContentTest {
     // Go to subfolder
     composeTestRule.onNodeWithTag("folderCard").assertIsDisplayed()
     composeTestRule.onNodeWithTag("folderCard").performClick()
-    verify(mockNavigationActions).navigateTo(Screen.FOLDER_CONTENTS)
+    val folderContentScreen = Screen.FOLDER_CONTENTS.replace(
+        oldValue = "{folderId}",
+        newValue = subFolder.id
+    )
+    verify(mockNavigationActions).navigateTo(folderContentScreen)
     composeTestRule.onNodeWithTag("folderSettingsButton").performClick()
     composeTestRule.onNodeWithTag("deleteFolderButton").assertIsDisplayed()
     composeTestRule.onNodeWithTag("deleteFolderButton").performClick()
@@ -302,7 +306,11 @@ class FolderContentTest {
     composeTestRule.onNodeWithTag("noteCard").assertIsDisplayed()
     composeTestRule.onNodeWithTag("folderCard").assertIsDisplayed()
     composeTestRule.onNodeWithTag("folderCard").performClick()
-    verify(mockNavigationActions).navigateTo(Screen.FOLDER_CONTENTS)
+    val folderContentsScreen = Screen.FOLDER_CONTENTS.replace(
+        oldValue = "{folderId}",
+        newValue = folderListDifferentUser[0].id
+    )
+    verify(mockNavigationActions).navigateTo(folderContentsScreen)
     composeTestRule.onNodeWithTag("folderSettingsButton").performClick()
     composeTestRule.onNodeWithTag("deleteFolderContentsButton").assertIsDisplayed()
     composeTestRule.onNodeWithTag("deleteFolderContentsButton").performClick()
