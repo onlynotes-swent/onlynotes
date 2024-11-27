@@ -60,7 +60,7 @@ fun CustomLazyGrid(
   val sortedFolders = remember(folders.value) { folders.value.sortedBy { it.name } }
   val sortedNotes = remember(notes.value) { notes.value.sortedBy { it.title } }
 
-    Box(modifier = modifier) {
+  Box(modifier = modifier) {
     if (sortedNotes.isNotEmpty() || sortedFolders.isNotEmpty()) {
       LazyVerticalGrid(
           columns = GridCells.Adaptive(minSize = 100.dp),
@@ -79,7 +79,7 @@ fun CustomLazyGrid(
                     navigationActions.navigateTo(folderContentsScreen)
                   }
             }
-            items(sortedNotes , key = { it.id }) { note ->
+            items(sortedNotes, key = { it.id }) { note ->
               NoteItem(
                   note = note,
                   currentUser = userViewModel.currentUser.collectAsState(),
