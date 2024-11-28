@@ -40,6 +40,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.github.onlynotesswent.R
+import com.github.onlynotesswent.model.common.Course
 import com.github.onlynotesswent.model.folder.Folder
 import com.github.onlynotesswent.model.folder.FolderViewModel
 import com.github.onlynotesswent.model.note.Note
@@ -50,9 +51,11 @@ import com.github.onlynotesswent.ui.common.CustomDropDownMenu
 import com.github.onlynotesswent.ui.common.CustomDropDownMenuItem
 import com.github.onlynotesswent.ui.common.CustomLazyGrid
 import com.github.onlynotesswent.ui.common.FolderDialog
+import com.github.onlynotesswent.ui.common.NoteDialog
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
 import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
+import com.google.firebase.Timestamp
 
 /**
  * Screen that displays the content of a folder.
@@ -83,7 +86,9 @@ fun FolderContentScreen(
 
   var expanded by remember { mutableStateOf(false) }
   var showRenameDialog by remember { mutableStateOf(false) }
-  var showCreateDialog by remember { mutableStateOf(false) }
+  var showCreateFolderDialog by remember { mutableStateOf(false) }
+  var showCreateNoteDialog by remember { mutableStateOf(false) }
+
   var updatedName by remember { mutableStateOf(folder.value!!.name) }
   var expandedFolder by remember { mutableStateOf(false) }
 
@@ -112,7 +117,8 @@ fun FolderContentScreen(
           CreateSubItemFab(
               expandedFolder = expandedFolder,
               onExpandedFolderChange = { expandedFolder = it },
-              showCreateDialog = { showCreateDialog = it },
+              showCreateFolderDialog = { showCreateFolderDialog = it },
+              showCreateNoteDialog = { showCreateNoteDialog = it },
               noteViewModel = noteViewModel,
               folderViewModel = folderViewModel,
               currentUser = currentUser,
@@ -152,12 +158,32 @@ fun FolderContentScreen(
                 },
                 action = stringResource(R.string.rename),
                 oldName = updatedName,
-                oldVis = folder.value!!.visibility)
+                oldVisibility = folder.value!!.visibility)
+          }
+          if (showCreateNoteDialog) {
+            NoteDialog(
+                onDismiss = { showCreateNoteDialog = false },
+                onConfirm = { newName, visibility ->
+                  val note =
+                      Note(
+                          id = noteViewModel.getNewUid(),
+                          title = newName,
+                          date = Timestamp.now(),
+                          visibility = visibility,
+                          noteCourse = Course.EMPTY,
+                          userId = userViewModel.currentUser.value!!.uid,
+                          folderId = folder.value!!.id)
+                  noteViewModel.addNote(note)
+                  noteViewModel.selectedNote(note)
+                  showCreateNoteDialog = false
+                  navigationActions.navigateTo(Screen.EDIT_NOTE)
+                },
+                action = "Create")
           }
           // Logic to show the dialog to create a folder
-          if (showCreateDialog) {
+          if (showCreateFolderDialog) {
             FolderDialog(
-                onDismiss = { showCreateDialog = false },
+                onDismiss = { showCreateFolderDialog = false },
                 onConfirm = { name, visibility ->
                   if (currentUser.value!!.uid == folder.value?.userId) {
                     folderViewModel.addFolder(
@@ -177,7 +203,7 @@ fun FolderContentScreen(
                             context, "You are not the owner of this folder", Toast.LENGTH_SHORT)
                         .show()
                   }
-                  showCreateDialog = false
+                  showCreateFolderDialog = false
                 },
                 action = stringResource(R.string.create))
           }
@@ -393,7 +419,7 @@ fun handleSubFoldersAndNotes(
  *
  * @param expandedFolder whether the folder is expanded
  * @param onExpandedFolderChange function to change the expanded state
- * @param showCreateDialog function to show the create dialog
+ * @param showCreateFolderDialog function to show the create dialog
  * @param noteViewModel the view model for the note
  * @param folderViewModel the view model for the folder
  * @param folder the current folder
@@ -403,7 +429,8 @@ fun handleSubFoldersAndNotes(
 fun CreateSubItemFab(
     expandedFolder: Boolean,
     onExpandedFolderChange: (Boolean) -> Unit,
-    showCreateDialog: (Boolean) -> Unit,
+    showCreateFolderDialog: (Boolean) -> Unit,
+    showCreateNoteDialog: (Boolean) -> Unit,
     noteViewModel: NoteViewModel,
     folderViewModel: FolderViewModel,
     currentUser: State<User?>,
@@ -425,8 +452,8 @@ fun CreateSubItemFab(
                   onClick = {
                     onExpandedFolderChange(false)
                     if (currentUser.value!!.uid == folder?.userId) {
+                      showCreateNoteDialog(true)
                       noteViewModel.selectedFolderId(folder.id)
-                      navigationActions.navigateTo(Screen.ADD_NOTE)
                     } else {
                       Toast.makeText(
                               context, "You are not the owner of this folder", Toast.LENGTH_SHORT)
@@ -443,7 +470,7 @@ fun CreateSubItemFab(
                   },
                   onClick = {
                     onExpandedFolderChange(false)
-                    showCreateDialog(true)
+                    showCreateFolderDialog(true)
                     if (currentUser.value!!.uid == folder?.userId) {
                       folderViewModel.selectedParentFolderId(folder.id)
                     }

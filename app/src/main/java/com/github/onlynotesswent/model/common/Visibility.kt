@@ -6,7 +6,7 @@ enum class Visibility {
   PRIVATE;
 
   companion object {
-    val DEFAULT = PUBLIC
+    val DEFAULT = PRIVATE
     val READABLE_STRINGS = entries.map { it.toReadableString() }
 
     fun fromReadableString(readableString: String): Visibility {
