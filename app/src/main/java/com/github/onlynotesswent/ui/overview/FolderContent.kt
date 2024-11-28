@@ -37,6 +37,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.github.onlynotesswent.R
 import com.github.onlynotesswent.model.folder.Folder
@@ -149,7 +150,7 @@ fun FolderContentScreen(
                   }
                   showRenameDialog = false
                 },
-                action = "Rename",
+                action = stringResource(R.string.rename),
                 oldName = updatedName,
                 oldVis = folder.value!!.visibility)
           }
@@ -178,7 +179,7 @@ fun FolderContentScreen(
                   }
                   showCreateDialog = false
                 },
-                action = "Create")
+                action = stringResource(R.string.create))
           }
         }
   }
@@ -191,7 +192,7 @@ fun UserNotFoundFolderContentScreen() {
       modifier = Modifier.fillMaxSize(),
       verticalArrangement = Arrangement.Center,
       horizontalAlignment = Alignment.CenterHorizontally) {
-        Text("User not found ...")
+        Text(stringResource(R.string.user_not_found))
       }
   Log.e("FolderContentScreen", "User not found")
 }
@@ -239,7 +240,9 @@ fun FolderContentTopBar(
             verticalAlignment = Alignment.CenterVertically) {
               // Update the updatedName state whenever the folder state changes to display it in the
               // title
-              LaunchedEffect(folder?.name) { onUpdateName(folder?.name ?: "Folder name not found") }
+              LaunchedEffect(folder?.name) {
+                onUpdateName(folder?.name ?: context.getString(R.string.folder_name_not_found))
+              }
               Spacer(modifier = Modifier.weight(2f))
               Icon(
                   painter = painterResource(id = R.drawable.open_folder_icon),
@@ -274,7 +277,7 @@ fun FolderContentTopBar(
             menuItems =
                 listOf(
                     CustomDropDownMenuItem(
-                        text = { Text("Rename folder") },
+                        text = { Text(stringResource(R.string.rename_folder)) },
                         icon = {
                           Icon(
                               imageVector = Icons.Default.Edit, contentDescription = "RenameFolder")
@@ -285,7 +288,7 @@ fun FolderContentTopBar(
                         },
                         modifier = Modifier.testTag("renameFolderButton")),
                     CustomDropDownMenuItem(
-                        text = { Text("Delete folder") },
+                        text = { Text(stringResource(R.string.delete_folder)) },
                         icon = {
                           Icon(
                               painter = painterResource(id = R.drawable.folder_delete_icon),
@@ -320,7 +323,7 @@ fun FolderContentTopBar(
                         },
                         modifier = Modifier.testTag("deleteFolderButton")),
                     CustomDropDownMenuItem(
-                        text = { Text("Delete folder contents") },
+                        text = { Text(stringResource(R.string.delete_folder_contents)) },
                         icon = {
                           Icon(
                               painter = painterResource(id = R.drawable.delete_folder_contents),
@@ -413,7 +416,7 @@ fun CreateSubItemFab(
       menuItems =
           listOf(
               CustomDropDownMenuItem(
-                  text = { Text("Create note") },
+                  text = { Text(stringResource(R.string.create_note)) },
                   icon = {
                     Icon(
                         painter = painterResource(id = R.drawable.add_note_icon),
@@ -432,7 +435,7 @@ fun CreateSubItemFab(
                   },
                   modifier = Modifier.testTag("createNote")),
               CustomDropDownMenuItem(
-                  text = { Text("Create folder") },
+                  text = { Text(stringResource(R.string.create_folder)) },
                   icon = {
                     Icon(
                         painter = painterResource(id = R.drawable.folder_create_icon),
@@ -488,6 +491,8 @@ fun FolderContentScreenGrid(
       navigationActions = navigationActions,
       paddingValues = paddingValues,
       columnContent = {
-        Text(modifier = Modifier.testTag("emptyFolderPrompt"), text = "This folder is empty.")
+        Text(
+            modifier = Modifier.testTag("emptyFolderPrompt"),
+            text = stringResource(R.string.this_folder_is_empty))
       })
 }
