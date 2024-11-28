@@ -6,7 +6,9 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.draganddrop.dragAndDropSource
 import androidx.compose.foundation.draganddrop.dragAndDropTarget
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Card
@@ -126,11 +128,12 @@ fun FolderItem(
                       }),
       colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.background)) {
         Column(
-            modifier = Modifier.padding(8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+            modifier = Modifier.padding(8.dp).fillMaxWidth(),
+            verticalArrangement = Arrangement.Center) {
               Image(
                   painter = painterResource(id = R.drawable.folder_icon),
                   contentDescription = "Folder Icon",
-                  modifier = Modifier.size(80.dp))
+                  modifier = Modifier.size(80.dp).align(Alignment.CenterHorizontally))
 
               Text(
                   modifier = Modifier.align(Alignment.CenterHorizontally),
