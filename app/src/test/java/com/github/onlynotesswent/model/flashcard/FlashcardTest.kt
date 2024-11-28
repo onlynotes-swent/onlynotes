@@ -1,5 +1,6 @@
 package com.github.onlynotesswent.model.flashcard
 
+import com.github.onlynotesswent.model.flashcard.deck.Deck
 import com.google.firebase.Timestamp
 import junit.framework.TestCase.assertEquals
 import org.junit.Test

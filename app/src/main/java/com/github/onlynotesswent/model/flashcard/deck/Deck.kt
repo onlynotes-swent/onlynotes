@@ -1,4 +1,4 @@
-package com.github.onlynotesswent.model.flashcard
+package com.github.onlynotesswent.model.flashcard.deck
 
 /**
  * Represents a flashcard deck.
