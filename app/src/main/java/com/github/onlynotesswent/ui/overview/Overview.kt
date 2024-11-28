@@ -27,6 +27,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.github.onlynotesswent.R
 import com.github.onlynotesswent.model.folder.Folder
@@ -150,7 +151,7 @@ fun OverviewScreen(
                   navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
                 }
               },
-              action = "Create")
+              action = stringResource(R.string.create))
         }
       }
 }
@@ -179,7 +180,7 @@ fun CreateItemFab(
       menuItems =
           listOf(
               CustomDropDownMenuItem(
-                  text = { Text("Create note") },
+                  text = { Text(stringResource(R.string.create_note)) },
                   icon = {
                     Icon(
                         painter = painterResource(id = R.drawable.add_note_icon),
@@ -192,7 +193,7 @@ fun CreateItemFab(
                   },
                   modifier = Modifier.testTag("createNote")),
               CustomDropDownMenuItem(
-                  text = { Text("Create folder") },
+                  text = { Text(stringResource(R.string.create_folder)) },
                   icon = {
                     Icon(
                         painter = painterResource(id = R.drawable.folder_create_icon),
@@ -255,7 +256,7 @@ fun OverviewScreenGrid(
       columnContent = {
         Text(
             modifier = Modifier.testTag("emptyNoteAndFolderPrompt"),
-            text = "You have no notes or folders yet.",
+            text = stringResource(R.string.you_have_no_notes_or_folders_yet),
             color = MaterialTheme.colorScheme.onBackground)
         Spacer(modifier = Modifier.height(50.dp))
         RefreshButton {
@@ -277,7 +278,7 @@ fun RefreshButton(onClick: () -> Unit) {
       onClick = onClick,
       colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surface),
       modifier = Modifier.testTag("refreshButton")) {
-        Text("Refresh", color = MaterialTheme.colorScheme.onSurface)
+        Text(stringResource(R.string.refresh), color = MaterialTheme.colorScheme.onSurface)
         Icon(
             imageVector = Icons.Default.Refresh,
             contentDescription = "Refresh",

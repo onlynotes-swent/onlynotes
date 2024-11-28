@@ -26,6 +26,7 @@ import androidx.compose.ui.draganddrop.DragAndDropTransferData
 import androidx.compose.ui.draganddrop.toAndroidDragEvent
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -150,7 +151,7 @@ fun FolderItem(
  * @param onDismiss callback to be invoked when the dialog is dismissed
  * @param onConfirm callback to be invoked when the user confirms the new name
  * @param action the action to be performed (create or rename)
- * @param oldVis the old visibility of the folder (if renaming)
+ * @param oldVisibility the old visibility of the folder (if renaming)
  * @param oldName the old name of the folder (if renaming)
  */
 @Composable

@@ -21,9 +21,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.github.onlynotesswent.R
 import com.github.onlynotesswent.model.common.Visibility
 import com.github.onlynotesswent.model.folder.Folder
 
@@ -61,7 +63,7 @@ fun ConfirmationPopup(title: String, text: String, onConfirm: () -> Unit, onDism
               // Call the confirm action
               onConfirm()
             }) {
-              Text(text = "Yes", color = MaterialTheme.colorScheme.error)
+              Text(text = stringResource(R.string.yes), color = MaterialTheme.colorScheme.error)
             }
       },
       dismissButton = {
@@ -71,7 +73,7 @@ fun ConfirmationPopup(title: String, text: String, onConfirm: () -> Unit, onDism
               // Call the dismissal action
               onDismiss()
             }) {
-              Text(text = "No")
+              Text(text = stringResource(R.string.no))
             }
       })
 }
@@ -109,15 +111,15 @@ fun CreationDialog(
             Row(
                 modifier = Modifier.fillMaxWidth(0.92f),
                 horizontalArrangement = Arrangement.Start) {
-                  Text("$action Note", style = MaterialTheme.typography.titleLarge)
+                  Text("$action $type", style = MaterialTheme.typography.titleLarge)
                 }
             OutlinedTextField(
                 value = name,
                 onValueChange = { name = Folder.formatName(it) },
-                label = { Text("${type} Name") },
+                label = { Text("$type Name") },
                 modifier = Modifier.testTag("input${type}Name"))
             OptionDropDownMenu(
-                value = visibility?.toReadableString() ?: "Choose visibility",
+                value = visibility?.toReadableString() ?: stringResource(R.string.choose_visibility),
                 expanded = expandedVisibility,
                 buttonTag = "visibilityButton",
                 menuTag = "visibilityMenu",
@@ -129,7 +131,7 @@ fun CreationDialog(
 
             Row(modifier = Modifier.fillMaxWidth(0.92f), horizontalArrangement = Arrangement.End) {
               Button(onClick = onDismiss, modifier = Modifier.testTag("dismiss${type}Action")) {
-                Text("Cancel")
+                Text(stringResource(R.string.cancel))
               }
               Button(
                   enabled = name.isNotEmpty() && visibility != null,

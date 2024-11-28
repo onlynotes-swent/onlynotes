@@ -51,10 +51,12 @@ import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 import coil.compose.rememberAsyncImagePainter
+import com.github.onlynotesswent.R
 import com.github.onlynotesswent.model.file.FileType
 import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.folder.FolderViewModel
@@ -110,7 +112,7 @@ fun EditProfileScreen(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally) {
-          Text("User not found ...")
+          Text(stringResource(R.string.user_not_found))
         }
     Log.e("EditProfileScreen", "User not found")
   } else
@@ -129,7 +131,7 @@ fun EditProfileScreen(
           },
           topBar = {
             TopProfileBar(
-                "Edit Profile",
+                stringResource(R.string.edit_profile),
                 navigationActions,
                 userViewModel,
                 includeBackButton = true,
@@ -240,13 +242,13 @@ fun EditProfileScreen(
                               contentColor = MaterialTheme.colorScheme.error),
                       border = BorderStroke(1.dp, MaterialTheme.colorScheme.error),
                       onClick = { showDeleteAccountAlert.value = true },
-                      content = { Text("Delete Account") })
+                      content = { Text(stringResource(R.string.delete_account)) })
 
                   if (showDeleteAccountAlert.value) {
                     AlertDialog(
                         onDismissRequest = { showDeleteAccountAlert.value = false },
-                        title = { Text("Delete Account") },
-                        text = { Text("Are you sure you want to delete your account?") },
+                        title = { Text(stringResource(R.string.delete_account)) },
+                        text = { Text(stringResource(R.string.delete_account_prompt)) },
                         modifier = Modifier.testTag("deleteAccountAlert"),
                         confirmButton = {
                           Button(
@@ -266,20 +268,20 @@ fun EditProfileScreen(
                                     user.value!!.uid,
                                     onSuccess = { navigationActions.navigateTo(Route.AUTH) })
                               },
-                              content = { Text("Yes") })
+                              content = { Text(stringResource(R.string.yes)) })
                         },
                         dismissButton = {
                           Button(
                               modifier = Modifier.testTag("dismissDeleteButton"),
                               onClick = { showDeleteAccountAlert.value = false },
-                              content = { Text("No") })
+                              content = { Text(stringResource(R.string.no)) })
                         })
                   }
                   if (showGoingBackWithoutSavingChanges.value) {
                     AlertDialog(
                         onDismissRequest = { showGoingBackWithoutSavingChanges.value = false },
-                        title = { Text("Unsaved changes") },
-                        text = { Text("Are you sure you want to go back without saving changes?") },
+                        title = { Text(stringResource(R.string.discard_changes)) },
+                        text = { Text(stringResource(R.string.discard_changes_text)) },
                         modifier = Modifier.testTag("goingBackAlert"),
                         confirmButton = {
                           Button(
@@ -291,13 +293,13 @@ fun EditProfileScreen(
                                 isProfilePictureUpToDate.value = !hasProfilePictureBeenChanged.value
                                 navigationActions.goBack()
                               },
-                              content = { Text("Yes") })
+                              content = { Text(stringResource(R.string.yes)) })
                         },
                         dismissButton = {
                           Button(
                               modifier = Modifier.testTag("dismissGoingBack"),
                               onClick = { showGoingBackWithoutSavingChanges.value = false },
-                              content = { Text("No") })
+                              content = { Text(stringResource(R.string.no)) })
                         })
                   }
                 }
@@ -407,7 +409,7 @@ fun BottomSheetContent(
           // If the user has a profile picture, display the edit and remove options
           Column(horizontalAlignment = Alignment.Start) {
             BottomSheetRow(
-                {
+                onClick = {
                   profilePictureTaker.setOnImageSelected { uri ->
                     if (uri != null) {
                       profilePictureUri.value = uri.toString()
@@ -417,26 +419,26 @@ fun BottomSheetContent(
                   profilePictureTaker.pickImage()
                   onClose()
                 },
-                "Edit profile picture",
-                Icons.Default.Edit,
-                MaterialTheme.colorScheme.tertiary,
-                "editProfilePicture")
+                description = stringResource(R.string.edit_profile_picture),
+                icon = Icons.Default.Edit,
+                color = MaterialTheme.colorScheme.tertiary,
+                testTag = "editProfilePicture")
             Spacer(modifier = Modifier.height(16.dp))
             BottomSheetRow(
-                {
+                onClick = {
                   profilePictureUri.value = ""
                   hasProfilePictureBeenChanged.value = true
                   onClose()
                 },
-                "Remove profile picture",
-                Icons.Default.Delete,
-                MaterialTheme.colorScheme.tertiary,
-                "removeProfilePicture")
+                description = stringResource(R.string.remove_profile_picture),
+                icon = Icons.Default.Delete,
+                color = MaterialTheme.colorScheme.tertiary,
+                testTag = "removeProfilePicture")
           }
         } else {
           // If the user doesn't have a profile picture, display the add option
           BottomSheetRow(
-              {
+              onClick = {
                 profilePictureTaker.setOnImageSelected { uri ->
                   if (uri != null) {
                     profilePictureUri.value = uri.toString()
@@ -446,10 +448,10 @@ fun BottomSheetContent(
                 profilePictureTaker.pickImage()
                 onClose()
               },
-              "Add a profile picture",
-              Icons.Default.Add,
-              MaterialTheme.colorScheme.tertiary,
-              "addProfilePicture")
+              description = stringResource(R.string.add_a_profile_picture),
+              icon = Icons.Default.Add,
+              color = MaterialTheme.colorScheme.tertiary,
+              testTag = "addProfilePicture")
         }
       }
 }
