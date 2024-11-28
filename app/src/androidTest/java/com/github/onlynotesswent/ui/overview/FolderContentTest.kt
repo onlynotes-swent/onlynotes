@@ -1,6 +1,8 @@
 package com.github.onlynotesswent.ui.overview
 
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsEnabled
+import androidx.compose.ui.test.assertIsNotDisplayed
 import androidx.compose.ui.test.filter
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
@@ -102,6 +104,7 @@ class FolderContentTest {
       listOf(Folder(id = "2", name = "name", userId = "2", parentFolderId = "1"))
 
   private val subFolder = Folder("3", "sub name", "1", "1")
+  private val folder = Folder("1", "1", "1")
   @get:Rule val composeTestRule = createComposeRule()
 
   @Before
@@ -143,16 +146,15 @@ class FolderContentTest {
 
     noteViewModel.getRootNotesFrom("1")
     folderViewModel.getRootFoldersFromUid("1")
-    val folder = Folder("1", "1", "1")
-    folderViewModel.addFolder(folder)
-    folderViewModel.selectedFolder(folder)
-    composeTestRule.setContent {
-      FolderContentScreen(mockNavigationActions, folderViewModel, noteViewModel, userViewModel)
-    }
+    //folderViewModel.addFolder(folder)
   }
 
   @Test
   fun displayBaseComponents() {
+    folderViewModel.selectedFolder(folder)
+    composeTestRule.setContent {
+        FolderContentScreen(mockNavigationActions, folderViewModel, noteViewModel, userViewModel)
+    }
     composeTestRule.onNodeWithTag("folderContentScreen").assertIsDisplayed()
     composeTestRule.onNodeWithTag("folderContentTitle").assertIsDisplayed()
     composeTestRule.onNodeWithTag("goBackButton").assertIsDisplayed()
@@ -163,6 +165,10 @@ class FolderContentTest {
 
   @Test
   fun createFolderAndNoteFabWorks() {
+    folderViewModel.selectedFolder(folder)
+    composeTestRule.setContent {
+        FolderContentScreen(mockNavigationActions, folderViewModel, noteViewModel, userViewModel)
+    }
     composeTestRule.onNodeWithTag("createSubNoteOrSubFolder").assertIsDisplayed()
     composeTestRule.onNodeWithTag("createSubNoteOrSubFolder").performClick()
     composeTestRule.onNodeWithTag("createNote").assertIsDisplayed()
@@ -176,18 +182,18 @@ class FolderContentTest {
     composeTestRule.onNodeWithTag("confirmFolderAction").performClick()
   }
 
-  /*@Test
+  @Test
   fun createFolder() {
-      val addFolder = Folder(
-          id = "4",
-          name = "Sample Folder Name",
-          userId = "1",
-          parentFolderId = "1")
+      folderViewModel.selectedFolder(folder)
+      composeTestRule.setContent {
+          FolderContentScreen(mockNavigationActions, folderViewModel, noteViewModel, userViewModel)
+      }
 
-      `when`(mockFolderRepository.addFolder(eq(addFolder), any(), any())).thenAnswer { invocation ->
+      `when`(mockFolderRepository.addFolder(any(), any(), any())).thenAnswer { invocation ->
         val onSuccess = invocation.getArgument<() -> Unit>(1)
         onSuccess()
       }
+      `when`(mockFolderRepository.getNewFolderId()).thenReturn("3")
       composeTestRule.onNodeWithTag("createSubNoteOrSubFolder").assertIsDisplayed()
       composeTestRule.onNodeWithTag("createSubNoteOrSubFolder").performClick()
       composeTestRule.onNodeWithTag("createFolder").assertIsDisplayed()
@@ -196,18 +202,28 @@ class FolderContentTest {
       composeTestRule.onNodeWithTag("inputFolderName").assertIsDisplayed()
       composeTestRule.onNodeWithTag("confirmFolderAction").assertIsDisplayed()
       composeTestRule.onNodeWithTag("dismissFolderAction").assertIsDisplayed()
-      composeTestRule.onNodeWithTag("inputFolderName").performTextInput("Sample Folder Name")
+      composeTestRule.onNodeWithTag("inputFolderName").performTextInput("sub name")
+
+      composeTestRule.onNodeWithTag("visibilityDropDown").assertIsNotDisplayed()
+      composeTestRule.onNodeWithTag("visibilityButton").assertIsDisplayed().performClick()
+
+      composeTestRule.onNodeWithTag("item--Public").assertIsDisplayed()
+      composeTestRule.onNodeWithTag("item--Friends Only").assertIsDisplayed()
+      composeTestRule.onNodeWithTag("item--Private").assertIsDisplayed().performClick()
+      composeTestRule.onNodeWithTag("confirmFolderAction").assertIsEnabled().assertIsDisplayed()
       composeTestRule.onNodeWithTag("confirmFolderAction").performClick()
-      `when`(mockFolderRepository.getSubFoldersOf(eq("1"), any(), any())).then { invocation ->
-        val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(1)
-        onSuccess(listOf(addFolder))
-      }
-      verify(mockNavigationActions).navigateTo(Screen.FOLDER_CONTENTS.replace("{folderId}", "4"))
-      composeTestRule.onNodeWithTag("folderCard").assertIsDisplayed()
-  }*/
+
+      verify(mockFolderRepository).addFolder(any(), any(), any())
+      verify(mockNavigationActions).navigateTo(Screen.FOLDER_CONTENTS.replace("{folderId}", "3"))
+
+  }
 
   @Test
   fun changeFolderName() {
+    folderViewModel.selectedFolder(folder)
+    composeTestRule.setContent {
+        FolderContentScreen(mockNavigationActions, folderViewModel, noteViewModel, userViewModel)
+    }
     composeTestRule.onNodeWithTag("folderSettingsButton").performClick()
     composeTestRule.onNodeWithTag("renameFolderButton").assertIsDisplayed()
     composeTestRule.onNodeWithTag("deleteFolderButton").assertIsDisplayed()
@@ -220,6 +236,10 @@ class FolderContentTest {
 
   @Test
   fun deleteFolderButtonIsDisplayed() {
+    folderViewModel.selectedFolder(folder)
+    composeTestRule.setContent {
+        FolderContentScreen(mockNavigationActions, folderViewModel, noteViewModel, userViewModel)
+    }
     composeTestRule.onNodeWithTag("folderSettingsButton").performClick()
     composeTestRule.onNodeWithTag("renameFolderButton").assertIsDisplayed()
     composeTestRule.onNodeWithTag("deleteFolderButton").assertIsDisplayed()
@@ -227,6 +247,10 @@ class FolderContentTest {
 
   @Test
   fun deleteFolderContents() {
+    folderViewModel.selectedFolder(folder)
+    composeTestRule.setContent {
+        FolderContentScreen(mockNavigationActions, folderViewModel, noteViewModel, userViewModel)
+    }
     composeTestRule.onNodeWithTag("folderSettingsButton").performClick()
     composeTestRule.onNodeWithTag("deleteFolderContentsButton").assertIsDisplayed()
     composeTestRule.onNodeWithTag("deleteFolderContentsButton").performClick()
@@ -235,6 +259,10 @@ class FolderContentTest {
 
   @Test
   fun deleteRootFolder() {
+    folderViewModel.selectedFolder(folder)
+    composeTestRule.setContent {
+        FolderContentScreen(mockNavigationActions, folderViewModel, noteViewModel, userViewModel)
+    }
     composeTestRule.onNodeWithTag("folderSettingsButton").performClick()
     composeTestRule.onNodeWithTag("deleteFolderButton").assertIsDisplayed()
     composeTestRule.onNodeWithTag("deleteFolderButton").performClick()
@@ -244,25 +272,32 @@ class FolderContentTest {
 
   @Test
   fun deleteSubFolder() {
-    `when`(mockFolderRepository.getSubFoldersOf(eq("1"), any(), any())).then { invocation ->
-      val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(1)
-      onSuccess(listOf(subFolder))
-    }
-    folderViewModel.getSubFoldersOf("1")
-    // Go subfolder
-    composeTestRule.onNodeWithTag("folderCard").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("folderCard").performClick()
 
-    val folderContentScreen =
-        Screen.FOLDER_CONTENTS.replace(oldValue = "{folderId}", newValue = subFolder.id)
-    verify(mockNavigationActions).navigateTo(folderContentScreen)
+    folderViewModel.selectedFolder(subFolder)
+    composeTestRule.setContent {
+        FolderContentScreen(mockNavigationActions, folderViewModel, noteViewModel, userViewModel)
+    }
+
+    `when`(mockFolderRepository.getSubFoldersOf(eq("3"), any(), any())).then { invocation ->
+      val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(1)
+      onSuccess(emptyList())
+    }
+
+    folderViewModel.getSubFoldersOf(subFolder.id)
+
     composeTestRule.onNodeWithTag("folderSettingsButton").performClick()
     composeTestRule.onNodeWithTag("deleteFolderButton").assertIsDisplayed()
     composeTestRule.onNodeWithTag("deleteFolderButton").performClick()
+
+    verify(mockNavigationActions).navigateTo(Screen.FOLDER_CONTENTS.replace("{folderId}", "1"))
   }
 
   @Test
   fun moveOutDifferentUserDoesNotMoveNote() {
+    folderViewModel.selectedFolder(folder)
+    composeTestRule.setContent {
+        FolderContentScreen(mockNavigationActions, folderViewModel, noteViewModel, userViewModel)
+    }
     `when`(mockNoteRepository.getNotesFromFolder(eq("2"), any(), any())).then { invocation ->
       val onSuccess = invocation.getArgument<(List<Note>) -> Unit>(1)
       onSuccess(subNoteList1)
@@ -281,6 +316,10 @@ class FolderContentTest {
 
   @Test
   fun moveOutSameUserDoesMoveNote() {
+    folderViewModel.selectedFolder(folder)
+    composeTestRule.setContent {
+        FolderContentScreen(mockNavigationActions, folderViewModel, noteViewModel, userViewModel)
+    }
     `when`(mockNoteRepository.getNotesFromFolder(eq("1"), any(), any())).then { invocation ->
       val onSuccess = invocation.getArgument<(List<Note>) -> Unit>(1)
       onSuccess(subNoteList2)
@@ -304,6 +343,10 @@ class FolderContentTest {
 
   @Test
   fun moveOutMovesNoteToParentFolder() {
+    folderViewModel.selectedFolder(folder)
+    composeTestRule.setContent {
+        FolderContentScreen(mockNavigationActions, folderViewModel, noteViewModel, userViewModel)
+    }
     `when`(mockFolderRepository.getSubFoldersOf(eq("1"), any(), any())).then { invocation ->
       val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(1)
       onSuccess(subFolderListSameUser)
@@ -336,6 +379,10 @@ class FolderContentTest {
 
   @Test
   fun deleteFolderContentsDifferentUserDoesNotDelete() {
+    folderViewModel.selectedFolder(folder)
+    composeTestRule.setContent {
+        FolderContentScreen(mockNavigationActions, folderViewModel, noteViewModel, userViewModel)
+    }
     `when`(mockFolderRepository.getSubFoldersOf(eq("1"), any(), any())).then { invocation ->
       val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(1)
       onSuccess(folderListDifferentUser)
@@ -363,6 +410,10 @@ class FolderContentTest {
 
   @Test
   fun createNoteButtonCallsNavActions() {
+    folderViewModel.selectedFolder(folder)
+    composeTestRule.setContent {
+        FolderContentScreen(mockNavigationActions, folderViewModel, noteViewModel, userViewModel)
+    }
     composeTestRule.onNodeWithTag("createSubNoteOrSubFolder").assertIsDisplayed()
     composeTestRule.onNodeWithTag("createSubNoteOrSubFolder").performClick()
     composeTestRule.onNodeWithTag("createNote").assertIsDisplayed()
