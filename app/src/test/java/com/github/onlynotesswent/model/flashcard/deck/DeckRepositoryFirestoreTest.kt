@@ -1,6 +1,7 @@
 package com.github.onlynotesswent.model.flashcard.deck
 
 import android.util.Log
+import com.google.android.gms.tasks.OnSuccessListener
 import com.google.android.gms.tasks.Task
 import com.google.firebase.FirebaseApp
 import com.google.firebase.firestore.CollectionReference
@@ -102,8 +103,7 @@ class DeckRepositoryFirestoreTest {
     // Mock the behavior of the QuerySnapshot task
     `when`(mockQuery.get()).thenReturn(mockQueryTask)
     `when`(mockQueryTask.addOnSuccessListener(any())).thenAnswer { invocation ->
-      val listener =
-          invocation.arguments[0] as com.google.android.gms.tasks.OnSuccessListener<QuerySnapshot>
+      val listener = invocation.getArgument<OnSuccessListener<QuerySnapshot>>(0)
       // Simulate a result being passed to the listener
       listener.onSuccess(mockQuerySnapshot)
       mockQueryTask
@@ -113,7 +113,7 @@ class DeckRepositoryFirestoreTest {
     // Mock the behavior of the DocumentReference set operation
     `when`(mockDocumentReference.set(any())).thenReturn(mockResolveTask)
     `when`(mockResolveTask.addOnSuccessListener(any())).thenAnswer { invocation ->
-      val listener = invocation.arguments[0] as com.google.android.gms.tasks.OnSuccessListener<Void>
+      val listener = invocation.getArgument<OnSuccessListener<Void>>(0)
       listener.onSuccess(null)
       mockResolveTask
     }
@@ -122,9 +122,7 @@ class DeckRepositoryFirestoreTest {
     // Mock the behavior of the DocumentReference get operation
     `when`(mockDocumentReference.get()).thenReturn(mockDocumentTask)
     `when`(mockDocumentTask.addOnSuccessListener(any())).thenAnswer { invocation ->
-      val listener =
-          invocation.arguments[0]
-              as com.google.android.gms.tasks.OnSuccessListener<DocumentSnapshot>
+      val listener = invocation.getArgument<OnSuccessListener<DocumentSnapshot>>(0)
       listener.onSuccess(mockDocumentSnapshot)
       mockDocumentTask
     }
