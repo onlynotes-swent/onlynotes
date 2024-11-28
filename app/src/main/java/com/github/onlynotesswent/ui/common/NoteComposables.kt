@@ -39,6 +39,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.github.onlynotesswent.model.common.Course
 import com.github.onlynotesswent.model.common.Visibility
 import com.github.onlynotesswent.model.folder.FolderViewModel
 import com.github.onlynotesswent.model.note.Note
@@ -178,10 +179,12 @@ fun NoteItem(
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onPrimaryContainer)
           }
-          Text(
-              text = note.noteCourse.fullName(),
-              style = MaterialTheme.typography.bodySmall,
-              color = MaterialTheme.colorScheme.onPrimaryContainer)
+          if (note.noteCourse != null && note.noteCourse != Course.EMPTY) {
+            Text(
+                text = note.noteCourse.fullName(),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onPrimaryContainer)
+          }
         }
       }
 }

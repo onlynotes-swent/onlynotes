@@ -29,7 +29,6 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.github.onlynotesswent.R
-import com.github.onlynotesswent.model.common.Course
 import com.github.onlynotesswent.model.folder.Folder
 import com.github.onlynotesswent.model.folder.FolderViewModel
 import com.github.onlynotesswent.model.note.Note
@@ -123,7 +122,6 @@ fun OverviewScreen(
                         title = newName,
                         date = Timestamp.now(),
                         visibility = visibility,
-                        noteCourse = Course.EMPTY,
                         userId = userViewModel.currentUser.value!!.uid,
                         folderId = parentFolderId.value)
                 noteViewModel.addNote(note, userViewModel.currentUser.value!!.uid)
