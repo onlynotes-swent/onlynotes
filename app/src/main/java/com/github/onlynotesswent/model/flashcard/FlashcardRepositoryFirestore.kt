@@ -10,9 +10,9 @@ class FlashcardRepositoryFirestore(private val db: FirebaseFirestore) : Flashcar
 
   private val collectionPath = "flashcards"
 
-    companion object {
-        const val TAG = "FlashcardRepositoryFirestore"
-    }
+  companion object {
+    const val TAG = "FlashcardRepositoryFirestore"
+  }
 
   /**
    * Converts a Firestore DocumentSnapshot to a Flashcard object. Try catch block is used to handle
