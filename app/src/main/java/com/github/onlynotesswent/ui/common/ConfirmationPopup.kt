@@ -7,8 +7,10 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.sp
+import com.github.onlynotesswent.R
 
 /**
  * Composable function to display a popup dialog with a title, text, and confirm and dismiss
@@ -44,7 +46,7 @@ fun ConfirmationPopup(title: String, text: String, onConfirm: () -> Unit, onDism
               // Call the confirm action
               onConfirm()
             }) {
-              Text(text = "Yes", color = MaterialTheme.colorScheme.error)
+              Text(text = stringResource(R.string.yes), color = MaterialTheme.colorScheme.error)
             }
       },
       dismissButton = {
@@ -54,7 +56,7 @@ fun ConfirmationPopup(title: String, text: String, onConfirm: () -> Unit, onDism
               // Call the dismissal action
               onDismiss()
             }) {
-              Text(text = "No")
+              Text(text = stringResource(R.string.no))
             }
       })
 }
