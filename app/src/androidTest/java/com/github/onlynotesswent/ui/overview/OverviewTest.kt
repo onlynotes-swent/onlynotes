@@ -238,6 +238,14 @@ class OverviewTest {
     composeTestRule.onNodeWithTag("item--Friends Only").assertIsDisplayed()
     composeTestRule.onNodeWithTag("item--Private").assertIsDisplayed().performClick()
     composeTestRule.onNodeWithTag("confirmNoteAction").assertIsDisplayed()
+
+    // mock get newUid
+    `when`(noteRepository.getNewUid()).thenReturn("2")
+
+    composeTestRule.onNodeWithTag("confirmNoteAction").performClick()
+
+    verify(noteRepository).addNote(any(), any(), any())
+    verify(navigationActions).navigateTo(screen = Screen.EDIT_NOTE)
   }
 
   @Test
