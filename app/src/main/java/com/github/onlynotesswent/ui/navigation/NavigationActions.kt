@@ -23,7 +23,6 @@ object Screen {
   const val AUTH = "Auth Screen"
   const val OVERVIEW = "Overview Screen"
   const val CREATE_USER = "Create User Screen"
-  const val ADD_NOTE = "Add Note Screen"
   const val EDIT_NOTE = "Edit Note Screen"
   const val EDIT_NOTE_COMMENT = "Comment Note Screen"
   const val EDIT_NOTE_PDF = "Edit Note PDF Screen"

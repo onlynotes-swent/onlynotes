@@ -12,7 +12,8 @@ import java.security.MessageDigest
  * @property title The title of the note.
  * @property date The timestamp of when the note was created.
  * @property visibility The visibility setting for the note.
- * @property noteCourse The [Course] object associated with this note.
+ * @property noteCourse The [Course] object associated with this note. If the note is not associated
+ *   with a course, this value is `null`.
  * @property userId The unique identifier of the user who created the note.
  * @property folderId The unique identifier of the folder the note is stored in. If the note is not
  *   assigned to a folder, this value is `null`.
@@ -23,7 +24,7 @@ data class Note(
     val title: String,
     val date: Timestamp,
     val visibility: Visibility = Visibility.DEFAULT,
-    val noteCourse: Course,
+    val noteCourse: Course? = null,
     val userId: String,
     val folderId: String? = null,
     val comments: CommentCollection = CommentCollection()

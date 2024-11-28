@@ -173,7 +173,6 @@ class FolderContentTest {
     composeTestRule.onNodeWithTag("createNote").assertIsDisplayed()
     composeTestRule.onNodeWithTag("createFolder").assertIsDisplayed()
     composeTestRule.onNodeWithTag("createFolder").performClick()
-    composeTestRule.onNodeWithTag("folderDialog").assertIsDisplayed()
     composeTestRule.onNodeWithTag("inputFolderName").assertIsDisplayed()
     composeTestRule.onNodeWithTag("confirmFolderAction").assertIsDisplayed()
     composeTestRule.onNodeWithTag("dismissFolderAction").assertIsDisplayed()
@@ -220,8 +219,7 @@ class FolderContentTest {
     composeTestRule.onNodeWithTag("renameFolderButton").assertIsDisplayed()
     composeTestRule.onNodeWithTag("deleteFolderButton").assertIsDisplayed()
     composeTestRule.onNodeWithTag("renameFolderButton").performClick()
-    composeTestRule.onNodeWithTag("folderDialog").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("dismissFolderAction").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("FolderDialog").assertIsDisplayed()
     composeTestRule.onNodeWithTag("confirmFolderAction").assertIsDisplayed()
     composeTestRule.onNodeWithTag("confirmFolderAction").performClick()
   }

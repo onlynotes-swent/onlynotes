@@ -23,7 +23,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.github.onlynotesswent.R
 import com.github.onlynotesswent.model.user.User
 import com.github.onlynotesswent.model.user.UserRepositoryFirestore
 import com.github.onlynotesswent.model.user.UserViewModel
@@ -119,7 +121,7 @@ fun FirstNameTextField(newFirstName: MutableState<String>) {
   OutlinedTextField(
       value = newFirstName.value,
       onValueChange = { newFirstName.value = User.formatName(it) },
-      label = { Text("First Name") },
+      label = { Text(stringResource(R.string.first_name)) },
       modifier = Modifier.fillMaxWidth(0.8f).padding(vertical = 12.dp).testTag("inputFirstName"))
 }
 
@@ -135,7 +137,7 @@ fun UserNameTextField(newUserName: MutableState<String>, userNameError: MutableS
   OutlinedTextField(
       value = newUserName.value,
       onValueChange = { newUserName.value = User.formatUsername(it) },
-      label = { Text("* User Name") },
+      label = { Text(stringResource(R.string.user_name)) },
       isError = userNameError.value,
       modifier = Modifier.fillMaxWidth(0.8f).padding(vertical = 12.dp).testTag("inputUserName"))
 }
@@ -150,7 +152,7 @@ fun LastNameTextField(newLastName: MutableState<String>) {
   OutlinedTextField(
       value = newLastName.value,
       onValueChange = { newLastName.value = User.formatName(it) },
-      label = { Text("Last Name") },
+      label = { Text(stringResource(R.string.last_name)) },
       modifier = Modifier.fillMaxWidth(0.8f).padding(vertical = 12.dp).testTag("inputLastName"))
 }
 
@@ -166,6 +168,6 @@ fun SaveButton(onClick: () -> Unit, enabled: MutableState<Boolean>) {
       onClick = onClick,
       modifier = Modifier.fillMaxWidth(0.8f).padding(vertical = 16.dp).testTag("saveButton"),
       enabled = enabled.value) {
-        Text("Save")
+        Text(stringResource(R.string.save))
       }
 }
