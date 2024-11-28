@@ -119,7 +119,8 @@ fun CreationDialog(
                 label = { Text("$type Name") },
                 modifier = Modifier.testTag("input${type}Name"))
             OptionDropDownMenu(
-                value = visibility?.toReadableString() ?: stringResource(R.string.choose_visibility),
+                value =
+                    visibility?.toReadableString() ?: stringResource(R.string.choose_visibility),
                 expanded = expandedVisibility,
                 buttonTag = "visibilityButton",
                 menuTag = "visibilityMenu",
