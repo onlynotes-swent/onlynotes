@@ -77,6 +77,7 @@ class DeckRepositoryFirestore(private val db: FirebaseFirestore) : DeckRepositor
                     onSuccess(deck)
                 } else {
                     onFailure(Exception("Deck not found"))
+                    Log.e(TAG, "Deck not found by ID")
                 }
             }
             .addOnFailureListener { exception ->
