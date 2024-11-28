@@ -280,8 +280,8 @@ fun EditProfileScreen(
                   if (showGoingBackWithoutSavingChanges.value) {
                     AlertDialog(
                         onDismissRequest = { showGoingBackWithoutSavingChanges.value = false },
-                        title = { Text(stringResource(R.string.unsaved_changes)) },
-                        text = { Text(stringResource(R.string.go_back_without_saving_prompt)) },
+                        title = { Text(stringResource(R.string.discard_changes)) },
+                        text = { Text(stringResource(R.string.discard_changes_text)) },
                         modifier = Modifier.testTag("goingBackAlert"),
                         confirmButton = {
                           Button(

@@ -53,8 +53,6 @@
     <string name="edit_profile">Edit Profile</string>
     <string name="delete_account">Delete Account</string>
     <string name="delete_account_prompt">Are you sure you want to delete your account?</string>
-    <string name="unsaved_changes">Unsaved changes</string>
-    <string name="go_back_without_saving_prompt">Are you sure you want to go back without saving changes?</string>
     <string name="edit_profile_picture">Edit profile picture</string>
     <string name="remove_profile_picture">Remove profile picture</string>
     <string name="add_a_profile_picture">Add a profile picture</string>
