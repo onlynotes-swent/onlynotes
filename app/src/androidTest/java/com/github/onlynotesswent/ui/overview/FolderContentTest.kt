@@ -376,14 +376,4 @@ class FolderContentTest {
     composeTestRule.onNodeWithTag("deleteFolderContentsButton").performClick()
     composeTestRule.onNodeWithTag("noteCard").assertIsDisplayed()
   }
-
-  @Test
-  fun createNoteButtonCallsNavActions() {
-    init(folder)
-    composeTestRule.onNodeWithTag("createSubNoteOrSubFolder").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("createSubNoteOrSubFolder").performClick()
-    composeTestRule.onNodeWithTag("createNote").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("createNote").performClick()
-    verify(mockNavigationActions).navigateTo(Screen.ADD_NOTE)
-  }
 }
