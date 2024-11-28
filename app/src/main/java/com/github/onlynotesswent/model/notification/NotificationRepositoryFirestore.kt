@@ -1,7 +1,7 @@
 package com.github.onlynotesswent.model.notification
 
+import android.util.Log
 import com.google.firebase.Firebase
-import com.google.firebase.Timestamp
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
@@ -10,16 +10,21 @@ class NotificationRepositoryFirestore(private val db: FirebaseFirestore) : Notif
 
   private val collectionPath = "notifications"
 
-  fun documentSnapshotToNotification(document: DocumentSnapshot): Notification {
-    return Notification(
-        id = document.getString("id") ?: "",
-        title = document.getString("title") ?: "",
-        body = document.getString("body") ?: "",
-        senderId = document.getString("senderId"),
-        receiverId = document.getString("receiverId") ?: "",
-        timestamp = document.getTimestamp("timestamp") ?: Timestamp.now(),
-        read = document.getBoolean("read") ?: false,
-        type = Notification.Type.valueOf(document.getString("type") ?: "DEFAULT"))
+  fun documentSnapshotToNotification(document: DocumentSnapshot): Notification? {
+    return try {
+      Notification(
+          id = document.getString("id")!!,
+          title = document.getString("title")!!,
+          body = document.getString("body")!!,
+          senderId = document.getString("senderId"),
+          receiverId = document.getString("receiverId")!!,
+          timestamp = document.getTimestamp("timestamp")!!,
+          read = document.getBoolean("read")!!,
+          type = Notification.Type.valueOf(document.getString("type")!!))
+    } catch (e: Exception) {
+      Log.e(TAG, "Failed to convert document snapshot to notification", e)
+      null
+    }
   }
 
   override fun init(onSuccess: () -> Unit) {
@@ -41,9 +46,16 @@ class NotificationRepositoryFirestore(private val db: FirebaseFirestore) : Notif
         .get()
         .addOnSuccessListener { document ->
           if (!document.exists()) onNotificationNotFound()
-          else onSuccess(documentSnapshotToNotification(document))
+          else {
+            val notification = documentSnapshotToNotification(document)
+            if (notification != null) onSuccess(notification)
+            else onFailure(Exception("Failed to convert document snapshot to notification"))
+          }
         }
-        .addOnFailureListener(onFailure)
+        .addOnFailureListener {
+          onFailure(it)
+          Log.e(TAG, "Failed to get notification by ID", it)
+        }
   }
 
   override fun getNotificationByReceiverId(
@@ -55,9 +67,12 @@ class NotificationRepositoryFirestore(private val db: FirebaseFirestore) : Notif
         .whereEqualTo("receiverId", receiverId)
         .get()
         .addOnSuccessListener { querySnapshot ->
-          onSuccess(querySnapshot.documents.map { documentSnapshotToNotification(it) })
+          onSuccess(querySnapshot.documents.mapNotNull { documentSnapshotToNotification(it) })
         }
-        .addOnFailureListener(onFailure)
+        .addOnFailureListener {
+          onFailure(it)
+          Log.e(TAG, "Failed to get notifications by receiver ID", it)
+        }
   }
 
   override fun addNotification(
@@ -69,7 +84,10 @@ class NotificationRepositoryFirestore(private val db: FirebaseFirestore) : Notif
         .document(notification.id)
         .set(notification)
         .addOnSuccessListener { onSuccess() }
-        .addOnFailureListener(onFailure)
+        .addOnFailureListener {
+          onFailure(it)
+          Log.e(TAG, "Failed to add notification", it)
+        }
   }
 
   override fun updateNotification(
@@ -81,7 +99,10 @@ class NotificationRepositoryFirestore(private val db: FirebaseFirestore) : Notif
         .document(notification.id)
         .set(notification)
         .addOnSuccessListener { onSuccess() }
-        .addOnFailureListener(onFailure)
+        .addOnFailureListener {
+          onFailure(it)
+          Log.e(TAG, "Failed to update notification", it)
+        }
   }
 
   override fun deleteNotification(
@@ -93,6 +114,13 @@ class NotificationRepositoryFirestore(private val db: FirebaseFirestore) : Notif
         .document(id)
         .delete()
         .addOnSuccessListener { onSuccess() }
-        .addOnFailureListener(onFailure)
+        .addOnFailureListener {
+          onFailure(it)
+          Log.e(TAG, "Failed to delete notification", it)
+        }
+  }
+
+  companion object {
+    private const val TAG = "NotificationRepositoryFirestore"
   }
 }

@@ -124,7 +124,7 @@ fun OverviewScreen(
                         visibility = visibility,
                         userId = userViewModel.currentUser.value!!.uid,
                         folderId = parentFolderId.value)
-                noteViewModel.addNote(note, userViewModel.currentUser.value!!.uid)
+                noteViewModel.addNote(note)
                 noteViewModel.selectedNote(note)
                 showCreateNoteDialog = false
                 navigationActions.navigateTo(Screen.EDIT_NOTE)
@@ -143,8 +143,7 @@ fun OverviewScreen(
                         name = newName,
                         userId = userViewModel.currentUser.value!!.uid,
                         parentFolderId = parentFolderId.value,
-                        visibility = visibility),
-                    userViewModel.currentUser.value!!.uid)
+                        visibility = visibility))
                 showCreateFolderDialog = false
                 if (parentFolderId.value != null) {
                   navigationActions.navigateTo(Screen.FOLDER_CONTENTS)

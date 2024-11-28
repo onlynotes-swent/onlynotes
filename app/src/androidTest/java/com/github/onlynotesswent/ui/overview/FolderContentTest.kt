@@ -128,7 +128,7 @@ class FolderContentTest {
     noteViewModel.getRootNotesFrom("1")
     folderViewModel.getRootFoldersFromUid("1")
     val folder = Folder("1", "1", "1")
-    folderViewModel.addFolder(folder, "1")
+    folderViewModel.addFolder(folder)
     folderViewModel.selectedFolder(folder)
     composeTestRule.setContent {
       FolderContentScreen(mockNavigationActions, folderViewModel, noteViewModel, userViewModel)

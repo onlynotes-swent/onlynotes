@@ -94,8 +94,7 @@ fun FolderItem(
                             val draggedNote = noteViewModel.draggedNote.value
                             if (draggedNote != null && draggedNote.id == draggedObjectId) {
                               // Update the dragged note with the new folder Id
-                              noteViewModel.updateNote(
-                                  draggedNote.copy(folderId = folder.id), draggedNote.userId)
+                              noteViewModel.updateNote(draggedNote.copy(folderId = folder.id))
                               noteViewModel.draggedNote(null)
                               dropSuccess.value = true
                               return true
@@ -107,7 +106,7 @@ fun FolderItem(
                                 draggedFolder.id != folder.id) {
                               // Update the dragged folder with the new parent folder Id.
                               folderViewModel.updateFolder(
-                                  draggedFolder.copy(parentFolderId = folder.id), folder.userId)
+                                  draggedFolder.copy(parentFolderId = folder.id))
                               folderViewModel.draggedFolder(null)
                               // Set dropSuccess to true to indicate that the drop was successful
                               dropSuccess.value = true

@@ -85,7 +85,7 @@ class FileViewModelTest {
     val uid = "testUid"
     val fileType = FileType.PROFILE_PIC_JPEG
 
-    fileViewModel.getFile(uid, fileType, {}, {}, {})
+    fileViewModel.getFile(uid, fileType)
     verify(mockFileRepository).getFile(eq(uid), eq(fileType), any(), any(), any())
   }
 

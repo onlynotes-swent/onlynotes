@@ -35,7 +35,7 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
    *
    * Each field is separated by the `commentDelimiter` for easy parsing during retrieval.
    */
-  private fun convertCommentToString(comment: Note.Comment): String {
+  internal fun convertCommentToString(comment: Note.Comment): String {
     return comment.commentId +
         commentDelimiter +
         comment.userId +
@@ -74,7 +74,7 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
    * @return A list of snapshot strings where each string represents a Comment, formatted as
    *   "commentId<delimiter>userId<delimiter>content".
    */
-  private fun convertCommentsList(commentsList: List<Note.Comment>): List<String> {
+  internal fun convertCommentsList(commentsList: List<Note.Comment>): List<String> {
     return commentsList.map { convertCommentToString(it) }
   }
   /**
@@ -200,6 +200,7 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
           onSuccess(note)
         } else {
           onFailure(Exception("Note not found"))
+          Log.e(TAG, "Note not found")
         }
       } else {
         task.exception?.let { e ->
@@ -323,23 +324,21 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
    * Converts a Firestore DocumentSnapshot to a Note object.
    *
    * @param document The DocumentSnapshot to convert.
-   * @return The converted Note object.
+   * @return The converted Note object. Returns null if the conversion fails.
    */
   fun documentSnapshotToNote(document: DocumentSnapshot): Note? {
     return try {
       val id = document.id
-      val title = document.getString("title") ?: ""
-      val date = document.getTimestamp("date") ?: Timestamp.now()
-      val visibility =
-          Visibility.fromString(document.getString("visibility") ?: Visibility.DEFAULT.toString())
-      val userId = document.getString("userId") ?: return null
-      val courseCode = document.getString("courseCode") ?: ""
-      val courseName = document.getString("courseName") ?: ""
+      val title = document.getString("title")!!
+      val date = document.getTimestamp("date")!!
+      val visibility = Visibility.fromString(document.getString("visibility")!!)
+      val userId = document.getString("userId")!!
+      val courseCode = document.getString("courseCode")!!
+      val courseName = document.getString("courseName")!!
       val courseYear = document.getLong("courseYear")?.toInt()
-      val publicPath = document.getString("publicPath") ?: ""
+      val publicPath = document.getString("publicPath")!!
       val folderId = document.getString("folderId")
-      val comments =
-          commentStringToCommentClass(document.get("commentsList") as? List<String> ?: emptyList())
+      val comments = commentStringToCommentClass(document.get("commentsList") as List<String>)
 
       val course = Course(courseCode, courseName, courseYear, publicPath)
 

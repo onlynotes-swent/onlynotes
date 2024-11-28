@@ -1,6 +1,5 @@
 package com.github.onlynotesswent.model.user
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.initializer
@@ -65,27 +64,61 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
    * Refreshes the profile user to the specified user, used for displaying public profiles.
    *
    * @param uid The UID of the user to set as the profile user.
+   * @param onSuccess The function to call when the refresh is successful.
+   * @param onUserNotFound The function to call when the user is not found.
+   * @param onFailure The function to call when the refresh fails.
    */
-  fun refreshProfileUser(uid: String) {
+  fun refreshProfileUser(
+      uid: String,
+      onSuccess: () -> Unit = {},
+      onUserNotFound: () -> Unit = {},
+      onFailure: (Exception) -> Unit = {}
+  ) {
     repository.getUserById(
-        uid,
-        onSuccess = { _profileUser.value = it },
-        onUserNotFound = { _profileUser.value = null },
-        onFailure = { _profileUser.value = null })
+        id = uid,
+        onSuccess = {
+          onSuccess()
+          _profileUser.value = it
+        },
+        onUserNotFound = {
+          onUserNotFound()
+          _profileUser.value = null
+        },
+        onFailure = {
+          onFailure(it)
+          _profileUser.value = null
+        })
   }
 
   /**
    * Refreshes the current user by fetching the latest user data from the repository. If the current
    * user is not null, it retrieves the user by their UID and updates the current user state. If the
    * user is not found or an error occurs, the current user state is set to null.
+   *
+   * @param onSuccess The function to call when the refresh is successful.
+   * @param onUserNotFound The function to call when the user is not found.
+   * @param onFailure The function to call when the refresh fails.
    */
-  fun refreshCurrentUser() {
+  fun refreshCurrentUser(
+      onSuccess: () -> Unit = {},
+      onUserNotFound: () -> Unit = {},
+      onFailure: (Exception) -> Unit = {}
+  ) {
     _currentUser.value?.let { user ->
       repository.getUserById(
-          user.uid,
-          onSuccess = { _currentUser.value = it },
-          onUserNotFound = { _currentUser.value = null },
-          onFailure = { _currentUser.value = null })
+          id = user.uid,
+          onSuccess = {
+            onSuccess()
+            _currentUser.value = it
+          },
+          onUserNotFound = {
+            onUserNotFound()
+            _currentUser.value = null
+          },
+          onFailure = {
+            onFailure(it)
+            _currentUser.value = null
+          })
     }
   }
 
@@ -93,10 +126,10 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
    * Adds a new user to the repository, and sets the current user to the added user.
    *
    * @param user The user to add.
-   * @param onSuccess Callback to be invoked when the addition is successful.
-   * @param onFailure Callback to be invoked if an error occurs.
+   * @param onSuccess function to call when the user is successfully added.
+   * @param onFailure function to call when the adding fails.
    */
-  fun addUser(user: User, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) {
+  fun addUser(user: User, onSuccess: () -> Unit = {}, onFailure: (Exception) -> Unit = {}) {
     repository.addUser(
         user,
         {
@@ -110,10 +143,10 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
    * Updates the information of the current user locally and in the database.
    *
    * @param user The user with updated information.
-   * @param onSuccess Callback to be invoked when the update is successful.
-   * @param onFailure Callback to be invoked if an error occurs.
+   * @param onSuccess function to call when the user is successfully updated.
+   * @param onFailure function to call when the updating fails.
    */
-  fun updateUser(user: User, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) {
+  fun updateUser(user: User, onSuccess: () -> Unit = {}, onFailure: (Exception) -> Unit = {}) {
     repository.updateUser(
         user,
         {
@@ -125,25 +158,32 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
 
   /**
    * Retrieves all users from the repository and sets the all users state to the retrieved users.
+   *
+   * @param onSuccess function to call when the users are successfully retrieved.
+   * @param onFailure function to call when the retrieval fails.
    */
-  fun getAllUsers() {
+  fun getAllUsers(onSuccess: (List<User>) -> Unit = {}, onFailure: (Exception) -> Unit = {}) {
     repository.getAllUsers(
-        { _allUsers.value = it }, { Log.e("UserViewModel", "Failed to get all users", it) })
+        onSuccess = {
+          onSuccess(it)
+          _allUsers.value = it
+        },
+        onFailure = onFailure)
   }
 
   /**
    * Retrieves a user by their email, and sets the current user to the retrieved user.
    *
    * @param email The email of the user to retrieve.
-   * @param onSuccess Callback to be invoked with the retrieved user.
-   * @param onUserNotFound Callback to be invoked if the user is not found.
-   * @param onFailure Callback to be invoked if an error occurs.
+   * @param onSuccess function to call when the user is successfully retrieved.
+   * @param onUserNotFound function to call when the user is not found.
+   * @param onFailure function to call when the retrieval fails.
    */
   fun getCurrentUserByEmail(
       email: String,
-      onSuccess: (User) -> Unit,
-      onUserNotFound: () -> Unit,
-      onFailure: (Exception) -> Unit
+      onSuccess: (User) -> Unit = {},
+      onUserNotFound: () -> Unit = {},
+      onFailure: (Exception) -> Unit = {}
   ) {
     repository.getUserByEmail(
         email,
@@ -159,15 +199,15 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
    * Retrieves a user by their ID.
    *
    * @param id The ID of the user to retrieve.
-   * @param onSuccess Callback to be invoked with the retrieved user.
-   * @param onUserNotFound Callback to be invoked if the user is not found.
-   * @param onFailure Callback to be invoked if an error occurs.
+   * @param onSuccess function to call when the user is successfully retrieved.
+   * @param onUserNotFound function to call when the user is not found.
+   * @param onFailure function to call when the retrieval fails.
    */
   fun getUserById(
       id: String,
-      onSuccess: (User) -> Unit,
-      onUserNotFound: () -> Unit,
-      onFailure: (Exception) -> Unit
+      onSuccess: (User) -> Unit = {},
+      onUserNotFound: () -> Unit = {},
+      onFailure: (Exception) -> Unit = {}
   ) {
     repository.getUserById(id, onSuccess, onUserNotFound, onFailure)
   }
@@ -176,11 +216,17 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
    * Deletes a user by their ID.
    *
    * @param id The ID of the user to delete.
-   * @param onSuccess Callback to be invoked when the deletion is successful.
-   * @param onFailure Callback to be invoked if an error occurs.
+   * @param onSuccess function to call when the user is successfully deleted.
+   * @param onUserNotFound function to call when the user is not found.
+   * @param onFailure function to call when the deletion fails.
    */
-  fun deleteUserById(id: String, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) {
-    repository.deleteUserById(id, onSuccess, onFailure)
+  fun deleteUserById(
+      id: String,
+      onSuccess: () -> Unit = {},
+      onUserNotFound: () -> Unit = {},
+      onFailure: (Exception) -> Unit = {}
+  ) {
+    repository.deleteUserById(id, onSuccess, onUserNotFound, onFailure)
   }
 
   // SOCIAL FUNCTIONS:
@@ -190,8 +236,8 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
    * else it will send a request.
    *
    * @param followingUID The UID of the user to follow.
-   * @param onSuccess Callback to be invoked when the follow operation is successful.
-   * @param onFailure Callback to be invoked if an error occurs.
+   * @param onSuccess function to call when the follow operation is successful.
+   * @param onFailure function to call if the follow operation fails.
    */
   fun followUser(
       followingUID: String,
@@ -227,8 +273,8 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
    * logged in, the onFailure callback is invoked with a UserNotLoggedInException.
    *
    * @param followingUID The UID of the user to unfollow.
-   * @param onSuccess Callback to be invoked when the unfollow operation is successful.
-   * @param onFailure Callback to be invoked if an error occurs.
+   * @param onSuccess function to call when the unfollow operation is successful.
+   * @param onFailure function to call if the unfollow operation fails.
    */
   fun unfollowUser(
       followingUID: String,
@@ -368,17 +414,19 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
    * current user.
    *
    * @param userID The ID of the user whose followers are to be retrieved.
-   * @param onSuccess Callback to be invoked with the list of retrieved followers.
-   * @param onFailure Callback to be invoked if an error occurs.
+   * @param onSuccess function to call when the followers are successfully retrieved.
+   * @param onFailure function to call if the retrieval fails.
    */
   fun getFollowersFrom(
       userID: String,
-      onSuccess: (List<User>) -> Unit,
-      onFailure: (Exception) -> Unit
+      onSuccess: (List<User>) -> Unit = {},
+      onFailure: (Exception) -> Unit = {}
   ) {
     repository.getUserById(
         id = userID,
-        onSuccess = { usr -> repository.getUsersById(usr.friends.followers, onSuccess, onFailure) },
+        onSuccess = { user ->
+          repository.getUsersById(user.friends.followers, onSuccess, onFailure)
+        },
         onUserNotFound = { onSuccess(emptyList()) },
         onFailure = onFailure)
   }
@@ -389,17 +437,19 @@ class UserViewModel(private val repository: UserRepository) : ViewModel() {
    * of the current user.
    *
    * @param userID The ID of the user whose following list is to be retrieved.
-   * @param onSuccess Callback to be invoked with the list of retrieved users.
-   * @param onFailure Callback to be invoked if an error occurs.
+   * @param onSuccess function to call when the following list is successfully retrieved.
+   * @param onFailure function to call if the retrieval fails.
    */
   fun getFollowingFrom(
       userID: String,
-      onSuccess: (List<User>) -> Unit,
-      onFailure: (Exception) -> Unit
+      onSuccess: (List<User>) -> Unit = {},
+      onFailure: (Exception) -> Unit = {}
   ) {
     repository.getUserById(
         id = userID,
-        onSuccess = { usr -> repository.getUsersById(usr.friends.following, onSuccess, onFailure) },
+        onSuccess = { user ->
+          repository.getUsersById(user.friends.following, onSuccess, onFailure)
+        },
         onUserNotFound = { onSuccess(emptyList()) },
         onFailure = onFailure)
   }
