@@ -88,8 +88,7 @@ fun OverviewScreen(
             showCreateFolderDialog = { showCreateFolderDialog = it },
             showCreateNoteDialog = { showCreateNoteDialog = it },
             noteViewModel = noteViewModel,
-            folderViewModel = folderViewModel,
-            navigationActions = navigationActions)
+            folderViewModel = folderViewModel)
       },
       bottomBar = {
         BottomNavigationMenu(
@@ -165,7 +164,6 @@ fun OverviewScreen(
  * @param showCreateFolderDialog The callback to show the dialog to create a folder.
  * @param noteViewModel The ViewModel that provides the list of publicNotes to display.
  * @param folderViewModel The ViewModel that provides the list of folders to display.
- * @param navigationActions The navigation view model used to transition between different screens.
  */
 @Composable
 fun CreateItemFab(
@@ -175,7 +173,6 @@ fun CreateItemFab(
     showCreateNoteDialog: (Boolean) -> Unit,
     noteViewModel: NoteViewModel,
     folderViewModel: FolderViewModel,
-    navigationActions: NavigationActions
 ) {
   CustomDropDownMenu(
       modifier = Modifier.testTag("createNoteOrFolder"),

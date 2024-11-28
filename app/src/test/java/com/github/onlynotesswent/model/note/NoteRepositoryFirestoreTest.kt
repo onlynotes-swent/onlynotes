@@ -207,10 +207,10 @@ class NoteRepositoryFirestoreTest {
     assert(testNote?.visibility == expectedNote.visibility)
     assert(testNote?.userId == expectedNote.userId)
     assert(testNote?.folderId == expectedNote.folderId)
-    assert((testNote?.noteCourse?.courseCode ) == (expectedNote.noteCourse?.courseCode))
-    assert((testNote?.noteCourse?.courseName ) == (expectedNote.noteCourse?.courseName))
+    assert((testNote?.noteCourse?.courseCode) == (expectedNote.noteCourse?.courseCode))
+    assert((testNote?.noteCourse?.courseName) == (expectedNote.noteCourse?.courseName))
     assert(testNote?.noteCourse?.courseYear == expectedNote.noteCourse?.courseYear)
-    assert((testNote?.noteCourse?.publicPath ) == (expectedNote.noteCourse?.publicPath))
+    assert((testNote?.noteCourse?.publicPath) == (expectedNote.noteCourse?.publicPath))
   }
 
   @Test

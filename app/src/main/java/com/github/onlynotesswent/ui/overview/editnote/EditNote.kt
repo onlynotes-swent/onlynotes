@@ -123,7 +123,6 @@ fun EditNoteScreen(
                     courseCode = courseCode,
                     courseName = courseName,
                     courseYear = courseYear,
-                    currentUser = currentUser!!,
                     noteViewModel = noteViewModel)
               }
             },
@@ -431,7 +430,6 @@ fun ErrorScreen(errorText: String) {
  * @param courseCode The updated course code of the note.
  * @param courseName The updated course name of the note.
  * @param courseYear The updated course year of the note.
- * @param currentUser The current user.
  * @param noteViewModel The ViewModel that provides the current note to be edited and handles note
  *   updates.
  */
@@ -443,7 +441,6 @@ fun SaveButton(
     courseCode: String,
     courseName: String,
     courseYear: Int?,
-    currentUser: User,
     noteViewModel: NoteViewModel
 ) {
   val context = LocalContext.current

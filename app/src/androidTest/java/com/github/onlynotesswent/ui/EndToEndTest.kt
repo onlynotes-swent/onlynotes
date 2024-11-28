@@ -24,8 +24,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navigation
 import androidx.test.espresso.intent.Intents
-import com.github.onlynotesswent.model.common.Course
-import com.github.onlynotesswent.model.common.Visibility
 import com.github.onlynotesswent.model.file.FileRepository
 import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.folder.FolderRepository
@@ -40,7 +38,6 @@ import com.github.onlynotesswent.model.user.UserViewModel
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Route
 import com.github.onlynotesswent.ui.navigation.Screen
-import com.github.onlynotesswent.ui.overview.AddNoteScreen
 import com.github.onlynotesswent.ui.overview.FolderContentScreen
 import com.github.onlynotesswent.ui.overview.OverviewScreen
 import com.github.onlynotesswent.ui.overview.editnote.EditMarkdownScreen
@@ -52,7 +49,6 @@ import com.github.onlynotesswent.ui.user.EditProfileScreen
 import com.github.onlynotesswent.ui.user.PublicProfileScreen
 import com.github.onlynotesswent.ui.user.UserProfileScreen
 import com.github.onlynotesswent.utils.ProfilePictureTaker
-import com.github.onlynotesswent.utils.Scanner
 import com.google.firebase.Timestamp
 import org.junit.After
 import org.junit.Before
@@ -62,6 +58,7 @@ import org.mockito.Mock
 import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
+import org.mockito.kotlin.eq
 
 class EndToEndTest {
 
@@ -78,7 +75,6 @@ class EndToEndTest {
   private lateinit var fileViewModel: FileViewModel
 
   @Mock private lateinit var profilePictureTaker: ProfilePictureTaker
-  @Mock private lateinit var scanner: Scanner
 
   // Sample user and note data for testing
   private val testUid = "testUid123"
@@ -112,14 +108,9 @@ class EndToEndTest {
     }
   }
 
-  private val testNote =
-      Note(
-          id = "1",
-          title = "title",
-          date = Timestamp.now(),
-          userId = testUid,
-          visibility = Visibility.DEFAULT,
-          noteCourse = Course("courseCode", "courseName", 2024, "publicPath"))
+  private var testNote = Note(id = "1", title = "title", date = Timestamp.now(), userId = testUid)
+
+  private val newTitle = "New Title"
 
   // Setup Compose test rule for UI testing
   @get:Rule val composeTestRule = createComposeRule()
@@ -163,10 +154,6 @@ class EndToEndTest {
                 ) {
                   composable(Screen.OVERVIEW) {
                     OverviewScreen(navigationActions, noteViewModel, userViewModel, folderViewModel)
-                  }
-                  composable(Screen.ADD_NOTE) {
-                    AddNoteScreen(
-                        navigationActions, scanner, noteViewModel, userViewModel, fileViewModel)
                   }
                   composable(Screen.EDIT_NOTE) {
                     EditNoteScreen(navigationActions, noteViewModel, userViewModel)
@@ -236,6 +223,34 @@ class EndToEndTest {
     }
 
     `when`(noteRepository.getNewUid()).thenReturn(testNote.id)
+
+    // Mock the note repository update
+    `when`(noteRepository.updateNote(any(), any(), any())).thenAnswer {
+      testNote =
+          Note(
+              id = testNote.id,
+              title = "New Title",
+              date = testNote.date,
+              userId = testNote.userId,
+              visibility = testNote.visibility,
+              noteCourse = testNote.noteCourse)
+      noteViewModel.selectedNote(testNote)
+      val onSuccess = it.arguments[1] as () -> Unit
+      onSuccess()
+    }
+
+    // Mock get note by id
+    `when`(noteRepository.getNoteById(any(), any(), any())).thenAnswer {
+      val onSuccess = it.arguments[1] as (Note) -> Unit
+      onSuccess(testNote)
+    }
+
+    // Mock retrieval of notes
+    `when`(noteRepository.getRootNotesFrom(eq(testUser1.uid), any(), any())).thenAnswer { invocation
+      ->
+      val onSuccess = invocation.getArgument<(List<Note>) -> Unit>(1)
+      onSuccess(listOf(testNote))
+    }
   }
 
   // Test the end-to-end flow of creating a user, adding a note, and editing the note
@@ -264,6 +279,27 @@ class EndToEndTest {
     composeTestRule.onNodeWithTag("item--Private").assertIsDisplayed().performClick()
     composeTestRule.onNodeWithTag("confirmNoteAction").assertIsDisplayed()
     composeTestRule.onNodeWithTag("confirmNoteAction").performClick()
+
+    // Modify the note title and save the changes
+    composeTestRule.onNodeWithTag("EditTitle textField").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("EditTitle textField").performTextClearance()
+
+    composeTestRule.onNodeWithTag("EditTitle textField").performTextInput(newTitle)
+    composeTestRule.onNodeWithTag("saveNoteButton").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("saveNoteButton").performClick()
+
+    // Exit the note edit screen
+    composeTestRule.onNodeWithTag("closeButton").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("closeButton").performClick()
+
+    // Verify that the note title has been properly saved
+    composeTestRule.onNodeWithTag("popup").assertIsNotDisplayed()
+
+    // Verify the notes are displayed
+    composeTestRule.onNodeWithTag("noteAndFolderList").assertIsDisplayed()
+
+    // Verify that the note card is displayed
+    composeTestRule.onNodeWithTag("noteCard").assertIsDisplayed()
   }
 
   // Creates the mock behavior needed for the end-to-end flow of searching for testUser2 and viewing
