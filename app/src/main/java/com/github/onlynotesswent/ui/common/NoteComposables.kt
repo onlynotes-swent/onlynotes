@@ -33,9 +33,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draganddrop.DragAndDropTransferData
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.github.onlynotesswent.R
 import com.github.onlynotesswent.model.folder.FolderViewModel
 import com.github.onlynotesswent.model.note.Note
 import com.github.onlynotesswent.model.note.NoteViewModel
@@ -78,8 +80,8 @@ fun NoteItem(
 
   if (showMoveOutDialog && note.folderId != null) {
     ConfirmationPopup(
-        title = "Move note out of folder",
-        text = "Are you sure you want to move this note out of the folder?",
+        title = stringResource(R.string.move_note_out_of_folder),
+        text = stringResource(R.string.move_note_out_of_folder_confirmation),
         onConfirm = {
           if (currentUser.value!!.uid == note.userId) {
             val parentFolderId = navigationActions.popFromScreenNavigationStack()
