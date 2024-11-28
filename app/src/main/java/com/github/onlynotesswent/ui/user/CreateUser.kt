@@ -18,20 +18,18 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
-import com.github.onlynotesswent.model.users.User
-import com.github.onlynotesswent.model.users.UserRepositoryFirestore
-import com.github.onlynotesswent.model.users.UserViewModel
+import com.github.onlynotesswent.model.user.User
+import com.github.onlynotesswent.model.user.UserRepositoryFirestore
+import com.github.onlynotesswent.model.user.UserViewModel
 import com.github.onlynotesswent.ui.authentication.Logo
 import com.github.onlynotesswent.ui.navigation.NavigationActions
-import com.github.onlynotesswent.ui.navigation.Screen
+import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
 import com.google.firebase.Firebase
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.auth
@@ -50,7 +48,7 @@ fun CreateUserScreen(navigationActions: NavigationActions, userViewModel: UserVi
   val lastName = remember { mutableStateOf("") }
   val userName = remember { mutableStateOf("") }
   val userNameError = remember { mutableStateOf(false) }
-  val saveEnabled = remember { mutableStateOf(false) }
+  val enableSaving = remember { mutableStateOf(false) }
   val context = LocalContext.current
 
   Scaffold(
@@ -80,24 +78,21 @@ fun CreateUserScreen(navigationActions: NavigationActions, userViewModel: UserVi
               UserNameTextField(userName, userNameError)
 
               // Save Button
-              saveEnabled.value = userName.value.isNotBlank()
+              enableSaving.value = userName.value.isNotBlank()
               SaveButton(
                   onClick = {
                     val user =
                         User(
-                            firstName = firstName.value,
-                            lastName = lastName.value,
-                            userName = userName.value,
+                            firstName = firstName.value.trim(),
+                            lastName = lastName.value.trim(),
+                            userName = userName.value.trim(),
                             email = Firebase.auth.currentUser?.email ?: "",
                             uid = userViewModel.getNewUid(),
                             dateOfJoining = Timestamp.now(),
                             rating = 0.0)
                     userViewModel.addUser(
                         user = user,
-                        onSuccess = {
-                          userViewModel.setCurrentUser(user)
-                          navigationActions.navigateTo(Screen.OVERVIEW)
-                        },
+                        onSuccess = { navigationActions.navigateTo(TopLevelDestinations.OVERVIEW) },
                         onFailure = { exception ->
                           Toast.makeText(
                                   context,
@@ -109,7 +104,7 @@ fun CreateUserScreen(navigationActions: NavigationActions, userViewModel: UserVi
                         })
                   },
                   // Disable the button if the user name is empty
-                  enabled = saveEnabled)
+                  enabled = enableSaving)
             }
       })
 }
@@ -123,7 +118,7 @@ fun CreateUserScreen(navigationActions: NavigationActions, userViewModel: UserVi
 fun FirstNameTextField(newFirstName: MutableState<String>) {
   OutlinedTextField(
       value = newFirstName.value,
-      onValueChange = { newFirstName.value = it },
+      onValueChange = { newFirstName.value = User.formatName(it) },
       label = { Text("First Name") },
       modifier = Modifier.fillMaxWidth(0.8f).padding(vertical = 12.dp).testTag("inputFirstName"))
 }
@@ -139,7 +134,7 @@ fun FirstNameTextField(newFirstName: MutableState<String>) {
 fun UserNameTextField(newUserName: MutableState<String>, userNameError: MutableState<Boolean>) {
   OutlinedTextField(
       value = newUserName.value,
-      onValueChange = { newUserName.value = it },
+      onValueChange = { newUserName.value = User.formatUsername(it) },
       label = { Text("* User Name") },
       isError = userNameError.value,
       modifier = Modifier.fillMaxWidth(0.8f).padding(vertical = 12.dp).testTag("inputUserName"))
@@ -154,7 +149,7 @@ fun UserNameTextField(newUserName: MutableState<String>, userNameError: MutableS
 fun LastNameTextField(newLastName: MutableState<String>) {
   OutlinedTextField(
       value = newLastName.value,
-      onValueChange = { newLastName.value = it },
+      onValueChange = { newLastName.value = User.formatName(it) },
       label = { Text("Last Name") },
       modifier = Modifier.fillMaxWidth(0.8f).padding(vertical = 12.dp).testTag("inputLastName"))
 }

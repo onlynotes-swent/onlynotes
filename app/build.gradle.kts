@@ -1,11 +1,20 @@
+import java.util.Properties
+
 plugins {
+    alias(libs.plugins.compose.compiler)
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsKotlinAndroid)
     alias(libs.plugins.ktfmt)
     alias(libs.plugins.sonar)
     id("jacoco")
     id("com.google.gms.google-services")
+    //id("org.jetbrains.kotlin.plugin.compose") version "2.0.0" // this version matches your Kotlin version
 }
+
+jacoco {
+    toolVersion = "0.8.11"  // Set the JaCoCo version globally here
+}
+
 
 android {
     namespace = "com.github.onlynotesswent"
@@ -21,6 +30,18 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
+        }
+
+        val openAiApiKey = project.rootProject.file("apikeys.properties").takeIf { it.exists() }?.let { keystoreFile ->
+            val properties = Properties()
+            properties.load(keystoreFile.inputStream())
+            properties.getProperty("OPEN_AI_API_KEY")
+        } ?: System.getenv("OPEN_AI_API_KEY") ?: ""
+
+        buildConfigField("String", "OPEN_AI_API_KEY", "\"$openAiApiKey\"")
+
+        buildFeatures {
+            buildConfig = true
         }
     }
 
@@ -40,16 +61,14 @@ android {
     }
 
     testCoverage {
-        jacocoVersion = "0.8.8"
+        jacocoVersion = "0.8.11"
     }
 
     buildFeatures {
         compose = true
     }
 
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.4.2"
-    }
+
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
@@ -59,7 +78,6 @@ android {
     kotlinOptions {
         jvmTarget = "11"
     }
-
 
     android {
         compileOptions {
@@ -121,8 +139,15 @@ fun DependencyHandlerScope.globalTestImplementation(dep: Any) {
 }
 
 dependencies {
+    configurations.all {
+        resolutionStrategy.eachDependency {
+            if (requested.group == "org.jacoco" && requested.version == "0.8.8") {
+                useVersion("0.8.11")
+            }
+        }
+    }
 
-
+    implementation(libs.accompanist.flowlayout)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
@@ -132,9 +157,13 @@ dependencies {
     implementation(libs.androidx.navigation.runtime.ktx)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.espresso.intents)
+    implementation(libs.pdf.viewer)
     testImplementation(libs.junit)
     globalTestImplementation(libs.androidx.junit)
     globalTestImplementation(libs.androidx.espresso.core)
+    implementation(libs.androidx.credentials)
+    implementation(libs.androidx.credentials.play.services.auth)
+    implementation(libs.google.id)
 
     // -------------- Firebase ---------------------
     implementation(libs.firebase.database.ktx)
@@ -142,6 +171,11 @@ dependencies {
     implementation(libs.firebase.ui.auth)
     implementation(libs.firebase.auth.ktx)
     implementation(libs.firebase.auth)
+    // Import the BoM for the Firebase platform TODO implement for better version managing
+    // implementation(libs.firebase.bom)
+    // Add the dependency for the Cloud Storage library
+    // When using the BoM, you don't specify versions in Firebase library dependencies
+    implementation(libs.firebase.storage)
 
     // ------------- Jetpack Compose ------------------
     val composeBom = platform(libs.compose.bom)
@@ -164,13 +198,20 @@ dependencies {
     debugImplementation(libs.compose.test.manifest)
 
     // Mockito
-    testImplementation("org.mockito:mockito-core:5.13.0")
-    testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
-    testImplementation("org.mockito:mockito-inline:4.0.0")
+    testImplementation(libs.mockito.core)
+    testImplementation(libs.mockito.kotlin)
+    testImplementation(libs.mockito.inline)
     androidTestImplementation(libs.mockito.kotlin)
-    androidTestImplementation("org.mockito:mockito-android:5.14.1")
+    androidTestImplementation(libs.mockito.android)
 
+    //Image Library
 
+    implementation("androidx.compose.material:material-icons-extended:<version>")
+    implementation(libs.coil.compose)
+    implementation(libs.imagepicker)
+
+    //Rich text editor
+    implementation("com.mohamedrejeb.richeditor:richeditor-compose:1.0.0-rc10")
     // --------- Kaspresso test framework ----------
     globalTestImplementation(libs.kaspresso)
     globalTestImplementation(libs.kaspresso.compose)
@@ -178,8 +219,15 @@ dependencies {
     // ----------       Robolectric     ------------
     testImplementation(libs.robolectric)
 
-    // ----------        ML Kit        ------------
+    // ----------         ML Kit        ------------
     implementation(libs.mlkit.document.scanner)
+    implementation(libs.mlkit.text.recognition)
+
+    // ----------      Json handling   ------------
+    implementation(libs.gson)
+
+    // ----------      HTTP client     ------------
+    implementation(libs.okhttp)
 }
 
 tasks.withType<Test> {

@@ -1,95 +1,118 @@
 package com.github.onlynotesswent.ui.overview
 
-import android.graphics.Bitmap
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
-import androidx.compose.material.icons.outlined.ArrowDropDown
 import androidx.compose.material.icons.outlined.Clear
 import androidx.compose.material3.Button
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.github.onlynotesswent.R
+import com.github.onlynotesswent.model.common.Course
+import com.github.onlynotesswent.model.common.Visibility
+import com.github.onlynotesswent.model.file.FileType
+import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.note.Note
 import com.github.onlynotesswent.model.note.NoteViewModel
-import com.github.onlynotesswent.model.note.Type
-import com.github.onlynotesswent.model.scanner.Scanner
+import com.github.onlynotesswent.model.user.User
+import com.github.onlynotesswent.model.user.UserViewModel
+import com.github.onlynotesswent.ui.common.NoteDataTextField
+import com.github.onlynotesswent.ui.common.OptionDropDownMenu
+import com.github.onlynotesswent.ui.common.ScreenTopBar
 import com.github.onlynotesswent.ui.navigation.NavigationActions
+import com.github.onlynotesswent.ui.navigation.Screen
+import com.github.onlynotesswent.utils.Scanner
 import com.google.firebase.Timestamp
+import java.util.Calendar
 
-@OptIn(ExperimentalMaterial3Api::class)
+/**
+ * Displays the add note screen, where users can create a new note. The screen includes text fields
+ * for entering the note's title, course name, course code, and course year, as well as dropdown
+ * menus for selecting the note's visibility and template. The screen also includes a button to
+ * create the note, which navigates to the edit note screen if the template is "Create Note", or
+ * navigates back to the overview screen if the template is "Upload Note" or "Scan Note".
+ *
+ * @param navigationActions The navigation view model used to transition between different screens.
+ * @param scanner The scanner used to scan images and create notes.
+ * @param noteViewModel The ViewModel that provides the current note to be edited and handles note
+ *   updates.
+ * @param userViewModel The ViewModel that provides the current user and handles user updates.
+ * @param fileViewModel The ViewModel that provides the current file to be uploaded and handles it.
+ */
 @Composable
 fun AddNoteScreen(
     navigationActions: NavigationActions,
     scanner: Scanner,
-    noteViewModel: NoteViewModel = viewModel(factory = NoteViewModel.Factory),
+    noteViewModel: NoteViewModel,
+    userViewModel: UserViewModel,
+    fileViewModel: FileViewModel
 ) {
-
+  val templateInitialText = "Choose mode"
+  val folderId = noteViewModel.currentFolderId.collectAsState()
+  val currentYear = Calendar.getInstance().get(Calendar.YEAR)
   var title by remember { mutableStateOf("") }
-  var template by remember { mutableStateOf("Choose An Option") }
-  var visibility by remember { mutableStateOf("Choose An Option") }
+  var courseName by remember { mutableStateOf("") }
+  var courseCode by remember { mutableStateOf("") }
+  var courseYear by remember { mutableIntStateOf(currentYear) }
+  var template by remember { mutableStateOf(templateInitialText) }
+  var visibility: Visibility? by remember { mutableStateOf(null) }
   var expandedVisibility by remember { mutableStateOf(false) }
   var expandedTemplate by remember { mutableStateOf(false) }
-  var saveButton by remember { mutableStateOf("Create Note") }
 
   Scaffold(
       modifier = Modifier.testTag("addNoteScreen"),
       topBar = {
-        TopAppBar(
-            title = { Text("Create a new note", Modifier.testTag("addNoteTitle")) },
-            navigationIcon = {
-              IconButton(
-                  onClick = { navigationActions.goBack() }, Modifier.testTag("goBackButton")) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                        contentDescription = "Back")
-                  }
-            })
+        ScreenTopBar(
+            title = "Create a new note",
+            titleTestTag = "addNoteTitle",
+            onBackClick = { navigationActions.goBack() },
+            icon = {
+              Icon(
+                  imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
+                  contentDescription = "Back",
+                  tint = MaterialTheme.colorScheme.onSurface)
+            },
+            iconTestTag = "goBackButton")
       },
       content = { paddingValues ->
         Column(
-            modifier = Modifier.fillMaxSize().padding(16.dp).padding(paddingValues),
+            modifier =
+                Modifier.fillMaxSize()
+                    .padding(16.dp)
+                    .padding(paddingValues)
+                    .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(8.dp)) {
-              Image(
-                  painter = painterResource(id = R.drawable.add_note),
-                  contentDescription = "Create Note Image",
-                  modifier = Modifier.size(200.dp).testTag("addNoteImage"))
-
               Spacer(modifier = Modifier.height(30.dp))
 
-              OutlinedTextField(
+              NoteDataTextField(
                   value = title,
-                  onValueChange = { title = it },
-                  label = { Text("Title") },
-                  placeholder = { Text("Add a Note Title") },
+                  onValueChange = { title = Note.formatTitle(it) },
+                  label = "Title",
+                  placeholder = "Add a note title",
                   modifier = Modifier.fillMaxWidth().testTag("inputNoteTitle"),
                   trailingIcon = {
                     IconButton(onClick = { title = "" }) {
@@ -97,116 +120,149 @@ fun AddNoteScreen(
                     }
                   })
 
-              Spacer(modifier = Modifier.height(30.dp))
+              Spacer(modifier = Modifier.height(10.dp))
 
               OptionDropDownMenu(
-                  value = visibility,
+                  value = visibility?.toReadableString() ?: "Choose visibility",
                   expanded = expandedVisibility,
                   buttonTag = "visibilityButton",
                   menuTag = "visibilityMenu",
                   onExpandedChange = { expandedVisibility = it },
-                  items = listOf("Public", "Private"),
-                  onItemClick = { visibility = it })
+                  items = Visibility.READABLE_STRINGS,
+                  onItemClick = { visibility = Visibility.fromReadableString(it) })
 
-              Spacer(modifier = Modifier.height(30.dp))
+              Spacer(modifier = Modifier.height(10.dp))
 
+              NoteDataTextField(
+                  value = courseName,
+                  onValueChange = { courseName = Course.formatCourseName(it) },
+                  label = "Course Name",
+                  placeholder = "Set the course name for the note",
+                  modifier = Modifier.fillMaxWidth().testTag("CourseNameTextField"))
+
+              Spacer(modifier = Modifier.height(5.dp))
+
+              NoteDataTextField(
+                  value = courseCode,
+                  onValueChange = { courseCode = Course.formatCourseCode(it) },
+                  label = "Course Code",
+                  placeholder = "Set the course code for the note",
+                  modifier = Modifier.fillMaxWidth().testTag("CourseCodeTextField"))
+
+              Spacer(modifier = Modifier.height(5.dp))
+
+              NoteDataTextField(
+                  value = courseYear.toString(),
+                  onValueChange = { courseYear = it.toIntOrNull() ?: currentYear },
+                  label = "Course Year",
+                  placeholder = "Set the course year for the note",
+                  modifier = Modifier.fillMaxWidth().testTag("CourseYearTextField"))
+
+              Spacer(modifier = Modifier.height(10.dp))
+
+              val scanNoteText = "Scan note"
+              val createNoteText = "Create note"
               OptionDropDownMenu(
                   value = template,
                   expanded = expandedTemplate,
                   buttonTag = "templateButton",
                   menuTag = "templateMenu",
                   onExpandedChange = { expandedTemplate = it },
-                  items = listOf("Scan Image", "Create Note From Scratch"),
-                  onItemClick = {
-                    template = it
-                    saveButton =
-                        if (template == "Scan Image") {
-                          "Take Picture"
-                        } else {
-                          "Create Note"
-                        }
-                  })
+                  items = listOf(scanNoteText, createNoteText),
+                  onItemClick = { template = it })
 
-              Spacer(modifier = Modifier.height(80.dp))
+              Spacer(modifier = Modifier.height(70.dp))
 
-              Button(
-                  onClick = {
-                    var type = Type.NORMAL_TEXT
-                    if (saveButton == "Take Picture") {
-                      // call scan image API or functions. Once scanned, add the note to database
-                      scanner.scan()
-                      type = Type.PDF
-                    } else if (saveButton == "Create Note") {
-                      type = Type.NORMAL_TEXT
-                    }
-                    // create the note and add it to database
-                    noteViewModel.addNote(
-                        // provisional note, we will have to change this later
-                        Note(
-                            id = noteViewModel.getNewUid(),
-                            type = type,
-                            title = title,
-                            content = "",
-                            date = Timestamp.now(),
-                            public = (visibility == "Public"),
-                            userId = "1",
-                            image = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)),
-                        "1")
-                    navigationActions.goBack()
-                  },
-                  enabled =
-                      title.isNotEmpty() &&
-                          visibility != "Choose An Option" &&
-                          template != "Choose An Option",
-                  modifier = Modifier.fillMaxWidth().testTag("createNoteButton")) {
-                    Text(text = saveButton)
-                  }
+              CreateNoteButton(
+                  title = title,
+                  visibility = visibility,
+                  template = template,
+                  templateInitialText = templateInitialText,
+                  scanNoteText = scanNoteText,
+                  createNoteText = createNoteText,
+                  folderId = folderId.value,
+                  currentUser = userViewModel.currentUser.collectAsState(),
+                  noteViewModel = noteViewModel,
+                  fileViewModel = fileViewModel,
+                  navigationActions = navigationActions,
+                  scanner = scanner,
+                  courseCode = courseCode,
+                  courseName = courseName,
+                  courseYear = courseYear)
             }
       })
 }
 
 /**
- * A composable function that displays an `OutlinedTextField` with a dropdown menu.
+ * Displays a button that creates a new note when clicked. The button is enabled when the title is
+ * not empty, the visibility is selected, and the template is not the initial text.
  *
- * @param value The current value of the text field.
- * @param expanded A boolean indicating whether the dropdown menu is expanded.
- * @param onExpandedChange A callback to be invoked when the expanded state of the dropdown menu
- *   changes.
- * @param items A list of strings representing the items to be displayed in the dropdown menu.
- * @param onItemClick A callback to be invoked when an item in the dropdown menu is clicked.
- * @param modifier The modifier to be applied to the `OutlinedTextField`.
+ * @param title The title of the note.
+ * @param visibility The visibility of the note.
+ * @param template The template of the note.
+ * @param templateInitialText The initial text of the template dropdown menu.
+ * @param scanNoteText The text for the "Scan Note" template.
+ * @param createNoteText The text for the "Create Note" template.
+ * @param folderId The ID of the folder containing the note.
+ * @param currentUser The current user.
+ * @param noteViewModel The ViewModel that provides the current note to be edited and handles note
+ *   updates.
+ * @param fileViewModel The ViewModel that provides the current file to be uploaded and handles
+ *   file.
+ * @param navigationActions The navigation view model used to transition between different screens.
+ * @param scanner The scanner used to scan images and create notes.
+ * @param courseCode The code of the course for which the note is created.
+ * @param courseName The name of the course for which the note is created.
+ * @param courseYear The year of the course for which the note is created.
  */
 @Composable
-fun OptionDropDownMenu(
-    expanded: Boolean,
-    value: String,
-    buttonTag: String,
-    menuTag: String,
-    onExpandedChange: (Boolean) -> Unit,
-    items: List<String>,
-    onItemClick: (String) -> Unit,
-    modifier: Modifier = Modifier,
+fun CreateNoteButton(
+    title: String,
+    visibility: Visibility?,
+    template: String,
+    templateInitialText: String,
+    scanNoteText: String,
+    createNoteText: String,
+    folderId: String?,
+    currentUser: State<User?>,
+    noteViewModel: NoteViewModel,
+    fileViewModel: FileViewModel,
+    navigationActions: NavigationActions,
+    scanner: Scanner,
+    courseCode: String,
+    courseName: String,
+    courseYear: Int
 ) {
-  Box(modifier = Modifier.fillMaxWidth()) {
-    Button(
-        onClick = { onExpandedChange(!expanded) },
-        modifier = Modifier.fillMaxWidth().testTag(buttonTag)) {
-          Text(text = value)
-          Icon(Icons.Outlined.ArrowDropDown, "Dropdown icon")
+  Button(
+      onClick = {
+        val noteUid = noteViewModel.getNewUid()
+        if (template == scanNoteText) {
+          scanner.scan { fileViewModel.uploadFile(noteUid, it, FileType.NOTE_PDF) }
         }
+        val note =
+            Note(
+                id = noteUid,
+                title = title,
+                date = Timestamp.now(),
+                visibility = visibility!!,
+                noteCourse = Course(courseCode, courseName, courseYear, "path"),
+                userId = currentUser.value!!.uid,
+                folderId = folderId)
+        noteViewModel.addNote(note)
 
-    DropdownMenu(
-        expanded = expanded,
-        onDismissRequest = { onExpandedChange(false) },
-        modifier = modifier.fillMaxWidth().testTag(menuTag)) {
-          items.forEach { item ->
-            DropdownMenuItem(
-                text = { Text(item) },
-                onClick = {
-                  onItemClick(item)
-                  onExpandedChange(false)
-                })
-          }
+        if (template == createNoteText) {
+          noteViewModel.selectedNote(note)
+          navigationActions.navigateTo(Screen.EDIT_NOTE)
+        } else {
+          navigationActions.goBack()
         }
-  }
+      },
+      colors =
+          ButtonDefaults.buttonColors(
+              containerColor = MaterialTheme.colorScheme.primary,
+              contentColor = MaterialTheme.colorScheme.onPrimary),
+      enabled = title.isNotEmpty() && visibility != null && template != templateInitialText,
+      modifier = Modifier.fillMaxWidth().testTag("createNoteButton")) {
+        Text(text = template)
+      }
 }

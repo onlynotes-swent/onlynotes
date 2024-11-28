@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">SampleApp</string>
+    <string name="app_name">OnlyNotes</string>
     <string name="title_activity_main">MainActivity</string>
     <string name="title_activity_second">SecondActivity</string>
     <string name="default_web_client_id">540277955828-qdb5ing55isbingk02ui5if21e9o2pvb.apps.googleusercontent.com</string>

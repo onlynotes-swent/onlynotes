@@ -10,6 +10,7 @@ on:
       - opened
       - synchronize
       - reopened
+  merge_group:
 
 jobs:
   ci:
@@ -52,12 +53,14 @@ jobs:
             ~/.gradle/wrapper
           key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
 
-      # Load google-services.json
+      # Load google-services.json and OpenAI API Key
       - name: Decode secrets
         env:
           GOOGLE_SERVICES: ${{ secrets.GOOGLE_SERVICES }}
+          OPEN_AI_API_KEY: ${{ secrets.OPEN_AI_API_KEY }}
         run: |
           echo "$GOOGLE_SERVICES" | base64 --decode > ./app/google-services.json
+          echo "OPEN_AI_API_KEY=$OPEN_AI_API_KEY" > apikeys.properties
 
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew

@@ -1,5 +1,6 @@
 package com.github.onlynotesswent.ui.authentication
 
+import android.content.Context
 import android.content.Intent
 import android.util.Log
 import android.widget.Toast
@@ -25,70 +26,95 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.credentials.CredentialManager
 import com.github.onlynotesswent.R
-import com.github.onlynotesswent.model.users.UserViewModel
+import com.github.onlynotesswent.model.authentication.GoogleCredSignIn
+import com.github.onlynotesswent.model.user.UserViewModel
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
 import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
 import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
 import com.google.firebase.Firebase
+import com.google.firebase.auth.AuthCredential
 import com.google.firebase.auth.AuthResult
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.auth
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 
 @Composable
-fun SignInScreen(navigationActions: NavigationActions, userViewModel: UserViewModel) {
+fun SignInScreen(
+    navigationActions: NavigationActions,
+    userViewModel: UserViewModel,
+    serverClientId: String
+) {
+
+  // AUTHENTICATION:
+  val context = LocalContext.current
+  val credentialManager = CredentialManager.create(context)
+
+  // Launcher for fallback method
+  val launcher =
+      rememberFirebaseAuthLauncher(
+          onAuthComplete = { result ->
+            authSuccessHandler(result, navigationActions, userViewModel, context)
+          },
+          onAuthError = { e ->
+            Toast.makeText(context, "Login Failed!", Toast.LENGTH_LONG).show()
+            Log.e("SignInScreen", "Failed to sign in: ${e.statusCode}")
+          })
+
+  val googleSignIn = GoogleCredSignIn(context, credentialManager, serverClientId, launcher)
+
+  val onClickSignIn: () -> Unit = {
+    googleSignIn.googleLogin { googleIdToken ->
+      // Sign in to Firebase with the Google ID token
+      val firebaseCredential = GoogleAuthProvider.getCredential(googleIdToken, null)
+      signInWithFirebase(firebaseCredential, navigationActions, userViewModel, context)
+    }
+  }
+
+  // UI:
   Scaffold(modifier = Modifier.fillMaxSize().testTag("loginScreenScaffold")) { padding ->
     Column(
         modifier = Modifier.fillMaxSize().padding(padding).testTag("loginScreenColumn"),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-      // AUTHENTICATION:
-      val context = LocalContext.current
-      val launcher =
-          rememberFirebaseAuthLauncher(
-              onAuthComplete = { result ->
-                authSuccessHandler(result, navigationActions, userViewModel) { s ->
-                  Toast.makeText(context, s, Toast.LENGTH_LONG).show()
-                }
-              },
-              onAuthError = { e ->
-                Toast.makeText(context, "Login Failed!", Toast.LENGTH_LONG).show()
-                Log.e("SignInScreen", "Failed to sign in: ${e.statusCode}")
-              })
-      val token = stringResource(R.string.default_web_client_id)
-
-      // UI:
       WelcomeText()
       Logo()
-      Spacer(modifier = Modifier.height(80.dp))
-      SignInButton(
-          onClick = {
-            val gso =
-                GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                    .requestIdToken(token)
-                    .requestEmail()
-                    .build()
-            val googleSignInClient = GoogleSignIn.getClient(context, gso)
-            launcher.launch(googleSignInClient.signInIntent)
-          })
+      Spacer(modifier = Modifier.height(120.dp))
+      SignInButton(onClick = { onClickSignIn() })
+    }
+  }
+}
+
+// AUTHENTICATION:
+internal fun signInWithFirebase(
+    credential: AuthCredential,
+    navigationActions: NavigationActions,
+    userViewModel: UserViewModel,
+    context: Context
+) {
+  CoroutineScope(Dispatchers.Main).launch {
+    try {
+      val authResult: AuthResult = Firebase.auth.signInWithCredential(credential).await()
+      authSuccessHandler(authResult, navigationActions, userViewModel, context)
+    } catch (e: Exception) {
+      Log.e("SignInScreen", "Firebase sign-in failed", e)
+      Toast.makeText(context, "Login Failed!", Toast.LENGTH_LONG).show()
     }
   }
 }
@@ -97,74 +123,25 @@ internal fun authSuccessHandler(
     result: AuthResult,
     navigationActions: NavigationActions,
     userViewModel: UserViewModel,
-    showMessage: (String) -> Unit
+    context: Context
 ) {
   if (result.user == null || result.user?.email == null) {
-    showMessage("Login Failed!")
+    Toast.makeText(context, "Login Failed!", Toast.LENGTH_LONG).show()
     return
   }
-  userViewModel.getUserByEmail(
-      result.user!!.email!!,
+  userViewModel.getCurrentUserByEmail(
+      email = result.user!!.email!!,
       onSuccess = { user ->
-        showMessage("Welcome ${user.userName}!")
-        userViewModel.setCurrentUser(user)
+        Toast.makeText(context, "Welcome ${user.userName}!", Toast.LENGTH_LONG).show()
         navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
       },
       onUserNotFound = {
-        showMessage("Welcome to OnlyNotes!")
+        Toast.makeText(context, "Welcome to OnlyNotes!", Toast.LENGTH_LONG).show()
         navigationActions.navigateTo(Screen.CREATE_USER)
       },
-      { showMessage("Error while fetching user: $it") })
-}
-
-@Composable
-internal fun Logo() {
-  Image(
-      modifier = Modifier.width(384.dp).height(144.dp).testTag("loginLogo"),
-      painter = painterResource(id = R.drawable.only_notes_logo2),
-      contentDescription = "image description",
-      contentScale = ContentScale.FillBounds)
-}
-
-@Composable
-internal fun WelcomeText() {
-  Text(
-      modifier = Modifier.height(65.dp).testTag("loginTitle"),
-      text = "Welcome To",
-      style =
-          TextStyle(
-              fontSize = 57.sp,
-              lineHeight = 64.sp,
-              fontWeight = FontWeight(400),
-              color = Color(0xFF191C1E),
-              textAlign = TextAlign.Center,
-          ))
-}
-
-@Composable
-internal fun SignInButton(onClick: () -> Unit) {
-  OutlinedButton(
-      onClick = onClick,
-      shape = RoundedCornerShape(50),
-      modifier = Modifier.padding(start = 16.dp, end = 16.dp).testTag("loginButton"),
-      colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surface),
-  ) {
-    Image(
-        modifier = Modifier.width(24.dp).height(24.dp).testTag("googleLogo"),
-        painter = painterResource(id = R.drawable.google_logo),
-        contentDescription = "google logo",
-        contentScale = ContentScale.FillBounds)
-    Text(
-        modifier = Modifier.padding(6.dp).testTag("loginButtonText"),
-        text = "Sign in with Google",
-        style =
-            TextStyle(
-                fontSize = 16.sp,
-                lineHeight = 24.sp,
-                fontWeight = FontWeight(400),
-                color = Color(0xFF191C1E),
-            ))
-  }
+      onFailure = {
+        Toast.makeText(context, "Error while fetching user: $it", Toast.LENGTH_LONG).show()
+      })
 }
 
 @Composable
@@ -195,5 +172,55 @@ internal fun activityResultHandler(
     }
   } catch (e: ApiException) {
     onAuthError(e)
+  }
+}
+
+// UI:
+@Composable
+internal fun Logo() {
+  Image(
+      modifier = Modifier.width(384.dp).height(144.dp).testTag("loginLogo"),
+      painter = painterResource(id = R.drawable.only_notes_logo),
+      contentDescription = "image description",
+      contentScale = ContentScale.FillBounds)
+}
+
+@Composable
+internal fun WelcomeText() {
+  Text(
+      modifier = Modifier.height(65.dp).testTag("loginTitle"),
+      text = "Welcome To",
+      style =
+          TextStyle(
+              fontSize = 57.sp,
+              lineHeight = 64.sp,
+              fontWeight = FontWeight(400),
+              color = MaterialTheme.colorScheme.onBackground,
+              textAlign = TextAlign.Center,
+          ))
+}
+
+@Composable
+internal fun SignInButton(onClick: () -> Unit) {
+  OutlinedButton(
+      onClick = onClick,
+      shape = RoundedCornerShape(50),
+      modifier = Modifier.padding(start = 16.dp, end = 16.dp).testTag("loginButton"),
+      colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surface),
+  ) {
+    Image(
+        modifier = Modifier.width(24.dp).height(24.dp).testTag("googleLogo"),
+        painter = painterResource(id = R.drawable.google_logo),
+        contentDescription = "google logo",
+        contentScale = ContentScale.FillBounds)
+    Text(
+        modifier = Modifier.padding(6.dp).testTag("loginButtonText"),
+        text = "Sign in with Google",
+        style =
+            TextStyle(
+                fontSize = 16.sp,
+                lineHeight = 24.sp,
+                fontWeight = FontWeight(400),
+                color = MaterialTheme.colorScheme.onSurface))
   }
 }
