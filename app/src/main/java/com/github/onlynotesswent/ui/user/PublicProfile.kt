@@ -553,8 +553,7 @@ fun switchProfileTo(
     userViewModel.setProfileUser(user)
     // Add the visited user profile to the screen navigation stack
     navigationActions.navigateTo(
-        Screen.PUBLIC_PROFILE.replace(
-            oldValue = "{userId}", newValue = user.uid))
+        Screen.PUBLIC_PROFILE.replace(oldValue = "{userId}", newValue = user.uid))
   }
 }
 
