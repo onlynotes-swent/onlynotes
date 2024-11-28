@@ -87,12 +87,14 @@ class EditNoteTest {
     }
   }
 
+  private fun init(noteId: String) {
+    noteViewModel.getNoteById(noteId)
+    composeTestRule.setContent { EditNoteScreen(navigationActions, noteViewModel, userViewModel) }
+  }
+
   @Test
   fun displayBaseComponents() {
-
-    noteViewModel.getNoteById("1")
-
-    composeTestRule.setContent { EditNoteScreen(navigationActions, noteViewModel, userViewModel) }
+    init("1")
     // Top bar buttons
     composeTestRule.onNodeWithTag("closeButton").assertIsDisplayed()
     composeTestRule.onNodeWithTag("saveNoteButton").assertIsDisplayed()
@@ -116,8 +118,7 @@ class EditNoteTest {
 
   @Test
   fun clickGoBackButton() {
-    noteViewModel.getNoteById("1")
-    composeTestRule.setContent { EditNoteScreen(navigationActions, noteViewModel, userViewModel) }
+    init("1")
 
     composeTestRule.onNodeWithTag("closeButton").performClick()
 
@@ -126,8 +127,7 @@ class EditNoteTest {
 
   @Test
   fun clickGoBackButtonInsideFolder() {
-    noteViewModel.getNoteById("2")
-    composeTestRule.setContent { EditNoteScreen(navigationActions, noteViewModel, userViewModel) }
+    init("2")
 
     composeTestRule.onNodeWithTag("closeButton").performClick()
 
@@ -136,8 +136,7 @@ class EditNoteTest {
 
   @Test
   fun clickSaveButton() {
-    noteViewModel.getNoteById("1")
-    composeTestRule.setContent { EditNoteScreen(navigationActions, noteViewModel, userViewModel) }
+    init("1")
 
     composeTestRule.onNodeWithTag("saveNoteButton").performClick()
 
@@ -146,8 +145,7 @@ class EditNoteTest {
 
   @Test
   fun clickDeleteButton() {
-    noteViewModel.getNoteById("1")
-    composeTestRule.setContent { EditNoteScreen(navigationActions, noteViewModel, userViewModel) }
+    init("1")
 
     composeTestRule.onNodeWithTag("deleteNoteButton").performClick()
 
@@ -159,8 +157,7 @@ class EditNoteTest {
 
   @Test
   fun clickDeleteButtonAndCancel() {
-    noteViewModel.getNoteById("1")
-    composeTestRule.setContent { EditNoteScreen(navigationActions, noteViewModel, userViewModel) }
+    init("1")
 
     composeTestRule.onNodeWithTag("deleteNoteButton").performClick()
 
@@ -173,8 +170,7 @@ class EditNoteTest {
 
   @Test
   fun clickDetailButton() {
-    noteViewModel.getNoteById("1")
-    composeTestRule.setContent { EditNoteScreen(navigationActions, noteViewModel, userViewModel) }
+    init("1")
 
     composeTestRule.onNodeWithTag("Detail").performClick()
 
@@ -183,8 +179,7 @@ class EditNoteTest {
 
   @Test
   fun clickCommentsButton() {
-    noteViewModel.getNoteById("1")
-    composeTestRule.setContent { EditNoteScreen(navigationActions, noteViewModel, userViewModel) }
+    init("1")
 
     composeTestRule.onNodeWithTag("Comments").performClick()
 
@@ -193,8 +188,7 @@ class EditNoteTest {
 
   @Test
   fun pdfButtonNavigatesToPdf() {
-    noteViewModel.getNoteById("1")
-    composeTestRule.setContent { EditNoteScreen(navigationActions, noteViewModel, userViewModel) }
+    init("1")
 
     composeTestRule.onNodeWithTag("PDF").performClick()
 
@@ -203,8 +197,7 @@ class EditNoteTest {
 
   @Test
   fun contentButtonNavigatesToContent() {
-    noteViewModel.getNoteById("1")
-    composeTestRule.setContent { EditNoteScreen(navigationActions, noteViewModel, userViewModel) }
+    init("1")
 
     composeTestRule.onNodeWithTag("Content").performClick()
 
@@ -213,8 +206,7 @@ class EditNoteTest {
 
   @Test
   fun modifyTitleAndExitingShowsPopup() {
-    noteViewModel.getNoteById("1")
-    composeTestRule.setContent { EditNoteScreen(navigationActions, noteViewModel, userViewModel) }
+    init("1")
 
     val newTitle = "New Title"
     composeTestRule.onNodeWithTag("EditTitle textField").performTextInput(newTitle)
@@ -232,8 +224,7 @@ class EditNoteTest {
 
   @Test
   fun clickDiscardChangesPopUpInsideFolderNavigatesToFolderContents() {
-    noteViewModel.getNoteById("2")
-    composeTestRule.setContent { EditNoteScreen(navigationActions, noteViewModel, userViewModel) }
+    init("2")
 
     val newTitle = "New Title"
     composeTestRule.onNodeWithTag("EditTitle textField").performTextInput(newTitle)
@@ -249,8 +240,7 @@ class EditNoteTest {
 
   @Test
   fun modifyTitleAndGoingToCommentsShowsPopup() {
-    noteViewModel.getNoteById("1")
-    composeTestRule.setContent { EditNoteScreen(navigationActions, noteViewModel, userViewModel) }
+    init("1")
 
     val newTitle = "New Title"
     composeTestRule.onNodeWithTag("EditTitle textField").performTextInput(newTitle)
@@ -268,8 +258,7 @@ class EditNoteTest {
 
   @Test
   fun clickingOnCourseNameShowsCourseDetails() {
-    noteViewModel.getNoteById("1")
-    composeTestRule.setContent { EditNoteScreen(navigationActions, noteViewModel, userViewModel) }
+    init("1")
 
     composeTestRule.onNodeWithTag("CourseFullName textField").performClick()
     composeTestRule.onNodeWithTag("CourseFullName textField").assertIsNotDisplayed()
