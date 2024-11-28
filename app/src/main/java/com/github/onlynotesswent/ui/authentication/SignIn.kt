@@ -31,6 +31,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -198,7 +199,7 @@ internal fun Logo() {
 internal fun WelcomeText() {
   Text(
       modifier = Modifier.height(65.dp).testTag("loginTitle"),
-      text = "Welcome To",
+      text = stringResource(R.string.welcome_to),
       style =
           TextStyle(
               fontSize = 57.sp,
@@ -224,7 +225,7 @@ internal fun SignInButton(onClick: () -> Unit) {
         contentScale = ContentScale.FillBounds)
     Text(
         modifier = Modifier.padding(6.dp).testTag("loginButtonText"),
-        text = "Sign in with Google",
+        text = stringResource(R.string.sign_in_with_google),
         style =
             TextStyle(
                 fontSize = 16.sp,

@@ -36,9 +36,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draganddrop.DragAndDropTransferData
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.github.onlynotesswent.R
 import com.github.onlynotesswent.model.folder.FolderViewModel
 import com.github.onlynotesswent.model.note.Note
 import com.github.onlynotesswent.model.note.NoteViewModel
@@ -86,7 +88,7 @@ fun NoteItem(
         onDismissRequest = { showMoveOutDialog = false },
         title = {
           Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-            Text("Move note out of folder")
+            Text(stringResource(R.string.move_note_out_of_folder))
           }
         },
         confirmButton = {
@@ -114,10 +116,12 @@ fun NoteItem(
                 }
                 showMoveOutDialog = false
               }) {
-                Text("Move")
+                Text(stringResource(R.string.move))
               }
         },
-        dismissButton = { Button(onClick = { showMoveOutDialog = false }) { Text("Cancel") } })
+        dismissButton = {
+          Button(onClick = { showMoveOutDialog = false }) { Text(stringResource(R.string.cancel)) }
+        })
   }
   Card(
       modifier =

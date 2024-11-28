@@ -53,7 +53,9 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.github.onlynotesswent.R
 import com.github.onlynotesswent.model.common.Course
 import com.github.onlynotesswent.model.common.Visibility
 import com.github.onlynotesswent.model.note.Note
@@ -509,8 +511,8 @@ fun DeleteButton(
     // Confirmation dialog for deletion
     if (showDeleteConfirmation) {
       ConfirmationPopup(
-          title = "Delete Note?",
-          text = "Are you sure you want to delete this note? This action cannot be undone.",
+          title = stringResource(R.string.delete_note),
+          text = stringResource(R.string.delete_note_text),
           onConfirm = {
             noteViewModel.deleteNoteById(note.id, note.userId)
             noteViewModel.selectedNote(null)
