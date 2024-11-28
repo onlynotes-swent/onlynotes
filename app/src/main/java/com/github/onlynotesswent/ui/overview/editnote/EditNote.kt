@@ -43,7 +43,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -53,7 +52,9 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.github.onlynotesswent.R
 import com.github.onlynotesswent.model.common.Course
 import com.github.onlynotesswent.model.common.Visibility
 import com.github.onlynotesswent.model.note.Note
@@ -92,7 +93,7 @@ fun EditNoteScreen(
   var noteTitle by remember { mutableStateOf(note?.title ?: "") }
   var courseName by remember { mutableStateOf(note?.noteCourse?.courseName ?: "") }
   var courseCode by remember { mutableStateOf(note?.noteCourse?.courseCode ?: "") }
-  var courseYear by remember { mutableIntStateOf(note?.noteCourse?.courseYear ?: 0) }
+  var courseYear by remember { mutableStateOf(note?.noteCourse?.courseYear) }
   var visibility by remember { mutableStateOf(note?.visibility ?: Visibility.DEFAULT) }
 
   var isModified by remember { mutableStateOf(false) }
@@ -102,9 +103,9 @@ fun EditNoteScreen(
     isModified =
         note != null &&
             (noteTitle != note!!.title ||
-                courseName != note!!.noteCourse.courseName ||
-                courseCode != note!!.noteCourse.courseCode ||
-                courseYear != note!!.noteCourse.courseYear ||
+                courseName != (note!!.noteCourse?.courseName ?: "") ||
+                courseCode != (note!!.noteCourse?.courseCode ?: "") ||
+                courseYear != (note!!.noteCourse?.courseYear) ||
                 visibility != note!!.visibility)
   }
 
@@ -124,7 +125,6 @@ fun EditNoteScreen(
                     courseCode = courseCode,
                     courseName = courseName,
                     courseYear = courseYear,
-                    currentUser = currentUser!!,
                     noteViewModel = noteViewModel)
               }
             },
@@ -159,7 +159,7 @@ fun EditNoteScreen(
                     courseCode = courseCode,
                     onCourseCodeChange = { courseCode = it },
                     courseYear = courseYear,
-                    onCourseYearChange = { courseYear = it },
+                    onCourseYearChange = { courseYear = it.toIntOrNull() },
                     visibility = visibility,
                     onVisibilityChange = { visibility = it })
               }
@@ -265,8 +265,8 @@ fun NoteSection(
     onCourseNameChange: (String) -> Unit,
     courseCode: String,
     onCourseCodeChange: (String) -> Unit,
-    courseYear: Int,
-    onCourseYearChange: (Int) -> Unit,
+    courseYear: Int?,
+    onCourseYearChange: (String) -> Unit,
     visibility: Visibility,
     onVisibilityChange: (Visibility) -> Unit
 ) {
@@ -363,8 +363,10 @@ fun NoteSection(
                   .testTag("CourseFullName textField")
                   .clickable { showCourseDetails = !showCourseDetails } // Handle click
                   .border(1.dp, Color.Black, OutlinedTextFieldDefaults.shape)) {
+            val course = Course(courseCode, courseName, courseYear, "")
+            val courseFullName = if (course == Course.EMPTY) "No course" else course.fullName()
             Text(
-                text = Course(courseCode, courseName, courseYear, "").fullName(),
+                text = courseFullName,
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.padding(16.dp))
@@ -393,8 +395,8 @@ fun NoteSection(
 
             // Course Year
             NoteDataTextField(
-                value = courseYear.toString(),
-                onValueChange = { onCourseYearChange(it.toIntOrNull() ?: currentYear) },
+                value = courseYear?.toString() ?: "",
+                onValueChange = { onCourseYearChange(it) },
                 label = "Course Year",
                 placeholder = "Set the course year for the note",
                 modifier = Modifier.fillMaxWidth().testTag("EditCourseYear textField"))
@@ -430,7 +432,6 @@ fun ErrorScreen(errorText: String) {
  * @param courseCode The updated course code of the note.
  * @param courseName The updated course name of the note.
  * @param courseYear The updated course year of the note.
- * @param currentUser The current user.
  * @param noteViewModel The ViewModel that provides the current note to be edited and handles note
  *   updates.
  */
@@ -441,21 +442,21 @@ fun SaveButton(
     visibility: Visibility?,
     courseCode: String,
     courseName: String,
-    courseYear: Int,
-    currentUser: User,
+    courseYear: Int?,
     noteViewModel: NoteViewModel
 ) {
   val context = LocalContext.current
   IconButton(
       enabled = noteTitle.isNotEmpty(),
       onClick = {
+        val course = Course(courseCode, courseName, courseYear, "")
         noteViewModel.updateNote(
             Note(
                 id = note.id,
                 title = noteTitle,
                 date = Timestamp.now(), // Use current timestamp
                 visibility = visibility ?: Visibility.DEFAULT,
-                noteCourse = Course(courseCode, courseName, courseYear, "path"),
+                noteCourse = if (course == Course.EMPTY) null else course,
                 userId = note.userId,
                 folderId = note.folderId,
                 comments = note.comments))
@@ -503,8 +504,8 @@ fun DeleteButton(
     // Confirmation dialog for deletion
     if (showDeleteConfirmation) {
       ConfirmationPopup(
-          title = "Delete Note?",
-          text = "Are you sure you want to delete this note? This action cannot be undone.",
+          title = stringResource(R.string.delete_note),
+          text = stringResource(R.string.delete_note_text),
           onConfirm = {
             noteViewModel.deleteNoteById(note.id, note.userId)
             noteViewModel.selectedNote(null)

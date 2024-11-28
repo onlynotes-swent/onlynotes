@@ -11,7 +11,7 @@ package com.github.onlynotesswent.model.common
 data class Course(
     val courseCode: String,
     val courseName: String,
-    val courseYear: Int,
+    val courseYear: Int?,
     val publicPath: String
 ) {
   /**
@@ -22,8 +22,8 @@ data class Course(
   fun fullName() = "$courseCode: $courseName"
 
   companion object {
-    // default course
-    val DEFAULT = Course("CS-311", "The Software Enterprise", 2024, "default")
+    // null
+    val EMPTY = Course("", "", null, "")
     // course code max length
     private const val COURSE_CODE_MAX_LENGTH = 10
     // course name max length

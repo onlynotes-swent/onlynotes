@@ -12,6 +12,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
+import com.github.onlynotesswent.R
 import com.github.onlynotesswent.ui.common.ConfirmationPopup
 import com.github.onlynotesswent.ui.navigation.LIST_EDIT_NOTE_DESTINATION
 import com.github.onlynotesswent.ui.navigation.NavigationActions
@@ -65,8 +67,8 @@ fun EditNoteNavigationMenu(
   // Discard Changes Dialog
   if (showDiscardChangesDialog) {
     ConfirmationPopup(
-        title = "Discard Changes?",
-        text = "You have unsaved changes. Are you sure you want to discard them?",
+        title = stringResource(R.string.discard_changes),
+        text = stringResource(R.string.discard_changes_text),
         onConfirm = {
           // Discard changes and navigate away
           showDiscardChangesDialog = false

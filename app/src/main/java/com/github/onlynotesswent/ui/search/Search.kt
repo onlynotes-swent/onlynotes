@@ -27,8 +27,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.github.onlynotesswent.R
 import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.folder.FolderViewModel
 import com.github.onlynotesswent.model.note.NoteViewModel
@@ -101,7 +103,7 @@ fun SearchScreen(
           OutlinedTextField(
               value = searchQuery.value,
               onValueChange = { searchQuery.value = it },
-              placeholder = { Text("Search ...") },
+              placeholder = { Text(stringResource(R.string.search)) },
               leadingIcon = {
                 Icon(
                     imageVector = Icons.Default.Search,
@@ -123,7 +125,7 @@ fun SearchScreen(
           Row(modifier = Modifier.fillMaxWidth().padding(top = 6.dp, start = 30.dp)) {
             FilterChip(
                 searchType.value == SearchType.USERS,
-                label = { Text("Users") },
+                label = { Text(stringResource(R.string.users_maj)) },
                 onClick = {
                   searchType.value = SearchType.USERS
                   userViewModel.getAllUsers()
@@ -138,7 +140,7 @@ fun SearchScreen(
                 modifier = Modifier.padding(horizontal = 10.dp).testTag("userFilterChip"))
             FilterChip(
                 searchType.value == SearchType.NOTES,
-                label = { Text("Notes") },
+                label = { Text(stringResource(R.string.notes_maj)) },
                 onClick = {
                   searchType.value = SearchType.NOTES
                   noteViewModel.getPublicNotes()
@@ -153,7 +155,7 @@ fun SearchScreen(
                 modifier = Modifier.padding(horizontal = 5.dp).testTag("noteFilterChip"))
             FilterChip(
                 searchType.value == SearchType.FOLDERS,
-                label = { Text("Folders") },
+                label = { Text(stringResource(R.string.folders_maj)) },
                 onClick = {
                   searchType.value = SearchType.FOLDERS
                   folderViewModel.getPublicFolders()
@@ -187,6 +189,7 @@ fun SearchScreen(
             searchQuery.value.isNotBlank() &&
                 searchType.value == SearchType.USERS &&
                 filteredUsers.value.isNotEmpty()
+
         val displayNotes: Boolean =
             searchQuery.value.isNotBlank() &&
                 searchType.value == SearchType.NOTES &&
@@ -259,9 +262,9 @@ fun SearchScreen(
         if (displayLoader) {
           val searchedText =
               when (searchType.value) {
-                SearchType.USERS -> "users"
-                SearchType.NOTES -> "notes"
-                SearchType.FOLDERS -> "folders"
+                SearchType.USERS -> stringResource(R.string.users_min)
+                SearchType.NOTES -> stringResource(R.string.notes_min)
+                SearchType.FOLDERS -> stringResource(R.string.folders_min)
               }
           Text(
               modifier =
@@ -269,7 +272,7 @@ fun SearchScreen(
                       .fillMaxWidth()
                       .padding(24.dp)
                       .testTag("noSearchResults"),
-              text = "No $searchedText found matching your search.",
+              text = stringResource(R.string.not_found_search, searchedText),
               textAlign = TextAlign.Center,
               color = MaterialTheme.colorScheme.onBackground)
         }

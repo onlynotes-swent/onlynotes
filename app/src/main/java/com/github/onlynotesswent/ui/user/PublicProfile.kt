@@ -49,6 +49,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontStyle
@@ -57,6 +58,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.rememberAsyncImagePainter
+import com.github.onlynotesswent.R
+import com.github.onlynotesswent.model.file.FileType
 import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.notification.NotificationViewModel
 import com.github.onlynotesswent.model.user.User
@@ -93,7 +97,7 @@ fun UserProfileScreen(
       userViewModel = userViewModel,
       notificationViewModel = notificationViewModel,
       includeBackButton = false,
-      topBarTitle = "    My Profile",
+      topBarTitle = stringResource(R.string.my_profile),
       floatingActionButton = {
         ExtendedFloatingActionButton(
             modifier = Modifier.testTag("editProfileButton"),
@@ -101,7 +105,7 @@ fun UserProfileScreen(
               Row {
                 Icon(Icons.Default.Create, contentDescription = "Edit Profile")
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("Edit Profile")
+                Text(stringResource(R.string.edit_profile))
               }
             }
       }) {
@@ -152,7 +156,7 @@ private fun ProfileScaffold(
     userViewModel: UserViewModel,
     notificationViewModel: NotificationViewModel,
     includeBackButton: Boolean = true,
-    topBarTitle: String = "Public Profile",
+    topBarTitle: String = stringResource(R.string.public_profile),
     floatingActionButton: @Composable () -> Unit = {},
     content: @Composable () -> Unit,
 ) {
@@ -294,7 +298,7 @@ fun ProfileContent(
 
   // Display the user's profile information:
   if (user.value == null) {
-    Text("User not found", modifier = Modifier.testTag("userNotFound"))
+    Text(stringResource(R.string.user_not_found_2), modifier = Modifier.testTag("userNotFound"))
   } else {
     ElevatedCard(
         modifier = Modifier.fillMaxSize().padding(40.dp).testTag("profileCard"),
@@ -329,13 +333,15 @@ fun ProfileContent(
             // Display the user's date of joining and rating
             Row {
               Icon(Icons.Default.Star, "starIcon")
-              Text("Rating: ${user.value!!.rating}", modifier = Modifier.testTag("userRating"))
+              Text(
+                  stringResource(R.string.rating, user.value!!.rating),
+                  modifier = Modifier.testTag("userRating"))
             }
             Spacer(modifier = Modifier.height(10.dp))
             Row {
               Icon(Icons.Default.DateRange, "dateIcon")
               Text(
-                  "Member Since: ${user.value!!.dateToString()}",
+                  stringResource(R.string.member_since, user.value!!.dateToString()),
                   modifier = Modifier.testTag("userDateOfJoining"))
             }
             Spacer(modifier = Modifier.height(10.dp))
@@ -360,7 +366,7 @@ fun ProfileContent(
                         { isFollowingMenuShown.value = false })
                   }) {
                     Text(
-                        "Following: ${user.value!!.friends.following.size}",
+                        stringResource(R.string.following, user.value!!.friends.following.size),
                         modifier = Modifier.testTag("followingText"))
                   }
               Spacer(modifier = Modifier.width(10.dp))
@@ -376,26 +382,27 @@ fun ProfileContent(
                         { isFollowerMenuShown.value = false })
                   }) {
                     Text(
-                        "Followers: ${user.value!!.friends.followers.size}",
+                        stringResource(R.string.followers, user.value!!.friends.followers.size),
                         modifier = Modifier.testTag("followersText"))
                   }
             }
             // Display bottom sheets for the user's following and followers
             UserBottomSheet(
-                isFollowingMenuShown,
-                following,
-                userViewModel,
-                fileViewModel,
-                navigationActions,
-                "following")
+                expanded = isFollowingMenuShown,
+                users = following,
+                userViewModel = userViewModel,
+                fileViewModel = fileViewModel,
+                navigationActions = navigationActions,
+                tag = "following")
             UserBottomSheet(
-                isFollowerMenuShown,
-                followers,
-                userViewModel,
-                fileViewModel,
-                navigationActions,
-                "followers",
-                user.value == userViewModel.currentUser.collectAsState().value)
+                expanded = isFollowerMenuShown,
+                users = followers,
+                userViewModel = userViewModel,
+                fileViewModel = fileViewModel,
+                navigationActions = navigationActions,
+                tag = "followers",
+                isFollowerSheetOfCurrentUser =
+                    user.value == userViewModel.currentUser.collectAsState().value)
           }
     }
   }
@@ -410,6 +417,7 @@ fun ProfileContent(
 @Composable
 fun FollowUnfollowButton(userViewModel: UserViewModel, otherUserId: String) {
   val followButtonText = remember { mutableStateOf("") }
+  val followText = stringResource(R.string.follow)
   followButtonText.value =
       if (userViewModel.currentUser
           .collectAsState()
@@ -417,34 +425,34 @@ fun FollowUnfollowButton(userViewModel: UserViewModel, otherUserId: String) {
           .friends
           .following
           .contains(otherUserId))
-          "Unfollow"
+          stringResource(R.string.unfollow)
       else if (userViewModel.currentUser
           .collectAsState()
           .value!!
           .pendingFriends
           .following
           .contains(otherUserId))
-          "Pending..."
-      else "Follow"
+          stringResource(R.string.pending)
+      else stringResource(R.string.follow)
   OutlinedButton(
       contentPadding = PaddingValues(horizontal = 10.dp),
       shape = RoundedCornerShape(25),
       modifier = Modifier.testTag("followUnfollowButton--$otherUserId").width(90.dp),
       onClick = {
-        if (followButtonText.value == "Follow")
+        if (followButtonText.value == followText)
             userViewModel.followUser(
-                otherUserId,
-                {
+                followingUID = otherUserId,
+                onSuccess = {
                   userViewModel.profileUser.value?.let { userViewModel.refreshProfileUser(it.uid) }
                 },
-                {})
+                onFailure = {})
         else
             userViewModel.unfollowUser(
-                otherUserId,
-                {
+                followingUID = otherUserId,
+                onSuccess = {
                   userViewModel.profileUser.value?.let { userViewModel.refreshProfileUser(it.uid) }
                 },
-                {})
+                onFailure = {})
       }) {
         Text(
             followButtonText.value,
@@ -467,6 +475,7 @@ fun RemoveFollowerButton(
     followerId: String,
     expanded: MutableState<Boolean>?
 ) {
+fun RemoveFollowerButton(userViewModel: UserViewModel, followerId: String) {
   OutlinedButton(
       contentPadding = PaddingValues(horizontal = 10.dp),
       shape = RoundedCornerShape(25),
@@ -490,7 +499,7 @@ fun RemoveFollowerButton(
         }
       }) {
         Text(
-            "Remove",
+            stringResource(R.string.remove),
             fontWeight = FontWeight(600),
             modifier = Modifier.testTag("removeFollowerText--$followerId"),
             maxLines = 1,
@@ -530,12 +539,12 @@ fun UserBottomSheet(
               verticalArrangement = Arrangement.Center,
               horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
-                    "List of ${tag.replaceFirstChar { it.uppercase()}}:",
+                    stringResource(R.string.list_of, tag.replaceFirstChar { it.uppercase() }),
                     style = Typography.headlineMedium,
                     modifier = Modifier.padding(8.dp).testTag("${tag}Title"))
                 if (users.value.isEmpty()) {
                   Text(
-                      "No $tag to display",
+                      stringResource(R.string.no_to_display, tag),
                       modifier = Modifier.padding(8.dp).testTag("${tag}Absent"))
                 }
                 Column(
@@ -636,7 +645,7 @@ fun DisplayBioCard(user: State<User?>) {
     Text(
         buildAnnotatedString {
           withStyle(style = SpanStyle(fontWeight = FontWeight(500), fontSize = 15.sp)) {
-            append("Bio: ")
+            append(stringResource(R.string.bio))
           }
           // Add the user's bio in italics
           withStyle(style = SpanStyle(fontStyle = FontStyle.Italic, fontSize = 14.sp)) {

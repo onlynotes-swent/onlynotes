@@ -45,6 +45,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.SpanStyle
@@ -52,6 +53,7 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
+import com.github.onlynotesswent.R
 import com.github.onlynotesswent.model.file.FileType
 import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.note.NoteViewModel
@@ -123,7 +125,7 @@ fun EditMarkdownScreen(
   Scaffold(
       topBar = {
         EditNoteTopBar(
-            title = "Content",
+            title = stringResource(R.string.content),
             titleTestTag = "contentTitle",
             noteViewModel = noteViewModel,
             navigationActions = navigationActions)
@@ -145,7 +147,7 @@ fun EditMarkdownScreen(
         }
       }) { paddingValues ->
         if (selectedNote == null) {
-          ErrorScreen("No note is selected")
+          ErrorScreen(stringResource(R.string.no_note_is_selected))
         } else {
           Column(
               modifier =
