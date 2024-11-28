@@ -115,9 +115,9 @@ fun OverviewScreen(
                         parentFolderId = parentFolderId.value,
                         visibility = visibility))
                 showCreateDialog = false
-                val folderContentsScreen =
-                    Screen.FOLDER_CONTENTS.replace(oldValue = "{folderId}", newValue = folderId)
-                navigationActions.navigateTo(folderContentsScreen)
+                navigationActions.navigateTo(
+                    Screen.FOLDER_CONTENTS.replace(
+                        oldValue = "{folderId}", newValue = folderId))
               },
               action = "Create")
         }

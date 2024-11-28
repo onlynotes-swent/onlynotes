@@ -168,10 +168,9 @@ fun FolderContentScreen(
                             parentFolderId = parentFolderId.value,
                             visibility = visibility))
                     if (parentFolderId.value != null) {
-                      val folderContentsScreen =
+                      navigationActions.navigateTo(
                           Screen.FOLDER_CONTENTS.replace(
-                              oldValue = "{folderId}", newValue = folderId)
-                      navigationActions.navigateTo(folderContentsScreen)
+                              oldValue = "{folderId}", newValue = folderId))
                     } else {
                       navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
                     }
@@ -291,10 +290,9 @@ fun FolderContentTopBar(
                             folderViewModel.deleteFolderById(folder.id, folder.userId)
 
                             if (parentFolderId != null) {
-                              val folderContentsScreen =
+                              navigationActions.navigateTo(
                                   Screen.FOLDER_CONTENTS.replace(
-                                      oldValue = "{folderId}", newValue = parentFolderId)
-                              navigationActions.navigateTo(folderContentsScreen)
+                                      oldValue = "{folderId}", newValue = parentFolderId))
                             } else {
                               navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
                             }

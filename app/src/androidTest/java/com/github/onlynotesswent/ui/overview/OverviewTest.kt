@@ -192,9 +192,9 @@ class OverviewTest {
     folderViewModel.getRootFoldersFromUid("1")
     composeTestRule.onAllNodesWithTag("folderCard").onFirst().assertIsDisplayed()
     composeTestRule.onAllNodesWithTag("folderCard").onFirst().performClick()
-    val folderContentScreen =
+    val folderContentsScreen =
         Screen.FOLDER_CONTENTS.replace(oldValue = "{folderId}", newValue = folderList[0].id)
-    verify(navigationActions).navigateTo(folderContentScreen)
+    verify(navigationActions).navigateTo(folderContentsScreen)
   }
 
   @Test
