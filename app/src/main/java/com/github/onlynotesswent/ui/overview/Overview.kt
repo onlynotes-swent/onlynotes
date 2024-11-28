@@ -39,11 +39,13 @@ import com.github.onlynotesswent.ui.common.CustomDropDownMenu
 import com.github.onlynotesswent.ui.common.CustomDropDownMenuItem
 import com.github.onlynotesswent.ui.common.CustomLazyGrid
 import com.github.onlynotesswent.ui.common.FolderDialog
+import com.github.onlynotesswent.ui.common.NoteDialog
 import com.github.onlynotesswent.ui.navigation.BottomNavigationMenu
 import com.github.onlynotesswent.ui.navigation.LIST_TOP_LEVEL_DESTINATION
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
 import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
+import com.google.firebase.Timestamp
 
 /**
  * Displays the overview screen which contains a list of publicNotes retrieved from the ViewModel.
@@ -75,7 +77,8 @@ fun OverviewScreen(
   val context = LocalContext.current
 
   var expanded by remember { mutableStateOf(false) }
-  var showCreateDialog by remember { mutableStateOf(false) }
+  var showCreateFolderDialog by remember { mutableStateOf(false) }
+  var showCreateNoteDialog by remember { mutableStateOf(false) }
 
   Scaffold(
       modifier = Modifier.testTag("overviewScreen"),
@@ -83,10 +86,10 @@ fun OverviewScreen(
         CreateItemFab(
             expandedFab = expanded,
             onExpandedFabChange = { expanded = it },
-            showCreateDialog = { showCreateDialog = it },
+            showCreateFolderDialog = { showCreateFolderDialog = it },
+            showCreateNoteDialog = { showCreateNoteDialog = it },
             noteViewModel = noteViewModel,
-            folderViewModel = folderViewModel,
-            navigationActions = navigationActions)
+            folderViewModel = folderViewModel)
       },
       bottomBar = {
         BottomNavigationMenu(
@@ -109,10 +112,30 @@ fun OverviewScreen(
             userViewModel = userViewModel,
             context = context,
             navigationActions = navigationActions)
+        if (showCreateNoteDialog) {
+          NoteDialog(
+              onDismiss = { showCreateNoteDialog = false },
+              onConfirm = { newName, visibility ->
+                val note =
+                    Note(
+                        id = noteViewModel.getNewUid(),
+                        title = newName,
+                        date = Timestamp.now(),
+                        visibility = visibility,
+                        userId = userViewModel.currentUser.value!!.uid,
+                        folderId = parentFolderId.value)
+                noteViewModel.addNote(note)
+                noteViewModel.selectedNote(note)
+                showCreateNoteDialog = false
+                navigationActions.navigateTo(Screen.EDIT_NOTE)
+              },
+              action = "Create")
+        }
+
         // Logic to show the dialog to create a folder
-        if (showCreateDialog) {
+        if (showCreateFolderDialog) {
           FolderDialog(
-              onDismiss = { showCreateDialog = false },
+              onDismiss = { showCreateFolderDialog = false },
               onConfirm = { newName, visibility ->
                 folderViewModel.addFolder(
                     Folder(
@@ -121,7 +144,7 @@ fun OverviewScreen(
                         userId = userViewModel.currentUser.value!!.uid,
                         parentFolderId = parentFolderId.value,
                         visibility = visibility))
-                showCreateDialog = false
+                showCreateFolderDialog = false
                 if (parentFolderId.value != null) {
                   navigationActions.navigateTo(Screen.FOLDER_CONTENTS)
                 } else {
@@ -139,19 +162,18 @@ fun OverviewScreen(
  * @param expandedFab The state of the floating action button. True if the button is expanded, false
  *   otherwise.
  * @param onExpandedFabChange The callback to change the state of the floating action button.
- * @param showCreateDialog The callback to show the dialog to create a folder.
+ * @param showCreateFolderDialog The callback to show the dialog to create a folder.
  * @param noteViewModel The ViewModel that provides the list of publicNotes to display.
  * @param folderViewModel The ViewModel that provides the list of folders to display.
- * @param navigationActions The navigation view model used to transition between different screens.
  */
 @Composable
 fun CreateItemFab(
     expandedFab: Boolean,
     onExpandedFabChange: (Boolean) -> Unit,
-    showCreateDialog: (Boolean) -> Unit,
+    showCreateFolderDialog: (Boolean) -> Unit,
+    showCreateNoteDialog: (Boolean) -> Unit,
     noteViewModel: NoteViewModel,
     folderViewModel: FolderViewModel,
-    navigationActions: NavigationActions
 ) {
   CustomDropDownMenu(
       modifier = Modifier.testTag("createNoteOrFolder"),
@@ -166,7 +188,7 @@ fun CreateItemFab(
                   },
                   onClick = {
                     onExpandedFabChange(false)
-                    navigationActions.navigateTo(Screen.ADD_NOTE)
+                    showCreateNoteDialog(true)
                     noteViewModel.selectedFolderId(null)
                   },
                   modifier = Modifier.testTag("createNote")),
@@ -179,7 +201,7 @@ fun CreateItemFab(
                   },
                   onClick = {
                     onExpandedFabChange(false)
-                    showCreateDialog(true)
+                    showCreateFolderDialog(true)
                     folderViewModel.selectedParentFolderId(null)
                   },
                   modifier = Modifier.testTag("createFolder"))),

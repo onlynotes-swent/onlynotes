@@ -41,6 +41,8 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.github.onlynotesswent.R
+import com.github.onlynotesswent.model.common.Course
+import com.github.onlynotesswent.model.common.Visibility
 import com.github.onlynotesswent.model.folder.FolderViewModel
 import com.github.onlynotesswent.model.note.Note
 import com.github.onlynotesswent.model.note.NoteViewModel
@@ -181,12 +183,34 @@ fun NoteItem(
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onPrimaryContainer)
           }
-          Text(
-              text = note.noteCourse.fullName(),
-              style = MaterialTheme.typography.bodySmall,
-              color = MaterialTheme.colorScheme.onPrimaryContainer)
+          if (note.noteCourse != null && note.noteCourse != Course.EMPTY) {
+            Text(
+                text = note.noteCourse.fullName(),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onPrimaryContainer)
+          }
         }
       }
+}
+/**
+ * Dialog that allows the user to create or rename a note.
+ *
+ * @param onDismiss callback to be invoked when the dialog is dismissed
+ * @param onConfirm callback to be invoked when the user confirms the new name
+ * @param action the action to be performed (create or rename)
+ * @param oldVisibility the old visibility of the note (if renaming), defaults to
+ *   [Visibility.PRIVATE]
+ * @param oldName the old name of the note (if renaming), defaults to an empty string
+ */
+@Composable
+fun NoteDialog(
+    onDismiss: () -> Unit,
+    onConfirm: (String, Visibility) -> Unit,
+    action: String,
+    oldVisibility: Visibility? = Visibility.PRIVATE,
+    oldName: String = ""
+) {
+  CreationDialog(onDismiss, onConfirm, action, oldVisibility, oldName, "Note")
 }
 
 /**

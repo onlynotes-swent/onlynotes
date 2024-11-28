@@ -21,7 +21,7 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
       val userId: String,
       val courseCode: String,
       val courseName: String,
-      val courseYear: Int,
+      val courseYear: Int?,
       val publicPath: String,
       val folderId: String?,
       val commentsList: List<String>
@@ -95,16 +95,17 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
    * @return The converted FirebaseNote object.
    */
   private fun convertNotes(note: Note): FirebaseNote {
+    val course = note.noteCourse ?: Course.EMPTY
     return FirebaseNote(
         note.id,
         note.title,
         note.date,
         note.visibility,
         note.userId,
-        note.noteCourse.courseCode,
-        note.noteCourse.courseName,
-        note.noteCourse.courseYear,
-        note.noteCourse.publicPath,
+        course.courseCode,
+        course.courseName,
+        course.courseYear,
+        course.publicPath,
         note.folderId,
         convertCommentsList(note.comments.commentsList))
   }
@@ -334,7 +335,7 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
       val userId = document.getString("userId")!!
       val courseCode = document.getString("courseCode")!!
       val courseName = document.getString("courseName")!!
-      val courseYear = document.getLong("courseYear")?.toInt()!!
+      val courseYear = document.getLong("courseYear")?.toInt()
       val publicPath = document.getString("publicPath")!!
       val folderId = document.getString("folderId")
       val comments = commentStringToCommentClass(document.get("commentsList") as List<String>)
@@ -346,8 +347,8 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
           title = title,
           date = date,
           visibility = visibility,
+          noteCourse = if (course == Course.EMPTY) null else course,
           userId = userId,
-          noteCourse = course,
           folderId = folderId,
           comments = Note.CommentCollection(comments))
     } catch (e: Exception) {
