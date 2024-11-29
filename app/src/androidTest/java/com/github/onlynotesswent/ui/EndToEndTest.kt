@@ -234,14 +234,7 @@ class EndToEndTest {
 
     // Mock the note repository update
     `when`(noteRepository.updateNote(any(), any(), any())).thenAnswer {
-      testNote =
-          Note(
-              id = testNote.id,
-              title = "New Title",
-              date = testNote.date,
-              userId = testNote.userId,
-              visibility = testNote.visibility,
-              noteCourse = testNote.noteCourse)
+      testNote = it.arguments[0] as Note
       noteViewModel.selectedNote(testNote)
       val onSuccess = it.arguments[1] as () -> Unit
       onSuccess()
@@ -281,10 +274,9 @@ class EndToEndTest {
     composeTestRule.onNodeWithTag("createNote").performClick()
     composeTestRule.onNodeWithTag("confirmNoteAction").assertIsDisplayed()
     composeTestRule.onNodeWithTag("inputNoteName").performTextInput(testNote.title)
-    composeTestRule.onNodeWithTag("visibilityButton").performClick()
-    composeTestRule.onNodeWithTag("item--Public").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("item--Friends Only").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("item--Private").assertIsDisplayed().performClick()
+    composeTestRule.onNodeWithTag("currentVisibilityOption").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("previousVisibility").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("nextVisibility").performClick()
     composeTestRule.onNodeWithTag("confirmNoteAction").assertIsDisplayed()
     composeTestRule.onNodeWithTag("confirmNoteAction").performClick()
 
