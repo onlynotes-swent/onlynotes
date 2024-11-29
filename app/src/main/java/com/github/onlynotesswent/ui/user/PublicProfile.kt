@@ -89,6 +89,8 @@ fun UserProfileScreen(
     notificationViewModel: NotificationViewModel
 ) {
   val user = userViewModel.currentUser.collectAsState()
+  user.value?.let { userViewModel.refreshProfileUser(it.uid) }
+
   // Display the user's profile information
   ProfileScaffold(
       navigationActions = navigationActions,
@@ -128,6 +130,8 @@ fun PublicProfileScreen(
 ) {
   val currentUser = userViewModel.currentUser.collectAsState()
   val profileUser = userViewModel.profileUser.collectAsState()
+  currentUser.value?.let { userViewModel.refreshCurrentUser() }
+  profileUser.value?.let { userViewModel.refreshProfileUser(it.uid) }
 
   // Display the user's profile information
   ProfileScaffold(navigationActions, userViewModel, notificationViewModel) {

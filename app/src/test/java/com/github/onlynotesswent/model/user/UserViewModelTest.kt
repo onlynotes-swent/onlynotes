@@ -535,7 +535,6 @@ class UserViewModelTest {
     assert(onSuccessCalled)
   }
 
-
   @Test
   fun `follow Request public work`() {
     var onSuccessCalled = false
@@ -548,9 +547,7 @@ class UserViewModelTest {
     userViewModel.addUser(user2, { assert(true) }, { assert(false) })
     userViewModel.followUser("3", { onSuccessCalled = true }, { assert(false) })
     verify(mockRepositoryFirestore, timeout(1000))
-      .addFollowerTo(eq("3"), eq("1"), anyBoolean(), anyOrNull(), anyOrNull())
+        .addFollowerTo(eq("3"), eq("1"), anyBoolean(), anyOrNull(), anyOrNull())
     assert(onSuccessCalled)
   }
-
-
 }

@@ -409,7 +409,6 @@ class UserViewModel(
       onFailure(UserNotLoggedInException())
       return
     }
-      Log.e( "UserViewModel accept follower request", currentUser.value!!.toString())
     if (_currentUser.value!!.pendingFriends.followers.contains(followerUID)) {
       repository.addFollowerTo(
           user = _currentUser.value!!.uid,

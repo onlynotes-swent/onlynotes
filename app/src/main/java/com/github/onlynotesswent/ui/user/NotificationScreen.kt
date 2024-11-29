@@ -1,6 +1,5 @@
 package com.github.onlynotesswent.ui.user
 
-import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -38,7 +37,6 @@ import com.github.onlynotesswent.model.notification.NotificationViewModel
 import com.github.onlynotesswent.model.user.User
 import com.github.onlynotesswent.model.user.UserViewModel
 import com.github.onlynotesswent.ui.common.ThumbnailDynamicPic
-import com.github.onlynotesswent.ui.common.ThumbnailPic
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.theme.Typography
 
@@ -76,22 +74,19 @@ fun NotificationScreen(
               items(userNotifications.value.size) { index ->
                 // Display each notification
                 val notification = sortedNotification[index]
-                val senderUser : MutableState<User?> = remember { mutableStateOf(null) }
+                val senderUser: MutableState<User?> = remember { mutableStateOf(null) }
 
                 if (notification.senderId != null) {
                   userViewModel.getUserById(
-                      notification.senderId,
-                      { user ->
-                          senderUser.value = user },
-                      {},
-                      {})
+                      notification.senderId, { user -> senderUser.value = user }, {}, {})
                 }
                 // for each notifcationType do something:
                 when (notification.type) {
                   Notification.NotificationType.FOLLOW_REQUEST ->
                       NotificationTypeFollowRequest(
                           stringResource(R.string.new_follow_request),
-                          stringResource(R.string.want_to_follow_you, senderUser.value?.userHandle()?:""),
+                          stringResource(
+                              R.string.want_to_follow_you, senderUser.value?.userHandle() ?: ""),
                           notification,
                           senderUser,
                           navigationActions,
@@ -101,7 +96,8 @@ fun NotificationScreen(
                   Notification.NotificationType.FOLLOW_REQUEST_ACCEPTED ->
                       NotificationTypeDefault(
                           stringResource(R.string.follow_request_accepted),
-                          stringResource(R.string.is_now_following_you, senderUser.value?.userHandle()?:""),
+                          stringResource(
+                              R.string.is_now_following_you, senderUser.value?.userHandle() ?: ""),
                           notification,
                           senderUser,
                           navigationActions,
@@ -112,7 +108,8 @@ fun NotificationScreen(
                       NotificationTypeDefault(
                           stringResource(R.string.follow_request_rejected),
                           stringResource(
-                              R.string.you_have_rejected_the_follow_request_from,senderUser.value?.userHandle()?:""),
+                              R.string.you_have_rejected_the_follow_request_from,
+                              senderUser.value?.userHandle() ?: ""),
                           notification,
                           senderUser,
                           navigationActions,
@@ -122,7 +119,8 @@ fun NotificationScreen(
                   Notification.NotificationType.FOLLOW ->
                       NotificationTypeDefault(
                           stringResource(R.string.new_follower),
-                          stringResource(R.string.is_now_following_you, senderUser.value?.userHandle()?:""),
+                          stringResource(
+                              R.string.is_now_following_you, senderUser.value?.userHandle() ?: ""),
                           notification,
                           senderUser,
                           navigationActions,
@@ -156,8 +154,10 @@ fun NotificationTypeDefault(
         Column {
           Text(title, style = Typography.titleMedium)
           Row {
-              ThumbnailDynamicPic(senderUser, fileViewModel, {senderUser.value?.let {
-                  switchProfileTo(it, userViewModel,navigationActions)}})
+            ThumbnailDynamicPic(
+                senderUser,
+                fileViewModel,
+                { senderUser.value?.let { switchProfileTo(it, userViewModel, navigationActions) } })
 
             Spacer(modifier = Modifier.padding(5.dp))
             Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.Center) {
@@ -190,50 +190,52 @@ fun NotificationTypeFollowRequest(
         Column {
           Text(title, style = Typography.titleMedium)
           Row {
-              // the senderId should not be null for this type of notification
-              assert(notification.senderId != null)
-              ThumbnailDynamicPic(senderUser, fileViewModel, {senderUser.value?.let {
-                  switchProfileTo(it, userViewModel,navigationActions)}})
+            // the senderId should not be null for this type of notification
+            assert(notification.senderId != null)
+            ThumbnailDynamicPic(
+                senderUser,
+                fileViewModel,
+                { senderUser.value?.let { switchProfileTo(it, userViewModel, navigationActions) } })
             Spacer(modifier = Modifier.padding(5.dp))
             Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.Center) {
               Text(body, style = Typography.bodyLarge)
             }
-              Button(
-                  colors =
-                  ButtonDefaults.buttonColors(
-                      containerColor = MaterialTheme.colorScheme.background,
-                      contentColor = MaterialTheme.colorScheme.primary),
-                  border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary),
-                  onClick = {
-                      Log.e("NotificationScreen", "Accepting follower request from ${notification.senderId}")
-                      userViewModel.acceptFollowerRequest(notification.senderId!!, onFailure = { Log.e("NotificationScreen", "Failed to accept follower request: $it")})
-                    notificationViewModel.updateNotification(
-                        notification.copy(
-                            read = true,
-                            type = Notification.NotificationType.FOLLOW_REQUEST_ACCEPTED))
-                      notificationViewModel.getNotificationByReceiverId(userViewModel.currentUser.value?.uid!!)
-                  }) {
-                    Text(stringResource(R.string.accept), maxLines = 1)
-                  }
-                Spacer(modifier = Modifier.padding(3.dp))
-              Button(
-                  colors =
-                  ButtonDefaults.buttonColors(
-                      containerColor = MaterialTheme.colorScheme.background,
-                      contentColor = MaterialTheme.colorScheme.error),
-                  border = BorderStroke(1.dp, MaterialTheme.colorScheme.error),
-                  onClick = {
-                    userViewModel.declineFollowerRequest(notification.senderId!!)
-                    notificationViewModel.updateNotification(
-                        notification.copy(
-                            read = true,
-                            type = Notification.NotificationType.FOLLOW_REQUEST_REJECTED))
-                      notificationViewModel.getNotificationByReceiverId(userViewModel.currentUser.value?.uid!!)
-                  }
-              ) {
-                    Text(stringResource(R.string.reject), maxLines = 1)
-                  }
-            }
+            Button(
+                colors =
+                    ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.background,
+                        contentColor = MaterialTheme.colorScheme.primary),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary),
+                onClick = {
+                  userViewModel.acceptFollowerRequest(notification.senderId!!)
+                  notificationViewModel.updateNotification(
+                      notification.copy(
+                          read = true,
+                          type = Notification.NotificationType.FOLLOW_REQUEST_ACCEPTED))
+                  notificationViewModel.getNotificationByReceiverId(
+                      userViewModel.currentUser.value?.uid!!)
+                }) {
+                  Text(stringResource(R.string.accept), maxLines = 1)
+                }
+            Spacer(modifier = Modifier.padding(3.dp))
+            Button(
+                colors =
+                    ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.background,
+                        contentColor = MaterialTheme.colorScheme.error),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.error),
+                onClick = {
+                  userViewModel.declineFollowerRequest(notification.senderId!!)
+                  notificationViewModel.updateNotification(
+                      notification.copy(
+                          read = true,
+                          type = Notification.NotificationType.FOLLOW_REQUEST_REJECTED))
+                  notificationViewModel.getNotificationByReceiverId(
+                      userViewModel.currentUser.value?.uid!!)
+                }) {
+                  Text(stringResource(R.string.reject), maxLines = 1)
+                }
+          }
         }
       }
 }

@@ -24,9 +24,6 @@ import coil.compose.rememberAsyncImagePainter
 import com.github.onlynotesswent.model.file.FileType
 import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.user.User
-import com.github.onlynotesswent.model.user.UserViewModel
-import com.github.onlynotesswent.ui.navigation.NavigationActions
-import com.github.onlynotesswent.ui.navigation.Screen
 
 /**
  * Displays the user's thumbnail profile picture, by wrapping the NonModifiableProfilePicture
@@ -53,11 +50,20 @@ fun ThumbnailPic(user: User?, fileViewModel: FileViewModel, size: Int = 40) {
  * @param size The size of the profile picture.
  */
 @Composable
-fun ThumbnailDynamicPic(user: State<User?>, fileViewModel: FileViewModel, onClick: () -> Unit = {},   size: Int = 40,) {
-    val profilePictureUri = remember { mutableStateOf("") }
-    NonModifiableProfilePicture(
-        user, profilePictureUri, fileViewModel, size, "thumbnail--${user.value?.uid?:"default"}",
-        onClick = {onClick()})
+fun ThumbnailDynamicPic(
+    user: State<User?>,
+    fileViewModel: FileViewModel,
+    onClick: () -> Unit = {},
+    size: Int = 40,
+) {
+  val profilePictureUri = remember { mutableStateOf("") }
+  NonModifiableProfilePicture(
+      user,
+      profilePictureUri,
+      fileViewModel,
+      size,
+      "thumbnail--${user.value?.uid?:"default"}",
+      onClick = { onClick() })
 }
 
 /**
@@ -76,16 +82,14 @@ fun NonModifiableProfilePicture(
     fileViewModel: FileViewModel,
     size: Int = 150,
     testTag: String = "profilePicture",
-    onClick: () -> Unit= {}
+    onClick: () -> Unit = {}
 ) {
   Box(modifier = Modifier.size(size.dp).clickable { onClick() }) {
-      val uid  = remember { mutableStateOf(user.value?.uid) }
-      uid.value = user.value?.uid
 
     // Download the profile picture from Firebase Storage if it hasn't been downloaded yet
-    if (user.value != null && user.value!!.hasProfilePicture &&  uid.value!=null && profilePictureUri.value.isBlank()) {
+    if (user.value != null && user.value!!.hasProfilePicture && profilePictureUri.value.isBlank()) {
       fileViewModel.downloadFile(
-          uid.value!!,
+          user.value!!.uid,
           FileType.PROFILE_PIC_JPEG,
           context = LocalContext.current,
           onSuccess = { file -> profilePictureUri.value = file.absolutePath },
