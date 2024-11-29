@@ -187,10 +187,12 @@ class EndToEndTest {
                     route = Route.PROFILE,
                 ) {
                   composable(Screen.USER_PROFILE) {
-                    UserProfileScreen(navigationActions, userViewModel, fileViewModel, authenticator)
+                    UserProfileScreen(
+                        navigationActions, userViewModel, fileViewModel, authenticator)
                   }
                   composable(Screen.PUBLIC_PROFILE) {
-                    PublicProfileScreen(navigationActions, userViewModel, fileViewModel, authenticator)
+                    PublicProfileScreen(
+                        navigationActions, userViewModel, fileViewModel, authenticator)
                   }
                   composable(Screen.EDIT_PROFILE) {
                     EditProfileScreen(

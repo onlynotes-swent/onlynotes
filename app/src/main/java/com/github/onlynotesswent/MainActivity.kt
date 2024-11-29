@@ -52,9 +52,7 @@ class MainActivity : ComponentActivity() {
 
     setContent {
       AppTheme {
-        Surface(modifier = Modifier.fillMaxSize()) {
-          OnlyNotesApp(scanner, profilePictureTaker)
-        }
+        Surface(modifier = Modifier.fillMaxSize()) { OnlyNotesApp(scanner, profilePictureTaker) }
       }
     }
   }
@@ -156,7 +154,8 @@ fun OnlyNotesApp(
             fileViewModel,
             noteViewModel,
             folderViewModel,
-            authenticator,)
+            authenticator,
+        )
       }
     }
   }

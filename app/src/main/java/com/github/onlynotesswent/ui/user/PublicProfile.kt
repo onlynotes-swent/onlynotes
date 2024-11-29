@@ -65,8 +65,8 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
-import com.github.onlynotesswent.model.authentication.Authenticator
 import com.github.onlynotesswent.R
+import com.github.onlynotesswent.model.authentication.Authenticator
 import com.github.onlynotesswent.model.file.FileType
 import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.user.User

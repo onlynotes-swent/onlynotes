@@ -1,30 +1,30 @@
-//package com.github.onlynotesswent.model.authentication
+// package com.github.onlynotesswent.model.authentication
 //
-//import android.content.Context
-//import android.content.Intent
-//import android.os.Bundle
-//import android.util.Log
-//import androidx.activity.compose.ManagedActivityResultLauncher
-//import androidx.activity.result.ActivityResult
-//import androidx.credentials.CredentialManager
-//import androidx.credentials.CustomCredential
-//import androidx.credentials.GetCredentialRequest
-//import androidx.credentials.GetCredentialResponse
-//import com.github.onlynotesswent.model.authentication.Authenticator.Companion.generateNonce
-//import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
-//import kotlinx.coroutines.test.*
-//import org.junit.Assert.*
-//import org.junit.Before
-//import org.junit.Test
-//import org.junit.runner.RunWith
-//import org.mockito.Mockito.mock
-//import org.mockito.Mockito.`when`
-//import org.mockito.kotlin.any
-//import org.robolectric.RobolectricTestRunner
-//import org.robolectric.shadows.ShadowLog
+// import android.content.Context
+// import android.content.Intent
+// import android.os.Bundle
+// import android.util.Log
+// import androidx.activity.compose.ManagedActivityResultLauncher
+// import androidx.activity.result.ActivityResult
+// import androidx.credentials.CredentialManager
+// import androidx.credentials.CustomCredential
+// import androidx.credentials.GetCredentialRequest
+// import androidx.credentials.GetCredentialResponse
+// import com.github.onlynotesswent.model.authentication.Authenticator.Companion.generateNonce
+// import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
+// import kotlinx.coroutines.test.*
+// import org.junit.Assert.*
+// import org.junit.Before
+// import org.junit.Test
+// import org.junit.runner.RunWith
+// import org.mockito.Mockito.mock
+// import org.mockito.Mockito.`when`
+// import org.mockito.kotlin.any
+// import org.robolectric.RobolectricTestRunner
+// import org.robolectric.shadows.ShadowLog
 //
-//@RunWith(RobolectricTestRunner::class)
-//class AuthenticatorTest {
+// @RunWith(RobolectricTestRunner::class)
+// class AuthenticatorTest {
 //  private val context = mock(Context::class.java)
 //  private val credentialManager = mock(CredentialManager::class.java)
 //  private val launcher =
@@ -110,4 +110,4 @@
 //    assertEquals(64, nonce1.length) // SHA-256 hash length in hex is 64 characters
 //    assertEquals(64, nonce2.length)
 //  }
-//}
+// }
