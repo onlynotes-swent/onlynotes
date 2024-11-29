@@ -1,6 +1,5 @@
 package com.github.onlynotesswent.model.flashcard
 
-import com.github.onlynotesswent.model.flashcard.Flashcard.Type
 import com.google.firebase.Timestamp
 
 /**
@@ -13,6 +12,7 @@ import com.google.firebase.Timestamp
  * @property userId The ID of the user who created the flashcard.
  * @property folderId The ID of the folder that the flashcard belongs to.
  * @property noteId The ID of the note that the flashcard belongs to.
+ * @property type The type of the flashcard.
  */
 abstract class Flashcard(
     open val id: String,
