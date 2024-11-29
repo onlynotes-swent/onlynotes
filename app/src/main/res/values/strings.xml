@@ -11,6 +11,7 @@
     <string name="move">Move</string>
     <string name="choose_visibility">Choose visibility</string>
     <string name="move_note_out_of_folder">Move note out of folder</string>
+    <string name="move_note_out_of_folder_confirmation">Are you sure you want to move this note out of the folder?</string>
     <string name="comments">Comments</string>
     <string name="no_comments_text">No comments yet. Add a comment to start the discussion.</string>
     <string name="edited">%1$s edited: %2$s</string>
@@ -39,12 +40,14 @@
     <string name="create_folder">Create folder</string>
     <string name="you_have_no_notes_or_folders_yet">You have no notes or folders yet.</string>
     <string name="refresh">Refresh</string>
-    <string name="rename">Rename</string>
+    <string name="update">Update</string>
     <string name="user_not_found">User not found ...</string>
     <string name="folder_name_not_found">Folder name not found</string>
-    <string name="rename_folder">Rename folder</string>
+    <string name="update_folder">Update folder</string>
     <string name="delete_folder">Delete folder</string>
+    <string name="confirm_delete_folder">Are you sure you want to delete this folder? This action cannot be undone.</string>
     <string name="delete_folder_contents">Delete folder contents</string>
+    <string name="confirm_delete_folder_contents">Are you sure you want to delete the contents of this folder? This action cannot be undone.</string>
     <string name="this_folder_is_empty">This folder is empty.</string>
     <string name="first_name">First Name</string>
     <string name="user_name">* User Name</string>

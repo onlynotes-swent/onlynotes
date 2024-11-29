@@ -6,7 +6,9 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.draganddrop.dragAndDropSource
 import androidx.compose.foundation.draganddrop.dragAndDropTarget
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Card
@@ -129,11 +131,12 @@ fun FolderItem(
                       }),
       colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.background)) {
         Column(
-            modifier = Modifier.padding(8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+            modifier = Modifier.padding(8.dp).fillMaxWidth(),
+            verticalArrangement = Arrangement.Center) {
               Image(
                   painter = painterResource(id = R.drawable.folder_icon),
                   contentDescription = "Folder Icon",
-                  modifier = Modifier.size(80.dp))
+                  modifier = Modifier.size(80.dp).align(Alignment.CenterHorizontally))
 
               Text(
                   modifier = Modifier.align(Alignment.CenterHorizontally),
@@ -146,11 +149,11 @@ fun FolderItem(
 }
 
 /**
- * Dialog that allows the user to create or rename a folder.
+ * Dialog that allows the user to create or update a folder.
  *
  * @param onDismiss callback to be invoked when the dialog is dismissed
  * @param onConfirm callback to be invoked when the user confirms the new name
- * @param action the action to be performed (create or rename)
+ * @param action the action to be performed (create or update)
  * @param oldVisibility the old visibility of the folder (if renaming)
  * @param oldName the old name of the folder (if renaming)
  */
@@ -159,7 +162,7 @@ fun FolderDialog(
     onDismiss: () -> Unit,
     onConfirm: (String, Visibility) -> Unit,
     action: String,
-    oldVisibility: Visibility? = null,
+    oldVisibility: Visibility = Visibility.DEFAULT,
     oldName: String = ""
 ) {
   CreationDialog(onDismiss, onConfirm, action, oldVisibility, oldName, "Folder")
