@@ -186,15 +186,18 @@ fun FolderContentScreen(
                 onDismiss = { showCreateFolderDialog = false },
                 onConfirm = { name, visibility ->
                   if (currentUser.value!!.uid == folder.value?.userId) {
+                    val folderId = folderViewModel.getNewFolderId()
                     folderViewModel.addFolder(
                         Folder(
-                            id = folderViewModel.getNewFolderId(),
+                            id = folderId,
                             name = name,
                             userId = currentUser.value!!.uid,
                             parentFolderId = parentFolderId.value,
                             visibility = visibility))
                     if (parentFolderId.value != null) {
-                      navigationActions.navigateTo(Screen.FOLDER_CONTENTS)
+                      navigationActions.navigateTo(
+                          Screen.FOLDER_CONTENTS.replace(
+                              oldValue = "{folderId}", newValue = folderId))
                     } else {
                       navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
                     }
@@ -282,20 +285,7 @@ fun FolderContentTopBar(
       },
       navigationIcon = {
         IconButton(
-            onClick = {
-              val previousFolderId = navigationActions.popFromScreenNavigationStack()
-              // If we pop from the stack the current folder, we call pop twice to get the
-              // previous folder
-              if (previousFolderId == Screen.SEARCH) {
-                navigationActions.navigateTo(Screen.SEARCH)
-              } else if (previousFolderId != null) {
-                // Set the selected folder state to the previous folder
-                folderViewModel.getFolderById(previousFolderId)
-              } else {
-                navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
-              }
-            },
-            modifier = Modifier.testTag("goBackButton")) {
+            onClick = { navigationActions.goBack() }, modifier = Modifier.testTag("goBackButton")) {
               Icon(imageVector = Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "Back")
             }
       },
@@ -353,13 +343,18 @@ fun FolderContentTopBar(
               text = stringResource(R.string.confirm_delete_folder),
               onConfirm = {
                 if (currentUser.value!!.uid == folder?.userId) {
+                  // Retrieve parent folder id to navigate to the parent folder
+                  val parentFolderId = folder.parentFolderId
                   folderViewModel.deleteFolderById(folder.id, folder.userId)
-                  val parentFolderId = navigationActions.popFromScreenNavigationStack()
+
                   if (parentFolderId != null) {
-                    folderViewModel.getFolderById(parentFolderId)
+                    navigationActions.navigateTo(
+                        Screen.FOLDER_CONTENTS.replace(
+                            oldValue = "{folderId}", newValue = parentFolderId))
                   } else {
                     navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
                   }
+
                   handleSubFoldersAndNotes(
                       folder = folder,
                       userFolderSubFolders = userFolderSubFolders.value,

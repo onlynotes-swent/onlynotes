@@ -59,8 +59,8 @@ class OverviewTest {
 
   private val folderList =
       listOf(
-          Folder(id = "1", name = "name", userId = "1", parentFolderId = null),
-          Folder(id = "2", name = "name2", userId = "1", parentFolderId = null))
+          Folder(id = "2", name = "name", userId = "1", parentFolderId = null),
+          Folder(id = "3", name = "name2", userId = "1", parentFolderId = null))
 
   @get:Rule val composeTestRule = createComposeRule()
 
@@ -192,7 +192,9 @@ class OverviewTest {
     folderViewModel.getRootFoldersFromUid("1")
     composeTestRule.onAllNodesWithTag("folderCard").onFirst().assertIsDisplayed()
     composeTestRule.onAllNodesWithTag("folderCard").onFirst().performClick()
-    verify(navigationActions).navigateToFolderContents(any())
+    val folderContentsScreen =
+        Screen.FOLDER_CONTENTS.replace(oldValue = "{folderId}", newValue = folderList[0].id)
+    verify(navigationActions).navigateTo(folderContentsScreen)
   }
 
   @Test

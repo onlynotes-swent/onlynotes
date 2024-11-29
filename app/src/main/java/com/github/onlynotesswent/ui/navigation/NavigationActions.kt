@@ -11,8 +11,6 @@ import androidx.compose.material.icons.outlined.Search
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
-import com.github.onlynotesswent.model.folder.Folder
-import java.util.Stack
 
 object Route {
   const val OVERVIEW = "Overview"
@@ -31,9 +29,9 @@ object Screen {
   const val EDIT_NOTE_MARKDOWN = "Edit Note Markdown Screen"
   const val SEARCH = "Search Screen"
   const val USER_PROFILE = "User Profile Screen"
-  const val PUBLIC_PROFILE = "Public Profile Screen"
+  const val PUBLIC_PROFILE = "Public Profile Screen/{userId}"
   const val EDIT_PROFILE = "Edit Profile Screen"
-  const val FOLDER_CONTENTS = "Folder Contents Screen"
+  const val FOLDER_CONTENTS = "Folder Contents Screen/{folderId}"
 }
 
 data class Destination(
@@ -78,7 +76,6 @@ open class NavigationActions(
     private val navController: NavHostController,
 ) {
 
-  private val screenNavigationStack = Stack<String>()
   /**
    * Navigate to the specified [Destination] and clear the navigation stack.
    *
@@ -106,7 +103,6 @@ open class NavigationActions(
         }
       }
     }
-    clearScreenNavigationStack()
   }
 
   /**
@@ -117,10 +113,6 @@ open class NavigationActions(
    */
   open fun navigateTo(screen: String) {
     navController.navigate(screen)
-    if (screen == Screen.SEARCH) {
-      clearScreenNavigationStack()
-      pushToScreenNavigationStack(screen)
-    }
   }
 
   /** Navigate back to the previous screen. */
@@ -135,60 +127,5 @@ open class NavigationActions(
    */
   open fun currentRoute(): String {
     return navController.currentDestination?.route ?: ""
-  }
-
-  /**
-   * Pushes an Id to the screen navigation stack (either folder id or user id)
-   *
-   * @param id The Id to push.
-   */
-  open fun pushToScreenNavigationStack(id: String) {
-    screenNavigationStack.push(id)
-  }
-
-  /**
-   * Pops an Id from the screen navigation stack.
-   *
-   * @return The popped Id.
-   */
-  open fun popFromScreenNavigationStack(): String? {
-    return if (screenNavigationStack.isEmpty()) null else screenNavigationStack.pop()
-  }
-
-  /** Clears the screen navigation stack. */
-  open fun clearScreenNavigationStack() {
-    screenNavigationStack.clear()
-  }
-
-  /** Returns the top of the screen navigation stack. */
-  open fun retrieveTopElementOfScreenNavigationStack(): String {
-    return screenNavigationStack.peek()
-  }
-
-  /**
-   * A function that handles the navigation to the folder content screen by using the screen
-   * navigation stack.
-   *
-   * @param folder The folder to navigate to. If it is not a root folder, its parent id will be
-   *   pushed to the screen navigation stack to properly go back.
-   */
-  open fun navigateToFolderContents(folder: Folder) {
-    if (folder.parentFolderId == null) {
-      // Don't add to the screen navigation stack as we are at the root folder
-      navigateTo(Screen.FOLDER_CONTENTS)
-    } else {
-      val poppedId = popFromScreenNavigationStack()
-      if (poppedId == Screen.SEARCH) {
-        // If we come from search, don't push the folderId to the stack
-        pushToScreenNavigationStack(poppedId)
-      } else {
-        if (poppedId != null) {
-          pushToScreenNavigationStack(poppedId)
-        }
-        // Add the previously visited folder Id (parent) to the screen navigation stack
-        pushToScreenNavigationStack(folder.parentFolderId)
-      }
-      navigateTo(Screen.FOLDER_CONTENTS)
-    }
   }
 }
