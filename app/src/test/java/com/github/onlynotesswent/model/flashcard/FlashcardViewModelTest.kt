@@ -22,11 +22,11 @@ class FlashcardViewModelTest {
   private lateinit var flashcardViewModel: FlashcardViewModel
 
   private val flashcard =
-      Flashcard(
+      TextFlashcard(
           id = "1",
           front = "front",
           back = "back",
-          nextReview = Timestamp.now(),
+          lastReviewed = Timestamp.now(),
           userId = "2",
           folderId = "3",
           noteId = "4")
@@ -86,7 +86,7 @@ class FlashcardViewModelTest {
       val onSuccess: (List<Flashcard>) -> Unit = it.getArgument(1)
       onSuccess(listOf(flashcard))
     }
-    flashcardViewModel.getFlashcardsByFolder(flashcard.folderId, { assert(true) })
+    flashcardViewModel.getFlashcardsByFolder(flashcard.folderId!!, { assert(true) })
     assertEquals(flashcardViewModel.folderFlashcards.value, listOf(flashcard))
   }
 
@@ -96,7 +96,7 @@ class FlashcardViewModelTest {
       val onSuccess: (List<Flashcard>) -> Unit = it.getArgument(1)
       onSuccess(listOf(flashcard))
     }
-    flashcardViewModel.getFlashcardsByNote(flashcard.noteId, { assert(true) })
+    flashcardViewModel.getFlashcardsByNote(flashcard.noteId!!, { assert(true) })
     assertEquals(flashcardViewModel.noteFlashcards.value, listOf(flashcard))
   }
 
