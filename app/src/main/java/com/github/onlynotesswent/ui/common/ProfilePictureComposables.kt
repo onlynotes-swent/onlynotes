@@ -2,6 +2,7 @@ package com.github.onlynotesswent.ui.common
 
 import android.util.Log
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -24,6 +25,8 @@ import com.github.onlynotesswent.model.file.FileType
 import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.user.User
 import com.github.onlynotesswent.model.user.UserViewModel
+import com.github.onlynotesswent.ui.navigation.NavigationActions
+import com.github.onlynotesswent.ui.navigation.Screen
 
 /**
  * Displays the user's thumbnail profile picture, by wrapping the NonModifiableProfilePicture
@@ -50,18 +53,11 @@ fun ThumbnailPic(user: User?, fileViewModel: FileViewModel, size: Int = 40) {
  * @param size The size of the profile picture.
  */
 @Composable
-fun ThumbnailPic(
-    userid: String,
-    userViewModel: UserViewModel,
-    fileViewModel: FileViewModel,
-    size: Int = 40
-) {
-  val profilePictureUri = remember { mutableStateOf("") }
-  val userState: MutableState<User?> = remember { (mutableStateOf(null)) }
-  userViewModel.getUserById(userid, { user -> userState.value = user }, {}, {})
-
-  NonModifiableProfilePicture(
-      userState, profilePictureUri, fileViewModel, size, "thumbnail--${userid}")
+fun ThumbnailDynamicPic(user: State<User?>, fileViewModel: FileViewModel, onClick: () -> Unit = {},   size: Int = 40,) {
+    val profilePictureUri = remember { mutableStateOf("") }
+    NonModifiableProfilePicture(
+        user, profilePictureUri, fileViewModel, size, "thumbnail--${user.value?.uid?:"default"}",
+        onClick = {onClick()})
 }
 
 /**
@@ -79,13 +75,17 @@ fun NonModifiableProfilePicture(
     profilePictureUri: MutableState<String>,
     fileViewModel: FileViewModel,
     size: Int = 150,
-    testTag: String = "profilePicture"
+    testTag: String = "profilePicture",
+    onClick: () -> Unit= {}
 ) {
-  Box(modifier = Modifier.size(size.dp)) {
+  Box(modifier = Modifier.size(size.dp).clickable { onClick() }) {
+      val uid  = remember { mutableStateOf(user.value?.uid) }
+      uid.value = user.value?.uid
+
     // Download the profile picture from Firebase Storage if it hasn't been downloaded yet
-    if (user.value != null && user.value!!.hasProfilePicture && profilePictureUri.value.isBlank()) {
+    if (user.value != null && user.value!!.hasProfilePicture &&  uid.value!=null && profilePictureUri.value.isBlank()) {
       fileViewModel.downloadFile(
-          user.value!!.uid,
+          uid.value!!,
           FileType.PROFILE_PIC_JPEG,
           context = LocalContext.current,
           onSuccess = { file -> profilePictureUri.value = file.absolutePath },

@@ -534,4 +534,23 @@ class UserViewModelTest {
         .deleteNotification(eq("1"), any(), any())
     assert(onSuccessCalled)
   }
+
+
+  @Test
+  fun `follow Request public work`() {
+    var onSuccessCalled = false
+    val user2 = user.copy(friends = Friends(), pendingFriends = Friends(), isAccountPublic = true)
+    // Mock the getUserById method to return a valid user
+    `when`(mockRepositoryFirestore.getUserById(eq("3"), any(), any(), any())).thenAnswer {
+      val onSuccess = it.arguments[1] as (User) -> Unit
+      onSuccess(user.copy(uid = "3", isAccountPublic = true))
+    }
+    userViewModel.addUser(user2, { assert(true) }, { assert(false) })
+    userViewModel.followUser("3", { onSuccessCalled = true }, { assert(false) })
+    verify(mockRepositoryFirestore, timeout(1000))
+      .addFollowerTo(eq("3"), eq("1"), anyBoolean(), anyOrNull(), anyOrNull())
+    assert(onSuccessCalled)
+  }
+
+
 }
