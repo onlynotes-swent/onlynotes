@@ -237,9 +237,7 @@ fun OverviewScreenGrid(
     navigationActions: NavigationActions
 ) {
   CustomLazyGrid(
-      modifier =
-          Modifier.fillMaxSize()
-              .padding(top = 20.dp, bottom = paddingValues.calculateBottomPadding()),
+      modifier = Modifier.fillMaxSize(),
       notes = userRootNotes,
       folders = userRootFolders,
       gridModifier =
