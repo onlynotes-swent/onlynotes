@@ -43,7 +43,7 @@
     <string name="rename">Rename</string>
     <string name="user_not_found">User not found ...</string>
     <string name="folder_name_not_found">Folder name not found</string>
-    <string name="rename_folder">Rename folder</string>
+    <string name="update_folder">Update folder</string>
     <string name="delete_folder">Delete folder</string>
     <string name="delete_folder_contents">Delete folder contents</string>
     <string name="this_folder_is_empty">This folder is empty.</string>

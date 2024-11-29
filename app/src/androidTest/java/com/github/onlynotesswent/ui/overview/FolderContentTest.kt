@@ -162,9 +162,9 @@ class FolderContentTest {
   @Test
   fun changeFolderName() {
     composeTestRule.onNodeWithTag("folderSettingsButton").performClick()
-    composeTestRule.onNodeWithTag("renameFolderButton").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("updateFolderButton").assertIsDisplayed()
     composeTestRule.onNodeWithTag("deleteFolderButton").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("renameFolderButton").performClick()
+    composeTestRule.onNodeWithTag("updateFolderButton").performClick()
     composeTestRule.onNodeWithTag("FolderDialog").assertIsDisplayed()
     composeTestRule.onNodeWithTag("confirmFolderAction").assertIsDisplayed()
     composeTestRule.onNodeWithTag("confirmFolderAction").performClick()
@@ -173,7 +173,7 @@ class FolderContentTest {
   @Test
   fun deleteFolderButtonIsDisplayed() {
     composeTestRule.onNodeWithTag("folderSettingsButton").performClick()
-    composeTestRule.onNodeWithTag("renameFolderButton").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("updateFolderButton").assertIsDisplayed()
     composeTestRule.onNodeWithTag("deleteFolderButton").assertIsDisplayed()
   }
 

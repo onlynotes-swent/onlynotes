@@ -302,16 +302,16 @@ fun FolderContentTopBar(
             menuItems =
                 listOf(
                     CustomDropDownMenuItem(
-                        text = { Text(stringResource(R.string.rename_folder)) },
+                        text = { Text(stringResource(R.string.update_folder)) },
                         icon = {
                           Icon(
-                              imageVector = Icons.Default.Edit, contentDescription = "RenameFolder")
+                              imageVector = Icons.Default.Edit, contentDescription = "UpdateFolder")
                         },
                         onClick = {
                           onExpandedChange(false)
                           showRenameDialog(true)
                         },
-                        modifier = Modifier.testTag("renameFolderButton")),
+                        modifier = Modifier.testTag("updateFolderButton")),
                     CustomDropDownMenuItem(
                         text = { Text(stringResource(R.string.delete_folder)) },
                         icon = {
