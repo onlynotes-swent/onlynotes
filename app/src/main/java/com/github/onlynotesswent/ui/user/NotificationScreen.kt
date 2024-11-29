@@ -21,8 +21,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.github.onlynotesswent.R
 import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.notification.Notification
 import com.github.onlynotesswent.model.notification.NotificationViewModel
@@ -49,7 +52,7 @@ fun NotificationScreen(
       topBar = {
         // TopAppBar with title
         TopAppBar(
-            title = { Text("Your Notifications") },
+            title = { Text(stringResource(R.string.your_notifications)) },
             navigationIcon = {
               IconButton(
                   onClick = { navigationActions.goBack() }, Modifier.testTag("goBackButton")) {
@@ -79,7 +82,7 @@ fun NotificationScreen(
                   Notification.NotificationType.FOLLOW ->
                       NotificationTypeDefault(
                           notification, fileViewModel, userViewModel, notificationViewModel)
-                  else -> Text("Not an implemented notification type")
+                  else -> Text(stringResource(R.string.not_an_implemented_notification_type))
                 }
                 HorizontalDivider()
               }
@@ -130,6 +133,7 @@ fun NotificationTypeFollowRequest(
               .padding(8.dp)
               .alpha(if (notification.read) 0.5f else 1f)) {
         Column {
+          val context = LocalContext.current
           Text(notification.title, style = Typography.titleMedium)
           Row {
             assert(
@@ -151,12 +155,14 @@ fun NotificationTypeFollowRequest(
                               notification.copy(
                                   read = true,
                                   type = Notification.NotificationType.FOLLOW_REQUEST_ACCEPTED,
-                                  body = user.userHandle() + " is now following you"))
+                                  body =
+                                      context.getString(
+                                          R.string.is_now_following_you, user.userHandle())))
                         },
                         {},
                         {})
                   }) {
-                    Text("Accept", maxLines = 1)
+                    Text(stringResource(R.string.accept), maxLines = 1)
                   }
               Button(
                   onClick = {
@@ -168,12 +174,15 @@ fun NotificationTypeFollowRequest(
                               notification.copy(
                                   read = true,
                                   type = Notification.NotificationType.FOLLOW_REQUEST_REJECTED,
-                                  body = "you have rejected the request from:" + user.userHandle()))
+                                  body =
+                                      context.getString(
+                                          R.string.you_have_rejected_the_request_from,
+                                          user.userHandle())))
                         },
                         {},
                         {})
                   }) {
-                    Text("Reject", maxLines = 1)
+                    Text(stringResource(R.string.reject), maxLines = 1)
                   }
             }
           }

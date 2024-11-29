@@ -281,7 +281,7 @@ class UserViewModel(
                 Notification(
                     notificationRepository.getNewUid(),
                     "New Follow Request",
-                    _currentUser.value!!.userHandle() + " wants to follow you",
+                    "${ _currentUser.value!!.userHandle()}  wants to follow you",
                     _currentUser.value!!.uid,
                     followingUID,
                     Timestamp.now(),
@@ -294,7 +294,7 @@ class UserViewModel(
                 Notification(
                     notificationRepository.getNewUid(),
                     "New Follower",
-                    _currentUser.value!!.userHandle() + " is now following you",
+                    "${ _currentUser.value!!.userHandle()} is now following you",
                     _currentUser.value!!.uid,
                     followingUID,
                     Timestamp.now(),

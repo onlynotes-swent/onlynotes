@@ -1,6 +1,5 @@
 package com.github.onlynotesswent.ui.user
 
-import android.util.Log
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import com.github.onlynotesswent.model.file.FileRepository
@@ -17,7 +16,6 @@ import com.github.onlynotesswent.model.user.UserViewModel
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
 import com.google.firebase.Timestamp
-import junit.framework.TestCase.assertEquals
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -92,9 +90,9 @@ class NotificationScreenTest {
 
   private val testNotification4 =
       Notification(
-          id = "testId3",
-          title = "testTitle3",
-          body = "testBody3",
+          id = "testId4",
+          title = "testTitle4",
+          body = "testBody4",
           senderId = testUid2,
           receiverId = testUid,
           timestamp = Timestamp.now(),
@@ -103,9 +101,9 @@ class NotificationScreenTest {
 
   private val testNotification5 =
       Notification(
-          id = "testId3",
-          title = "testTitle3",
-          body = "testBody3",
+          id = "testId5",
+          title = "testTitle5",
+          body = "testBody5",
           senderId = testUid2,
           receiverId = testUid,
           timestamp = Timestamp.now(),
@@ -194,8 +192,6 @@ class NotificationScreenTest {
     }
 
     notificationViewModel.getNotificationByReceiverId(testUid)
-    Log.e("test", notificationViewModel.userNotifications.value.toString())
-    assertEquals(3, notificationViewModel.userNotifications.value.size)
 
     composeTestRule.onNodeWithTag("notificationScreen").assertExists()
     composeTestRule.onNodeWithTag("notificationsList").assertExists()

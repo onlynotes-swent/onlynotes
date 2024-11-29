@@ -70,4 +70,10 @@
     <string name="list_of">List of %1$s:</string>
     <string name="no_to_display">No %1$s to display</string>
     <string name="bio">"Bio: "</string>
+    <string name="is_now_following_you">" %1$s is now following you"</string>
+    <string name="accept">Accept</string>
+    <string name="reject">Reject</string>
+    <string name="you_have_rejected_the_request_from">you have rejected the request from: %1$s</string>
+    <string name="your_notifications">Your Notifications</string>
+    <string name="not_an_implemented_notification_type">Not an implemented notification type</string>
 </resources>
