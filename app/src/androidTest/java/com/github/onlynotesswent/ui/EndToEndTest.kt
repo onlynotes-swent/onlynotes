@@ -274,15 +274,12 @@ class EndToEndTest {
     composeTestRule.onNodeWithTag("confirmNoteAction").performClick()
 
     // Modify the note title and save the changes
-    Log.d("selected note", noteViewModel.selectedNote.value.toString())
     composeTestRule.onNodeWithTag("EditTitle textField").assertIsDisplayed()
     composeTestRule.onNodeWithTag("EditTitle textField").performTextClearance()
-    Log.d("selected note", noteViewModel.selectedNote.value.toString())
 
     composeTestRule.onNodeWithTag("EditTitle textField").performTextInput(newTitle)
     composeTestRule.onNodeWithTag("saveNoteButton").assertIsDisplayed()
     composeTestRule.onNodeWithTag("saveNoteButton").performClick()
-    Log.d("selected note", noteViewModel.selectedNote.value.toString())
 
     // Exit the note edit screen
     composeTestRule.onNodeWithTag("closeButton").assertIsDisplayed()
