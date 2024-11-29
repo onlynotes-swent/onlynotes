@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.util.Log
 import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.ActivityResult
@@ -36,7 +37,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.app.ActivityCompat
 import androidx.credentials.CredentialManager
+import com.github.onlynotesswent.MainActivity
 import com.github.onlynotesswent.R
 import com.github.onlynotesswent.model.authentication.GoogleCredSignIn
 import com.github.onlynotesswent.model.user.UserViewModel
@@ -85,6 +88,12 @@ fun SignInScreen(
       val firebaseCredential = GoogleAuthProvider.getCredential(googleIdToken, null)
       signInWithFirebase(firebaseCredential, navigationActions, userViewModel, context)
     }
+  }
+
+  // Handle back button press
+  BackHandler {
+    // Exit the app
+    ActivityCompat.finishAffinity(context as MainActivity)
   }
 
   // UI:
