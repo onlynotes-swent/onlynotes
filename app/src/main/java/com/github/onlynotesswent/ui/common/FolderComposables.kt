@@ -162,7 +162,7 @@ fun FolderDialog(
     onDismiss: () -> Unit,
     onConfirm: (String, Visibility) -> Unit,
     action: String,
-    oldVisibility: Visibility? = Visibility.DEFAULT,
+    oldVisibility: Visibility = Visibility.DEFAULT,
     oldName: String = ""
 ) {
   CreationDialog(onDismiss, onConfirm, action, oldVisibility, oldName, "Folder")

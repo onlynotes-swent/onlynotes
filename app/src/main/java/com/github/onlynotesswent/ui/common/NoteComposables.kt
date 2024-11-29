@@ -194,7 +194,7 @@ fun NoteDialog(
     onDismiss: () -> Unit,
     onConfirm: (String, Visibility) -> Unit,
     action: String,
-    oldVisibility: Visibility? = Visibility.PRIVATE,
+    oldVisibility: Visibility = Visibility.PRIVATE,
     oldName: String = ""
 ) {
   CreationDialog(onDismiss, onConfirm, action, oldVisibility, oldName, "Note")
