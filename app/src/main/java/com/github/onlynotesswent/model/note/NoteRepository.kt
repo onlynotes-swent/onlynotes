@@ -23,7 +23,7 @@ interface NoteRepository {
    * @param useCache Whether to update data from cache. Should be true only if [userId] is the
    *   current user.
    */
-  fun getNotesFrom(
+  suspend fun getNotesFrom(
       userId: String,
       onSuccess: (List<Note>) -> Unit,
       onFailure: (Exception) -> Unit,
@@ -39,7 +39,7 @@ interface NoteRepository {
    * @param useCache Whether to update data from cache. Should be true only if [userId] is the
    *   current user.
    */
-  fun getRootNotesFrom(
+  suspend fun getRootNotesFrom(
       userId: String,
       onSuccess: (List<Note>) -> Unit,
       onFailure: (Exception) -> Unit,
@@ -55,7 +55,7 @@ interface NoteRepository {
    * @param useCache Whether to update data from cache. Should be true only if userId of the note is
    *   the current user.
    */
-  fun getNoteById(
+  suspend fun getNoteById(
       id: String,
       onSuccess: (Note) -> Unit,
       onFailure: (Exception) -> Unit,
@@ -71,7 +71,7 @@ interface NoteRepository {
    * @param useCache Whether to update data from cache. Should be true only if userId of the note is
    *   the current user.
    */
-  fun addNote(note: Note, onSuccess: () -> Unit, onFailure: (Exception) -> Unit, useCache: Boolean)
+  suspend fun addNote(note: Note, onSuccess: () -> Unit, onFailure: (Exception) -> Unit, useCache: Boolean)
 
   /**
    * Updates a note.
@@ -82,7 +82,7 @@ interface NoteRepository {
    * @param useCache Whether to update data from cache. Should be true only if userId of the note is
    *   the current user.
    */
-  fun updateNote(
+  suspend fun updateNote(
       note: Note,
       onSuccess: () -> Unit,
       onFailure: (Exception) -> Unit,
@@ -98,7 +98,7 @@ interface NoteRepository {
    * @param useCache Whether to update data from cache. Should be true only if userId of the note is
    *   the current user.
    */
-  fun deleteNoteById(
+  suspend fun deleteNoteById(
       id: String,
       onSuccess: () -> Unit,
       onFailure: (Exception) -> Unit,
@@ -114,7 +114,7 @@ interface NoteRepository {
    * @param useCache Whether to update data from cache. Should be true only if [userId] is the
    *   current user.
    */
-  fun deleteNotesByUserId(
+  suspend fun deleteNotesByUserId(
       userId: String,
       onSuccess: () -> Unit,
       onFailure: (Exception) -> Unit,
@@ -130,7 +130,7 @@ interface NoteRepository {
    * @param useCache Whether to update data from cache. Should be true only if userId of the folder
    *   is the current user.
    */
-  fun getNotesFromFolder(
+  suspend fun getNotesFromFolder(
       folderId: String,
       onSuccess: (List<Note>) -> Unit,
       onFailure: (Exception) -> Unit,
