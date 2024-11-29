@@ -14,8 +14,6 @@ class NotificationRepositoryFirestore(private val db: FirebaseFirestore) : Notif
     return try {
       Notification(
           id = document.getString("id")!!,
-          title = document.getString("title")!!,
-          body = document.getString("body")!!,
           senderId = document.getString("senderId"),
           receiverId = document.getString("receiverId")!!,
           timestamp = document.getTimestamp("timestamp")!!,

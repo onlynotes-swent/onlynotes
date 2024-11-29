@@ -19,9 +19,10 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -68,20 +69,49 @@ fun NotificationScreen(
               items(userNotifications.value.size) { index ->
                 // Display each notification
                 val notification = sortedNotification[index]
+                val senderName = remember { mutableStateOf("") }
+                if (notification.senderId != null) {
+                  userViewModel.getUserById(
+                      notification.senderId,
+                      { user -> senderName.value = user.userHandle() },
+                      {},
+                      {})
+                }
                 // for each notifcationType do something:
                 when (notification.type) {
                   Notification.NotificationType.FOLLOW_REQUEST ->
                       NotificationTypeFollowRequest(
-                          notification, fileViewModel, userViewModel, notificationViewModel)
+                          stringResource(R.string.new_follow_request),
+                          stringResource(R.string.want_to_follow_you, senderName.value),
+                          notification,
+                          fileViewModel,
+                          userViewModel,
+                          notificationViewModel)
                   Notification.NotificationType.FOLLOW_REQUEST_ACCEPTED ->
                       NotificationTypeDefault(
-                          notification, fileViewModel, userViewModel, notificationViewModel)
+                          stringResource(R.string.follow_request_accepted),
+                          stringResource(R.string.is_now_following_you, senderName.value),
+                          notification,
+                          fileViewModel,
+                          userViewModel,
+                          notificationViewModel)
                   Notification.NotificationType.FOLLOW_REQUEST_REJECTED ->
                       NotificationTypeDefault(
-                          notification, fileViewModel, userViewModel, notificationViewModel)
+                          stringResource(R.string.follow_request_rejected),
+                          stringResource(
+                              R.string.you_have_rejected_the_follow_request_from, senderName.value),
+                          notification,
+                          fileViewModel,
+                          userViewModel,
+                          notificationViewModel)
                   Notification.NotificationType.FOLLOW ->
                       NotificationTypeDefault(
-                          notification, fileViewModel, userViewModel, notificationViewModel)
+                          stringResource(R.string.new_follower),
+                          stringResource(R.string.is_now_following_you, senderName.value),
+                          notification,
+                          fileViewModel,
+                          userViewModel,
+                          notificationViewModel)
                   else -> Text(stringResource(R.string.not_an_implemented_notification_type))
                 }
                 HorizontalDivider()
@@ -92,6 +122,8 @@ fun NotificationScreen(
 
 @Composable
 fun NotificationTypeDefault(
+    title: String,
+    body: String,
     notification: Notification,
     fileViewModel: FileViewModel,
     userViewModel: UserViewModel,
@@ -103,14 +135,14 @@ fun NotificationTypeDefault(
               .padding(8.dp)
               .alpha(if (notification.read) 0.5f else 1f)) {
         Column {
-          Text(notification.title, style = Typography.titleMedium)
+          Text(title, style = Typography.titleMedium)
           Row {
             if (notification.senderId != null) {
               ThumbnailPic(notification.senderId, userViewModel, fileViewModel)
             }
             Spacer(modifier = Modifier.padding(5.dp))
             Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.Center) {
-              Text(notification.body, style = Typography.bodyLarge)
+              Text(body, style = Typography.bodyLarge)
             }
           }
         }
@@ -122,6 +154,8 @@ fun NotificationTypeDefault(
 
 @Composable
 fun NotificationTypeFollowRequest(
+    title: String,
+    body: String,
     notification: Notification,
     fileViewModel: FileViewModel,
     userViewModel: UserViewModel,
@@ -133,54 +167,32 @@ fun NotificationTypeFollowRequest(
               .padding(8.dp)
               .alpha(if (notification.read) 0.5f else 1f)) {
         Column {
-          val context = LocalContext.current
-          Text(notification.title, style = Typography.titleMedium)
-          Row {
-            assert(
-                notification.senderId !=
-                    null) // the senderId should not be null for this type of notification
+          Text(title, style = Typography.titleMedium)
+          Row { // the senderId should not be null for this type of notification
+            assert(notification.senderId != null)
             ThumbnailPic(notification.senderId!!, userViewModel, fileViewModel)
             Spacer(modifier = Modifier.padding(5.dp))
             Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.Center) {
-              Text(notification.body, style = Typography.bodyLarge)
+              Text(body, style = Typography.bodyLarge)
             }
             if (!notification.read) {
               Button(
                   onClick = {
                     userViewModel.acceptFollowerRequest(notification.senderId)
-                    userViewModel.getUserById(
-                        notification.senderId,
-                        { user ->
-                          notificationViewModel.updateNotification(
-                              notification.copy(
-                                  read = true,
-                                  type = Notification.NotificationType.FOLLOW_REQUEST_ACCEPTED,
-                                  body =
-                                      context.getString(
-                                          R.string.is_now_following_you, user.userHandle())))
-                        },
-                        {},
-                        {})
+                    notificationViewModel.updateNotification(
+                        notification.copy(
+                            read = true,
+                            type = Notification.NotificationType.FOLLOW_REQUEST_ACCEPTED))
                   }) {
                     Text(stringResource(R.string.accept), maxLines = 1)
                   }
               Button(
                   onClick = {
                     userViewModel.declineFollowerRequest(notification.senderId)
-                    userViewModel.getUserById(
-                        notification.senderId,
-                        { user ->
-                          notificationViewModel.updateNotification(
-                              notification.copy(
-                                  read = true,
-                                  type = Notification.NotificationType.FOLLOW_REQUEST_REJECTED,
-                                  body =
-                                      context.getString(
-                                          R.string.you_have_rejected_the_request_from,
-                                          user.userHandle())))
-                        },
-                        {},
-                        {})
+                    notificationViewModel.updateNotification(
+                        notification.copy(
+                            read = true,
+                            type = Notification.NotificationType.FOLLOW_REQUEST_REJECTED))
                   }) {
                     Text(stringResource(R.string.reject), maxLines = 1)
                   }

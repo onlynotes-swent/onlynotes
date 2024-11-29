@@ -1,5 +1,6 @@
 package com.github.onlynotesswent.model.user
 
+import com.github.onlynotesswent.model.notification.Notification
 import com.github.onlynotesswent.model.notification.NotificationRepositoryFirestore
 import com.google.firebase.FirebaseApp
 import com.google.firebase.Timestamp
@@ -494,7 +495,7 @@ class UserViewModelTest {
   @Test
   fun `follow Request work`() {
     var onSuccessCalled = false
-    val user2 = user.copy(friends = Friends(), pendingFriends = Friends(), isAccountPublic = false)
+    val user2 = user.copy(friends = Friends(), pendingFriends = Friends(), isAccountPublic = true)
     // Mock the getUserById method to return a valid user
     `when`(mockRepositoryFirestore.getUserById(eq("3"), any(), any(), any())).thenAnswer {
       val onSuccess = it.arguments[1] as (User) -> Unit
@@ -511,10 +512,26 @@ class UserViewModelTest {
   fun `unfollow Request work`() {
     var onSuccessCalled = false
     val user2 = user.copy(friends = Friends(), pendingFriends = Friends(following = listOf("3")))
+    `when`(mockRepostioryFirestoreNotification.getNotificationByReceiverId(any(), any(), any()))
+        .thenAnswer {
+          val onSuccess = it.arguments[1] as (List<Notification>) -> Unit
+          onSuccess(
+              listOf(
+                  Notification(
+                      id = "1",
+                      senderId = "1",
+                      receiverId = "3",
+                      timestamp = Timestamp.now(),
+                      read = false,
+                      type = Notification.NotificationType.FOLLOW_REQUEST)))
+        }
     userViewModel.addUser(user2, { assert(true) }, { assert(false) })
     userViewModel.unfollowUser("3", { onSuccessCalled = true }, { assert(false) })
+
     verify(mockRepositoryFirestore, timeout(1000))
         .removeFollowerFrom(eq("3"), eq("1"), anyBoolean(), anyOrNull(), anyOrNull())
+    verify(mockRepostioryFirestoreNotification, timeout(1000))
+        .deleteNotification(eq("1"), any(), any())
     assert(onSuccessCalled)
   }
 }

@@ -64,16 +64,22 @@
     <string name="following">Following: %1$s</string>
     <string name="followers">Followers: %1$s</string>
     <string name="unfollow">Unfollow</string>
-    <string name="pending">Pending...</string>
+    <string name="pending">Requested</string>
     <string name="follow">Follow</string>
     <string name="remove">Remove</string>
     <string name="list_of">List of %1$s:</string>
     <string name="no_to_display">No %1$s to display</string>
     <string name="bio">"Bio: "</string>
-    <string name="is_now_following_you">" %1$s is now following you"</string>
     <string name="accept">Accept</string>
     <string name="reject">Reject</string>
     <string name="you_have_rejected_the_request_from">you have rejected the request from: %1$s</string>
     <string name="your_notifications">Your Notifications</string>
     <string name="not_an_implemented_notification_type">Not an implemented notification type</string>
+    <string name="new_follow_request">New Follow Request</string>
+    <string name="follow_request_accepted">Follow Request Accepted</string>
+    <string name="follow_request_rejected">Follow Request Rejected</string>
+    <string name="new_follower">New Follower</string>
+    <string name="want_to_follow_you">%1$s want to follow you</string>
+    <string name="is_now_following_you">%1$s is now following you</string>
+    <string name="you_have_rejected_the_follow_request_from">you have rejected the follow request from %1$s</string>
 </resources>

@@ -20,7 +20,6 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.mockito.Mock
-import org.mockito.Mockito.times
 import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
@@ -58,8 +57,6 @@ class NotificationScreenTest {
   private val testNotification1 =
       Notification(
           id = "testId",
-          title = "testTitle",
-          body = "testBody",
           senderId = testUid2,
           receiverId = testUid,
           timestamp = Timestamp.now(),
@@ -69,8 +66,6 @@ class NotificationScreenTest {
   private val testNotification2 =
       Notification(
           id = "testId2",
-          title = "testTitle2",
-          body = "testBody2",
           senderId = testUid3,
           receiverId = testUid,
           timestamp = Timestamp.now(),
@@ -80,8 +75,6 @@ class NotificationScreenTest {
   private val testNotification3 =
       Notification(
           id = "testId3",
-          title = "testTitle3",
-          body = "testBody3",
           senderId = testUid2,
           receiverId = testUid,
           timestamp = Timestamp.now(),
@@ -91,8 +84,6 @@ class NotificationScreenTest {
   private val testNotification4 =
       Notification(
           id = "testId4",
-          title = "testTitle4",
-          body = "testBody4",
           senderId = testUid2,
           receiverId = testUid,
           timestamp = Timestamp.now(),
@@ -102,8 +93,6 @@ class NotificationScreenTest {
   private val testNotification5 =
       Notification(
           id = "testId5",
-          title = "testTitle5",
-          body = "testBody5",
           senderId = testUid2,
           receiverId = testUid,
           timestamp = Timestamp.now(),
