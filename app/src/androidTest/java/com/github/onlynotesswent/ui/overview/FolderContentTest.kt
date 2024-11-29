@@ -200,11 +200,10 @@ class FolderContentTest {
     composeTestRule.onNodeWithTag("inputFolderName").performTextInput("sub name")
 
     composeTestRule.onNodeWithTag("visibilityDropDown").assertIsNotDisplayed()
-    composeTestRule.onNodeWithTag("visibilityButton").assertIsDisplayed().performClick()
-
-    composeTestRule.onNodeWithTag("item--Public").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("item--Friends Only").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("item--Private").assertIsDisplayed().performClick()
+    composeTestRule.onNodeWithTag("currentVisibilityOption").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("previousVisibility").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("nextVisibility").performClick()
+    
     composeTestRule.onNodeWithTag("confirmFolderAction").assertIsEnabled().assertIsDisplayed()
     composeTestRule.onNodeWithTag("confirmFolderAction").performClick()
 
@@ -248,6 +247,9 @@ class FolderContentTest {
     composeTestRule.onNodeWithTag("deleteFolderButton").assertIsDisplayed()
     composeTestRule.onNodeWithTag("deleteFolderButton").performClick()
 
+    composeTestRule.onNodeWithTag("popup").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("confirmButton").performClick()
+
     verify(mockNavigationActions).navigateTo(TopLevelDestinations.OVERVIEW)
   }
 
@@ -266,6 +268,9 @@ class FolderContentTest {
     composeTestRule.onNodeWithTag("deleteFolderButton").assertIsDisplayed()
     composeTestRule.onNodeWithTag("deleteFolderButton").performClick()
 
+    composeTestRule.onNodeWithTag("popup").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("confirmButton").performClick()
+
     verify(mockNavigationActions).navigateTo(Screen.FOLDER_CONTENTS.replace("{folderId}", "1"))
   }
 
@@ -283,9 +288,9 @@ class FolderContentTest {
     composeTestRule.onNodeWithTag("noteCard").assertIsDisplayed()
     composeTestRule.onNodeWithTag("MoveOutButton").assertIsDisplayed()
     composeTestRule.onNodeWithTag("MoveOutButton").performClick()
-    composeTestRule.onNodeWithTag("MoveOutDialog").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("MoveOutConfirmButton").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("MoveOutConfirmButton").performClick()
+    composeTestRule.onNodeWithTag("popup").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("confirmButton").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("confirmButton").performClick()
     composeTestRule.onNodeWithTag("noteCard").assertIsDisplayed()
   }
 
@@ -303,9 +308,9 @@ class FolderContentTest {
     composeTestRule.onNodeWithTag("noteCard").assertIsDisplayed()
     composeTestRule.onNodeWithTag("MoveOutButton").assertIsDisplayed()
     composeTestRule.onNodeWithTag("MoveOutButton").performClick()
-    composeTestRule.onNodeWithTag("MoveOutDialog").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("MoveOutConfirmButton").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("MoveOutConfirmButton").performClick()
+    composeTestRule.onNodeWithTag("popup").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("confirmButton").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("confirmButton").performClick()
     composeTestRule.onNodeWithTag("goBackButton").performClick()
     composeTestRule
         .onAllNodesWithTag("noteCard")
@@ -337,9 +342,9 @@ class FolderContentTest {
     composeTestRule.onNodeWithTag("noteCard").assertIsDisplayed()
     composeTestRule.onNodeWithTag("MoveOutButton").assertIsDisplayed()
     composeTestRule.onNodeWithTag("MoveOutButton").performClick()
-    composeTestRule.onNodeWithTag("MoveOutDialog").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("MoveOutConfirmButton").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("MoveOutConfirmButton").performClick()
+    composeTestRule.onNodeWithTag("popup").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("confirmButton").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("confirmButton").performClick()
     verify(mockNavigationActions).navigateTo(Screen.FOLDER_CONTENTS.replace("{folderId}", "1"))
     composeTestRule
         .onAllNodesWithTag("noteCard")

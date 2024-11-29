@@ -11,7 +11,7 @@
     <string name="move">Move</string>
     <string name="choose_visibility">Choose visibility</string>
     <string name="move_note_out_of_folder">Move note out of folder</string>
-    <string name="move_note_out_of_folder_confirmation">move_note_out_of_folder</string>
+    <string name="move_note_out_of_folder_confirmation">Are you sure you want to move this note out of the folder?</string>
     <string name="comments">Comments</string>
     <string name="no_comments_text">No comments yet. Add a comment to start the discussion.</string>
     <string name="edited">%1$s edited: %2$s</string>

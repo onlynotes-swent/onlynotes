@@ -48,7 +48,7 @@ fun SelectVisibility(visibility: Visibility?, onVisibilityChange: (Visibility) -
                   if (selectedIndex > 0) selectedIndex - 1 else Visibility.entries.lastIndex
               onVisibilityChange(Visibility.entries[selectedIndex])
             },
-            modifier = Modifier.testTag("PreviousVisibility")) {
+            modifier = Modifier.testTag("previousVisibility")) {
               Icon(
                   imageVector = Icons.Default.ChevronLeft,
                   contentDescription = "Previous Visibility")
@@ -59,7 +59,7 @@ fun SelectVisibility(visibility: Visibility?, onVisibilityChange: (Visibility) -
           ->
           Column(
               horizontalAlignment = Alignment.CenterHorizontally,
-              modifier = Modifier.testTag("CurrentVisibilityOption")) {
+              modifier = Modifier.testTag("currentVisibilityOption")) {
                 // Smooth scaling animation
                 val scale by
                     animateFloatAsState(
@@ -87,7 +87,7 @@ fun SelectVisibility(visibility: Visibility?, onVisibilityChange: (Visibility) -
                   if (selectedIndex < Visibility.entries.lastIndex) selectedIndex + 1 else 0
               onVisibilityChange(Visibility.entries[selectedIndex])
             },
-            modifier = Modifier.testTag("NextVisibility")) {
+            modifier = Modifier.testTag("nextVisibility")) {
               Icon(imageVector = Icons.Default.ChevronRight, contentDescription = "Next Visibility")
             }
       }

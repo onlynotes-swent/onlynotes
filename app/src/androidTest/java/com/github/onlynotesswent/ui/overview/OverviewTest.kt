@@ -234,11 +234,10 @@ class OverviewTest {
     composeTestRule.onNodeWithTag("createNote").performClick()
 
     composeTestRule.onNodeWithTag("inputNoteName").performTextInput("Note Name")
-    composeTestRule.onNodeWithTag("visibilityButton").assertIsDisplayed().performClick()
-
-    composeTestRule.onNodeWithTag("item--Public").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("item--Friends Only").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("item--Private").assertIsDisplayed().performClick()
+    composeTestRule.onNodeWithTag("currentVisibilityOption").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("previousVisibility").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("nextVisibility").performClick()
+    
     composeTestRule.onNodeWithTag("confirmNoteAction").assertIsDisplayed()
 
     // mock get newUid
@@ -257,14 +256,12 @@ class OverviewTest {
 
     composeTestRule.onNodeWithTag("confirmFolderAction").assertIsNotEnabled()
     composeTestRule.onNodeWithTag("inputFolderName").performTextInput("Folder Name")
-    composeTestRule.onNodeWithTag("confirmFolderAction").assertIsNotEnabled()
+    composeTestRule.onNodeWithTag("confirmFolderAction").assertIsEnabled().assertIsDisplayed()
 
-    composeTestRule.onNodeWithTag("visibilityDropDown").assertIsNotDisplayed()
-    composeTestRule.onNodeWithTag("visibilityButton").assertIsDisplayed().performClick()
-
-    composeTestRule.onNodeWithTag("item--Public").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("item--Friends Only").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("item--Private").assertIsDisplayed().performClick()
+    composeTestRule.onNodeWithTag("currentVisibilityOption").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("previousVisibility").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("nextVisibility").performClick()
+    
     composeTestRule.onNodeWithTag("confirmFolderAction").assertIsEnabled().assertIsDisplayed()
     composeTestRule.onNodeWithTag("confirmFolderAction").performClick()
   }
