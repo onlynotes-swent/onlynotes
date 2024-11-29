@@ -490,4 +490,31 @@ class UserViewModelTest {
         .addFollowerTo(eq("1"), eq("3"), anyBoolean(), anyOrNull(), anyOrNull())
     assert(onSuccessCalled)
   }
+
+  @Test
+  fun `follow Request work`() {
+    var onSuccessCalled = false
+    val user2 = user.copy(friends = Friends(), pendingFriends = Friends(), isAccountPublic = false)
+    // Mock the getUserById method to return a valid user
+    `when`(mockRepositoryFirestore.getUserById(eq("3"), any(), any(), any())).thenAnswer {
+      val onSuccess = it.arguments[1] as (User) -> Unit
+      onSuccess(user.copy(uid = "3"))
+    }
+    userViewModel.addUser(user2, { assert(true) }, { assert(false) })
+    userViewModel.followUser("3", { onSuccessCalled = true }, { assert(false) })
+    verify(mockRepositoryFirestore, timeout(1000))
+        .addFollowerTo(eq("3"), eq("1"), anyBoolean(), anyOrNull(), anyOrNull())
+    assert(onSuccessCalled)
+  }
+
+  @Test
+  fun `unfollow Request work`() {
+    var onSuccessCalled = false
+    val user2 = user.copy(friends = Friends(), pendingFriends = Friends(following = listOf("3")))
+    userViewModel.addUser(user2, { assert(true) }, { assert(false) })
+    userViewModel.unfollowUser("3", { onSuccessCalled = true }, { assert(false) })
+    verify(mockRepositoryFirestore, timeout(1000))
+        .removeFollowerFrom(eq("3"), eq("1"), anyBoolean(), anyOrNull(), anyOrNull())
+    assert(onSuccessCalled)
+  }
 }
