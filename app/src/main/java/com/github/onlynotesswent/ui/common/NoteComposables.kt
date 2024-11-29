@@ -178,11 +178,11 @@ fun NoteItem(
       }
 }
 /**
- * Dialog that allows the user to create or rename a note.
+ * Dialog that allows the user to create a note.
  *
  * @param onDismiss callback to be invoked when the dialog is dismissed
  * @param onConfirm callback to be invoked when the user confirms the new name
- * @param action the action to be performed (create or rename)
+ * @param action the action to be performed (create)
  * @param oldVisibility the old visibility of the note (if renaming), defaults to
  *   [Visibility.PRIVATE]
  * @param oldName the old name of the note (if renaming), defaults to an empty string

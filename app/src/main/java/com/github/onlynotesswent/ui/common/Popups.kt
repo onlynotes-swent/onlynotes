@@ -83,7 +83,7 @@ fun ConfirmationPopup(title: String, text: String, onConfirm: () -> Unit, onDism
  *
  * @param onDismiss callback to be invoked when the dialog is dismissed
  * @param onConfirm callback to be invoked when the user confirms the new name and visibility
- * @param action the action to be performed (e.g., "Create" or "Rename")
+ * @param action the action to be performed (e.g., "Create" or "Update")
  * @param oldVisibility the previous visibility of the item (if renaming), defaults to
  *   [Visibility.PRIVATE]
  * @param oldName the previous name of the item (if renaming), defaults to an empty string

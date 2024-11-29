@@ -146,11 +146,11 @@ fun FolderItem(
 }
 
 /**
- * Dialog that allows the user to create or rename a folder.
+ * Dialog that allows the user to create or update a folder.
  *
  * @param onDismiss callback to be invoked when the dialog is dismissed
  * @param onConfirm callback to be invoked when the user confirms the new name
- * @param action the action to be performed (create or rename)
+ * @param action the action to be performed (create or update)
  * @param oldVisibility the old visibility of the folder (if renaming)
  * @param oldName the old name of the folder (if renaming)
  */
