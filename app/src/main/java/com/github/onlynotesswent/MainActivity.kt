@@ -156,16 +156,16 @@ fun OnlyNotesApp(
           PublicProfileScreen(
               navigationActions, userViewModel, fileViewModel, notificationViewModel)
         }
-        composable(Screen.EDIT_PROFILE) {
-          EditProfileScreen(
-              navigationActions,
-              userViewModel,
-              profilePictureTaker,
-              fileViewModel,
-              noteViewModel,
-              folderViewModel,
-              notificationViewModel)
-        }
+      }
+      composable(Screen.EDIT_PROFILE) {
+        EditProfileScreen(
+            navigationActions,
+            userViewModel,
+            profilePictureTaker,
+            fileViewModel,
+            noteViewModel,
+            folderViewModel,
+            notificationViewModel)
       }
       composable(Screen.NOTIFICATIONS) {
         NotificationScreen(userViewModel, navigationActions, fileViewModel, notificationViewModel)
