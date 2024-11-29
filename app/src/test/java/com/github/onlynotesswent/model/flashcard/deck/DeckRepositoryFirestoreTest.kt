@@ -44,7 +44,13 @@ class DeckRepositoryFirestoreTest {
   private val testFlashcardIds = listOf("7", "8")
 
   private val testDeck =
-      Deck(id = "1", name = "Deck", userId = "2", folderId = "3", flashcardIds = listOf("4", "5"))
+      Deck(
+          id = "1",
+          name = "Deck",
+          userId = "2",
+          folderId = "3",
+          flashcardIds = listOf("4", "5"),
+          description = "Description")
 
   private fun verifyErrorLog(msg: String) {
     // Get all the logs
@@ -142,6 +148,7 @@ class DeckRepositoryFirestoreTest {
     `when`(mockDocumentSnapshot.getString("userId")).thenReturn(testDeck.userId)
     `when`(mockDocumentSnapshot.getString("folderId")).thenReturn(testDeck.folderId)
     `when`(mockDocumentSnapshot.get("flashcardIds")).thenReturn(testDeck.flashcardIds)
+    `when`(mockDocumentSnapshot.getString("description")).thenReturn(testDeck.description)
   }
 
   @Test
@@ -158,6 +165,7 @@ class DeckRepositoryFirestoreTest {
     `when`(mockDocumentSnapshotEmpty.getString("userId")).thenReturn(null)
     `when`(mockDocumentSnapshotEmpty.getString("folderId")).thenReturn(null)
     `when`(mockDocumentSnapshotEmpty.get("flashcardIds")).thenReturn(null)
+    `when`(mockDocumentSnapshotEmpty.getString("description")).thenReturn(null)
     val deckEmpty = deckRepository.documentSnapshotToDeck(mockDocumentSnapshotEmpty)
     assertEquals(null, deckEmpty)
   }
