@@ -26,6 +26,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navigation
 import androidx.test.espresso.intent.Intents
+import com.github.onlynotesswent.model.authentication.Authenticator
 import com.github.onlynotesswent.model.common.Course
 import com.github.onlynotesswent.model.common.Visibility
 import com.github.onlynotesswent.model.file.FileRepository
@@ -79,6 +80,8 @@ class EndToEndTest {
   private lateinit var folderViewModel: FolderViewModel
   @Mock private lateinit var fileRepository: FileRepository
   private lateinit var fileViewModel: FileViewModel
+
+  @Mock private lateinit var authenticator: Authenticator
 
   @Mock private lateinit var profilePictureTaker: ProfilePictureTaker
   @Mock private lateinit var scanner: Scanner
@@ -200,10 +203,10 @@ class EndToEndTest {
                     route = Route.PROFILE,
                 ) {
                   composable(Screen.USER_PROFILE) {
-                    UserProfileScreen(navigationActions, userViewModel, fileViewModel)
+                    UserProfileScreen(navigationActions, userViewModel, fileViewModel, authenticator)
                   }
                   composable(Screen.PUBLIC_PROFILE) {
-                    PublicProfileScreen(navigationActions, userViewModel, fileViewModel)
+                    PublicProfileScreen(navigationActions, userViewModel, fileViewModel, authenticator)
                   }
                   composable(Screen.EDIT_PROFILE) {
                     EditProfileScreen(
@@ -212,7 +215,8 @@ class EndToEndTest {
                         profilePictureTaker,
                         fileViewModel,
                         noteViewModel,
-                        folderViewModel)
+                        folderViewModel,
+                        authenticator)
                   }
                 }
               }

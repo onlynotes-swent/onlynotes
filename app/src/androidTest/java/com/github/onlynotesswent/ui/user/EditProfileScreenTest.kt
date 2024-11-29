@@ -14,6 +14,7 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextClearance
 import androidx.compose.ui.test.performTextInput
 import androidx.core.net.toUri
+import com.github.onlynotesswent.model.authentication.Authenticator
 import com.github.onlynotesswent.model.file.FileRepository
 import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.folder.FolderRepository
@@ -48,6 +49,7 @@ class EditProfileScreenTest {
   @Mock private lateinit var mockNoteRepository: NoteRepository
   @Mock private lateinit var mockFileRepository: FileRepository
   @Mock private lateinit var mockFolderRepository: FolderRepository
+  @Mock private lateinit var mockAuthenticator: Authenticator
   private lateinit var noteViewModel: NoteViewModel
   private lateinit var userViewModel: UserViewModel
   private lateinit var fileViewModel: FileViewModel
@@ -116,7 +118,8 @@ class EditProfileScreenTest {
           profilePictureTaker,
           fileViewModel,
           noteViewModel,
-          folderViewModel)
+          folderViewModel,
+          mockAuthenticator)
     }
 
     composeTestRule.onNodeWithTag("ProfileScreen").assertExists()
@@ -143,7 +146,8 @@ class EditProfileScreenTest {
           profilePictureTaker,
           fileViewModel,
           noteViewModel,
-          folderViewModel)
+          folderViewModel,
+          mockAuthenticator)
     }
 
     composeTestRule.onNodeWithTag("saveButton").performClick()
@@ -159,7 +163,8 @@ class EditProfileScreenTest {
           profilePictureTaker,
           fileViewModel,
           noteViewModel,
-          folderViewModel)
+          folderViewModel,
+          mockAuthenticator)
     }
 
     composeTestRule.onNodeWithTag("inputUserName").performTextClearance()
@@ -190,7 +195,8 @@ class EditProfileScreenTest {
           profilePictureTaker,
           fileViewModel,
           noteViewModel,
-          folderViewModel)
+          folderViewModel,
+          mockAuthenticator)
     }
 
     composeTestRule.onNodeWithTag("inputFirstName").performTextClearance()
@@ -215,7 +221,8 @@ class EditProfileScreenTest {
           profilePictureTaker,
           fileViewModel,
           noteViewModel,
-          folderViewModel)
+          folderViewModel,
+          mockAuthenticator)
     }
 
     composeTestRule.onNodeWithTag("saveButton").assertIsEnabled()
@@ -234,7 +241,8 @@ class EditProfileScreenTest {
           profilePictureTaker,
           fileViewModel,
           noteViewModel,
-          folderViewModel)
+          folderViewModel,
+          mockAuthenticator)
     }
 
     composeTestRule.onNodeWithTag("goBackButton").performClick()
@@ -251,7 +259,8 @@ class EditProfileScreenTest {
           profilePictureTaker,
           fileViewModel,
           noteViewModel,
-          folderViewModel)
+          folderViewModel,
+          mockAuthenticator)
     }
     composeTestRule.onNodeWithTag("displayBottomSheet").assertIsEnabled()
     composeTestRule.onNodeWithTag("displayBottomSheet").performClick()
@@ -283,7 +292,8 @@ class EditProfileScreenTest {
           profilePictureTaker,
           fileViewModel,
           noteViewModel,
-          folderViewModel)
+          folderViewModel,
+          mockAuthenticator)
     }
     composeTestRule.onNodeWithTag("profilePicture").assertIsDisplayed()
     verify(mockFileRepository).downloadFile(any(), any(), any(), any(), any(), any())
@@ -304,7 +314,8 @@ class EditProfileScreenTest {
           profilePictureTaker,
           fileViewModel,
           noteViewModel,
-          folderViewModel)
+          folderViewModel,
+          mockAuthenticator)
     }
 
     composeTestRule.onNodeWithTag("displayBottomSheet").assertIsEnabled()
@@ -328,7 +339,8 @@ class EditProfileScreenTest {
           profilePictureTaker,
           fileViewModel,
           noteViewModel,
-          folderViewModel)
+          folderViewModel,
+          mockAuthenticator)
     }
 
     composeTestRule.onNodeWithTag("displayBottomSheet").assertIsEnabled()
@@ -366,7 +378,8 @@ class EditProfileScreenTest {
           profilePictureTaker,
           fileViewModel,
           noteViewModel,
-          folderViewModel)
+          folderViewModel,
+          mockAuthenticator)
     }
 
     composeTestRule.onNodeWithTag("deleteAccountButton").assertIsEnabled()
@@ -389,7 +402,8 @@ class EditProfileScreenTest {
           profilePictureTaker,
           fileViewModel,
           noteViewModel,
-          folderViewModel)
+          folderViewModel,
+          mockAuthenticator)
     }
 
     composeTestRule.onNodeWithTag("inputUserName").performTextInput("testForGoBack")
@@ -410,7 +424,8 @@ class EditProfileScreenTest {
           profilePictureTaker,
           fileViewModel,
           noteViewModel,
-          folderViewModel)
+          folderViewModel,
+          mockAuthenticator)
     }
 
     composeTestRule.onNodeWithTag("deleteAccountButton").assertIsEnabled()

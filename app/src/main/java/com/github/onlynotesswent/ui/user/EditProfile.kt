@@ -55,6 +55,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 import coil.compose.rememberAsyncImagePainter
+import com.github.onlynotesswent.model.authentication.Authenticator
 import com.github.onlynotesswent.model.file.FileType
 import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.folder.FolderViewModel
@@ -86,7 +87,8 @@ fun EditProfileScreen(
     profilePictureTaker: ProfilePictureTaker,
     fileViewModel: FileViewModel,
     noteViewModel: NoteViewModel,
-    folderViewModel: FolderViewModel
+    folderViewModel: FolderViewModel,
+    authenticator: Authenticator,
 ) {
   val user = userViewModel.currentUser.collectAsState()
 
@@ -132,6 +134,7 @@ fun EditProfileScreen(
                 "Edit Profile",
                 navigationActions,
                 userViewModel,
+                authenticator = authenticator,
                 includeBackButton = true,
                 onBackButtonClick = {
                   if (newFirstName.value != user.value?.firstName ||

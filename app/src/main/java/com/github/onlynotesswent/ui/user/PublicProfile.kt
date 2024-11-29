@@ -45,6 +45,7 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -63,6 +64,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
+import com.github.onlynotesswent.model.authentication.Authenticator
 import com.github.onlynotesswent.model.file.FileType
 import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.user.User
@@ -73,7 +75,6 @@ import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
 import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
 import com.github.onlynotesswent.ui.theme.Typography
-import com.google.firebase.auth.FirebaseAuth
 
 // User Profile Home screen:
 /**
@@ -87,13 +88,15 @@ import com.google.firebase.auth.FirebaseAuth
 fun UserProfileScreen(
     navigationActions: NavigationActions,
     userViewModel: UserViewModel,
-    fileViewModel: FileViewModel
+    fileViewModel: FileViewModel,
+    authenticator: Authenticator,
 ) {
   val user = userViewModel.currentUser.collectAsState()
   // Display the user's profile information
   ProfileScaffold(
       navigationActions = navigationActions,
       userViewModel = userViewModel,
+      authenticator = authenticator,
       includeBackButton = false,
       topBarTitle = "    My Profile",
       floatingActionButton = {
@@ -123,13 +126,14 @@ fun UserProfileScreen(
 fun PublicProfileScreen(
     navigationActions: NavigationActions,
     userViewModel: UserViewModel,
-    fileViewModel: FileViewModel
+    fileViewModel: FileViewModel,
+    authenticator: Authenticator,
 ) {
   val currentUser = userViewModel.currentUser.collectAsState()
   val profileUser = userViewModel.profileUser.collectAsState()
 
   // Display the user's profile information
-  ProfileScaffold(navigationActions, userViewModel) {
+  ProfileScaffold(navigationActions, userViewModel, authenticator) {
     ProfileContent(profileUser, navigationActions, userViewModel, fileViewModel)
     if (profileUser.value != null && currentUser.value != null) {
       FollowUnfollowButton(userViewModel, profileUser.value!!.uid)
@@ -151,6 +155,7 @@ fun PublicProfileScreen(
 private fun ProfileScaffold(
     navigationActions: NavigationActions,
     userViewModel: UserViewModel,
+    authenticator: Authenticator,
     includeBackButton: Boolean = true,
     topBarTitle: String = "Public Profile",
     floatingActionButton: @Composable () -> Unit = {},
@@ -176,6 +181,7 @@ private fun ProfileScaffold(
             title = topBarTitle,
             navigationActions = navigationActions,
             userViewModel = userViewModel,
+            authenticator = authenticator,
             includeBackButton = includeBackButton)
       },
       content = { paddingValues ->
@@ -199,6 +205,7 @@ private fun ProfileScaffold(
  * @param title The title to be displayed on the app bar.
  * @param navigationActions The navigation actions.
  * @param userViewModel The ViewModel for the user.
+ * @param authenticator The Authenticator used for the app, to enable sign out of the user.
  * @param includeBackButton Whether to include the back button in the app bar.
  * @param onBackButtonClick The action to be performed when the back button is clicked.
  */
@@ -208,6 +215,7 @@ fun TopProfileBar(
     title: String,
     navigationActions: NavigationActions,
     userViewModel: UserViewModel,
+    authenticator: Authenticator,
     includeBackButton: Boolean = true,
     onBackButtonClick: () -> Unit = {
       var userProfileId = navigationActions.popFromScreenNavigationStack()
@@ -249,6 +257,7 @@ fun TopProfileBar(
       }
     }
 ) {
+  val scope = rememberCoroutineScope()
   TopAppBar(
       title = { Text(title) },
       navigationIcon = {
@@ -261,7 +270,7 @@ fun TopProfileBar(
       actions = {
         if (!includeBackButton) {
           LogoutButton {
-            FirebaseAuth.getInstance().signOut()
+            authenticator.signOut(scope) // Authenticator should be non-null if coded correctly
             navigationActions.navigateTo(Screen.AUTH)
           }
         }
@@ -460,7 +469,6 @@ fun FollowUnfollowButton(userViewModel: UserViewModel, otherUserId: String) {
  */
 @Composable
 fun RemoveFollowerButton(userViewModel: UserViewModel, followerId: String) {
-  val context = LocalContext.current
   OutlinedButton(
       contentPadding = PaddingValues(horizontal = 10.dp),
       shape = RoundedCornerShape(25),
