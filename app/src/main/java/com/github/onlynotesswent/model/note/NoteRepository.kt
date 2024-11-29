@@ -71,7 +71,12 @@ interface NoteRepository {
    * @param useCache Whether to update data from cache. Should be true only if userId of the note is
    *   the current user.
    */
-  suspend fun addNote(note: Note, onSuccess: () -> Unit, onFailure: (Exception) -> Unit, useCache: Boolean)
+  suspend fun addNote(
+      note: Note,
+      onSuccess: () -> Unit,
+      onFailure: (Exception) -> Unit,
+      useCache: Boolean
+  )
 
   /**
    * Updates a note.

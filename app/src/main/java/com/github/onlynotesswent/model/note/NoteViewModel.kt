@@ -45,7 +45,8 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
   companion object {
     fun factory(context: Context): ViewModelProvider.Factory = viewModelFactory {
       initializer {
-        NoteViewModel(NoteRepositoryFirestore(Firebase.firestore, getNoteDatabase(context), context))
+        NoteViewModel(
+            NoteRepositoryFirestore(Firebase.firestore, getNoteDatabase(context), context))
       }
     }
   }
@@ -128,7 +129,10 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
    */
   suspend fun addNote(note: Note, userID: String, useCache: Boolean = false) {
     repository.addNote(
-        note = note, onSuccess = { viewModelScope.launch { getRootNotesFrom(userID) } }, onFailure = {}, useCache = useCache)
+        note = note,
+        onSuccess = { viewModelScope.launch { getRootNotesFrom(userID) } },
+        onFailure = {},
+        useCache = useCache)
   }
 
   /**
@@ -141,7 +145,10 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
    */
   suspend fun updateNote(note: Note, userID: String, useCache: Boolean = false) {
     repository.updateNote(
-        note = note, onSuccess = { viewModelScope.launch { getRootNotesFrom(userID) } }, onFailure = {}, useCache = useCache)
+        note = note,
+        onSuccess = { viewModelScope.launch { getRootNotesFrom(userID) } },
+        onFailure = {},
+        useCache = useCache)
   }
 
   /**
@@ -154,7 +161,10 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
    */
   suspend fun deleteNoteById(noteId: String, userID: String, useCache: Boolean = false) {
     repository.deleteNoteById(
-        id = noteId, onSuccess = { viewModelScope.launch { getRootNotesFrom(userID) } }, onFailure = {}, useCache = useCache)
+        id = noteId,
+        onSuccess = { viewModelScope.launch { getRootNotesFrom(userID) } },
+        onFailure = {},
+        useCache = useCache)
   }
 
   /**
@@ -166,7 +176,10 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
    */
   suspend fun deleteNotesByUserId(userId: String, useCache: Boolean = false) {
     repository.deleteNotesByUserId(
-        userId, onSuccess = { viewModelScope.launch { getRootNotesFrom(userId) } }, onFailure = {}, useCache = useCache)
+        userId,
+        onSuccess = { viewModelScope.launch { getRootNotesFrom(userId) } },
+        onFailure = {},
+        useCache = useCache)
   }
 
   /**
