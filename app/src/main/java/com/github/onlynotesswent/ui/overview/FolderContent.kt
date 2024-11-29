@@ -123,8 +123,7 @@ fun FolderContentScreen(
               folderViewModel = folderViewModel,
               currentUser = currentUser,
               context = context,
-              folder = folder.value,
-              navigationActions = navigationActions)
+              folder = folder.value)
         }) { paddingValues ->
           FolderContentScreenGrid(
               paddingValues = paddingValues,
@@ -423,7 +422,6 @@ fun handleSubFoldersAndNotes(
  * @param noteViewModel the view model for the note
  * @param folderViewModel the view model for the folder
  * @param folder the current folder
- * @param navigationActions actions that can be performed in the app
  */
 @Composable
 fun CreateSubItemFab(
@@ -436,7 +434,6 @@ fun CreateSubItemFab(
     currentUser: State<User?>,
     context: Context,
     folder: Folder?,
-    navigationActions: NavigationActions
 ) {
   CustomDropDownMenu(
       modifier = Modifier.testTag("createSubNoteOrSubFolder"),
