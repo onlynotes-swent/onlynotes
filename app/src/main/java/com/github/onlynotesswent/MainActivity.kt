@@ -61,14 +61,15 @@ fun OnlyNotesApp(
     profilePictureTaker: ProfilePictureTaker,
     serverClientId: String
 ) {
+  val context = LocalContext.current
+
   val navController = rememberNavController()
   val navigationActions = NavigationActions(navController)
+
   val userViewModel: UserViewModel = viewModel(factory = UserViewModel.Factory)
-  val noteViewModel: NoteViewModel =
-      viewModel(factory = NoteViewModel.factory(context = LocalContext.current))
+  val noteViewModel: NoteViewModel = viewModel(factory = NoteViewModel.factory(context))
   val fileViewModel: FileViewModel = viewModel(factory = FileViewModel.Factory)
-  val folderViewModel: FolderViewModel =
-      viewModel(factory = FolderViewModel.factory(context = LocalContext.current))
+  val folderViewModel: FolderViewModel = viewModel(factory = FolderViewModel.factory(context))
 
   NavHost(navController = navController, startDestination = Route.AUTH) {
     navigation(
