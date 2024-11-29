@@ -45,6 +45,7 @@ fun NotificationScreen(
   val userNotifications = notificationViewModel.userNotifications.collectAsState()
 
   Scaffold(
+      modifier = Modifier.testTag("notificationScreen"),
       topBar = {
         // TopAppBar with title
         TopAppBar(
@@ -58,30 +59,31 @@ fun NotificationScreen(
                   }
             })
       }) { innerPadding ->
-        LazyColumn(contentPadding = innerPadding) {
-          val sortedNotification = userNotifications.value.sortedByDescending { it.timestamp }
-          items(userNotifications.value.size) { index ->
-            // Display each notification
-            val notification = sortedNotification[index]
-            // for each notifcationType do something:
-            when (notification.type) {
-              Notification.NotificationType.FOLLOW_REQUEST ->
-                  NotificationTypeFollowRequest(
-                      notification, fileViewModel, userViewModel, notificationViewModel)
-              Notification.NotificationType.FOLLOW_REQUEST_ACCEPTED ->
-                  NotificationTypeDefault(
-                      notification, fileViewModel, userViewModel, notificationViewModel)
-              Notification.NotificationType.FOLLOW_REQUEST_REJECTED ->
-                  NotificationTypeDefault(
-                      notification, fileViewModel, userViewModel, notificationViewModel)
-              Notification.NotificationType.FOLLOW ->
-                  NotificationTypeDefault(
-                      notification, fileViewModel, userViewModel, notificationViewModel)
-              else -> Text("Not an implemented notification type")
+        LazyColumn(
+            contentPadding = innerPadding, modifier = Modifier.testTag("notificationsList")) {
+              val sortedNotification = userNotifications.value.sortedByDescending { it.timestamp }
+              items(userNotifications.value.size) { index ->
+                // Display each notification
+                val notification = sortedNotification[index]
+                // for each notifcationType do something:
+                when (notification.type) {
+                  Notification.NotificationType.FOLLOW_REQUEST ->
+                      NotificationTypeFollowRequest(
+                          notification, fileViewModel, userViewModel, notificationViewModel)
+                  Notification.NotificationType.FOLLOW_REQUEST_ACCEPTED ->
+                      NotificationTypeDefault(
+                          notification, fileViewModel, userViewModel, notificationViewModel)
+                  Notification.NotificationType.FOLLOW_REQUEST_REJECTED ->
+                      NotificationTypeDefault(
+                          notification, fileViewModel, userViewModel, notificationViewModel)
+                  Notification.NotificationType.FOLLOW ->
+                      NotificationTypeDefault(
+                          notification, fileViewModel, userViewModel, notificationViewModel)
+                  else -> Text("Not an implemented notification type")
+                }
+                HorizontalDivider()
+              }
             }
-            HorizontalDivider()
-          }
-        }
       }
 }
 

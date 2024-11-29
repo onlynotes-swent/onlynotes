@@ -58,9 +58,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.rememberAsyncImagePainter
 import com.github.onlynotesswent.R
-import com.github.onlynotesswent.model.file.FileType
 import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.notification.NotificationViewModel
 import com.github.onlynotesswent.model.user.User
@@ -475,7 +473,6 @@ fun RemoveFollowerButton(
     followerId: String,
     expanded: MutableState<Boolean>?
 ) {
-fun RemoveFollowerButton(userViewModel: UserViewModel, followerId: String) {
   OutlinedButton(
       contentPadding = PaddingValues(horizontal = 10.dp),
       shape = RoundedCornerShape(25),
