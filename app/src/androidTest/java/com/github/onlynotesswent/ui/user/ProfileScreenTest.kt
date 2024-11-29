@@ -231,6 +231,7 @@ class ProfileScreenTest {
     composeTestRule.onNodeWithTag("profileScaffoldColumn").assertExists()
     composeTestRule.onNodeWithTag("profileCard").assertExists()
     composeTestRule.onNodeWithTag("profileCardColumn").assertExists()
+    composeTestRule.onNodeWithTag("profilePicture").assertExists()
     composeTestRule.onNodeWithTag("userFullName").assertExists()
     composeTestRule.onNodeWithTag("userHandle").assertExists()
     composeTestRule.onNodeWithTag("userRating").assertExists()

@@ -25,6 +25,7 @@ import com.github.onlynotesswent.model.file.FileType
 import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.user.User
 
+private val doesNothing = {}
 /**
  * Displays the user's thumbnail profile picture, by wrapping the NonModifiableProfilePicture
  * composable.
@@ -53,7 +54,7 @@ fun ThumbnailPic(user: User?, fileViewModel: FileViewModel, size: Int = 40) {
 fun ThumbnailDynamicPic(
     user: State<User?>,
     fileViewModel: FileViewModel,
-    onClick: () -> Unit = {},
+    onClick: () -> Unit = doesNothing,
     size: Int = 40,
 ) {
   val profilePictureUri = remember { mutableStateOf("") }
@@ -82,9 +83,12 @@ fun NonModifiableProfilePicture(
     fileViewModel: FileViewModel,
     size: Int = 150,
     testTag: String = "profilePicture",
-    onClick: () -> Unit = {}
+    onClick: () -> Unit = doesNothing
 ) {
-  Box(modifier = Modifier.size(size.dp).clickable { onClick() }) {
+  val boxModifier =
+      if (onClick === doesNothing) Modifier.size(size.dp)
+      else Modifier.size(size.dp).clickable { onClick() }
+  Box(modifier = boxModifier) {
 
     // Download the profile picture from Firebase Storage if it hasn't been downloaded yet
     if (user.value != null && user.value!!.hasProfilePicture && profilePictureUri.value.isBlank()) {
