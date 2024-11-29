@@ -41,7 +41,6 @@ import com.github.onlynotesswent.ui.navigation.BottomNavigationMenu
 import com.github.onlynotesswent.ui.navigation.LIST_TOP_LEVEL_DESTINATION
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
-import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
 import com.github.onlynotesswent.ui.user.UserItem
 import com.github.onlynotesswent.ui.user.switchProfileTo
 import kotlinx.coroutines.delay
@@ -173,12 +172,7 @@ fun SearchScreen(
       },
       bottomBar = {
         BottomNavigationMenu(
-            onTabSelect = { route ->
-              navigationActions.navigateTo(route)
-              if (route == TopLevelDestinations.SEARCH) {
-                navigationActions.pushToScreenNavigationStack(Screen.SEARCH)
-              }
-            },
+            onTabSelect = { route -> navigationActions.navigateTo(route) },
             tabList = LIST_TOP_LEVEL_DESTINATION,
             selectedItem = navigationActions.currentRoute())
       }) { padding ->

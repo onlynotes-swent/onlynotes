@@ -1,7 +1,7 @@
 package com.github.onlynotesswent.model.user
 
 import com.google.firebase.Timestamp
-import com.google.firebase.database.PropertyName
+import com.google.firebase.firestore.PropertyName
 import java.text.SimpleDateFormat
 import java.util.Locale
 

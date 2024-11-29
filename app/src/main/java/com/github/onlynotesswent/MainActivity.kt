@@ -3,9 +3,15 @@ package com.github.onlynotesswent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.animation.core.EaseIn
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.scaleIn
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
@@ -100,9 +106,23 @@ fun OnlyNotesApp(
       composable(Screen.EDIT_NOTE_MARKDOWN) {
         EditMarkdownScreen(navigationActions, noteViewModel, fileViewModel)
       }
-      composable(Screen.FOLDER_CONTENTS) {
-        FolderContentScreen(navigationActions, folderViewModel, noteViewModel, userViewModel)
-      }
+      composable(
+          route = Screen.FOLDER_CONTENTS,
+          enterTransition = { scaleIn(animationSpec = tween(300, easing = EaseIn)) }) {
+              navBackStackEntry ->
+            val folderId = navBackStackEntry.arguments?.getString("folderId")
+            val selectedFolder by folderViewModel.selectedFolder.collectAsState()
+            // Update the selected folder when the folder ID changes
+            LaunchedEffect(folderId) {
+              if (folderId != null && folderId != "{folderId}") {
+                folderViewModel.getFolderById(folderId)
+              }
+            }
+            // Wait until selected folder is updated to display the screen
+            if (selectedFolder != null) {
+              FolderContentScreen(navigationActions, folderViewModel, noteViewModel, userViewModel)
+            }
+          }
     }
 
     navigation(
@@ -124,6 +144,16 @@ fun OnlyNotesApp(
       }
       composable(Screen.PUBLIC_PROFILE) {
         PublicProfileScreen(navigationActions, userViewModel, fileViewModel, notificationViewModel)
+      composable(Screen.PUBLIC_PROFILE) { navBackStackEntry ->
+        val userId = navBackStackEntry.arguments?.getString("userId")
+
+        // Refresh the user profile when the user Id changes
+        LaunchedEffect(userId) {
+          if (userId != null && userId != "{userId}") {
+            userViewModel.refreshProfileUser(userId)
+          }
+        }
+        PublicProfileScreen(navigationActions, userViewModel, fileViewModel,notificationViewModel)
       }
       composable(Screen.EDIT_PROFILE) {
         EditProfileScreen(

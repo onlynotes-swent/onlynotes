@@ -25,6 +25,7 @@ class FolderRepositoryFirestore(private val db: FirebaseFirestore) : FolderRepos
   }
 
   override fun addFolder(folder: Folder, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) {
+    Log.e(TAG, "Adding folder: $folder")
     db.collection(folderCollectionPath).document(folder.id).set(folder).addOnCompleteListener {
         result ->
       if (result.isSuccessful) {

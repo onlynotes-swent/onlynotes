@@ -278,7 +278,8 @@ class SearchScreenTest {
         .onFirst()
         .performClick()
 
-    verify(navigationActions).navigateTo(Screen.PUBLIC_PROFILE)
+    val publicProfileScreen = Screen.PUBLIC_PROFILE.replace("{userId}", testUser2.uid)
+    verify(navigationActions).navigateTo(publicProfileScreen)
   }
 
   @Test
@@ -287,6 +288,7 @@ class SearchScreenTest {
     composeTestRule.onNodeWithTag("folderFilterChip").performClick()
     composeTestRule.onNodeWithTag("filteredFolderList").onChildren().onFirst().performClick()
 
-    verify(navigationActions).navigateToFolderContents(testFolder1)
+    val folderContentsScreen = Screen.FOLDER_CONTENTS.replace("{folderId}", testFolder1.id)
+    verify(navigationActions).navigateTo(folderContentsScreen)
   }
 }
