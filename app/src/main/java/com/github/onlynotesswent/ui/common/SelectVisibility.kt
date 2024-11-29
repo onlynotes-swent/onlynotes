@@ -30,6 +30,13 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.github.onlynotesswent.model.common.Visibility
 
+/**
+ * Composable function to display a row of visibility options. The user can cycle through the
+ * visibility options by clicking the left and right arrows.
+ *
+ * @param visibility The current visibility option.
+ * @param onVisibilityChange The action to perform when the visibility option is changed.
+ */
 @Composable
 fun SelectVisibility(visibility: Visibility?, onVisibilityChange: (Visibility) -> Unit) {
   var selectedIndex by remember { mutableIntStateOf(Visibility.entries.indexOf(visibility)) }
