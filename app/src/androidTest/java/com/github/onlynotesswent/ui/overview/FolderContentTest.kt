@@ -193,7 +193,7 @@ class FolderContentTest {
     composeTestRule.onNodeWithTag("createSubNoteOrSubFolder").performClick()
     composeTestRule.onNodeWithTag("createFolder").assertIsDisplayed()
     composeTestRule.onNodeWithTag("createFolder").performClick()
-    composeTestRule.onNodeWithTag("folderDialog").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("FolderDialog").assertIsDisplayed()
     composeTestRule.onNodeWithTag("inputFolderName").assertIsDisplayed()
     composeTestRule.onNodeWithTag("confirmFolderAction").assertIsDisplayed()
     composeTestRule.onNodeWithTag("dismissFolderAction").assertIsDisplayed()
