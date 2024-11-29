@@ -12,8 +12,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -61,7 +63,6 @@ import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
 import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
 import com.google.firebase.Timestamp
-import java.util.Calendar
 
 /**
  * Displays the edit note screen, where users can update the title and content of an existing note.
@@ -264,14 +265,10 @@ fun NoteSection(
     visibility: Visibility,
     onVisibilityChange: (Visibility) -> Unit
 ) {
-  val currentYear = Calendar.getInstance().get(Calendar.YEAR)
   var showCourseDetails by remember { mutableStateOf(false) }
 
   Column(modifier = Modifier.fillMaxWidth()) {
-    Text(
-        text = "Title",
-        style = MaterialTheme.typography.titleMedium,
-        modifier = Modifier.padding(bottom = 8.dp))
+    Text(text = "Title", style = MaterialTheme.typography.titleMedium)
     NoteDataTextField(
         value = noteTitle,
         onValueChange = { onNoteTitleChange(Note.formatTitle(it)) },
@@ -285,7 +282,14 @@ fun NoteSection(
         })
   }
 
-  SelectVisibility(visibility) { onVisibilityChange(it) }
+  Spacer(modifier = Modifier.height(8.dp))
+
+  Column(modifier = Modifier.fillMaxWidth()) {
+    Text(text = "Visibility", style = MaterialTheme.typography.titleMedium)
+    SelectVisibility(visibility) { onVisibilityChange(it) }
+  }
+
+  Spacer(modifier = Modifier.height(8.dp))
 
   // Course Section
   Column(modifier = Modifier.fillMaxWidth()) {

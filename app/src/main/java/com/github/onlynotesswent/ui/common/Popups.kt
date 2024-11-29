@@ -1,15 +1,15 @@
 package com.github.onlynotesswent.ui.common
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -100,48 +100,40 @@ fun CreationDialog(
 ) {
   var name by remember { mutableStateOf(oldName) }
   var visibility: Visibility? by remember { mutableStateOf(oldVisibility) }
-  var expandedVisibility by remember { mutableStateOf(false) }
 
-  androidx.compose.ui.window.Dialog(onDismissRequest = onDismiss) {
-    Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
-      Column(
-          modifier = Modifier.padding(16.dp).testTag("${type}Dialog"),
-          verticalArrangement = Arrangement.spacedBy(8.dp),
-          horizontalAlignment = Alignment.CenterHorizontally) {
-            Row(
-                modifier = Modifier.fillMaxWidth(0.92f),
-                horizontalArrangement = Arrangement.Start) {
-                  Text("$action $type", style = MaterialTheme.typography.titleLarge)
-                }
-            OutlinedTextField(
-                value = name,
-                onValueChange = { name = Folder.formatName(it) },
-                label = { Text("$type Name") },
-                modifier = Modifier.testTag("input${type}Name"))
-            OptionDropDownMenu(
-                value =
-                    visibility?.toReadableString() ?: stringResource(R.string.choose_visibility),
-                expanded = expandedVisibility,
-                buttonTag = "visibilityButton",
-                menuTag = "visibilityMenu",
-                onExpandedChange = { expandedVisibility = it },
-                items = Visibility.READABLE_STRINGS,
-                onItemClick = { visibility = Visibility.fromReadableString(it) },
-                modifier = Modifier.testTag("visibilityDropDown"),
-                widthFactor = 0.94f)
+  AlertDialog(
+      onDismissRequest = onDismiss,
+      title = { Text("$action $type") },
+      text = {
+        Column(
+            modifier = Modifier.padding(16.dp).testTag("${type}Dialog"),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            horizontalAlignment = Alignment.CenterHorizontally) {
+              OutlinedTextField(
+                  value = name,
+                  onValueChange = { name = Folder.formatName(it) },
+                  label = { Text("$type Name") },
+                  modifier = Modifier.testTag("input${type}Name"))
 
-            Row(modifier = Modifier.fillMaxWidth(0.92f), horizontalArrangement = Arrangement.End) {
-              Button(onClick = onDismiss, modifier = Modifier.testTag("dismiss${type}Action")) {
-                Text(stringResource(R.string.cancel))
-              }
-              Button(
-                  enabled = name.isNotEmpty() && visibility != null,
-                  onClick = { onConfirm(name, visibility ?: Visibility.DEFAULT) },
-                  modifier = Modifier.testTag("confirm${type}Action")) {
-                    Text(action)
-                  }
+              // Spacing
+              Spacer(modifier = Modifier.height(8.dp))
+              SelectVisibility(visibility) { visibility = it }
             }
-          }
-    }
-  }
+      },
+      confirmButton = {
+        Button(
+            enabled = name.isNotEmpty() && visibility != null,
+            onClick = { onConfirm(name, visibility ?: Visibility.DEFAULT) },
+            modifier = Modifier.testTag("confirm${type}Action")) {
+              Text(action)
+            }
+      },
+      dismissButton = {
+        OutlinedButton(
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.error),
+            onClick = onDismiss,
+            modifier = Modifier.testTag("dismiss${type}Action")) {
+              Text(stringResource(R.string.cancel), color = MaterialTheme.colorScheme.error)
+            }
+      })
 }
