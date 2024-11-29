@@ -178,7 +178,7 @@ fun FolderContentScreen(
                   showCreateNoteDialog = false
                   navigationActions.navigateTo(Screen.EDIT_NOTE)
                 },
-                action = "Create")
+                action = stringResource(R.string.create))
           }
           // Logic to show the dialog to create a folder
           if (showCreateFolderDialog) {
