@@ -203,7 +203,7 @@ class FolderContentTest {
     composeTestRule.onNodeWithTag("currentVisibilityOption").assertIsDisplayed()
     composeTestRule.onNodeWithTag("previousVisibility").assertIsDisplayed()
     composeTestRule.onNodeWithTag("nextVisibility").performClick()
-    
+
     composeTestRule.onNodeWithTag("confirmFolderAction").assertIsEnabled().assertIsDisplayed()
     composeTestRule.onNodeWithTag("confirmFolderAction").performClick()
 

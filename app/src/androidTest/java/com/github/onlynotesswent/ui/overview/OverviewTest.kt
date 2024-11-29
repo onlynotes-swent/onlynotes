@@ -3,7 +3,6 @@ package com.github.onlynotesswent.ui.overview
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
-import androidx.compose.ui.test.assertIsNotDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.filter
 import androidx.compose.ui.test.hasText
@@ -237,7 +236,7 @@ class OverviewTest {
     composeTestRule.onNodeWithTag("currentVisibilityOption").assertIsDisplayed()
     composeTestRule.onNodeWithTag("previousVisibility").assertIsDisplayed()
     composeTestRule.onNodeWithTag("nextVisibility").performClick()
-    
+
     composeTestRule.onNodeWithTag("confirmNoteAction").assertIsDisplayed()
 
     // mock get newUid
@@ -261,7 +260,7 @@ class OverviewTest {
     composeTestRule.onNodeWithTag("currentVisibilityOption").assertIsDisplayed()
     composeTestRule.onNodeWithTag("previousVisibility").assertIsDisplayed()
     composeTestRule.onNodeWithTag("nextVisibility").performClick()
-    
+
     composeTestRule.onNodeWithTag("confirmFolderAction").assertIsEnabled().assertIsDisplayed()
     composeTestRule.onNodeWithTag("confirmFolderAction").performClick()
   }
