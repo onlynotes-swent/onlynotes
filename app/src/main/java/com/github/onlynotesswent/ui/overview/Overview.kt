@@ -44,7 +44,6 @@ import com.github.onlynotesswent.ui.navigation.BottomNavigationMenu
 import com.github.onlynotesswent.ui.navigation.LIST_TOP_LEVEL_DESTINATION
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
-import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
 import com.google.firebase.Timestamp
 
 /**
@@ -93,13 +92,7 @@ fun OverviewScreen(
       },
       bottomBar = {
         BottomNavigationMenu(
-            onTabSelect = { route ->
-              navigationActions.navigateTo(route)
-              // Keep track of navigation to search screen to allow for back navigation
-              if (route == TopLevelDestinations.SEARCH) {
-                navigationActions.pushToScreenNavigationStack(Screen.SEARCH)
-              }
-            },
+            onTabSelect = { route -> navigationActions.navigateTo(route) },
             tabList = LIST_TOP_LEVEL_DESTINATION,
             selectedItem = navigationActions.currentRoute())
       }) { paddingValues ->
@@ -137,19 +130,17 @@ fun OverviewScreen(
           FolderDialog(
               onDismiss = { showCreateFolderDialog = false },
               onConfirm = { newName, visibility ->
+                val folderId = folderViewModel.getNewFolderId()
                 folderViewModel.addFolder(
                     Folder(
-                        id = folderViewModel.getNewFolderId(),
+                        id = folderId,
                         name = newName,
                         userId = userViewModel.currentUser.value!!.uid,
                         parentFolderId = parentFolderId.value,
                         visibility = visibility))
                 showCreateFolderDialog = false
-                if (parentFolderId.value != null) {
-                  navigationActions.navigateTo(Screen.FOLDER_CONTENTS)
-                } else {
-                  navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
-                }
+                navigationActions.navigateTo(
+                    Screen.FOLDER_CONTENTS.replace(oldValue = "{folderId}", newValue = folderId))
               },
               action = stringResource(R.string.create))
         }
