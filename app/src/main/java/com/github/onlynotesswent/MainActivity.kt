@@ -144,29 +144,31 @@ fun OnlyNotesApp(
       }
       composable(Screen.PUBLIC_PROFILE) {
         PublicProfileScreen(navigationActions, userViewModel, fileViewModel, notificationViewModel)
-      composable(Screen.PUBLIC_PROFILE) { navBackStackEntry ->
-        val userId = navBackStackEntry.arguments?.getString("userId")
+        composable(Screen.PUBLIC_PROFILE) { navBackStackEntry ->
+          val userId = navBackStackEntry.arguments?.getString("userId")
 
-        // Refresh the user profile when the user Id changes
-        LaunchedEffect(userId) {
-          if (userId != null && userId != "{userId}") {
-            userViewModel.refreshProfileUser(userId)
+          // Refresh the user profile when the user Id changes
+          LaunchedEffect(userId) {
+            if (userId != null && userId != "{userId}") {
+              userViewModel.refreshProfileUser(userId)
+            }
           }
+          PublicProfileScreen(
+              navigationActions, userViewModel, fileViewModel, notificationViewModel)
         }
-        PublicProfileScreen(navigationActions, userViewModel, fileViewModel,notificationViewModel)
-      }
-      composable(Screen.EDIT_PROFILE) {
-        EditProfileScreen(
-            navigationActions,
-            userViewModel,
-            profilePictureTaker,
-            fileViewModel,
-            noteViewModel,
-            folderViewModel,
-            notificationViewModel)
-      }
-      composable(Screen.NOTIFICATIONS) {
-        NotificationScreen(userViewModel, navigationActions, fileViewModel, notificationViewModel)
+        composable(Screen.EDIT_PROFILE) {
+          EditProfileScreen(
+              navigationActions,
+              userViewModel,
+              profilePictureTaker,
+              fileViewModel,
+              noteViewModel,
+              folderViewModel,
+              notificationViewModel)
+        }
+        composable(Screen.NOTIFICATIONS) {
+          NotificationScreen(userViewModel, navigationActions, fileViewModel, notificationViewModel)
+        }
       }
     }
   }

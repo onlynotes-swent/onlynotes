@@ -77,7 +77,7 @@ class NotificationScreenTest {
           receiverId = testUid,
           timestamp = Timestamp.now(),
           read = false,
-          type = Notification.NotificationType.FOLLOW_REQUEST_ACCEPTED )
+          type = Notification.NotificationType.FOLLOW_REQUEST_ACCEPTED)
 
   private val testNotification3 =
       Notification(
@@ -88,29 +88,29 @@ class NotificationScreenTest {
           receiverId = testUid,
           timestamp = Timestamp.now(),
           read = false,
-          type = Notification.NotificationType.FOLLOW_REQUEST_REJECTED )
+          type = Notification.NotificationType.FOLLOW_REQUEST_REJECTED)
 
-    private val testNotification4 =
-        Notification(
-            id = "testId3",
-            title = "testTitle3",
-            body = "testBody3",
-            senderId = testUid2,
-            receiverId = testUid,
-            timestamp = Timestamp.now(),
-            read = false,
-            type = Notification.NotificationType.FOLLOW)
+  private val testNotification4 =
+      Notification(
+          id = "testId3",
+          title = "testTitle3",
+          body = "testBody3",
+          senderId = testUid2,
+          receiverId = testUid,
+          timestamp = Timestamp.now(),
+          read = false,
+          type = Notification.NotificationType.FOLLOW)
 
-    private val testNotification5 =
-        Notification(
-            id = "testId3",
-            title = "testTitle3",
-            body = "testBody3",
-            senderId = testUid2,
-            receiverId = testUid,
-            timestamp = Timestamp.now(),
-            read = true,
-            type = Notification.NotificationType.FOLLOW)
+  private val testNotification5 =
+      Notification(
+          id = "testId3",
+          title = "testTitle3",
+          body = "testBody3",
+          senderId = testUid2,
+          receiverId = testUid,
+          timestamp = Timestamp.now(),
+          read = true,
+          type = Notification.NotificationType.FOLLOW)
 
   @get:Rule val composeTestRule = createComposeRule()
 
@@ -173,7 +173,13 @@ class NotificationScreenTest {
   @Test
   fun displayNotifications() {
     // Add a notification to the current user
-    val notificationList = listOf(testNotification1, testNotification2, testNotification3,testNotification4,testNotification5)
+    val notificationList =
+        listOf(
+            testNotification1,
+            testNotification2,
+            testNotification3,
+            testNotification4,
+            testNotification5)
     `when`(mockNotificationRepository.getNotificationByReceiverId(any(), any(), any())).thenAnswer {
       val onSuccess = it.getArgument<(List<Notification>) -> Unit>(1)
       onSuccess(notificationList)
