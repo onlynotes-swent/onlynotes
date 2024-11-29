@@ -3,7 +3,6 @@ package com.github.onlynotesswent.ui.overview
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
-import androidx.compose.ui.test.assertIsNotDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.filter
 import androidx.compose.ui.test.hasText
@@ -234,11 +233,10 @@ class OverviewTest {
     composeTestRule.onNodeWithTag("createNote").performClick()
 
     composeTestRule.onNodeWithTag("inputNoteName").performTextInput("Note Name")
-    composeTestRule.onNodeWithTag("visibilityButton").assertIsDisplayed().performClick()
+    composeTestRule.onNodeWithTag("currentVisibilityOption").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("previousVisibility").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("nextVisibility").performClick()
 
-    composeTestRule.onNodeWithTag("item--Public").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("item--Friends Only").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("item--Private").assertIsDisplayed().performClick()
     composeTestRule.onNodeWithTag("confirmNoteAction").assertIsDisplayed()
 
     // mock get newUid
@@ -257,14 +255,12 @@ class OverviewTest {
 
     composeTestRule.onNodeWithTag("confirmFolderAction").assertIsNotEnabled()
     composeTestRule.onNodeWithTag("inputFolderName").performTextInput("Folder Name")
-    composeTestRule.onNodeWithTag("confirmFolderAction").assertIsNotEnabled()
+    composeTestRule.onNodeWithTag("confirmFolderAction").assertIsEnabled().assertIsDisplayed()
 
-    composeTestRule.onNodeWithTag("visibilityDropDown").assertIsNotDisplayed()
-    composeTestRule.onNodeWithTag("visibilityButton").assertIsDisplayed().performClick()
+    composeTestRule.onNodeWithTag("currentVisibilityOption").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("previousVisibility").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("nextVisibility").performClick()
 
-    composeTestRule.onNodeWithTag("item--Public").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("item--Friends Only").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("item--Private").assertIsDisplayed().performClick()
     composeTestRule.onNodeWithTag("confirmFolderAction").assertIsEnabled().assertIsDisplayed()
     composeTestRule.onNodeWithTag("confirmFolderAction").performClick()
   }
