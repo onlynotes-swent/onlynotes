@@ -1,18 +1,26 @@
 package com.github.onlynotesswent.model.note
 
+import android.content.Context
 import android.util.Log
 import com.github.onlynotesswent.model.cache.NoteDatabase
 import com.github.onlynotesswent.model.common.Course
 import com.github.onlynotesswent.model.common.Visibility
+import com.github.onlynotesswent.utils.NetworkUtils
 import com.google.android.gms.tasks.Task
 import com.google.firebase.Firebase
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
 
-class NoteRepositoryFirestore(private val db: FirebaseFirestore, cache: NoteDatabase) :
-    NoteRepository {
+class NoteRepositoryFirestore(
+    private val db: FirebaseFirestore,
+    cache: NoteDatabase,
+    private val context: Context
+) : NoteRepository {
   private val commentDelimiter: String = '\u001F'.toString()
 
   private data class FirebaseNote(
@@ -154,124 +162,144 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore, cache: NoteData
     }
   }
 
-  override fun getNotesFrom(
+  override suspend fun getNotesFrom(
       userId: String,
       onSuccess: (List<Note>) -> Unit,
       onFailure: (Exception) -> Unit,
       useCache: Boolean
   ) {
-    if (useCache) {
-      val cachedData = noteDao.getNotes()
-      if (cachedData.isNotEmpty()) {
-        onSuccess(cachedData)
+    try {
+      // If device is offline, fetch from cache
+      if (!NetworkUtils.isInternetAvailable(context)) {
+        val cachedNotes = withContext(Dispatchers.IO) { noteDao.getNotes() }
+        onSuccess(cachedNotes)
         return
       }
-    }
-    // If cache is not used or cache is empty, fetch data from Firestore
-    db.collection(collectionPath).get().addOnCompleteListener { task ->
-      if (task.isSuccessful) {
-        val userNotes =
-            task.result.documents
+
+      // If device is online, fetch from Firestore
+      val userNotes =
+          withContext(Dispatchers.IO) {
+            db.collection(collectionPath)
+                .get()
+                .await()
+                .documents
                 .mapNotNull { document -> documentSnapshotToNote(document) }
                 .filter { it.userId == userId }
-        if (useCache) {
-          noteDao.insertNotes(userNotes)
-        }
-        onSuccess(userNotes)
-      } else {
-        task.exception?.let { e ->
-          Log.e(TAG, "Error getting user documents", e)
-          onFailure(e)
-        }
+          }
+
+      // Update cache if necessary
+      if (useCache) {
+        withContext(Dispatchers.IO) { noteDao.insertNotes(userNotes) }
       }
+
+      onSuccess(userNotes)
+    } catch (e: Exception) {
+      Log.e(TAG, "Error getting user documents", e)
+      onFailure(e)
     }
   }
 
-  override fun getRootNotesFrom(
+  override suspend fun getRootNotesFrom(
       userId: String,
       onSuccess: (List<Note>) -> Unit,
       onFailure: (Exception) -> Unit,
       useCache: Boolean
   ) {
-    if (useCache) {
-      val cachedData = noteDao.getRootNotes()
-      if (cachedData.isNotEmpty()) {
-        onSuccess(cachedData)
+    try {
+      // If device is offline, fetch from cache
+      if (!NetworkUtils.isInternetAvailable(context)) {
+        val cachedNotes = withContext(Dispatchers.IO) { noteDao.getRootNotes() }
+        onSuccess(cachedNotes)
         return
       }
-    }
-    // If cache is not used or cache is empty, fetch data from Firestore
-    db.collection(collectionPath).get().addOnCompleteListener { task ->
-      if (task.isSuccessful) {
-        val userRootNotes =
-            task.result.documents
+
+      // If device is online, fetch from Firestore
+      val userRootNotes =
+          withContext(Dispatchers.IO) {
+            db.collection(collectionPath)
+                .get()
+                .await()
+                .documents
                 .mapNotNull { document -> documentSnapshotToNote(document) }
-                .filter {
-                  it.userId == userId && it.folderId == null
-                } // filter out notes that are in folders
-        if (useCache) {
-          noteDao.insertNotes(userRootNotes)
-        }
-        onSuccess(userRootNotes)
-      } else {
-        task.exception?.let { e ->
-          Log.e(TAG, "Error getting user documents", e)
-          onFailure(e)
-        }
+                .filter { it.userId == userId && it.folderId == null }
+          }
+
+      // Update cache if necessary
+      if (useCache) {
+        withContext(Dispatchers.IO) { noteDao.insertNotes(userRootNotes) }
       }
+
+      onSuccess(userRootNotes)
+    } catch (e: Exception) {
+      Log.e(TAG, "Error getting user documents", e)
+      onFailure(e)
     }
   }
 
-  override fun getNoteById(
+  override suspend fun getNoteById(
       id: String,
       onSuccess: (Note) -> Unit,
       onFailure: (Exception) -> Unit,
       useCache: Boolean
   ) {
-    if (useCache) {
-      val cachedData = noteDao.getNoteById(id)
-      if (cachedData != null) {
-        onSuccess(cachedData)
-        return
-      }
-    }
-    // If cache is not used or cache is empty, fetch data from Firestore
-    db.collection(collectionPath).document(id).get().addOnCompleteListener { task ->
-      if (task.isSuccessful) {
-        val note = task.result?.let { documentSnapshotToNote(it) }
-        if (note != null) {
-          if (useCache) {
-            noteDao.insertNote(note)
-          }
-          onSuccess(note)
+    try {
+      // If device is offline, fetch from cache
+      if (!NetworkUtils.isInternetAvailable(context)) {
+        val cachedData = withContext(Dispatchers.IO) { noteDao.getNoteById(id) }
+        if (cachedData != null) {
+          onSuccess(cachedData)
+          return
         } else {
           onFailure(Exception("Note not found"))
         }
-      } else {
-        task.exception?.let { e ->
-          Log.e(TAG, "Error getting document", e)
-          onFailure(e)
-        }
       }
+
+      // If device is online, fetch from Firestore
+      val note =
+          withContext(Dispatchers.IO) {
+            db.collection(collectionPath).document(id).get().await().let {
+              documentSnapshotToNote(it)
+            }
+          }
+
+      if (note == null) {
+        throw Exception("Note not found")
+      }
+
+      // Update cache if necessary
+      if (useCache) {
+        withContext(Dispatchers.IO) { noteDao.insertNote(note) }
+      }
+
+      onSuccess(note)
+    } catch (e: Exception) {
+      Log.e(TAG, "Error getting document", e)
+      onFailure(e)
     }
   }
 
-  override fun addNote(
+  override suspend fun addNote(
       note: Note,
       onSuccess: () -> Unit,
       onFailure: (Exception) -> Unit,
       useCache: Boolean
   ) {
+    // Update the cache if needed
     if (useCache) {
-      noteDao.insertNote(note)
+      withContext(Dispatchers.IO) { noteDao.insertNote(note) }
+      onSuccess()
+      return
     }
+
+    // If device is online, add the note to Firestore
     performFirestoreOperation(
         db.collection(collectionPath).document(note.id).set(convertNotes(note)),
         onSuccess,
         onFailure)
   }
 
-  override fun updateNote(
+  // TODO: modify below
+  override suspend fun updateNote(
       note: Note,
       onSuccess: () -> Unit,
       onFailure: (Exception) -> Unit,
@@ -286,7 +314,7 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore, cache: NoteData
         onFailure)
   }
 
-  override fun deleteNoteById(
+  override suspend fun deleteNoteById(
       id: String,
       onSuccess: () -> Unit,
       onFailure: (Exception) -> Unit,
@@ -299,7 +327,7 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore, cache: NoteData
         db.collection(collectionPath).document(id).delete(), onSuccess, onFailure)
   }
 
-  override fun deleteNotesByUserId(
+  override suspend fun deleteNotesByUserId(
       userId: String,
       onSuccess: () -> Unit,
       onFailure: (Exception) -> Unit,
@@ -325,7 +353,7 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore, cache: NoteData
     }
   }
 
-  override fun getNotesFromFolder(
+  override suspend fun getNotesFromFolder(
       folderId: String,
       onSuccess: (List<Note>) -> Unit,
       onFailure: (Exception) -> Unit,
