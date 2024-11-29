@@ -35,7 +35,7 @@ import kotlinx.coroutines.tasks.await
  * @param ctx The context from the activity that uses the Authenticator
  * @param credentialManager The CredentialManager instance to use
  */
-class Authenticator(
+open class Authenticator(
     private val ctx: Context,
     private val credentialManager: CredentialManager = CredentialManager.create(ctx)
 ) {
@@ -146,7 +146,7 @@ class Authenticator(
   }
 
   companion object {
-    private const val TAG = "GoogleCredSignIn"
+    internal const val TAG = "Authenticator"
 
     /**
      * Generate a nonce for increased security when using credentials
