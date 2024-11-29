@@ -1,5 +1,7 @@
 package com.github.onlynotesswent.model.folder
 
+import com.github.onlynotesswent.model.note.NoteViewModel
+
 interface FolderRepository {
 
   /**
@@ -152,4 +154,19 @@ interface FolderRepository {
    * @param onFailure Callback to be invoked if an error occurs.
    */
   fun getPublicFolders(onSuccess: (List<Folder>) -> Unit, onFailure: (Exception) -> Unit)
+
+  /**
+   * Deletes all elements of a folder.
+   *
+   * @param folder The folder to delete elements from.
+   * @param noteViewModel The ViewModel that provides the list of notes to delete.
+   * @param onSuccess Callback to be invoked when the subfolders are deleted successfully.
+   * @param onFailure Callback to be invoked if an error occurs.
+   */
+  fun deleteFolderContents(
+      folder: Folder,
+      noteViewModel: NoteViewModel,
+      onSuccess: () -> Unit,
+      onFailure: (Exception) -> Unit
+  )
 }

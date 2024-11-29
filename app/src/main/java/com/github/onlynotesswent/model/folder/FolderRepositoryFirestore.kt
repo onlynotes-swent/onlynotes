@@ -3,6 +3,7 @@ package com.github.onlynotesswent.model.folder
 import android.util.Log
 import com.github.onlynotesswent.model.cache.FolderDatabase
 import com.github.onlynotesswent.model.common.Visibility
+import com.github.onlynotesswent.model.note.NoteViewModel
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.DocumentSnapshot
@@ -35,6 +36,7 @@ class FolderRepositoryFirestore(private val db: FirebaseFirestore, cache: Folder
     if (useCache) {
       folderDao.insertFolder(folder)
     }
+    Log.e(TAG, "Adding folder: $folder")
     db.collection(folderCollectionPath).document(folder.id).set(folder).addOnCompleteListener {
         result ->
       if (result.isSuccessful) {
@@ -272,22 +274,62 @@ class FolderRepositoryFirestore(private val db: FirebaseFirestore, cache: Folder
     }
   }
 
+  override fun deleteFolderContents(
+      folder: Folder,
+      noteViewModel: NoteViewModel,
+      onSuccess: () -> Unit,
+      onFailure: (Exception) -> Unit
+  ) {
+    getSubFoldersOf(
+        folder.id,
+        onSuccess = { subFolders ->
+          subFolders.forEach { subFolder ->
+            deleteFolderContents(
+                folder = subFolder,
+                noteViewModel = noteViewModel,
+                onSuccess = {},
+                onFailure = {
+                  onFailure(it)
+                  Log.e(TAG, "Failed to delete folder contents: ${it.message}")
+                })
+            noteViewModel.deleteNotesFromFolder(subFolder.id)
+            deleteFolderById(
+                folderId = subFolder.id,
+                onSuccess = {},
+                onFailure = {
+                  onFailure(it)
+                  Log.e(TAG, "Failed to delete folderContents: ${it.message}")
+                })
+          }
+          onSuccess()
+        },
+        onFailure = { e: Exception ->
+          onFailure(e)
+          Log.e(TAG, "Failed to delete folder contents: ${e.message}")
+        })
+  }
+
   /**
    * Converts a DocumentSnapshot to a Folder object.
    *
    * @param document The DocumentSnapshot to convert.
-   * @return The converted Folder object.
+   * @return The converted Folder object. If the conversion fails, null is returned.
    */
-  fun documentSnapshotToFolder(document: DocumentSnapshot): Folder {
-    return Folder(
-        id = document.id,
-        name = document.getString("name")!!,
-        userId = document.getString("userId")!!,
-        parentFolderId = document.getString("parentFolderId"),
-        Visibility.fromString(document.getString("visibility") ?: Visibility.DEFAULT.toString()))
+  fun documentSnapshotToFolder(document: DocumentSnapshot): Folder? {
+    return try {
+      Folder(
+          id = document.id,
+          name = document.getString("name")!!,
+          userId = document.getString("userId")!!,
+          parentFolderId = document.getString("parentFolderId"),
+          visibility = Visibility.fromString(document.getString("visibility")!!))
+    } catch (e: Exception) {
+      Log.e(TAG, "Error converting document to Folder", e)
+      null
+    }
   }
 
   companion object {
-    const val TAG = "FolderRepositoryFirestore"
+    private const val TAG = "FolderRepositoryFirestore"
   }
 }

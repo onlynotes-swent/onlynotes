@@ -3,9 +3,15 @@ package com.github.onlynotesswent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.animation.core.EaseIn
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.scaleIn
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -21,11 +27,12 @@ import com.github.onlynotesswent.ui.authentication.SignInScreen
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Route
 import com.github.onlynotesswent.ui.navigation.Screen
-import com.github.onlynotesswent.ui.overview.AddNoteScreen
-import com.github.onlynotesswent.ui.overview.EditMarkdownScreen
-import com.github.onlynotesswent.ui.overview.EditNoteScreen
 import com.github.onlynotesswent.ui.overview.FolderContentScreen
 import com.github.onlynotesswent.ui.overview.OverviewScreen
+import com.github.onlynotesswent.ui.overview.editnote.CommentsScreen
+import com.github.onlynotesswent.ui.overview.editnote.EditMarkdownScreen
+import com.github.onlynotesswent.ui.overview.editnote.EditNoteScreen
+import com.github.onlynotesswent.ui.overview.editnote.PdfViewerScreen
 import com.github.onlynotesswent.ui.search.SearchScreen
 import com.github.onlynotesswent.ui.theme.AppTheme
 import com.github.onlynotesswent.ui.user.CreateUserScreen
@@ -87,18 +94,35 @@ fun OnlyNotesApp(
       composable(Screen.OVERVIEW) {
         OverviewScreen(navigationActions, noteViewModel, userViewModel, folderViewModel)
       }
-      composable(Screen.ADD_NOTE) {
-        AddNoteScreen(navigationActions, scanner, noteViewModel, userViewModel, fileViewModel)
-      }
       composable(Screen.EDIT_NOTE) {
-        EditNoteScreen(navigationActions, scanner, noteViewModel, userViewModel, fileViewModel)
+        EditNoteScreen(navigationActions, noteViewModel, userViewModel)
       }
-      composable(Screen.FOLDER_CONTENTS) {
-        FolderContentScreen(navigationActions, folderViewModel, noteViewModel, userViewModel)
+      composable(Screen.EDIT_NOTE_COMMENT) {
+        CommentsScreen(navigationActions, noteViewModel, userViewModel)
       }
-      composable(Screen.EDIT_MARKDOWN) {
-        EditMarkdownScreen(navigationActions, noteViewModel, userViewModel, fileViewModel)
+      composable(Screen.EDIT_NOTE_PDF) {
+        PdfViewerScreen(noteViewModel, fileViewModel, scanner, navigationActions)
       }
+      composable(Screen.EDIT_NOTE_MARKDOWN) {
+        EditMarkdownScreen(navigationActions, noteViewModel, fileViewModel)
+      }
+      composable(
+          route = Screen.FOLDER_CONTENTS,
+          enterTransition = { scaleIn(animationSpec = tween(300, easing = EaseIn)) }) {
+              navBackStackEntry ->
+            val folderId = navBackStackEntry.arguments?.getString("folderId")
+            val selectedFolder by folderViewModel.selectedFolder.collectAsState()
+            // Update the selected folder when the folder ID changes
+            LaunchedEffect(folderId) {
+              if (folderId != null && folderId != "{folderId}") {
+                folderViewModel.getFolderById(folderId)
+              }
+            }
+            // Wait until selected folder is updated to display the screen
+            if (selectedFolder != null) {
+              FolderContentScreen(navigationActions, folderViewModel, noteViewModel, userViewModel)
+            }
+          }
     }
 
     navigation(
@@ -118,7 +142,15 @@ fun OnlyNotesApp(
       composable(Screen.USER_PROFILE) {
         UserProfileScreen(navigationActions, userViewModel, fileViewModel)
       }
-      composable(Screen.PUBLIC_PROFILE) {
+      composable(Screen.PUBLIC_PROFILE) { navBackStackEntry ->
+        val userId = navBackStackEntry.arguments?.getString("userId")
+
+        // Refresh the user profile when the user Id changes
+        LaunchedEffect(userId) {
+          if (userId != null && userId != "{userId}") {
+            userViewModel.refreshProfileUser(userId)
+          }
+        }
         PublicProfileScreen(navigationActions, userViewModel, fileViewModel)
       }
       composable(Screen.EDIT_PROFILE) {

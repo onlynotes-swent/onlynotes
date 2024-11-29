@@ -2,6 +2,8 @@ package com.github.onlynotesswent.model.flashcard
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.firestore
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -34,13 +36,9 @@ class FlashcardViewModel(private val repository: FlashcardRepository) : ViewMode
   }
 
   companion object {
-    val Factory: ViewModelProvider.Factory =
-        object : ViewModelProvider.Factory {
-          @Suppress("UNCHECKED_CAST")
-          override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            return FlashcardViewModel(FlashcardRepositoryFirestore(Firebase.firestore)) as T
-          }
-        }
+    val Factory: ViewModelProvider.Factory = viewModelFactory {
+      initializer { FlashcardViewModel(FlashcardRepositoryFirestore(Firebase.firestore)) }
+    }
   }
 
   /**
@@ -65,62 +63,140 @@ class FlashcardViewModel(private val repository: FlashcardRepository) : ViewMode
    * Retrieves all flashcards for the given user.
    *
    * @param userId The identifier of the user.
+   * @param onSuccess The function to call when the retrieval is successful.
+   * @param onFailure The function to call when the retrieval fails.
    */
-  fun getFlashcardsFrom(userId: String) {
-    repository.getFlashcardsFrom(userId, { _userFlashcards.value = it }, {})
+  fun getFlashcardsFrom(
+      userId: String,
+      onSuccess: (List<Flashcard>) -> Unit = {},
+      onFailure: (Exception) -> Unit = {}
+  ) {
+    repository.getFlashcardsFrom(
+        userId,
+        {
+          onSuccess(it)
+          _userFlashcards.value = it
+        },
+        onFailure)
   }
 
   /**
    * Retrieves the flashcard with the given identifier.
    *
    * @param id The identifier of the flashcard to retrieve.
+   * @param onSuccess The function to call when the retrieval is successful.
+   * @param onFailure The function to call when the retrieval fails.
    */
-  fun getFlashcardById(id: String) {
-    repository.getFlashcardById(id, { _selectedFlashcard.value = it }, {})
+  fun getFlashcardById(
+      id: String,
+      onSuccess: (Flashcard?) -> Unit = {},
+      onFailure: (Exception) -> Unit = {}
+  ) {
+    repository.getFlashcardById(
+        id,
+        {
+          onSuccess(it)
+          _selectedFlashcard.value = it
+        },
+        onFailure)
   }
 
   /**
    * Retrieves all flashcards in the given folder.
    *
    * @param folderId The identifier of the folder.
+   * @param onSuccess The function to call when the retrieval is successful.
+   * @param onFailure The function to call when the retrieval fails.
    */
-  fun getFlashcardsByFolder(folderId: String) {
-    repository.getFlashcardsByFolder(folderId, { _folderFlashcards.value = it }, {})
+  fun getFlashcardsByFolder(
+      folderId: String,
+      onSuccess: (List<Flashcard>) -> Unit = {},
+      onFailure: (Exception) -> Unit = {}
+  ) {
+    repository.getFlashcardsByFolder(
+        folderId,
+        {
+          onSuccess(it)
+          _folderFlashcards.value = it
+        },
+        onFailure)
   }
 
   /**
    * Retrieves all flashcards for the given note.
    *
    * @param noteId The identifier of the note.
+   * @param onSuccess The function to call when the retrieval is successful.
+   * @param onFailure The function to call when the retrieval fails.
    */
-  fun getFlashcardsByNote(noteId: String) {
-    repository.getFlashcardsByNote(noteId, { _noteFlashcards.value = it }, {})
+  fun getFlashcardsByNote(
+      noteId: String,
+      onSuccess: (List<Flashcard>) -> Unit = {},
+      onFailure: (Exception) -> Unit = {}
+  ) {
+    repository.getFlashcardsByNote(
+        noteId,
+        {
+          onSuccess(it)
+          _noteFlashcards.value = it
+        },
+        onFailure)
   }
 
   /**
    * Adds the given flashcard.
    *
    * @param flashcard The flashcard to add.
+   * @param onSuccess The function to call when the addition is successful.
+   * @param onFailure The function to call when the addition fails.
    */
-  fun addFlashcard(flashcard: Flashcard) {
-    repository.addFlashcard(flashcard, { getFlashcardsFrom(flashcard.userId) }, {})
+  fun addFlashcard(
+      flashcard: Flashcard,
+      onSuccess: () -> Unit = {},
+      onFailure: (Exception) -> Unit = {}
+  ) {
+    repository.addFlashcard(
+        flashcard,
+        {
+          onSuccess()
+          getFlashcardsFrom(flashcard.userId)
+        },
+        onFailure)
   }
 
   /**
    * Updates the given flashcard.
    *
    * @param flashcard The flashcard to update.
+   * @param onSuccess The function to call when the update is successful.
+   * @param onFailure The function to call when the update fails.
    */
-  fun updateFlashcard(flashcard: Flashcard) {
-    repository.updateFlashcard(flashcard, { getFlashcardsFrom(flashcard.userId) }, {})
+  fun updateFlashcard(
+      flashcard: Flashcard,
+      onSuccess: () -> Unit = {},
+      onFailure: (Exception) -> Unit = {}
+  ) {
+    repository.updateFlashcard(
+        flashcard,
+        {
+          onSuccess()
+          getFlashcardsFrom(flashcard.userId)
+        },
+        onFailure)
   }
 
   /**
    * Deletes the given flashcard.
    *
    * @param flashcard The flashcard to delete.
+   * @param onSuccess The function to call when the deletion is successful.
+   * @param onFailure The function to call when the deletion fails.
    */
-  fun deleteFlashcard(flashcard: Flashcard) {
-    repository.deleteFlashcard(flashcard, {}, {})
+  fun deleteFlashcard(
+      flashcard: Flashcard,
+      onSuccess: () -> Unit = {},
+      onFailure: (Exception) -> Unit = {}
+  ) {
+    repository.deleteFlashcard(flashcard, onSuccess, onFailure)
   }
 }

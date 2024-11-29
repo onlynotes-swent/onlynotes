@@ -1,22 +1,23 @@
 package com.github.onlynotesswent.ui.common
 
+import android.content.ClipData
 import android.content.Context
 import android.widget.Toast
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.draganddrop.dragAndDropSource
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -30,9 +31,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draganddrop.DragAndDropTransferData
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.github.onlynotesswent.R
+import com.github.onlynotesswent.model.common.Course
+import com.github.onlynotesswent.model.common.Visibility
+import com.github.onlynotesswent.model.folder.FolderViewModel
 import com.github.onlynotesswent.model.note.Note
 import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.model.user.User
@@ -52,10 +60,12 @@ import java.util.Locale
  * @param currentUser The current user.
  * @param context The context used to display the dialog.
  * @param noteViewModel The ViewModel that provides the list of notes to display.
+ * @param folderViewModel The ViewModel that provides the list of folders to display.
  * @param showDialog A boolean indicating whether the move out dialog should be displayed.
  * @param navigationActions The navigation instance used to transition between different screens.
  * @param onClick The lambda function to be invoked when the note card is clicked.
  */
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun NoteItem(
     note: Note,
@@ -63,52 +73,59 @@ fun NoteItem(
     currentUser: State<User?>,
     context: Context,
     noteViewModel: NoteViewModel,
+    folderViewModel: FolderViewModel,
     showDialog: Boolean,
     navigationActions: NavigationActions,
     onClick: () -> Unit
 ) {
-  // Mutable state to show the move out dialog
   var showMoveOutDialog by remember { mutableStateOf(showDialog) }
 
   if (showMoveOutDialog && note.folderId != null) {
-    AlertDialog(
-        onDismissRequest = { showMoveOutDialog = false },
-        title = {
-          Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-            Text("Move note out of folder")
+    ConfirmationPopup(
+        title = stringResource(R.string.move_note_out_of_folder),
+        text = stringResource(R.string.move_note_out_of_folder_confirmation),
+        onConfirm = {
+          if (currentUser.value!!.uid == note.userId) {
+            val parentFolderId = folderViewModel.parentFolderId.value
+            if (parentFolderId != null) {
+              noteViewModel.updateNote(note.copy(folderId = parentFolderId))
+              navigationActions.navigateTo(
+                  Screen.FOLDER_CONTENTS.replace(
+                      oldValue = "{folderId}", newValue = parentFolderId))
+            } else {
+              noteViewModel.updateNote(note.copy(folderId = null))
+              navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
+            }
+          } else {
+            Toast.makeText(
+                    context, "You can't move out a note that you didn't create", Toast.LENGTH_SHORT)
+                .show()
           }
+          showMoveOutDialog = false
         },
-        confirmButton = {
-          Button(
-              onClick = {
-                if (currentUser.value!!.uid == note.userId) {
-                  // Move out will move the given note to the overview menu
-                  noteViewModel.updateNote(note.copy(folderId = null), note.userId)
-                  // Clear the screen navigation stack as we navigate to the overview screen
-                  navigationActions.clearScreenNavigationStack()
-                  navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
-                } else {
-                  Toast.makeText(
-                          context,
-                          "You can't move out a note that you didn't create",
-                          Toast.LENGTH_SHORT)
-                      .show()
-                }
-                showMoveOutDialog = false
-              }) {
-                Text("Move")
-              }
-        },
-        dismissButton = { Button(onClick = { showMoveOutDialog = false }) { Text("Cancel") } })
+        onDismiss = { showMoveOutDialog = false })
   }
+
   Card(
       modifier =
           Modifier.testTag("noteCard")
+              .height(140.dp)
+              .padding(4.dp)
+              .semantics(mergeDescendants = true, properties = {})
               .fillMaxWidth()
-              .padding(vertical = 4.dp)
-              .clickable(onClick = onClick),
-      colors =
-          CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)) {
+              // Enable drag and drop for the note card (as a source)
+              .dragAndDropSource {
+                detectTapGestures(
+                    onTap = { onClick() },
+                    onLongPress = {
+                      noteViewModel.draggedNote(note)
+                      // Start a drag-and-drop operation to transfer the data which is being dragged
+                      startTransfer(
+                          // Transfer the note Id as a ClipData object
+                          DragAndDropTransferData(ClipData.newPlainText("Note", note.id)))
+                    },
+                )
+              }) {
         Column(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
           Row(
               modifier = Modifier.fillMaxWidth(),
@@ -124,7 +141,7 @@ fun NoteItem(
                   Icon(
                       // Show move out menu when clicking on the Icon
                       modifier =
-                          Modifier.clickable(
+                          Modifier.testTag("MoveOutButton").size(24.dp).clickable(
                               enabled =
                                   note.folderId != null &&
                                       navigationActions.currentRoute() == Screen.FOLDER_CONTENTS) {
@@ -136,24 +153,51 @@ fun NoteItem(
                 }
               }
 
-          Spacer(modifier = Modifier.height(4.dp))
+          Spacer(modifier = Modifier.height(8.dp))
+
           Text(
               text = note.title,
               style = MaterialTheme.typography.bodyMedium,
               fontWeight = FontWeight.Bold,
-              color = MaterialTheme.colorScheme.onPrimaryContainer)
+              color = MaterialTheme.colorScheme.onSurface)
+
           if (author != null) {
+            Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = author,
                 style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onPrimaryContainer)
+                color = MaterialTheme.colorScheme.onSurfaceVariant)
           }
-          Text(
-              text = note.noteCourse.fullName(),
-              style = MaterialTheme.typography.bodySmall,
-              color = MaterialTheme.colorScheme.onPrimaryContainer)
+          if (note.noteCourse != null && note.noteCourse != Course.EMPTY) {
+
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = note.noteCourse.fullName(),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant)
+          }
         }
       }
+}
+/**
+ * Dialog that allows the user to create a note.
+ *
+ * @param onDismiss callback to be invoked when the dialog is dismissed
+ * @param onConfirm callback to be invoked when the user confirms the new name
+ * @param action the action to be performed (create)
+ * @param oldVisibility the old visibility of the note (if renaming), defaults to
+ *   [Visibility.PRIVATE]
+ * @param oldName the old name of the note (if renaming), defaults to an empty string
+ */
+@Composable
+fun NoteDialog(
+    onDismiss: () -> Unit,
+    onConfirm: (String, Visibility) -> Unit,
+    action: String,
+    oldVisibility: Visibility = Visibility.PRIVATE,
+    oldName: String = ""
+) {
+  CreationDialog(onDismiss, onConfirm, action, oldVisibility, oldName, "Note")
 }
 
 /**

@@ -2,6 +2,7 @@ package com.github.onlynotesswent.model.flashcard
 
 import com.google.firebase.FirebaseApp
 import com.google.firebase.Timestamp
+import junit.framework.TestCase.assertEquals
 import org.hamcrest.CoreMatchers.`is`
 import org.hamcrest.MatcherAssert.assertThat
 import org.junit.Before
@@ -21,11 +22,11 @@ class FlashcardViewModelTest {
   private lateinit var flashcardViewModel: FlashcardViewModel
 
   private val flashcard =
-      Flashcard(
+      TextFlashcard(
           id = "1",
           front = "front",
           back = "back",
-          nextReview = Timestamp.now(),
+          lastReviewed = Timestamp.now(),
           userId = "2",
           folderId = "3",
           noteId = "4")
@@ -60,38 +61,67 @@ class FlashcardViewModelTest {
 
   @Test
   fun getFlashcardsFromCallsRepository() {
-    flashcardViewModel.getFlashcardsFrom(flashcard.userId)
-    verify(flashcardRepository).getFlashcardsFrom(eq(flashcard.userId), any(), any())
+    `when`(flashcardRepository.getFlashcardsFrom(any(), any(), any())).thenAnswer {
+      val onSuccess: (List<Flashcard>) -> Unit = it.getArgument(1)
+      onSuccess(listOf(flashcard))
+    }
+    flashcardViewModel.getFlashcardsFrom(flashcard.userId, { assert(true) })
+    assertEquals(flashcardViewModel.userFlashcards.value, listOf(flashcard))
   }
 
   @Test
   fun getFlashcardByIdCallsRepository() {
-    flashcardViewModel.getFlashcardById(flashcard.id)
-    verify(flashcardRepository).getFlashcardById(eq(flashcard.id), any(), any())
+    `when`(flashcardRepository.getFlashcardById(any(), any(), any())).thenAnswer {
+      val onSuccess: (Flashcard) -> Unit = it.getArgument(1)
+      onSuccess(flashcard)
+    }
+
+    flashcardViewModel.getFlashcardById(flashcard.id, { assert(true) })
+    assertEquals(flashcardViewModel.selectedFlashcard.value, flashcard)
   }
 
   @Test
   fun getFlashcardsByFolderCallsRepository() {
-    flashcardViewModel.getFlashcardsByFolder(flashcard.folderId)
-    verify(flashcardRepository).getFlashcardsByFolder(eq(flashcard.folderId), any(), any())
+    `when`(flashcardRepository.getFlashcardsByFolder(any(), any(), any())).thenAnswer {
+      val onSuccess: (List<Flashcard>) -> Unit = it.getArgument(1)
+      onSuccess(listOf(flashcard))
+    }
+    flashcardViewModel.getFlashcardsByFolder(flashcard.folderId!!, { assert(true) })
+    assertEquals(flashcardViewModel.folderFlashcards.value, listOf(flashcard))
   }
 
   @Test
   fun getFlashcardsByNoteCallsRepository() {
-    flashcardViewModel.getFlashcardsByNote(flashcard.noteId)
-    verify(flashcardRepository).getFlashcardsByNote(eq(flashcard.noteId), any(), any())
+    `when`(flashcardRepository.getFlashcardsByNote(any(), any(), any())).thenAnswer {
+      val onSuccess: (List<Flashcard>) -> Unit = it.getArgument(1)
+      onSuccess(listOf(flashcard))
+    }
+    flashcardViewModel.getFlashcardsByNote(flashcard.noteId!!, { assert(true) })
+    assertEquals(flashcardViewModel.noteFlashcards.value, listOf(flashcard))
   }
 
   @Test
   fun addFlashcardCallsRepository() {
-    flashcardViewModel.addFlashcard(flashcard)
-    verify(flashcardRepository).addFlashcard(eq(flashcard), any(), any())
+    `when`(flashcardRepository.addFlashcard(any(), any(), any())).thenAnswer {
+      val onSuccess: () -> Unit = it.getArgument(1)
+      onSuccess()
+    }
+
+    var onSuccessCalled = false
+    flashcardViewModel.addFlashcard(flashcard, { onSuccessCalled = true })
+    assert(onSuccessCalled)
   }
 
   @Test
   fun updateFlashcardCallsRepository() {
-    flashcardViewModel.updateFlashcard(flashcard)
-    verify(flashcardRepository).updateFlashcard(eq(flashcard), any(), any())
+    `when`(flashcardRepository.updateFlashcard(any(), any(), any())).thenAnswer {
+      val onSuccess: () -> Unit = it.getArgument(1)
+      onSuccess()
+    }
+
+    var onSuccessCalled = false
+    flashcardViewModel.updateFlashcard(flashcard, { onSuccessCalled = true })
+    assert(onSuccessCalled)
   }
 
   @Test

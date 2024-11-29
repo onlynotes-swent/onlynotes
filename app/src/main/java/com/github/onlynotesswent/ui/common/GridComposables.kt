@@ -10,9 +10,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -55,46 +57,38 @@ fun CustomLazyGrid(
     paddingValues: PaddingValues,
     columnContent: @Composable (ColumnScope.() -> Unit)
 ) {
+  val sortedFolders = remember(folders.value) { folders.value.sortedBy { it.name } }
+  val sortedNotes = remember(notes.value) { notes.value.sortedBy { it.title } }
+
   Box(modifier = modifier) {
-    if (notes.value.isNotEmpty() || folders.value.isNotEmpty()) {
+    if (sortedNotes.isNotEmpty() || sortedFolders.isNotEmpty()) {
       LazyVerticalGrid(
           columns = GridCells.Adaptive(minSize = 100.dp),
           contentPadding = PaddingValues(vertical = 20.dp),
           horizontalArrangement = Arrangement.spacedBy(4.dp),
           modifier = gridModifier) {
-            items(folders.value.size) { index ->
-              FolderItem(folder = folders.value[index]) {
-                folderViewModel.selectedFolder(folders.value[index])
-
-                if (folders.value[index].parentFolderId == null) {
-                  // Don't add to the screen navigation stack as we are at the root folder
-                  navigationActions.navigateTo(Screen.FOLDER_CONTENTS)
-                } else {
-                  val poppedId = navigationActions.popFromScreenNavigationStack()
-                  if (poppedId == Screen.SEARCH) {
-                    // If we come from search, don't push the folderId to the stack
-                    navigationActions.pushToScreenNavigationStack(poppedId)
-                  } else {
-                    if (poppedId != null) {
-                      navigationActions.pushToScreenNavigationStack(poppedId)
-                    }
-                    // Add the previously visited folder Id (parent) to the screen navigation stack
-                    navigationActions.pushToScreenNavigationStack(
-                        folders.value[index].parentFolderId!!)
+            items(sortedFolders, key = { it.id }) { folder ->
+              FolderItem(
+                  folder = folder,
+                  navigationActions = navigationActions,
+                  noteViewModel = noteViewModel,
+                  folderViewModel = folderViewModel) {
+                    folderViewModel.selectedParentFolderId(folder.parentFolderId)
+                    navigationActions.navigateTo(
+                        Screen.FOLDER_CONTENTS.replace(
+                            oldValue = "{folderId}", newValue = folder.id))
                   }
-                  navigationActions.navigateTo(Screen.FOLDER_CONTENTS)
-                }
-              }
             }
-            items(notes.value.size) { index ->
+            items(sortedNotes, key = { it.id }) { note ->
               NoteItem(
-                  note = notes.value[index],
+                  note = note,
                   currentUser = userViewModel.currentUser.collectAsState(),
                   context = context,
                   noteViewModel = noteViewModel,
+                  folderViewModel = folderViewModel,
                   showDialog = false,
                   navigationActions = navigationActions) {
-                    noteViewModel.selectedNote(notes.value[index])
+                    noteViewModel.selectedNote(note)
                     navigationActions.navigateTo(Screen.EDIT_NOTE)
                   }
             }

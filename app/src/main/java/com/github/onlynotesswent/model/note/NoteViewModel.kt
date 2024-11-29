@@ -38,6 +38,10 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
   private val _selectedNote = MutableStateFlow<Note?>(null)
   val selectedNote: StateFlow<Note?> = _selectedNote.asStateFlow()
 
+  // Dragged note
+  private val _draggedNote = MutableStateFlow<Note?>(null)
+  val draggedNote: StateFlow<Note?> = _draggedNote.asStateFlow()
+
   init {
     repository.init { getPublicNotes() }
   }
@@ -60,6 +64,10 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
     _currentFolderId.value = folderId
   }
 
+  fun draggedNote(draggedNote: Note?) {
+    _draggedNote.value = draggedNote
+  }
+
   /**
    * Sets the selected Note document.
    *
@@ -78,60 +86,113 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
     return repository.getNewUid()
   }
 
-  /** Gets all public Note documents. */
-  fun getPublicNotes() {
-    repository.getPublicNotes(onSuccess = { _publicNotes.value = it }, onFailure = {})
+  /**
+   * Gets all public Note documents.
+   *
+   * @param onSuccess The function to call when the retrieval is successful.
+   * @param onFailure The function to call when the retrieval fails.
+   */
+  fun getPublicNotes(onSuccess: (List<Note>) -> Unit = {}, onFailure: (Exception) -> Unit = {}) {
+    repository.getPublicNotes(
+        onSuccess = {
+          onSuccess(it)
+          _publicNotes.value = it
+        },
+        onFailure = onFailure)
   }
 
   /**
    * Gets all Note documents from a user, specified by their ID.
    *
-   * @param userID The user ID.
+   * @param userId The user ID.
+   * @param onSuccess The function to call when the retrieval is successful.
+   * @param onFailure The function to call when the retrieval fails.
    * @param useCache Whether to update data from cache. Should be true only if [userID] is the
    *   current user.
    */
-  suspend fun getNotesFrom(userID: String, useCache: Boolean = false) {
+  suspend fun getNotesFrom(
+      userId: String,
+      onSuccess: (List<Note>) -> Unit = {},
+      onFailure: (Exception) -> Unit = {},
+      useCache: Boolean = false
+  ) {
     repository.getNotesFrom(
-        userID, onSuccess = { _userNotes.value = it }, onFailure = {}, useCache = useCache)
+        userId = userId,
+        onSuccess = {
+          onSuccess(it)
+          _userNotes.value = it
+        },
+        onFailure = onFailure,
+        useCache = useCache)
   }
 
   /**
    * Gets all root Note documents from a user, specified by their ID.
    *
    * @param userID The user ID.
+   * @param onSuccess The function to call when the retrieval is successful.
+   * @param onFailure The function to call when the retrieval fails.
    * @param useCache Whether to update data from cache. Should be true only if [userID] is the
    *   current user.
    */
-  suspend fun getRootNotesFrom(userID: String, useCache: Boolean = false) {
+  suspend fun getRootNotesFrom(
+      userId: String,
+      onSuccess: (List<Note>) -> Unit = {},
+      onFailure: (Exception) -> Unit = {},
+      useCache: Boolean = false
+  ) {
     repository.getRootNotesFrom(
-        userID, onSuccess = { _userRootNotes.value = it }, onFailure = {}, useCache = useCache)
+        userId = userId,
+        onSuccess = {
+          onSuccess(it)
+          _userRootNotes.value = it
+        },
+        onFailure = onFailure,
+        useCache = useCache)
   }
 
   /**
    * Gets a Note document with ID noteId.
    *
    * @param noteId The ID of the Note document to be fetched.
+   * @param onSuccess The function to call when the retrieval is successful.
+   * @param onFailure The function to call when the retrieval fails.
    * @param useCache Whether to update data from cache. Should be true only if userIf of the note is
    *   the current user.
    */
-  suspend fun getNoteById(noteId: String, useCache: Boolean = false) {
+  suspend fun getNoteById(
+      noteId: String,
+      onSuccess: (Note) -> Unit = {},
+      onFailure: (Exception) -> Unit = {},
+      useCache: Boolean = false
+  ) {
     repository.getNoteById(
-        id = noteId, onSuccess = { _selectedNote.value = it }, onFailure = {}, useCache = useCache)
+        id = noteId,
+        onSuccess = {
+          onSuccess(it)
+          _selectedNote.value = it
+        },
+        onFailure = onFailure,
+        useCache = useCache)
   }
 
   /**
    * Adds a Note document.
    *
    * @param note The Note document to be added.
-   * @param userID The user ID.
+   * @param onSuccess The function to call when the addition is successful.
+   * @param onFailure The function to call when the addition fails.
    * @param useCache Whether to update data from cache. Should be true only if userId of the note is
    *   the current user.
    */
-  suspend fun addNote(note: Note, userID: String, useCache: Boolean = false) {
+  suspend fun addNote(note: Note, onSuccess: () -> Unit = {}, onFailure: (Exception) -> Unit = {}, useCache: Boolean = false) {
     repository.addNote(
         note = note,
-        onSuccess = { viewModelScope.launch { getRootNotesFrom(userID) } },
-        onFailure = {},
+        onSuccess = {
+          onSuccess()
+          getRootNotesFrom(note.userId)
+        },
+        onFailure = onFailure,
         useCache = useCache)
   }
 
@@ -140,14 +201,22 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
    *
    * @param note The Note document to be updated.
    * @param userID The user ID.
+   * @param onSuccess The function to call when the update is successful.
+   * @param onFailure The function to call when the update fails.
    * @param useCache Whether to update data from cache. Should be true only if userId of the note is
    *   the current user.
    */
-  suspend fun updateNote(note: Note, userID: String, useCache: Boolean = false) {
+  suspend fun updateNote(note: Note, onSuccess: () -> Unit = {}, onFailure: (Exception) -> Unit = {}, useCache: Boolean = false) {
     repository.updateNote(
         note = note,
-        onSuccess = { viewModelScope.launch { getRootNotesFrom(userID) } },
-        onFailure = {},
+        onSuccess = {
+          onSuccess()
+          getRootNotesFrom(note.userId)
+          if (note.folderId != null) {
+            getNotesFromFolder(note.folderId)
+          }
+        },
+        onFailure = onFailure,
         useCache = useCache)
   }
 
@@ -155,15 +224,24 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
    * Deletes a Note document by its ID.
    *
    * @param noteId The ID of the Note document to be deleted.
-   * @param userID The user ID.
+   * @param userId The user ID.
    * @param useCache Whether to update data from cache. Should be true only if userId of the note is
    *   the current user.
    */
-  suspend fun deleteNoteById(noteId: String, userID: String, useCache: Boolean = false) {
+  suspend fun deleteNoteById(
+      noteId: String,
+      userId: String,
+      onSuccess: () -> Unit = {},
+      onFailure: (Exception) -> Unit = {},
+      useCache: Boolean = false
+  ) {
     repository.deleteNoteById(
         id = noteId,
-        onSuccess = { viewModelScope.launch { getRootNotesFrom(userID) } },
-        onFailure = {},
+        onSuccess = {
+          onSuccess()
+          getRootNotesFrom(userId)
+        },
+        onFailure = onFailure,
         useCache = useCache)
   }
 
@@ -171,14 +249,24 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
    * Deletes all Note documents from a user, specified by their userId.
    *
    * @param userId The user ID.
+   * @param onSuccess The function to call when the deletion is successful.
+   * @param onFailure The function to call when the deletion fails.
    * @param useCache Whether to update data from cache. Should be true only if [userId] is the
    *   current user.
    */
-  suspend fun deleteNotesByUserId(userId: String, useCache: Boolean = false) {
+  suspend fun deleteNotesByUserId(
+      userId: String,
+      onSuccess: () -> Unit = {},
+      onFailure: (Exception) -> Unit = {},
+      useCache: Boolean = false
+  ) {
     repository.deleteNotesByUserId(
-        userId,
-        onSuccess = { viewModelScope.launch { getRootNotesFrom(userId) } },
-        onFailure = {},
+        userId = userId,
+        onSuccess = {
+          onSuccess()
+          getRootNotesFrom(userId)
+        },
+        onFailure = onFailure,
         useCache = useCache)
   }
 
@@ -186,11 +274,45 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
    * Retrieves all notes from a folder.
    *
    * @param folderId The ID of the folder to retrieve notes from.
+   * @param onSuccess The function to call when the retrieval is successful.
+   * @param onFailure The function to call when the retrieval fails.
    * @param useCache Whether to update data from cache. Should be true only if userId of the folder
    *   is the current user.
    */
-  suspend fun getNotesFromFolder(folderId: String, useCache: Boolean = false) {
+  suspend fun getNotesFromFolder(
+      folderId: String,
+      onSuccess: (List<Note>) -> Unit = {},
+      onFailure: (Exception) -> Unit = {},
+      useCache: Boolean = false
+  ) {
     repository.getNotesFromFolder(
-        folderId, onSuccess = { _folderNotes.value = it }, onFailure = {}, useCache = useCache)
+        folderId = folderId,
+        onSuccess = {
+          onSuccess(it)
+          _folderNotes.value = it
+        },
+        onFailure = onFailure,
+        useCache = useCache)
+  }
+
+  /**
+   * Deletes all notes from a folder.
+   *
+   * @param folderId The ID of the folder to delete notes from.
+   * @param onSuccess The function to call when the deletion is successful.
+   * @param onFailure The function to call when the deletion fails.
+   */
+  fun deleteNotesFromFolder(
+      folderId: String,
+      onSuccess: () -> Unit = {},
+      onFailure: (Exception) -> Unit = {}
+  ) {
+    repository.deleteNotesFromFolder(
+        folderId = folderId,
+        onSuccess = {
+          onSuccess()
+          getNotesFromFolder(folderId)
+        },
+        onFailure = onFailure)
   }
 }

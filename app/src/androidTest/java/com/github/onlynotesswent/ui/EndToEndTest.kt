@@ -7,18 +7,14 @@ import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotDisplayed
-import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.filter
-import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
-import androidx.compose.ui.test.onChildren
 import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performTextClearance
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTextReplacement
@@ -28,8 +24,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navigation
 import androidx.test.espresso.intent.Intents
-import com.github.onlynotesswent.model.common.Course
-import com.github.onlynotesswent.model.common.Visibility
 import com.github.onlynotesswent.model.file.FileRepository
 import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.folder.FolderRepository
@@ -44,11 +38,10 @@ import com.github.onlynotesswent.model.user.UserViewModel
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Route
 import com.github.onlynotesswent.ui.navigation.Screen
-import com.github.onlynotesswent.ui.overview.AddNoteScreen
-import com.github.onlynotesswent.ui.overview.EditMarkdownScreen
-import com.github.onlynotesswent.ui.overview.EditNoteScreen
 import com.github.onlynotesswent.ui.overview.FolderContentScreen
 import com.github.onlynotesswent.ui.overview.OverviewScreen
+import com.github.onlynotesswent.ui.overview.editnote.EditMarkdownScreen
+import com.github.onlynotesswent.ui.overview.editnote.EditNoteScreen
 import com.github.onlynotesswent.ui.search.SearchScreen
 import com.github.onlynotesswent.ui.theme.AppTheme
 import com.github.onlynotesswent.ui.user.CreateUserScreen
@@ -56,7 +49,6 @@ import com.github.onlynotesswent.ui.user.EditProfileScreen
 import com.github.onlynotesswent.ui.user.PublicProfileScreen
 import com.github.onlynotesswent.ui.user.UserProfileScreen
 import com.github.onlynotesswent.utils.ProfilePictureTaker
-import com.github.onlynotesswent.utils.Scanner
 import com.google.firebase.Timestamp
 import org.junit.After
 import org.junit.Before
@@ -83,7 +75,6 @@ class EndToEndTest {
   private lateinit var fileViewModel: FileViewModel
 
   @Mock private lateinit var profilePictureTaker: ProfilePictureTaker
-  @Mock private lateinit var scanner: Scanner
 
   // Sample user and note data for testing
   private val testUid = "testUid123"
@@ -117,14 +108,9 @@ class EndToEndTest {
     }
   }
 
-  private val testNote =
-      Note(
-          id = "1",
-          title = "title",
-          date = Timestamp.now(),
-          userId = testUid,
-          visibility = Visibility.DEFAULT,
-          noteCourse = Course("courseCode", "courseName", 2024, "publicPath"))
+  private var testNote = Note(id = "1", title = "title", date = Timestamp.now(), userId = testUid)
+
+  private val newTitle = "New Title"
 
   // Setup Compose test rule for UI testing
   @get:Rule val composeTestRule = createComposeRule()
@@ -169,21 +155,15 @@ class EndToEndTest {
                   composable(Screen.OVERVIEW) {
                     OverviewScreen(navigationActions, noteViewModel, userViewModel, folderViewModel)
                   }
-                  composable(Screen.ADD_NOTE) {
-                    AddNoteScreen(
-                        navigationActions, scanner, noteViewModel, userViewModel, fileViewModel)
-                  }
                   composable(Screen.EDIT_NOTE) {
-                    EditNoteScreen(
-                        navigationActions, scanner, noteViewModel, userViewModel, fileViewModel)
+                    EditNoteScreen(navigationActions, noteViewModel, userViewModel)
                   }
                   composable(Screen.FOLDER_CONTENTS) {
                     FolderContentScreen(
                         navigationActions, folderViewModel, noteViewModel, userViewModel)
                   }
-                  composable(Screen.EDIT_MARKDOWN) {
-                    EditMarkdownScreen(
-                        navigationActions, noteViewModel, userViewModel, fileViewModel)
+                  composable(Screen.EDIT_NOTE_MARKDOWN) {
+                    EditMarkdownScreen(navigationActions, noteViewModel, fileViewModel)
                   }
                 }
                 navigation(
@@ -243,6 +223,27 @@ class EndToEndTest {
     }
 
     `when`(noteRepository.getNewUid()).thenReturn(testNote.id)
+
+    // Mock the note repository update
+    `when`(noteRepository.updateNote(any(), any(), any())).thenAnswer {
+      testNote = it.arguments[0] as Note
+      noteViewModel.selectedNote(testNote)
+      val onSuccess = it.arguments[1] as () -> Unit
+      onSuccess()
+    }
+
+    // Mock get note by id
+    `when`(noteRepository.getNoteById(any(), any(), any())).thenAnswer {
+      val onSuccess = it.arguments[1] as (Note) -> Unit
+      onSuccess(testNote)
+    }
+
+    // Mock retrieval of notes
+    `when`(noteRepository.getRootNotesFrom(eq(testUser1.uid), any(), any())).thenAnswer { invocation
+      ->
+      val onSuccess = invocation.getArgument<(List<Note>) -> Unit>(1)
+      onSuccess(listOf(testNote))
+    }
   }
 
   // Test the end-to-end flow of creating a user, adding a note, and editing the note
@@ -262,53 +263,31 @@ class EndToEndTest {
     // Interact with the note creation flow
     composeTestRule.onNodeWithTag("createNoteOrFolder").assertIsDisplayed()
     composeTestRule.onNodeWithTag("createNoteOrFolder").performClick()
-    composeTestRule.onNodeWithTag("createNote").assertIsDisplayed()
     composeTestRule.onNodeWithTag("createNote").performClick()
-
-    // Verify that the "Create Note" button is initially disabled
-    composeTestRule.onNodeWithTag("createNoteButton").assertIsNotEnabled()
-
-    // Input note details and interact with dropdowns
-    composeTestRule.onNodeWithTag("inputNoteTitle").performTextInput(testNote.title)
-
-    // Set visibility to "Public"
-    composeTestRule.onNodeWithTag("visibilityButton").performClick()
-    composeTestRule
-        .onNodeWithTag("visibilityMenu")
-        .onChildren()
-        .filter(hasText("Public"))
-        .onFirst()
-        .performClick()
-
-    // Set template to "Create Note"
-    composeTestRule.onNodeWithTag("templateButton").performClick()
-    composeTestRule
-        .onNodeWithTag("templateMenu")
-        .onChildren()
-        .filter(hasText("Create note"))
-        .onFirst()
-        .performClick()
-
-    // Verify that the "Create Note" button is now enabled and click it
-    composeTestRule.onNodeWithTag("createNoteButton").assertIsEnabled()
-    composeTestRule.onNodeWithTag("createNoteButton").performClick()
+    composeTestRule.onNodeWithTag("confirmNoteAction").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("inputNoteName").performTextInput(testNote.title)
+    composeTestRule.onNodeWithTag("currentVisibilityOption").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("previousVisibility").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("nextVisibility").performClick()
+    composeTestRule.onNodeWithTag("confirmNoteAction").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("confirmNoteAction").performClick()
 
     // Modify the note title and save the changes
     composeTestRule.onNodeWithTag("EditTitle textField").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("EditTitle textField").performTextInput("Updated Title")
+    composeTestRule.onNodeWithTag("EditTitle textField").performTextClearance()
 
-    composeTestRule.onNodeWithTag("editNoteColumn").performScrollToNode(hasTestTag("Save button"))
-    composeTestRule.onNodeWithTag("Save button").performClick()
+    composeTestRule.onNodeWithTag("EditTitle textField").performTextInput(newTitle)
+    composeTestRule.onNodeWithTag("saveNoteButton").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("saveNoteButton").performClick()
 
-    // Mock retrieval of notes
-    `when`(noteRepository.getRootNotesFrom(eq(testUser1.uid), any(), any())).thenAnswer { invocation
-      ->
-      val onSuccess = invocation.getArgument<(List<Note>) -> Unit>(1)
-      onSuccess(listOf(testNote))
-    }
+    // Exit the note edit screen
+    composeTestRule.onNodeWithTag("closeButton").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("closeButton").performClick()
 
-    // Trigger note retrieval and verify the notes are displayed
-    noteViewModel.getRootNotesFrom(testUser1.uid)
+    // Verify that the note title has been properly saved
+    composeTestRule.onNodeWithTag("popup").assertIsNotDisplayed()
+
+    // Verify the notes are displayed
     composeTestRule.onNodeWithTag("noteAndFolderList").assertIsDisplayed()
 
     // Verify that the note card is displayed

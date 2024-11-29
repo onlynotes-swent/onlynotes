@@ -15,7 +15,8 @@ import java.security.MessageDigest
  * @property title The title of the note.
  * @property date The timestamp of when the note was created.
  * @property visibility The visibility setting for the note.
- * @property noteCourse The [Course] object associated with this note.
+ * @property noteCourse The [Course] object associated with this note. If the note is not associated
+ *   with a course, this value is `null`.
  * @property userId The unique identifier of the user who created the note.
  * @property folderId The unique identifier of the folder the note is stored in. If the note is not
  *   assigned to a folder, this value is `null`.
@@ -27,11 +28,27 @@ data class Note(
     val title: String,
     val date: Timestamp,
     val visibility: Visibility = Visibility.DEFAULT,
-    @Embedded val noteCourse: Course,
+    @Embedded val noteCourse: Course? = null,
     val userId: String,
-    val folderId: String? = null, // if note not assigned to a folder, folderId is null
+    val folderId: String? = null,
     val comments: CommentCollection = CommentCollection()
 ) {
+
+  companion object {
+    // note title max length
+    private const val TITLE_MAX_LENGTH = 35
+
+    /**
+     * Formats the note title by trimming leading whitespace and truncating it to the maximum
+     * allowed length.
+     *
+     * @param title The note title to format.
+     * @return The formatted note title.
+     */
+    fun formatTitle(title: String): String {
+      return title.trimStart().take(TITLE_MAX_LENGTH)
+    }
+  }
 
   /** Represents a list of Comments for a Note. The class is immutable. */
   class CommentCollection(val commentsList: List<Comment> = emptyList()) {

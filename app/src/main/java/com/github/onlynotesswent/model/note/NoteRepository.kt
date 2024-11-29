@@ -141,4 +141,13 @@ interface NoteRepository {
       onFailure: (Exception) -> Unit,
       useCache: Boolean
   )
+
+  /**
+   * Deletes all notes from a folder.
+   *
+   * @param folderId The ID of the folder to delete notes from.
+   * @param onSuccess Callback to be invoked if the notes are deleted successfully.
+   * @param onFailure Callback to be invoked if an error occurs.
+   */
+  fun deleteNotesFromFolder(folderId: String, onSuccess: () -> Unit, onFailure: (Exception) -> Unit)
 }

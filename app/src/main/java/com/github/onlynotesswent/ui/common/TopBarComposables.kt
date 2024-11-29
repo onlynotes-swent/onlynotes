@@ -43,12 +43,10 @@ fun ScreenTopBar(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center) {
               Spacer(modifier = Modifier.weight(1.4f))
-
               Text(
                   title,
                   color = MaterialTheme.colorScheme.onSurface,
                   modifier = Modifier.testTag(titleTestTag))
-
               Spacer(modifier = Modifier.weight(2f))
             }
       },

@@ -31,7 +31,7 @@ class NoteRepositoryFirestore(
       val userId: String,
       val courseCode: String,
       val courseName: String,
-      val courseYear: Int,
+      val courseYear: Int?,
       val publicPath: String,
       val folderId: String?,
       val commentsList: List<String>
@@ -46,7 +46,7 @@ class NoteRepositoryFirestore(
    *
    * Each field is separated by the `commentDelimiter` for easy parsing during retrieval.
    */
-  private fun convertCommentToString(comment: Note.Comment): String {
+  internal fun convertCommentToString(comment: Note.Comment): String {
     return comment.commentId +
         commentDelimiter +
         comment.userId +
@@ -87,7 +87,7 @@ class NoteRepositoryFirestore(
    * @return A list of snapshot strings where each string represents a Comment, formatted as
    *   "commentId<delimiter>userId<delimiter>content".
    */
-  private fun convertCommentsList(commentsList: List<Note.Comment>): List<String> {
+  internal fun convertCommentsList(commentsList: List<Note.Comment>): List<String> {
     return commentsList.map { convertCommentToString(it) }
   }
 
@@ -109,16 +109,17 @@ class NoteRepositoryFirestore(
    * @return The converted FirebaseNote object.
    */
   private fun convertNotes(note: Note): FirebaseNote {
+    val course = note.noteCourse ?: Course.EMPTY
     return FirebaseNote(
         note.id,
         note.title,
         note.date,
         note.visibility,
         note.userId,
-        note.noteCourse.courseCode,
-        note.noteCourse.courseName,
-        note.noteCourse.courseYear,
-        note.noteCourse.publicPath,
+        course.courseCode,
+        course.courseName,
+        course.courseYear,
+        course.publicPath,
         note.folderId,
         convertCommentsList(note.comments.commentsList))
   }
@@ -251,6 +252,7 @@ class NoteRepositoryFirestore(
           return
         } else {
           onFailure(Exception("Note not found"))
+          Log.e(TAG, "Note not found")
         }
       }
 
@@ -386,6 +388,29 @@ class NoteRepositoryFirestore(
     }
   }
 
+  override fun deleteNotesFromFolder(
+      folderId: String,
+      onSuccess: () -> Unit,
+      onFailure: (Exception) -> Unit
+  ) {
+    db.collection(collectionPath).get().addOnCompleteListener { task ->
+      if (task.isSuccessful) {
+        val folderNotes =
+            task.result.documents
+                .mapNotNull { document -> documentSnapshotToNote(document) }
+                .filter { it.folderId == folderId }
+        folderNotes.forEach { note -> db.collection(collectionPath).document(note.id).delete() }
+        // Throw onSuccess only after deleting all notes
+        onSuccess()
+      } else {
+        task.exception?.let { e ->
+          Log.e(TAG, "Error deleting folder notes", e)
+          onFailure(e)
+        }
+      }
+    }
+  }
+
   /**
    * Performs a Firestore operation and calls the appropriate callback based on the result.
    *
@@ -414,41 +439,31 @@ class NoteRepositoryFirestore(
    * Converts a Firestore DocumentSnapshot to a Note object.
    *
    * @param document The DocumentSnapshot to convert.
-   * @return The converted Note object.
+   * @return The converted Note object. Returns null if the conversion fails.
    */
   fun documentSnapshotToNote(document: DocumentSnapshot): Note? {
     return try {
       val id = document.id
-      val title = document.getString("title") ?: ""
-      val date = document.getTimestamp("date") ?: Timestamp.now()
-      val visibility =
-          Visibility.fromString(document.getString("visibility") ?: Visibility.DEFAULT.toString())
-      val userId = document.getString("userId") ?: return null
-      val courseCode = document.getString("courseCode") ?: ""
-      val courseName = document.getString("courseName") ?: ""
-      val courseYear = document.getLong("courseYear")?.toInt() ?: 0
-      val publicPath = document.getString("publicPath") ?: ""
+      val title = document.getString("title")!!
+      val date = document.getTimestamp("date")!!
+      val visibility = Visibility.fromString(document.getString("visibility")!!)
+      val userId = document.getString("userId")!!
+      val courseCode = document.getString("courseCode")!!
+      val courseName = document.getString("courseName")!!
+      val courseYear = document.getLong("courseYear")?.toInt()
+      val publicPath = document.getString("publicPath")!!
       val folderId = document.getString("folderId")
-      val comments =
-          commentStringToCommentClass(document.get("commentsList") as? List<String> ?: emptyList())
+      val comments = commentStringToCommentClass(document.get("commentsList") as List<String>)
 
-      val course =
-          if (courseYear == 0 ||
-              courseCode.isEmpty() ||
-              courseName.isEmpty() ||
-              publicPath.isEmpty()) {
-            Course.DEFAULT
-          } else {
-            Course(courseCode, courseName, courseYear, publicPath)
-          }
+      val course = Course(courseCode, courseName, courseYear, publicPath)
 
       Note(
           id = id,
           title = title,
           date = date,
           visibility = visibility,
+          noteCourse = if (course == Course.EMPTY) null else course,
           userId = userId,
-          noteCourse = course,
           folderId = folderId,
           comments = Note.CommentCollection(comments))
     } catch (e: Exception) {

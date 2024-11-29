@@ -2,6 +2,8 @@ package com.github.onlynotesswent.model.folder
 
 import android.os.Looper
 import androidx.test.core.app.ApplicationProvider
+import com.github.onlynotesswent.model.note.NoteRepository
+import com.github.onlynotesswent.model.note.NoteViewModel
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.android.gms.tasks.Task
 import com.google.android.gms.tasks.Tasks
@@ -36,6 +38,9 @@ class FolderRepositoryFirestoreTest {
   @Mock private lateinit var mockQuerySnapshot: QuerySnapshot
   @Mock private lateinit var mockQuerySnapshotTask: Task<QuerySnapshot>
 
+  @Mock private lateinit var mockNoteRepository: NoteRepository
+  private lateinit var noteViewModel: NoteViewModel
+
   private lateinit var folderRepositoryFirestore: FolderRepositoryFirestore
 
   private val testFolder = Folder(id = "1", name = "name", userId = "1", parentFolderId = null)
@@ -52,6 +57,7 @@ class FolderRepositoryFirestoreTest {
     }
 
     folderRepositoryFirestore = FolderRepositoryFirestore(mockFirestore)
+    noteViewModel = NoteViewModel(mockNoteRepository)
 
     `when`(mockFirestore.collection(any())).thenReturn(mockCollectionReference)
     `when`(mockCollectionReference.document(any())).thenReturn(mockDocumentReference)
@@ -74,19 +80,23 @@ class FolderRepositoryFirestoreTest {
     `when`(mockDocumentSnapshot.getString("name")).thenReturn(testFolder.name)
     `when`(mockDocumentSnapshot.getString("userId")).thenReturn(testFolder.userId)
     `when`(mockDocumentSnapshot.getString("parentFolderId")).thenReturn(testFolder.parentFolderId)
+    `when`(mockDocumentSnapshot.getString("visibility"))
+        .thenReturn(testFolder.visibility.toString())
 
     `when`(mockDocumentSnapshot2.id).thenReturn(testSubFolder.id)
     `when`(mockDocumentSnapshot2.getString("name")).thenReturn(testSubFolder.name)
     `when`(mockDocumentSnapshot2.getString("userId")).thenReturn(testSubFolder.userId)
     `when`(mockDocumentSnapshot2.getString("parentFolderId"))
         .thenReturn(testSubFolder.parentFolderId)
+    `when`(mockDocumentSnapshot2.getString("visibility"))
+        .thenReturn(testSubFolder.visibility.toString())
   }
 
-  private fun compareFolders(folder: Folder, folder2: Folder) {
-    assert(folder.id == folder2.id)
-    assert(folder.name == folder2.name)
-    assert(folder.userId == folder2.userId)
-    assert(folder.parentFolderId == folder2.parentFolderId)
+  private fun compareFolders(testFolder: Folder?, expectedFolder: Folder) {
+    assert(testFolder?.id == expectedFolder.id)
+    assert(testFolder?.name == expectedFolder.name)
+    assert(testFolder?.userId == expectedFolder.userId)
+    assert(testFolder?.parentFolderId == expectedFolder.parentFolderId)
   }
 
   @Test
@@ -100,7 +110,7 @@ class FolderRepositoryFirestoreTest {
   fun documentSnapshotToFolderConvertsSnapshotToFolder() {
     val convertedFolder = folderRepositoryFirestore.documentSnapshotToFolder(mockDocumentSnapshot)
     assertNotNull(convertedFolder)
-    compareFolders(convertedFolder, testFolder)
+    compareFolders(convertedFolder!!, testFolder)
   }
 
   @Test
@@ -222,5 +232,37 @@ class FolderRepositoryFirestoreTest {
     assertNotNull(receivedFolders)
 
     verify(timeout(100)) { (mockQuerySnapshot).documents }
+  }
+
+  @Test
+  fun deleteFolderContents_callsDocuments() {
+    `when`(mockDocumentReference.delete()).thenReturn(Tasks.forResult(null))
+
+    folderRepositoryFirestore.deleteFolderContents(
+        testFolder, noteViewModel, onSuccess = {}, onFailure = {})
+
+    shadowOf(Looper.getMainLooper()).idle()
+
+    verify(mockDocumentReference).delete()
+  }
+
+  @Test
+  fun deleteFolderContents_fails() {
+    val errorMessage = "TestError"
+    `when`(mockQuerySnapshotTask.isSuccessful).thenReturn(false)
+    `when`(mockQuerySnapshotTask.exception).thenReturn(Exception(errorMessage))
+    `when`(mockQuerySnapshotTask.addOnCompleteListener(any())).thenAnswer { invocation ->
+      val listener = invocation.getArgument<OnCompleteListener<QuerySnapshot>>(0)
+      // Simulate a result being passed to the listener
+      listener.onComplete(mockQuerySnapshotTask)
+      mockQuerySnapshotTask
+    }
+    `when`(mockQuerySnapshot.documents)
+        .thenReturn(listOf(mockDocumentSnapshot, mockDocumentSnapshot2))
+    var exceptionThrown: Exception? = null
+    folderRepositoryFirestore.deleteFolderContents(
+        testFolder, noteViewModel, onSuccess = {}, onFailure = { e -> exceptionThrown = e })
+    assertNotNull(exceptionThrown)
+    assertEquals(errorMessage, exceptionThrown?.message)
   }
 }
