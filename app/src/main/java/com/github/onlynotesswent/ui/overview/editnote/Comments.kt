@@ -31,7 +31,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.github.onlynotesswent.R
 import com.github.onlynotesswent.model.note.Note
 import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.model.user.User
@@ -61,7 +63,7 @@ fun CommentsScreen(
       modifier = Modifier.testTag("commentsScreen"),
       topBar = {
         EditNoteTopBar(
-            title = "Comments",
+            title = stringResource(R.string.comments),
             titleTestTag = "commentsTitle",
             noteViewModel = noteViewModel,
             navigationActions = navigationActions,
@@ -147,7 +149,7 @@ fun CommentsSection(
 ) {
   if (updatedComments.commentsList.isEmpty()) {
     Text(
-        text = "No comments yet. Add a comment to start the discussion.",
+        text = stringResource(R.string.no_comments_text),
         color = Color.Gray,
         modifier = Modifier.padding(8.dp).testTag("noCommentsText"))
   } else {
@@ -172,11 +174,11 @@ fun CommentsSection(
                       if (comment.isUnedited()) {
                         "${comment.userName} : $formattedDate"
                       } else {
-                        "${comment.userName} edited: $formattedDate"
+                        stringResource(R.string.edited, comment.userName, formattedDate)
                       }
                   Text(displayedText)
                 },
-                placeholder = { Text("Enter comment here") },
+                placeholder = { Text(stringResource(R.string.enter_comment_here)) },
                 modifier =
                     Modifier.weight(1f) // Ensure the text field takes up remaining space
                         .testTag("EditCommentTextField"))

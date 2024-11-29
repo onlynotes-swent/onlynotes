@@ -2,6 +2,7 @@ package com.github.onlynotesswent.ui.authentication
 
 import android.content.Context
 import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -24,11 +25,14 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.app.ActivityCompat
+import com.github.onlynotesswent.MainActivity
 import com.github.onlynotesswent.R
 import com.github.onlynotesswent.model.authentication.Authenticator
 import com.github.onlynotesswent.model.user.UserViewModel
@@ -53,6 +57,12 @@ fun SignInScreen(
         coroutineScope = scope,
         onSuccess = { authSuccessHandler(it, navigationActions, userViewModel, context) },
         onFailure = { Toast.makeText(context, "Login Failed!", Toast.LENGTH_LONG).show() })
+  }
+
+  // Handle back button press
+  BackHandler {
+    // Exit the app
+    ActivityCompat.finishAffinity(context as MainActivity)
   }
 
   // UI:
@@ -113,7 +123,7 @@ internal fun Logo() {
 internal fun WelcomeText() {
   Text(
       modifier = Modifier.height(65.dp).testTag("loginTitle"),
-      text = "Welcome To",
+      text = stringResource(R.string.welcome_to),
       style =
           TextStyle(
               fontSize = 57.sp,
@@ -139,7 +149,7 @@ internal fun SignInButton(onClick: () -> Unit) {
         contentScale = ContentScale.FillBounds)
     Text(
         modifier = Modifier.padding(6.dp).testTag("loginButtonText"),
-        text = "Sign in with Google",
+        text = stringResource(R.string.sign_in_with_google),
         style =
             TextStyle(
                 fontSize = 16.sp,

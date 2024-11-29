@@ -27,6 +27,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.github.onlynotesswent.R
 import com.github.onlynotesswent.model.folder.Folder
@@ -38,11 +39,12 @@ import com.github.onlynotesswent.ui.common.CustomDropDownMenu
 import com.github.onlynotesswent.ui.common.CustomDropDownMenuItem
 import com.github.onlynotesswent.ui.common.CustomLazyGrid
 import com.github.onlynotesswent.ui.common.FolderDialog
+import com.github.onlynotesswent.ui.common.NoteDialog
 import com.github.onlynotesswent.ui.navigation.BottomNavigationMenu
 import com.github.onlynotesswent.ui.navigation.LIST_TOP_LEVEL_DESTINATION
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
-import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
+import com.google.firebase.Timestamp
 
 /**
  * Displays the overview screen which contains a list of publicNotes retrieved from the ViewModel.
@@ -74,7 +76,8 @@ fun OverviewScreen(
   val context = LocalContext.current
 
   var expanded by remember { mutableStateOf(false) }
-  var showCreateDialog by remember { mutableStateOf(false) }
+  var showCreateFolderDialog by remember { mutableStateOf(false) }
+  var showCreateNoteDialog by remember { mutableStateOf(false) }
 
   Scaffold(
       modifier = Modifier.testTag("overviewScreen"),
@@ -82,20 +85,14 @@ fun OverviewScreen(
         CreateItemFab(
             expandedFab = expanded,
             onExpandedFabChange = { expanded = it },
-            showCreateDialog = { showCreateDialog = it },
+            showCreateFolderDialog = { showCreateFolderDialog = it },
+            showCreateNoteDialog = { showCreateNoteDialog = it },
             noteViewModel = noteViewModel,
-            folderViewModel = folderViewModel,
-            navigationActions = navigationActions)
+            folderViewModel = folderViewModel)
       },
       bottomBar = {
         BottomNavigationMenu(
-            onTabSelect = { route ->
-              navigationActions.navigateTo(route)
-              // Keep track of navigation to search screen to allow for back navigation
-              if (route == TopLevelDestinations.SEARCH) {
-                navigationActions.pushToScreenNavigationStack(Screen.SEARCH)
-              }
-            },
+            onTabSelect = { route -> navigationActions.navigateTo(route) },
             tabList = LIST_TOP_LEVEL_DESTINATION,
             selectedItem = navigationActions.currentRoute())
       }) { paddingValues ->
@@ -108,26 +105,44 @@ fun OverviewScreen(
             userViewModel = userViewModel,
             context = context,
             navigationActions = navigationActions)
-        // Logic to show the dialog to create a folder
-        if (showCreateDialog) {
-          FolderDialog(
-              onDismiss = { showCreateDialog = false },
+        if (showCreateNoteDialog) {
+          NoteDialog(
+              onDismiss = { showCreateNoteDialog = false },
               onConfirm = { newName, visibility ->
+                val note =
+                    Note(
+                        id = noteViewModel.getNewUid(),
+                        title = newName,
+                        date = Timestamp.now(),
+                        visibility = visibility,
+                        userId = userViewModel.currentUser.value!!.uid,
+                        folderId = parentFolderId.value)
+                noteViewModel.addNote(note)
+                noteViewModel.selectedNote(note)
+                showCreateNoteDialog = false
+                navigationActions.navigateTo(Screen.EDIT_NOTE)
+              },
+              action = "Create")
+        }
+
+        // Logic to show the dialog to create a folder
+        if (showCreateFolderDialog) {
+          FolderDialog(
+              onDismiss = { showCreateFolderDialog = false },
+              onConfirm = { newName, visibility ->
+                val folderId = folderViewModel.getNewFolderId()
                 folderViewModel.addFolder(
                     Folder(
-                        id = folderViewModel.getNewFolderId(),
+                        id = folderId,
                         name = newName,
                         userId = userViewModel.currentUser.value!!.uid,
                         parentFolderId = parentFolderId.value,
                         visibility = visibility))
-                showCreateDialog = false
-                if (parentFolderId.value != null) {
-                  navigationActions.navigateTo(Screen.FOLDER_CONTENTS)
-                } else {
-                  navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
-                }
+                showCreateFolderDialog = false
+                navigationActions.navigateTo(
+                    Screen.FOLDER_CONTENTS.replace(oldValue = "{folderId}", newValue = folderId))
               },
-              action = "Create")
+              action = stringResource(R.string.create))
         }
       }
 }
@@ -138,26 +153,25 @@ fun OverviewScreen(
  * @param expandedFab The state of the floating action button. True if the button is expanded, false
  *   otherwise.
  * @param onExpandedFabChange The callback to change the state of the floating action button.
- * @param showCreateDialog The callback to show the dialog to create a folder.
+ * @param showCreateFolderDialog The callback to show the dialog to create a folder.
  * @param noteViewModel The ViewModel that provides the list of publicNotes to display.
  * @param folderViewModel The ViewModel that provides the list of folders to display.
- * @param navigationActions The navigation view model used to transition between different screens.
  */
 @Composable
 fun CreateItemFab(
     expandedFab: Boolean,
     onExpandedFabChange: (Boolean) -> Unit,
-    showCreateDialog: (Boolean) -> Unit,
+    showCreateFolderDialog: (Boolean) -> Unit,
+    showCreateNoteDialog: (Boolean) -> Unit,
     noteViewModel: NoteViewModel,
     folderViewModel: FolderViewModel,
-    navigationActions: NavigationActions
 ) {
   CustomDropDownMenu(
       modifier = Modifier.testTag("createNoteOrFolder"),
       menuItems =
           listOf(
               CustomDropDownMenuItem(
-                  text = { Text("Create note") },
+                  text = { Text(stringResource(R.string.create_note)) },
                   icon = {
                     Icon(
                         painter = painterResource(id = R.drawable.add_note_icon),
@@ -165,12 +179,12 @@ fun CreateItemFab(
                   },
                   onClick = {
                     onExpandedFabChange(false)
-                    navigationActions.navigateTo(Screen.ADD_NOTE)
+                    showCreateNoteDialog(true)
                     noteViewModel.selectedFolderId(null)
                   },
                   modifier = Modifier.testTag("createNote")),
               CustomDropDownMenuItem(
-                  text = { Text("Create folder") },
+                  text = { Text(stringResource(R.string.create_folder)) },
                   icon = {
                     Icon(
                         painter = painterResource(id = R.drawable.folder_create_icon),
@@ -178,7 +192,7 @@ fun CreateItemFab(
                   },
                   onClick = {
                     onExpandedFabChange(false)
-                    showCreateDialog(true)
+                    showCreateFolderDialog(true)
                     folderViewModel.selectedParentFolderId(null)
                   },
                   modifier = Modifier.testTag("createFolder"))),
@@ -233,7 +247,7 @@ fun OverviewScreenGrid(
       columnContent = {
         Text(
             modifier = Modifier.testTag("emptyNoteAndFolderPrompt"),
-            text = "You have no notes or folders yet.",
+            text = stringResource(R.string.you_have_no_notes_or_folders_yet),
             color = MaterialTheme.colorScheme.onBackground)
         Spacer(modifier = Modifier.height(50.dp))
         RefreshButton {
@@ -255,7 +269,7 @@ fun RefreshButton(onClick: () -> Unit) {
       onClick = onClick,
       colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surface),
       modifier = Modifier.testTag("refreshButton")) {
-        Text("Refresh", color = MaterialTheme.colorScheme.onSurface)
+        Text(stringResource(R.string.refresh), color = MaterialTheme.colorScheme.onSurface)
         Icon(
             imageVector = Icons.Default.Refresh,
             contentDescription = "Refresh",

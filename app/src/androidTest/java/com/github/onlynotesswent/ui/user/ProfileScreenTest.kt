@@ -29,7 +29,6 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.mockito.Mock
-import org.mockito.Mockito.times
 import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
@@ -254,7 +253,11 @@ class ProfileScreenTest {
         .performClick()
     assertEquals(testUser3, userViewModel.profileUser.value)
 
-    verify(mockNavigationActions, times(2)).navigateTo(Screen.PUBLIC_PROFILE)
+    val publicProfileScreen1 = Screen.PUBLIC_PROFILE.replace("{userId}", testUid2)
+    val publicProfileScreen2 = Screen.PUBLIC_PROFILE.replace("{userId}", testUid3)
+
+    verify(mockNavigationActions).navigateTo(publicProfileScreen1)
+    verify(mockNavigationActions).navigateTo(publicProfileScreen2)
   }
 
   @Test
@@ -340,8 +343,7 @@ class ProfileScreenTest {
     }
 
     composeTestRule.onNodeWithTag("goBackButton").assertIsDisplayed().performClick()
-    // Verify that a pop operation was performed
-    verify(mockNavigationActions).popFromScreenNavigationStack()
+    verify(mockNavigationActions).goBack()
   }
 
   @Test

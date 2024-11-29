@@ -10,9 +10,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -55,8 +57,8 @@ fun CustomLazyGrid(
     paddingValues: PaddingValues,
     columnContent: @Composable (ColumnScope.() -> Unit)
 ) {
-  val sortedFolders = folders.value.sortedBy { it.name }
-  val sortedNotes = notes.value.sortedBy { it.title }
+  val sortedFolders = remember(folders.value) { folders.value.sortedBy { it.name } }
+  val sortedNotes = remember(notes.value) { notes.value.sortedBy { it.title } }
 
   Box(modifier = modifier) {
     if (sortedNotes.isNotEmpty() || sortedFolders.isNotEmpty()) {
@@ -65,26 +67,28 @@ fun CustomLazyGrid(
           contentPadding = PaddingValues(vertical = 20.dp),
           horizontalArrangement = Arrangement.spacedBy(4.dp),
           modifier = gridModifier) {
-            items(sortedFolders.size) { index ->
+            items(sortedFolders, key = { it.id }) { folder ->
               FolderItem(
-                  folder = sortedFolders[index],
+                  folder = folder,
                   navigationActions = navigationActions,
                   noteViewModel = noteViewModel,
                   folderViewModel = folderViewModel) {
-                    folderViewModel.selectedFolder(sortedFolders[index])
-                    navigationActions.navigateToFolderContents(sortedFolders[index])
+                    folderViewModel.selectedParentFolderId(folder.parentFolderId)
+                    navigationActions.navigateTo(
+                        Screen.FOLDER_CONTENTS.replace(
+                            oldValue = "{folderId}", newValue = folder.id))
                   }
             }
-            items(sortedNotes.size) { index ->
+            items(sortedNotes, key = { it.id }) { note ->
               NoteItem(
-                  note = sortedNotes[index],
+                  note = note,
                   currentUser = userViewModel.currentUser.collectAsState(),
                   context = context,
                   noteViewModel = noteViewModel,
                   folderViewModel = folderViewModel,
                   showDialog = false,
                   navigationActions = navigationActions) {
-                    noteViewModel.selectedNote(sortedNotes[index])
+                    noteViewModel.selectedNote(note)
                     navigationActions.navigateTo(Screen.EDIT_NOTE)
                   }
             }
