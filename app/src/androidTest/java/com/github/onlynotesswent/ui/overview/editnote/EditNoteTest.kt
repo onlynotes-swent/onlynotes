@@ -101,9 +101,9 @@ class EditNoteTest {
 
     // Edit note components
     composeTestRule.onNodeWithTag("EditTitle textField").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("VisibilityEditMenuPublic").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("VisibilityEditMenuFriends Only").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("VisibilityEditMenuPrivate").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("currentVisibilityOption").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("previousVisibility").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("nextVisibility").performClick()
     composeTestRule.onNodeWithTag("CourseFullName textField").assertIsDisplayed()
 
     // Delete button

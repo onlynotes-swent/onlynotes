@@ -122,7 +122,7 @@ fun OverviewScreen(
                 showCreateNoteDialog = false
                 navigationActions.navigateTo(Screen.EDIT_NOTE)
               },
-              action = "Create")
+              action = stringResource(R.string.create))
         }
 
         // Logic to show the dialog to create a folder
@@ -228,14 +228,12 @@ fun OverviewScreenGrid(
     navigationActions: NavigationActions
 ) {
   CustomLazyGrid(
-      modifier =
-          Modifier.fillMaxSize()
-              .padding(top = 20.dp, bottom = paddingValues.calculateBottomPadding()),
+      modifier = Modifier.fillMaxSize(),
       notes = userRootNotes,
       folders = userRootFolders,
       gridModifier =
           Modifier.fillMaxWidth()
-              .padding(horizontal = 16.dp)
+              .padding(horizontal = 20.dp)
               .padding(paddingValues)
               .testTag("noteAndFolderList"),
       folderViewModel = folderViewModel,
