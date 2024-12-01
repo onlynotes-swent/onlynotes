@@ -3,8 +3,12 @@ package com.github.onlynotesswent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.EaseIn
+import androidx.compose.animation.core.EaseOut
+import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
@@ -104,8 +108,14 @@ fun OnlyNotesApp(
       }
       composable(
           route = Screen.FOLDER_CONTENTS,
-          enterTransition = { scaleIn(animationSpec = tween(300, easing = EaseIn)) }) {
-              navBackStackEntry ->
+          enterTransition = { scaleIn(animationSpec = tween(300, easing = EaseIn)) },
+          popExitTransition = { fadeOut(animationSpec = tween(300, easing = LinearEasing)) +
+                  slideOutOfContainer(
+                      animationSpec = tween(300, easing = EaseOut),
+                      towards = AnimatedContentTransitionScope.SlideDirection.End) },
+          popEnterTransition = { null }
+      ) {
+          navBackStackEntry ->
             val folderId = navBackStackEntry.arguments?.getString("folderId")
             val selectedFolder by folderViewModel.selectedFolder.collectAsState()
             // Update the selected folder when the folder ID changes
