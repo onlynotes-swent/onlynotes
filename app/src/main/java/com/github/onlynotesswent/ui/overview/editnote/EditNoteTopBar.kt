@@ -26,7 +26,10 @@ fun EditNoteTopBar(
         onClick()
         // Unselects the note and navigates back to the previous screen
         if (noteViewModel.selectedNote.value?.folderId != null) {
-          navigationActions.navigateTo(Screen.FOLDER_CONTENTS)
+          navigationActions.navigateTo(Screen.FOLDER_CONTENTS.replace(
+                oldValue = "{folderId}",
+                newValue = noteViewModel.selectedNote.value!!.folderId!!
+          ))
         } else {
           navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
         }

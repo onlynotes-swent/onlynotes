@@ -3,6 +3,7 @@ package com.github.onlynotesswent.ui.overview
 import android.content.Context
 import android.util.Log
 import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -92,6 +93,18 @@ fun FolderContentScreen(
 
   var updatedName by remember { mutableStateOf(folder.value!!.name) }
   var expandedFolder by remember { mutableStateOf(false) }
+
+  // Custom back handler to manage back navigation
+  BackHandler {
+      if (folder.value!!.parentFolderId != null) {
+          navigationActions.navigateTo(Screen.FOLDER_CONTENTS.replace(
+              oldValue = "{folderId}",
+              newValue = folder.value!!.parentFolderId!!
+          ))
+      } else {
+          navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
+      }
+  }
 
   if (currentUser.value == null) {
     UserNotFoundFolderContentScreen()
