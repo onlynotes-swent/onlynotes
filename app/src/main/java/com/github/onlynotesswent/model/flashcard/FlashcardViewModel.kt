@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import com.github.onlynotesswent.model.flashcard.deck.Deck
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.firestore
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,6 +20,10 @@ class FlashcardViewModel(private val repository: FlashcardRepository) : ViewMode
   // The selected flashcard
   private val _selectedFlashcard = MutableStateFlow<Flashcard?>(null)
   val selectedFlashcard: StateFlow<Flashcard?> = _selectedFlashcard.asStateFlow()
+
+  // The flashcards in the selected deck
+  private val _deckFlashcards = MutableStateFlow<List<Flashcard>>(emptyList())
+  val deckFlashcards: StateFlow<List<Flashcard>> = _deckFlashcards.asStateFlow()
 
   // The flashcards in the selected folder
   private val _folderFlashcards = MutableStateFlow<List<Flashcard>>(emptyList())
@@ -60,13 +65,29 @@ class FlashcardViewModel(private val repository: FlashcardRepository) : ViewMode
   }
 
   /**
+   * Retrieves all flashcards for the given deck.
+   *
+   * @param deck The deck to retrieve flashcards from.
+   * @param onSuccess The function to call when the retrieval is successful.
+   * @param onFailure The function to call when the retrieval fails.
+   */
+  fun fetchFlashcardsFromDeck(
+      deck: Deck,
+      onSuccess: (List<Flashcard>) -> Unit = {},
+      onFailure: (Exception) -> Unit = {}
+  ) {
+    repository.getFlashcardsById(
+        deck.flashcardIds, onSuccess = { _deckFlashcards.value = it }, onFailure = {})
+  }
+
+  /**
    * Retrieves all flashcards for the given user.
    *
    * @param userId The identifier of the user.
    * @param onSuccess The function to call when the retrieval is successful.
    * @param onFailure The function to call when the retrieval fails.
    */
-  fun getFlashcardsFrom(
+  fun getFlashcardsFromUser(
       userId: String,
       onSuccess: (List<Flashcard>) -> Unit = {},
       onFailure: (Exception) -> Unit = {}
@@ -159,7 +180,7 @@ class FlashcardViewModel(private val repository: FlashcardRepository) : ViewMode
         flashcard,
         {
           onSuccess()
-          getFlashcardsFrom(flashcard.userId)
+          getFlashcardsFromUser(flashcard.userId)
         },
         onFailure)
   }
@@ -180,7 +201,7 @@ class FlashcardViewModel(private val repository: FlashcardRepository) : ViewMode
         flashcard,
         {
           onSuccess()
-          getFlashcardsFrom(flashcard.userId)
+          getFlashcardsFromUser(flashcard.userId)
         },
         onFailure)
   }

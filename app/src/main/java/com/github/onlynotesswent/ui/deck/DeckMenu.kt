@@ -1,28 +1,50 @@
 package com.github.onlynotesswent.ui.deck
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import coil.compose.rememberAsyncImagePainter
+import com.github.onlynotesswent.model.file.FileType
 import com.github.onlynotesswent.model.file.FileViewModel
+import com.github.onlynotesswent.model.flashcard.Flashcard
 import com.github.onlynotesswent.model.flashcard.FlashcardViewModel
+import com.github.onlynotesswent.model.flashcard.ImageFlashcard
+import com.github.onlynotesswent.model.flashcard.TextFlashcard
+import com.github.onlynotesswent.model.flashcard.deck.Deck
 import com.github.onlynotesswent.model.flashcard.deck.DeckViewModel
 import com.github.onlynotesswent.model.user.User
 import com.github.onlynotesswent.model.user.UserViewModel
@@ -34,6 +56,7 @@ import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
 import com.github.onlynotesswent.ui.theme.Typography
 import com.github.onlynotesswent.ui.user.ThumbnailPic
+import com.github.onlynotesswent.ui.user.switchProfileTo
 
 @Composable
 fun DeckScreen(
@@ -43,12 +66,15 @@ fun DeckScreen(
     fileViewModel: FileViewModel,
     navigationActions: NavigationActions
 ) {
-  val selectedDeck = deckViewModel.selectedDeck.collectAsState().value
-  val belongsToUser = selectedDeck?.userId == userViewModel.currentUser.collectAsState().value?.uid
+  val selectedDeck = deckViewModel.selectedDeck.collectAsState()
+  val deckFlashcards = flashcardViewModel.deckFlashcards.collectAsState()
+  val belongsToUser =
+      selectedDeck.value?.userId == userViewModel.currentUser.collectAsState().value?.uid
   val fabDropdownMenuShown = remember { mutableStateOf(false) }
   val author: MutableState<User?> = remember { mutableStateOf(null) }
 
-  selectedDeck?.userId?.let { userId ->
+  selectedDeck.value?.let { flashcardViewModel.fetchFlashcardsFromDeck(it) }
+  selectedDeck.value?.userId?.let { userId ->
     userViewModel.getUserById(userId, onSuccess = { user -> author.value = user })
   }
 
@@ -62,77 +88,148 @@ fun DeckScreen(
               onImportDeckClick = { /* TODO */})
         }
       }) { innerPadding ->
-        if (selectedDeck == null) {
-            LoadingIndicator("Loading deck...")
-        }
-        else {
-            Column(modifier = Modifier.padding(innerPadding)) {
-                // Card count and author name
-                Row {
-                    Text(
-                        text = selectedDeck.flashcardIds.size.toString() + " cards",
-                        style = Typography.bodyMedium,
-                        fontStyle = FontStyle.Italic
-                    )
-                    VerticalDivider()
-                    author.value?.let { user ->
-                        Row(
-                            modifier =
-                            Modifier.clickable {
-                                userViewModel.setProfileUser(user)
-                                navigationActions.navigateTo(Screen.PUBLIC_PROFILE)
-                            }) {
-                            ThumbnailPic(user, fileViewModel)
-                            Text(
-                                text = user.userHandle(),
-                                style = Typography.bodyMedium,
-                                fontStyle = FontStyle.Italic
-                            )
-                        }
+        if (selectedDeck.value == null) {
+          LoadingIndicator("Loading deck...")
+        } else {
+          Column(modifier = Modifier.padding(innerPadding)) {
+            // Card count and author name
+            Row {
+              Text(
+                  text = selectedDeck.value!!.flashcardIds.size.toString() + " cards",
+                  style = Typography.bodyMedium,
+                  fontStyle = FontStyle.Italic)
+              VerticalDivider()
+              author.value?.let { user ->
+                Row(
+                    modifier =
+                        Modifier.clickable {
+                            switchProfileTo(user, userViewModel, navigationActions)
+                        }) {
+                      ThumbnailPic(user, fileViewModel)
+                      Text(
+                          text = user.userHandle(),
+                          style = Typography.bodyMedium,
+                          fontStyle = FontStyle.Italic)
                     }
-                }
-                // Deck Title
-                Text(selectedDeck.name, style = Typography.displayMedium)
-                // Deck description
-                Text(selectedDeck.description, style = Typography.bodyMedium)
-                // Deck play mode buttons
-
-                // Deck cards
-                LazyColumn {
-                    items(selectedDeck.flashcardIds.size) { flashcardId ->
-                        FlashcardViewItem(
-                            flashcardId = selectedDeck.flashcardIds[flashcardId],
-                            deckViewModel = deckViewModel,
-                            flashcardViewModel = flashcardViewModel,
-                            fileViewModel = fileViewModel,
-                            navigationActions = navigationActions
-                        )
-                    }
-                }
+              }
             }
+            // Deck Title
+            Text(selectedDeck.value!!.name, style = Typography.displayMedium)
+            // Deck description
+            Text(selectedDeck.value!!.description, style = Typography.bodyMedium)
+            // Deck play mode buttons
+              Button(onClick = {
+                deckViewModel.selectDeck(selectedDeck.value!!)
+                navigationActions.navigateTo(Screen.DECK_PLAY.replace("{deckId}", selectedDeck.value!!.id))
+              }) { Text("Play") }
+
+            // Deck cards
+            LazyColumn {
+              items(deckFlashcards.value.size) { index ->
+                FlashcardViewItem(
+                    flashcard = deckFlashcards.value[index],
+                    deckViewModel = deckViewModel,
+                    flashcardViewModel = flashcardViewModel,
+                    fileViewModel = fileViewModel,
+                    navigationActions = navigationActions,
+                    belongsToUser = belongsToUser)
+              }
+            }
+          }
         }
       }
 }
 
 @Composable
 fun FlashcardViewItem(
-    flashcardId: String,
+    flashcard: Flashcard,
     deckViewModel: DeckViewModel,
     flashcardViewModel: FlashcardViewModel,
     fileViewModel: FileViewModel,
-    navigationActions: NavigationActions
-) { /* TODO */}
+    navigationActions: NavigationActions,
+    belongsToUser: Boolean = false
+) {
+  val dropdownMenuExpanded = remember { mutableStateOf(false) }
+  val editDialogExpanded = remember { mutableStateOf(false) }
+
+  if (editDialogExpanded.value) {
+      FlashcardDialog(deckViewModel, flashcardViewModel, { editDialogExpanded.value = false }, mode = "Edit")
+  }
+
+  if (dropdownMenuExpanded.value) {
+    DropdownMenu(
+        modifier = Modifier.testTag("flashcardOptionsMenu"),
+        expanded = dropdownMenuExpanded.value,
+        onDismissRequest = { dropdownMenuExpanded.value = false }) {
+          DropdownMenuItem(
+              text = @Composable { Text("Edit") },
+              onClick = {
+                flashcardViewModel.selectFlashcard(flashcard)
+                editDialogExpanded.value = true
+                dropdownMenuExpanded.value = false
+              })
+          DropdownMenuItem(
+              text = @Composable { Text("Delete") },
+              onClick = {
+                val newDeck =
+                    deckViewModel.selectedDeck.value?.copy(
+                        flashcardIds =
+                            deckViewModel.selectedDeck.value!!.flashcardIds.filter {
+                              it != flashcard.id
+                            })
+                newDeck?.let {
+                    deckViewModel.updateDeck(it)
+                    deckViewModel.selectDeck(it)
+                }
+                flashcardViewModel.deleteFlashcard(flashcard)
+                dropdownMenuExpanded.value = false
+              })
+        }
+  }
+
+  Card(modifier = Modifier.testTag("flashcardItem")) {
+    Column(
+        modifier = Modifier.fillMaxSize().padding(10.dp),
+        horizontalAlignment = Alignment.CenterHorizontally) {
+          // Show front and options icon
+          Row {
+            Text(flashcard.front, style = Typography.bodyMedium)
+            Icon(
+                modifier =
+                    Modifier.testTag("flashcardOptions").clickable(enabled = belongsToUser) {
+                       dropdownMenuExpanded.value = true
+                    },
+                imageVector = Icons.Filled.MoreVert,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onPrimaryContainer)
+          }
+          if (flashcard is ImageFlashcard){
+            // Show image
+            val imageUri: MutableState<String?> = remember { mutableStateOf(null) }
+            /* TODO add flashcard images to FileViewModel*/
+            // fileViewModel.getFile(flashcard.imageUrl, FileType.FLASHCARD_IMAGE,
+            //    onSuccess = { file -> imageUri.value = file.absolutePath })
+            val painter = imageUri.value?.let { rememberAsyncImagePainter(it) }?: rememberVectorPainter(Icons.Default.Add)
+            Image(painter = painter, contentDescription = "Flashcard image")
+          }
+          HorizontalDivider(modifier = Modifier.height(5.dp))
+          // Show back
+          Text(flashcard.back, style = Typography.bodyMedium)
+        }
+  }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun DeckMenuTopAppBar(onBackButtonClick: () -> Unit) {
-    ScreenTopBar(
-        title = "Deck",
-        titleTestTag = "deckTopBarTitle",
-        onBackClick = onBackButtonClick,
-        icon = { Icon(imageVector = Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "Back") },
-        iconTestTag = "backButton"
-    )
+  ScreenTopBar(
+      title = "Deck",
+      titleTestTag = "deckTopBarTitle",
+      onBackClick = onBackButtonClick,
+      icon = {
+        Icon(imageVector = Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "Back")
+      },
+      iconTestTag = "backButton")
 }
 
 @Composable
@@ -155,4 +252,75 @@ private fun DeckFab(
       fabIcon = {
         Icon(imageVector = Icons.Default.Add, contentDescription = "Add card or import deck")
       })
+}
+
+
+@Composable
+fun FlashcardDialog(
+    deckViewModel: DeckViewModel,
+    flashcardViewModel: FlashcardViewModel,
+    onDismissRequest: () -> Unit,
+    mode : String = "Create"
+    ) {
+    val flashcard = flashcardViewModel.selectedFlashcard.collectAsState()
+    val front = remember { mutableStateOf(flashcard.value?.front?:"") }
+    val back = remember { mutableStateOf(flashcard.value?.back?:"") }
+    Dialog(onDismissRequest = onDismissRequest) {
+        Column {
+            Text("$mode Flashcard")
+            // Front
+            TextField(
+                value = front.value,
+                onValueChange = { front.value = it },
+                label = { Text("Front") }
+            )
+            if (flashcard.value is ImageFlashcard){
+                // Image
+                val imageUri: MutableState<String?> = remember { mutableStateOf(null) }
+                Button(onClick = {}) { Text("Image editing not implemented") }
+                // TODO add image
+                // TODO add image picker button
+            }
+            HorizontalDivider()
+            // Back
+            TextField(
+                value = back.value,
+                onValueChange = { back.value = it },
+                label = { Text("Back") }
+            )
+            // Save button
+            Button(
+                onClick = {
+                    var newFlashcard: Flashcard? = null
+                    if (flashcard.value is TextFlashcard ){
+                            val textFlashcard = flashcard.value as TextFlashcard
+                            newFlashcard = textFlashcard.copy(front = front.value, back = back.value)
+                        }
+                    if (flashcard.value is ImageFlashcard) {
+                            newFlashcard = ImageFlashcard(
+                                id = flashcard.value!!.id,
+                                front = front.value,
+                                back = back.value,
+                                imageUrl = (flashcard.value as ImageFlashcard).imageUrl,
+                                lastReviewed = flashcard.value!!.lastReviewed,
+                                userId = flashcard.value!!.userId,
+                                folderId = flashcard.value!!.folderId,
+                                noteId = flashcard.value!!.noteId
+                            )
+                        }
+
+                    newFlashcard?.let {
+                        flashcardViewModel.updateFlashcard(it)
+                        deckViewModel.selectedDeck.value?.let { deck ->
+                            val newDeck = deck.copy(flashcardIds = deck.flashcardIds + it.id)
+                            deckViewModel.updateDeck(newDeck)
+                        }
+                    }
+                    onDismissRequest()
+                }
+            ) { Text("Save") }
+
+        }
+    }
+
 }
