@@ -11,6 +11,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ImageSearch
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -19,6 +20,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -31,9 +33,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -44,7 +45,6 @@ import com.github.onlynotesswent.model.flashcard.Flashcard
 import com.github.onlynotesswent.model.flashcard.FlashcardViewModel
 import com.github.onlynotesswent.model.flashcard.ImageFlashcard
 import com.github.onlynotesswent.model.flashcard.TextFlashcard
-import com.github.onlynotesswent.model.flashcard.deck.Deck
 import com.github.onlynotesswent.model.flashcard.deck.DeckViewModel
 import com.github.onlynotesswent.model.user.User
 import com.github.onlynotesswent.model.user.UserViewModel
@@ -57,6 +57,7 @@ import com.github.onlynotesswent.ui.navigation.Screen
 import com.github.onlynotesswent.ui.theme.Typography
 import com.github.onlynotesswent.ui.user.ThumbnailPic
 import com.github.onlynotesswent.ui.user.switchProfileTo
+import com.github.onlynotesswent.utils.ProfilePictureTaker
 
 @Composable
 fun DeckScreen(
@@ -64,6 +65,7 @@ fun DeckScreen(
     deckViewModel: DeckViewModel,
     flashcardViewModel: FlashcardViewModel,
     fileViewModel: FileViewModel,
+    profilePictureTaker: ProfilePictureTaker,
     navigationActions: NavigationActions
 ) {
   val selectedDeck = deckViewModel.selectedDeck.collectAsState()
@@ -103,7 +105,7 @@ fun DeckScreen(
                 Row(
                     modifier =
                         Modifier.clickable {
-                            switchProfileTo(user, userViewModel, navigationActions)
+                          switchProfileTo(user, userViewModel, navigationActions)
                         }) {
                       ThumbnailPic(user, fileViewModel)
                       Text(
@@ -118,10 +120,14 @@ fun DeckScreen(
             // Deck description
             Text(selectedDeck.value!!.description, style = Typography.bodyMedium)
             // Deck play mode buttons
-              Button(onClick = {
-                deckViewModel.selectDeck(selectedDeck.value!!)
-                navigationActions.navigateTo(Screen.DECK_PLAY.replace("{deckId}", selectedDeck.value!!.id))
-              }) { Text("Play") }
+            Button(
+                onClick = {
+                  deckViewModel.selectDeck(selectedDeck.value!!)
+                  navigationActions.navigateTo(
+                      Screen.DECK_PLAY.replace("{deckId}", selectedDeck.value!!.id))
+                }) {
+                  Text("Play")
+                }
 
             // Deck cards
             LazyColumn {
@@ -131,7 +137,7 @@ fun DeckScreen(
                     deckViewModel = deckViewModel,
                     flashcardViewModel = flashcardViewModel,
                     fileViewModel = fileViewModel,
-                    navigationActions = navigationActions,
+                    profilePictureTaker = profilePictureTaker,
                     belongsToUser = belongsToUser)
               }
             }
@@ -146,14 +152,19 @@ fun FlashcardViewItem(
     deckViewModel: DeckViewModel,
     flashcardViewModel: FlashcardViewModel,
     fileViewModel: FileViewModel,
-    navigationActions: NavigationActions,
+    profilePictureTaker: ProfilePictureTaker,
     belongsToUser: Boolean = false
 ) {
   val dropdownMenuExpanded = remember { mutableStateOf(false) }
   val editDialogExpanded = remember { mutableStateOf(false) }
 
   if (editDialogExpanded.value) {
-      FlashcardDialog(deckViewModel, flashcardViewModel, { editDialogExpanded.value = false }, mode = "Edit")
+    FlashcardDialog(
+        deckViewModel,
+        flashcardViewModel,
+        profilePictureTaker,
+        { editDialogExpanded.value = false },
+        mode = "Edit")
   }
 
   if (dropdownMenuExpanded.value) {
@@ -178,8 +189,8 @@ fun FlashcardViewItem(
                               it != flashcard.id
                             })
                 newDeck?.let {
-                    deckViewModel.updateDeck(it)
-                    deckViewModel.selectDeck(it)
+                  deckViewModel.updateDeck(it)
+                  deckViewModel.selectDeck(it)
                 }
                 flashcardViewModel.deleteFlashcard(flashcard)
                 dropdownMenuExpanded.value = false
@@ -197,20 +208,28 @@ fun FlashcardViewItem(
             Icon(
                 modifier =
                     Modifier.testTag("flashcardOptions").clickable(enabled = belongsToUser) {
-                       dropdownMenuExpanded.value = true
+                      dropdownMenuExpanded.value = true
                     },
                 imageVector = Icons.Filled.MoreVert,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onPrimaryContainer)
           }
-          if (flashcard is ImageFlashcard){
+          if (flashcard is ImageFlashcard) {
             // Show image
             val imageUri: MutableState<String?> = remember { mutableStateOf(null) }
-            /* TODO add flashcard images to FileViewModel*/
-            // fileViewModel.getFile(flashcard.imageUrl, FileType.FLASHCARD_IMAGE,
-            //    onSuccess = { file -> imageUri.value = file.absolutePath })
-            val painter = imageUri.value?.let { rememberAsyncImagePainter(it) }?: rememberVectorPainter(Icons.Default.Add)
-            Image(painter = painter, contentDescription = "Flashcard image")
+            if (imageUri.value == null) {
+              fileViewModel.downloadFile(
+                  flashcard.id,
+                  FileType.FLASHCARD_IMAGE,
+                  context = LocalContext.current,
+                  onSuccess = { file -> imageUri.value = file.absolutePath })
+            }
+            imageUri.value?.let {
+              Image(
+                  painter = rememberAsyncImagePainter(it),
+                  contentDescription = "Flashcard image",
+                  modifier = Modifier.height(100.dp))
+            }
           }
           HorizontalDivider(modifier = Modifier.height(5.dp))
           // Show back
@@ -254,73 +273,82 @@ private fun DeckFab(
       })
 }
 
-
 @Composable
 fun FlashcardDialog(
     deckViewModel: DeckViewModel,
     flashcardViewModel: FlashcardViewModel,
+    profilePictureTaker: ProfilePictureTaker,
     onDismissRequest: () -> Unit,
-    mode : String = "Create"
-    ) {
-    val flashcard = flashcardViewModel.selectedFlashcard.collectAsState()
-    val front = remember { mutableStateOf(flashcard.value?.front?:"") }
-    val back = remember { mutableStateOf(flashcard.value?.back?:"") }
-    Dialog(onDismissRequest = onDismissRequest) {
-        Column {
-            Text("$mode Flashcard")
-            // Front
-            TextField(
-                value = front.value,
-                onValueChange = { front.value = it },
-                label = { Text("Front") }
-            )
-            if (flashcard.value is ImageFlashcard){
-                // Image
-                val imageUri: MutableState<String?> = remember { mutableStateOf(null) }
-                Button(onClick = {}) { Text("Image editing not implemented") }
-                // TODO add image
-                // TODO add image picker button
-            }
-            HorizontalDivider()
-            // Back
-            TextField(
-                value = back.value,
-                onValueChange = { back.value = it },
-                label = { Text("Back") }
-            )
-            // Save button
-            Button(
-                onClick = {
-                    var newFlashcard: Flashcard? = null
-                    if (flashcard.value is TextFlashcard ){
-                            val textFlashcard = flashcard.value as TextFlashcard
-                            newFlashcard = textFlashcard.copy(front = front.value, back = back.value)
-                        }
-                    if (flashcard.value is ImageFlashcard) {
-                            newFlashcard = ImageFlashcard(
-                                id = flashcard.value!!.id,
-                                front = front.value,
-                                back = back.value,
-                                imageUrl = (flashcard.value as ImageFlashcard).imageUrl,
-                                lastReviewed = flashcard.value!!.lastReviewed,
-                                userId = flashcard.value!!.userId,
-                                folderId = flashcard.value!!.folderId,
-                                noteId = flashcard.value!!.noteId
-                            )
-                        }
-
-                    newFlashcard?.let {
-                        flashcardViewModel.updateFlashcard(it)
-                        deckViewModel.selectedDeck.value?.let { deck ->
-                            val newDeck = deck.copy(flashcardIds = deck.flashcardIds + it.id)
-                            deckViewModel.updateDeck(newDeck)
-                        }
-                    }
-                    onDismissRequest()
+    mode: String = "Create"
+) {
+  val flashcard = flashcardViewModel.selectedFlashcard.collectAsState()
+  val front = remember { mutableStateOf(flashcard.value?.front ?: "") }
+  val back = remember { mutableStateOf(flashcard.value?.back ?: "") }
+  Dialog(onDismissRequest = onDismissRequest) {
+    Column {
+      Text("$mode Flashcard")
+      // Front
+      TextField(
+          value = front.value, onValueChange = { front.value = it }, label = { Text("Front") })
+      if (flashcard.value is ImageFlashcard) {
+        // Image
+        val imageUri: MutableState<String?> = remember { mutableStateOf(null) }
+        val hasImageBeenChanged = remember { mutableStateOf(false) }
+        IconButton(
+            onClick = {
+              profilePictureTaker.setOnImageSelected { uri ->
+                if (uri != null) {
+                  imageUri.value = uri.toString()
+                  hasImageBeenChanged.value = true
                 }
-            ) { Text("Save") }
+              }
+              profilePictureTaker.pickImage()
+            }) {
+              Icon(imageVector = Icons.Default.ImageSearch, contentDescription = "Add image")
+            }
 
+        imageUri.value?.let {
+          Image(
+              painter = rememberAsyncImagePainter(it),
+              contentDescription = "Flashcard image",
+              modifier = Modifier.height(100.dp))
         }
-    }
+      }
+      HorizontalDivider()
+      // Back
+      TextField(value = back.value, onValueChange = { back.value = it }, label = { Text("Back") })
+      // Save button
+      Button(
+          onClick = {
+            var newFlashcard: Flashcard? = null
+            if (flashcard.value is TextFlashcard) {
+              val textFlashcard = flashcard.value as TextFlashcard
+              newFlashcard = textFlashcard.copy(front = front.value, back = back.value)
+            }
+            if (flashcard.value is ImageFlashcard) {
+              newFlashcard =
+                  ImageFlashcard(
+                      id = flashcard.value!!.id,
+                      front = front.value,
+                      back = back.value,
+                      imageUrl = (flashcard.value as ImageFlashcard).imageUrl,
+                      lastReviewed = flashcard.value!!.lastReviewed,
+                      userId = flashcard.value!!.userId,
+                      folderId = flashcard.value!!.folderId,
+                      noteId = flashcard.value!!.noteId)
+            }
 
+            newFlashcard?.let {
+              flashcardViewModel.updateFlashcard(it)
+              deckViewModel.selectedDeck.value?.let { deck ->
+                val newDeck = deck.copy(flashcardIds = deck.flashcardIds + it.id)
+                deckViewModel.updateDeck(newDeck)
+              }
+            }
+            onDismissRequest()
+          }) {
+            Text("Save")
+          }
+    }
+  }
 }
