@@ -96,14 +96,13 @@ fun FolderContentScreen(
 
   // Custom back handler to manage back navigation
   BackHandler {
-      if (folder.value!!.parentFolderId != null) {
-          navigationActions.navigateTo(Screen.FOLDER_CONTENTS.replace(
-              oldValue = "{folderId}",
-              newValue = folder.value!!.parentFolderId!!
-          ))
-      } else {
-          navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
-      }
+    if (folder.value!!.parentFolderId != null) {
+      navigationActions.navigateTo(
+          Screen.FOLDER_CONTENTS.replace(
+              oldValue = "{folderId}", newValue = folder.value!!.parentFolderId!!))
+    } else {
+      navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
+    }
   }
 
   if (currentUser.value == null) {

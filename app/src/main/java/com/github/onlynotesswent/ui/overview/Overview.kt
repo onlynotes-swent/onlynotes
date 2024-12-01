@@ -30,7 +30,6 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.core.app.ActivityCompat
 import com.github.onlynotesswent.MainActivity
 import com.github.onlynotesswent.R
 import com.github.onlynotesswent.model.folder.Folder
@@ -84,8 +83,8 @@ fun OverviewScreen(
 
   // Handle back press
   BackHandler {
-      // Move the app to background
-      (context as MainActivity).moveTaskToBack(true)
+    // Move the app to background
+    (context as MainActivity).moveTaskToBack(true)
   }
 
   Scaffold(
