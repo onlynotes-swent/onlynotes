@@ -108,8 +108,8 @@ fun CustomLazyGrid(
 }
 
 /**
- * Custom lazy grid that displays a list of notes and folders in a separate manner. If there are no notes or folders, it
- * displays a message to the user. The grid is scrollable.
+ * Custom lazy grid that displays a list of notes and folders in a separate manner. If there are no
+ * notes or folders, it displays a message to the user. The grid is scrollable.
  *
  * @param modifier The modifier for the grid.
  * @param notes The list of notes to be displayed.
@@ -138,57 +138,55 @@ fun CustomSeparatedLazyGrid(
     paddingValues: PaddingValues,
     columnContent: @Composable (ColumnScope.() -> Unit)
 ) {
-    val sortedFolders = remember(folders.value) { folders.value.sortedBy { it.name } }
-    val sortedNotes = remember(notes.value) { notes.value.sortedBy { it.title } }
+  val sortedFolders = remember(folders.value) { folders.value.sortedBy { it.name } }
+  val sortedNotes = remember(notes.value) { notes.value.sortedBy { it.title } }
 
-    Box(modifier = modifier) {
-        if (sortedNotes.isNotEmpty() || sortedFolders.isNotEmpty()) {
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(6),
-                contentPadding = PaddingValues(vertical = 20.dp),
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
-                modifier = gridModifier) {
-                items(sortedFolders, key = { it.id }, span = { GridItemSpan(2) }) {
-                    folder ->
-                    FolderItem(
-                        folder = folder,
-                        navigationActions = navigationActions,
-                        noteViewModel = noteViewModel,
-                        folderViewModel = folderViewModel) {
-                        folderViewModel.selectedParentFolderId(folder.parentFolderId)
-                        navigationActions.navigateTo(
-                            Screen.FOLDER_CONTENTS.replace(
-                                oldValue = "{folderId}", newValue = folder.id))
-                    }
-                }
-
-                // Spacer item to create space between folders and notes
-                item(span = { GridItemSpan(maxLineSpan) }) {
-                    Spacer(modifier = Modifier.height(100.dp))
-                }
-
-                items(sortedNotes, key = { it.id }, span = { GridItemSpan(3) }) {
-                    note ->
-                    NoteItem(
-                        note = note,
-                        currentUser = userViewModel.currentUser.collectAsState(),
-                        context = context,
-                        noteViewModel = noteViewModel,
-                        folderViewModel = folderViewModel,
-                        showDialog = false,
-                        navigationActions = navigationActions) {
-                        noteViewModel.selectedNote(note)
-                        navigationActions.navigateTo(Screen.EDIT_NOTE)
-                    }
-                }
+  Box(modifier = modifier) {
+    if (sortedNotes.isNotEmpty() || sortedFolders.isNotEmpty()) {
+      LazyVerticalGrid(
+          columns = GridCells.Fixed(6),
+          contentPadding = PaddingValues(vertical = 20.dp),
+          horizontalArrangement = Arrangement.spacedBy(4.dp),
+          modifier = gridModifier) {
+            items(sortedFolders, key = { it.id }, span = { GridItemSpan(2) }) { folder ->
+              FolderItem(
+                  folder = folder,
+                  navigationActions = navigationActions,
+                  noteViewModel = noteViewModel,
+                  folderViewModel = folderViewModel) {
+                    folderViewModel.selectedParentFolderId(folder.parentFolderId)
+                    navigationActions.navigateTo(
+                        Screen.FOLDER_CONTENTS.replace(
+                            oldValue = "{folderId}", newValue = folder.id))
+                  }
             }
-        } else {
-            Column(
-                modifier = Modifier.fillMaxSize().padding(paddingValues),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally) {
-                columnContent()
+
+            // Spacer item to create space between folders and notes
+            item(span = { GridItemSpan(maxLineSpan) }) {
+              Spacer(modifier = Modifier.height(100.dp))
             }
-        }
+
+            items(sortedNotes, key = { it.id }, span = { GridItemSpan(3) }) { note ->
+              NoteItem(
+                  note = note,
+                  currentUser = userViewModel.currentUser.collectAsState(),
+                  context = context,
+                  noteViewModel = noteViewModel,
+                  folderViewModel = folderViewModel,
+                  showDialog = false,
+                  navigationActions = navigationActions) {
+                    noteViewModel.selectedNote(note)
+                    navigationActions.navigateTo(Screen.EDIT_NOTE)
+                  }
+            }
+          }
+    } else {
+      Column(
+          modifier = Modifier.fillMaxSize().padding(paddingValues),
+          verticalArrangement = Arrangement.Center,
+          horizontalAlignment = Alignment.CenterHorizontally) {
+            columnContent()
+          }
     }
+  }
 }
