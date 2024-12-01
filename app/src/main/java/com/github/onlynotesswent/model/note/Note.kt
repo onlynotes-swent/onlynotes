@@ -14,6 +14,7 @@ import java.security.MessageDigest
  * @property id A unique identifier for this note.
  * @property title The title of the note.
  * @property date The timestamp of when the note was created.
+ * @property lastModified The timestamp of when the note was last modified.
  * @property visibility The visibility setting for the note.
  * @property noteCourse The [Course] object associated with this note. If the note is not associated
  *   with a course, this value is `null`.
@@ -27,6 +28,7 @@ data class Note(
     @PrimaryKey val id: String,
     val title: String,
     val date: Timestamp,
+    val lastModified: Timestamp,
     val visibility: Visibility = Visibility.DEFAULT,
     @Embedded val noteCourse: Course? = null,
     val userId: String,
