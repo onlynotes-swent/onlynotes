@@ -2,8 +2,18 @@ package com.github.onlynotesswent.model.note
 
 interface NoteRepository {
 
+  /**
+   * \ Generates a new note ID.
+   *
+   * @return The new note ID.
+   */
   fun getNewUid(): String
 
+  /**
+   * Initializes the repository.
+   *
+   * @param onSuccess Callback to be invoked when initialization is successful.
+   */
   fun init(onSuccess: () -> Unit)
 
   /**
@@ -79,6 +89,22 @@ interface NoteRepository {
   )
 
   /**
+   * Adds a list of notes.
+   *
+   * @param notes The notes to add.
+   * @param onSuccess Callback to be invoked if the notes are added successfully.
+   * @param onFailure Callback to be invoked if an error occurs.
+   * @param useCache Whether to update data from cache. Should be true only if userId of the notes
+   *   is the current user.
+   */
+  suspend fun addNotes(
+      notes: List<Note>,
+      onSuccess: () -> Unit,
+      onFailure: (Exception) -> Unit,
+      useCache: Boolean
+  )
+
+  /**
    * Updates a note.
    *
    * @param note The note to update.
@@ -148,6 +174,13 @@ interface NoteRepository {
    * @param folderId The ID of the folder to delete notes from.
    * @param onSuccess Callback to be invoked if the notes are deleted successfully.
    * @param onFailure Callback to be invoked if an error occurs.
+   * @param useCache Whether to update data from cache. Should be true only if userId of the folder
+   *   is the current user.
    */
-  fun deleteNotesFromFolder(folderId: String, onSuccess: () -> Unit, onFailure: (Exception) -> Unit)
+  suspend fun deleteNotesFromFolder(
+      folderId: String,
+      onSuccess: () -> Unit,
+      onFailure: (Exception) -> Unit,
+      useCache: Boolean
+  )
 }

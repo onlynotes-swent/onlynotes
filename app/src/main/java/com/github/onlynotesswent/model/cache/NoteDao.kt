@@ -4,7 +4,6 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import androidx.room.Update
 import com.github.onlynotesswent.model.note.Note
 
 @Dao
@@ -22,9 +21,9 @@ interface NoteDao {
 
   @Insert(onConflict = OnConflictStrategy.REPLACE) fun insertNotes(notes: List<Note>)
 
-  @Update fun updateNote(note: Note)
-
   @Query("DELETE FROM note WHERE id = :noteId") fun deleteNoteById(noteId: String)
 
   @Query("DELETE FROM note") fun deleteNotes()
+
+  @Query("DELETE FROM note WHERE folderid = :folderId") fun deleteNotesFromFolder(folderId: String)
 }
