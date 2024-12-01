@@ -163,7 +163,7 @@ fun CustomSeparatedLazyGrid(
 
             // Spacer item to create space between folders and notes
             item(span = { GridItemSpan(maxLineSpan) }) {
-              Spacer(modifier = Modifier.height(100.dp))
+              Spacer(modifier = Modifier.height(50.dp))
             }
 
             items(sortedNotes, key = { it.id }, span = { GridItemSpan(3) }) { note ->

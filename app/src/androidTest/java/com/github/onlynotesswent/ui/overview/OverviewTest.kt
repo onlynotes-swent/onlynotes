@@ -6,6 +6,7 @@ import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.filter
 import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onFirst
@@ -13,6 +14,8 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTouchInput
+import androidx.test.core.app.ActivityScenario
+import com.github.onlynotesswent.MainActivity
 import com.github.onlynotesswent.model.common.Course
 import com.github.onlynotesswent.model.common.Visibility
 import com.github.onlynotesswent.model.folder.Folder
@@ -27,6 +30,7 @@ import com.github.onlynotesswent.model.user.UserViewModel
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
 import com.google.firebase.Timestamp
+import junit.framework.TestCase.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -317,5 +321,21 @@ class OverviewTest {
           advanceEventTime(5000)
           up()
         }
+  }
+
+  @Test
+  fun backButtonPressMovesAppToBackground() {
+    // Launch the activity
+    val scenario = ActivityScenario.launch(MainActivity::class.java)
+
+    // Simulate back button press
+    scenario.onActivity { activity ->
+      activity.onBackPressedDispatcher.onBackPressed()
+    }
+
+    // Verify the activity is in the background
+    scenario.onActivity { activity ->
+      assertTrue(activity.isFinishing || activity.isDestroyed)
+    }
   }
 }
