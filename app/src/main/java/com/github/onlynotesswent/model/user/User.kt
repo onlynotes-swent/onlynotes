@@ -64,17 +64,42 @@ data class User(
     private const val USERNAME_MAX_LENGTH = 20
     // name max length
     private const val NAME_MAX_LENGTH = 40
+    // bio max length
+    private const val BIO_MAX_LENGTH = 140
 
+    /**
+     * Formats the username by trimming leading and trailing whitespace, removing special
+     * characters, and taking the first 20 characters.
+     *
+     * @param username The username.
+     * @return The formatted username.
+     */
     fun formatUsername(username: String): String {
       return username.trim().replace(Regex("[^a-zA-Z0-9_-]"), "").take(USERNAME_MAX_LENGTH)
     }
-
+    /**
+     * Formats the user's name by trimming leading whitespace, converting the first character of
+     * each word to uppercase, and taking the first 40 characters.
+     *
+     * @param name The user's name.
+     * @return The formatted name.
+     */
     fun formatName(name: String): String {
       return name
           .trimStart()
           .split(Regex("\\s+"))
           .joinToString(" ") { it.lowercase().replaceFirstChar { char -> char.uppercaseChar() } }
           .take(NAME_MAX_LENGTH)
+    }
+    /**
+     * Formats the user's biography by trimming leading whitespace and taking the first 200
+     * characters.
+     *
+     * @param bio The user's biography.
+     * @return The formatted biography.
+     */
+    fun formatBio(bio: String): String {
+      return bio.trimStart().take(BIO_MAX_LENGTH)
     }
   }
 }
