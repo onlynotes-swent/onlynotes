@@ -428,11 +428,7 @@ fun FollowUnfollowButton(userViewModel: UserViewModel, otherUserId: String) {
  * @param followerId The ID of the follower to remove.
  */
 @Composable
-fun RemoveFollowerButton(
-    userViewModel: UserViewModel,
-    followerId: String,
-    expanded: MutableState<Boolean>?
-) {
+fun RemoveFollowerButton(userViewModel: UserViewModel, followerId: String, onClick: () -> Unit) {
   OutlinedButton(
       contentPadding = PaddingValues(horizontal = 10.dp),
       shape = RoundedCornerShape(25),
@@ -442,18 +438,9 @@ fun RemoveFollowerButton(
             followerId,
             {
               userViewModel.profileUser.value?.let { userViewModel.refreshProfileUser(it.uid) }
-              // this code will close the bottom sheet after removing the follower (this is a
-              // workaround to refresh the bottom sheet)
-              if (expanded != null) {
-                expanded.value = false
-              }
+              onClick()
             },
             {})
-        // this will re-open the bottom sheet after removing the follower (this is a workaround to
-        // refresh the bottom sheet)
-        if (expanded != null) {
-          expanded.value = true
-        }
       }) {
         Text(
             stringResource(R.string.remove),
@@ -480,7 +467,7 @@ fun RemoveFollowerButton(
 @Composable
 fun UserBottomSheet(
     expanded: MutableState<Boolean>,
-    users: State<List<User>>,
+    users: MutableState<List<User>>,
     userViewModel: UserViewModel,
     fileViewModel: FileViewModel,
     navigationActions: NavigationActions,
@@ -513,10 +500,16 @@ fun UserBottomSheet(
                             userViewModel,
                             fileViewModel,
                             isFollowerSheetOfCurrentUser,
-                            expanded) {
+                            {
                               expanded.value = false
                               switchProfileTo(user, userViewModel, navigationActions)
-                            }
+                            },
+                            {
+                              if (isFollowerSheetOfCurrentUser) {
+                                userViewModel.getFollowersFrom(
+                                    userViewModel.currentUser.value!!.uid, { users.value = it }, {})
+                              }
+                            })
                       }
                     }
               }
@@ -540,8 +533,8 @@ fun UserItem(
     userViewModel: UserViewModel,
     fileViewModel: FileViewModel,
     isFollowerSheetOfCurrentUser: Boolean = false,
-    expanded: MutableState<Boolean>? = null,
     onClick: () -> Unit,
+    onRemove: () -> Unit = {}
 ) {
   Row(
       modifier = Modifier.padding(8.dp).testTag("userItem").clickable { onClick() },
@@ -561,7 +554,7 @@ fun UserItem(
           Text(user.userHandle(), style = Typography.bodyLarge, modifier = Modifier.alpha(0.7f))
         }
     if (isFollowerSheetOfCurrentUser) {
-      RemoveFollowerButton(userViewModel, user.uid, expanded)
+      RemoveFollowerButton(userViewModel, user.uid, onRemove)
     } else if (user.uid != userViewModel.currentUser.collectAsState().value!!.uid) {
       FollowUnfollowButton(userViewModel, user.uid)
     }
