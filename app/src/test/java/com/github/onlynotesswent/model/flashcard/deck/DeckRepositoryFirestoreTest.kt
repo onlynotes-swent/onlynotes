@@ -153,7 +153,6 @@ class DeckRepositoryFirestoreTest {
     `when`(mockDocumentSnapshot.getString("visibility")).thenReturn(testDeck.visibility.toString())
     `when`(mockDocumentSnapshot.getTimestamp("lastModified")).thenReturn(testDeck.lastModified)
     `when`(mockDocumentSnapshot.get("flashcardIds")).thenReturn(testDeck.flashcardIds)
-
   }
 
   @Test
