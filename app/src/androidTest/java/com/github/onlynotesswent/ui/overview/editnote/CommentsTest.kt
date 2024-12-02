@@ -65,15 +65,15 @@ class CommentsTest {
         )
 
     val mockNote2 =
-      Note(
-        id = "2",
-        title = "Sample Title2",
-        date = Timestamp.now(), // Use current timestamp
-        visibility = Visibility.DEFAULT,
-        userId = "1",
-        folderId = "1",
-        noteCourse = Course("CS-100", "Sample Class", 2024, "path"),
-      )
+        Note(
+            id = "2",
+            title = "Sample Title2",
+            date = Timestamp.now(), // Use current timestamp
+            visibility = Visibility.DEFAULT,
+            userId = "1",
+            folderId = "1",
+            noteCourse = Course("CS-100", "Sample Class", 2024, "path"),
+        )
 
     `when`(noteRepository.getNoteById(eq("1"), any(), any())).thenAnswer { invocation ->
       val onSuccess = invocation.getArgument<(Note) -> Unit>(1)

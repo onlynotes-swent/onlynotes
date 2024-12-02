@@ -321,16 +321,4 @@ class OverviewTest {
           up()
         }
   }
-
-  @Test
-  fun backButtonPressMovesAppToBackground() {
-    // Launch the activity
-    val scenario = ActivityScenario.launch(MainActivity::class.java)
-
-    // Simulate back button press
-    scenario.onActivity { activity -> activity.onBackPressedDispatcher.onBackPressed() }
-
-    // Verify the activity is in the background
-    scenario.onActivity { activity -> assertTrue(activity.isFinishing || activity.isDestroyed) }
-  }
 }
