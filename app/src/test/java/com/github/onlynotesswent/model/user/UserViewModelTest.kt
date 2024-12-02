@@ -1,5 +1,7 @@
 package com.github.onlynotesswent.model.user
 
+import com.github.onlynotesswent.model.notification.Notification
+import com.github.onlynotesswent.model.notification.NotificationRepositoryFirestore
 import com.google.firebase.FirebaseApp
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
@@ -30,6 +32,7 @@ import org.robolectric.annotation.Config
 class UserViewModelTest {
 
   @Mock private lateinit var mockRepositoryFirestore: UserRepositoryFirestore
+  @Mock private lateinit var mockRepostioryFirestoreNotification: NotificationRepositoryFirestore
   private lateinit var userViewModel: UserViewModel
 
   private val user =
@@ -57,6 +60,7 @@ class UserViewModelTest {
   @Before
   fun setUp() {
     mockRepositoryFirestore = mock(UserRepositoryFirestore::class.java)
+    mockRepostioryFirestoreNotification = mock(NotificationRepositoryFirestore::class.java)
     val mockFirebaseAuth = mock(FirebaseAuth::class.java)
     val mockFirebaseUser = mock(FirebaseUser::class.java)
 
@@ -125,12 +129,13 @@ class UserViewModelTest {
           onSuccess()
         }
 
+    `when`(mockRepostioryFirestoreNotification.getNewUid()).thenReturn("1")
     // Initialize FirebaseApp with Robolectric context
     val context = org.robolectric.RuntimeEnvironment.getApplication()
     FirebaseApp.initializeApp(context)
 
     // Initialize UserViewModel with the mocked repository and FirebaseAuth
-    userViewModel = UserViewModel(mockRepositoryFirestore)
+    userViewModel = UserViewModel(mockRepositoryFirestore, mockRepostioryFirestoreNotification)
   }
 
   @Test
@@ -484,6 +489,65 @@ class UserViewModelTest {
     userViewModel.acceptFollowerRequest("3", { onSuccessCalled = true }, { assert(false) })
     verify(mockRepositoryFirestore, timeout(1000))
         .addFollowerTo(eq("1"), eq("3"), anyBoolean(), anyOrNull(), anyOrNull())
+    assert(onSuccessCalled)
+  }
+
+  @Test
+  fun `follow Request work`() {
+    var onSuccessCalled = false
+    val user2 = user.copy(friends = Friends(), pendingFriends = Friends(), isAccountPublic = true)
+    // Mock the getUserById method to return a valid user
+    `when`(mockRepositoryFirestore.getUserById(eq("3"), any(), any(), any())).thenAnswer {
+      val onSuccess = it.arguments[1] as (User) -> Unit
+      onSuccess(user.copy(uid = "3"))
+    }
+    userViewModel.addUser(user2, { assert(true) }, { assert(false) })
+    userViewModel.followUser("3", { onSuccessCalled = true }, { assert(false) })
+    verify(mockRepositoryFirestore, timeout(1000))
+        .addFollowerTo(eq("3"), eq("1"), anyBoolean(), anyOrNull(), anyOrNull())
+    assert(onSuccessCalled)
+  }
+
+  @Test
+  fun `unfollow Request work`() {
+    var onSuccessCalled = false
+    val user2 = user.copy(friends = Friends(), pendingFriends = Friends(following = listOf("3")))
+    `when`(mockRepostioryFirestoreNotification.getNotificationByReceiverId(any(), any(), any()))
+        .thenAnswer {
+          val onSuccess = it.arguments[1] as (List<Notification>) -> Unit
+          onSuccess(
+              listOf(
+                  Notification(
+                      id = "1",
+                      senderId = "1",
+                      receiverId = "3",
+                      timestamp = Timestamp.now(),
+                      read = false,
+                      type = Notification.NotificationType.FOLLOW_REQUEST)))
+        }
+    userViewModel.addUser(user2, { assert(true) }, { assert(false) })
+    userViewModel.unfollowUser("3", { onSuccessCalled = true }, { assert(false) })
+
+    verify(mockRepositoryFirestore, timeout(1000))
+        .removeFollowerFrom(eq("3"), eq("1"), anyBoolean(), anyOrNull(), anyOrNull())
+    verify(mockRepostioryFirestoreNotification, timeout(1000))
+        .deleteNotification(eq("1"), any(), any())
+    assert(onSuccessCalled)
+  }
+
+  @Test
+  fun `follow Request public work`() {
+    var onSuccessCalled = false
+    val user2 = user.copy(friends = Friends(), pendingFriends = Friends(), isAccountPublic = true)
+    // Mock the getUserById method to return a valid user
+    `when`(mockRepositoryFirestore.getUserById(eq("3"), any(), any(), any())).thenAnswer {
+      val onSuccess = it.arguments[1] as (User) -> Unit
+      onSuccess(user.copy(uid = "3", isAccountPublic = true))
+    }
+    userViewModel.addUser(user2, { assert(true) }, { assert(false) })
+    userViewModel.followUser("3", { onSuccessCalled = true }, { assert(false) })
+    verify(mockRepositoryFirestore, timeout(1000))
+        .addFollowerTo(eq("3"), eq("1"), anyBoolean(), anyOrNull(), anyOrNull())
     assert(onSuccessCalled)
   }
 }

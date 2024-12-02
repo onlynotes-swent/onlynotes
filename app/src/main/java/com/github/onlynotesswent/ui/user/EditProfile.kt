@@ -61,6 +61,7 @@ import com.github.onlynotesswent.model.file.FileType
 import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.folder.FolderViewModel
 import com.github.onlynotesswent.model.note.NoteViewModel
+import com.github.onlynotesswent.model.notification.NotificationViewModel
 import com.github.onlynotesswent.model.user.UserRepositoryFirestore
 import com.github.onlynotesswent.model.user.UserViewModel
 import com.github.onlynotesswent.ui.navigation.BottomNavigationMenu
@@ -87,7 +88,8 @@ fun EditProfileScreen(
     profilePictureTaker: ProfilePictureTaker,
     fileViewModel: FileViewModel,
     noteViewModel: NoteViewModel,
-    folderViewModel: FolderViewModel
+    folderViewModel: FolderViewModel,
+    notificationViewModel: NotificationViewModel
 ) {
   val user = userViewModel.currentUser.collectAsState()
 
@@ -104,6 +106,7 @@ fun EditProfileScreen(
   val showSheet = remember { mutableStateOf(false) }
   val showDeleteAccountAlert = remember { mutableStateOf(false) }
   val showGoingBackWithoutSavingChanges = remember { mutableStateOf(false) }
+  val newIsAccountPublic = remember { mutableStateOf(user.value?.isAccountPublic ?: false) }
 
   if (user.value == null) {
     // If the user is null, display an error message
@@ -128,11 +131,13 @@ fun EditProfileScreen(
                 stringResource(R.string.edit_profile),
                 navigationActions,
                 userViewModel,
+                notificationViewModel,
                 includeBackButton = true,
                 onBackButtonClick = {
                   if (newFirstName.value != user.value?.firstName ||
                       newLastName.value != user.value?.lastName ||
                       newUserName.value != user.value?.userName ||
+                      newIsAccountPublic.value != user.value?.isAccountPublic ||
                       hasProfilePictureBeenChanged.value) {
                     showGoingBackWithoutSavingChanges.value = true
                   } else {
@@ -164,6 +169,25 @@ fun EditProfileScreen(
 
                   // Save Button
                   saveEnabled.value = newUserName.value.isNotBlank()
+
+                  Button(
+                      modifier = Modifier.padding(top = 16.dp).testTag("deleteAccountButton"),
+                      colors =
+                          ButtonDefaults.buttonColors(
+                              containerColor = MaterialTheme.colorScheme.background,
+                              contentColor = MaterialTheme.colorScheme.error),
+                      border = BorderStroke(1.dp, MaterialTheme.colorScheme.error),
+                      onClick = { showDeleteAccountAlert.value = true },
+                      content = { Text("Delete Account") })
+
+                  Button(
+                      modifier = Modifier.padding(top = 16.dp).testTag("publicAccountButton"),
+                      onClick = { newIsAccountPublic.value = !newIsAccountPublic.value },
+                      content = {
+                        Text(
+                            if (newIsAccountPublic.value) "Account is Public"
+                            else "Account is Private")
+                      })
                   SaveButton(
                       onClick = {
                         val updatedUser =
@@ -171,7 +195,9 @@ fun EditProfileScreen(
                                 firstName = newFirstName.value.trim(),
                                 lastName = newLastName.value.trim(),
                                 userName = newUserName.value.trim(),
-                                hasProfilePicture = profilePictureUri.value.isNotBlank())
+                                hasProfilePicture = profilePictureUri.value.isNotBlank(),
+                                isAccountPublic = newIsAccountPublic.value,
+                            )
 
                         userViewModel.updateUser(
                             user = updatedUser,
@@ -227,16 +253,6 @@ fun EditProfileScreen(
                             })
                       },
                       enabled = saveEnabled)
-
-                  Button(
-                      modifier = Modifier.padding(top = 16.dp).testTag("deleteAccountButton"),
-                      colors =
-                          ButtonDefaults.buttonColors(
-                              containerColor = MaterialTheme.colorScheme.background,
-                              contentColor = MaterialTheme.colorScheme.error),
-                      border = BorderStroke(1.dp, MaterialTheme.colorScheme.error),
-                      onClick = { showDeleteAccountAlert.value = true },
-                      content = { Text(stringResource(R.string.delete_account)) })
 
                   if (showDeleteAccountAlert.value) {
                     AlertDialog(

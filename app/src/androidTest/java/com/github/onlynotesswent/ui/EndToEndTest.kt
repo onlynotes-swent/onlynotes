@@ -33,6 +33,8 @@ import com.github.onlynotesswent.model.folder.FolderViewModel
 import com.github.onlynotesswent.model.note.Note
 import com.github.onlynotesswent.model.note.NoteRepository
 import com.github.onlynotesswent.model.note.NoteViewModel
+import com.github.onlynotesswent.model.notification.NotificationRepository
+import com.github.onlynotesswent.model.notification.NotificationViewModel
 import com.github.onlynotesswent.model.user.Friends
 import com.github.onlynotesswent.model.user.User
 import com.github.onlynotesswent.model.user.UserRepository
@@ -77,6 +79,8 @@ class EndToEndTest {
   private lateinit var folderViewModel: FolderViewModel
   private lateinit var deckViewModel: DeckViewModel
   private lateinit var fileViewModel: FileViewModel
+  @Mock private lateinit var mockNotificationRepository: NotificationRepository
+  private lateinit var notificationViewModel: NotificationViewModel
 
   private lateinit var navController: NavHostController
   private lateinit var navigationActions: NavigationActions
@@ -125,10 +129,11 @@ class EndToEndTest {
     // Mock objects for dependencies
     MockitoAnnotations.openMocks(this)
 
-    userViewModel = UserViewModel(userRepository)
+    userViewModel = UserViewModel(userRepository, mockNotificationRepository)
     noteViewModel = NoteViewModel(noteRepository)
     folderViewModel = FolderViewModel(folderRepository)
     fileViewModel = FileViewModel(fileRepository)
+    notificationViewModel = NotificationViewModel(mockNotificationRepository)
 
     // Initialize Intents for handling navigation intents in the test
     Intents.init()
@@ -190,10 +195,12 @@ class EndToEndTest {
                     route = Route.PROFILE,
                 ) {
                   composable(Screen.USER_PROFILE) {
-                    UserProfileScreen(navigationActions, userViewModel, fileViewModel)
+                    UserProfileScreen(
+                        navigationActions, userViewModel, fileViewModel, notificationViewModel)
                   }
                   composable(Screen.PUBLIC_PROFILE) {
-                    PublicProfileScreen(navigationActions, userViewModel, fileViewModel)
+                    PublicProfileScreen(
+                        navigationActions, userViewModel, fileViewModel, notificationViewModel)
                   }
                   composable(Screen.EDIT_PROFILE) {
                     EditProfileScreen(
@@ -202,7 +209,8 @@ class EndToEndTest {
                         profilePictureTaker,
                         fileViewModel,
                         noteViewModel,
-                        folderViewModel)
+                        folderViewModel,
+                        notificationViewModel)
                   }
                 }
               }
@@ -373,6 +381,13 @@ class EndToEndTest {
 
     // Start at overview screen
     composeTestRule.runOnUiThread { navController.navigate(Route.OVERVIEW) }
+
+    `when`(mockNotificationRepository.getNewUid()).thenReturn(testUid)
+
+    `when`(mockNotificationRepository.addNotification(any(), any(), any())).thenAnswer {
+      val onSuccess = it.getArgument<() -> Unit>(1)
+      onSuccess()
+    }
   }
 
   // Test the end-to-end flow of searching for testUser2 and viewing their profile and following
