@@ -1,12 +1,24 @@
 package com.github.onlynotesswent.model.notification
 
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
+import com.google.firebase.Firebase
+import com.google.firebase.firestore.firestore
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
-class NotificationViewModel(private val repository: NotificationRepository) {
+class NotificationViewModel(private val repository: NotificationRepository) : ViewModel() {
   private val _userNotifications = MutableStateFlow<List<Notification>>(emptyList())
   val userNotifications: StateFlow<List<Notification>> = _userNotifications.asStateFlow()
+
+  companion object {
+    val Factory: ViewModelProvider.Factory = viewModelFactory {
+      initializer { NotificationViewModel(NotificationRepositoryFirestore(Firebase.firestore)) }
+    }
+  }
 
   /**
    * Retrieves all notifications for a receiver.

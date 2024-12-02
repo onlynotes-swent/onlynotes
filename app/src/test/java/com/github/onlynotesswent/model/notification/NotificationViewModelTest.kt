@@ -16,13 +16,7 @@ class NotificationViewModelTest {
 
   private val testNotification =
       Notification(
-          id = "1",
-          title = "testTitle",
-          body = "testBody",
-          senderId = "1",
-          receiverId = "2",
-          timestamp = Timestamp.now(),
-          read = false)
+          id = "1", senderId = "1", receiverId = "2", timestamp = Timestamp.now(), read = false)
 
   @Before
   fun setUp() {
