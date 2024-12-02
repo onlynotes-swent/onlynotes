@@ -122,9 +122,9 @@ class FlashcardRepositoryFirestoreTest {
     verifyErrorLog("Error converting document to Flashcard")
 
     // Successful conversion of a DocumentSnapshot to a Flashcard
-    val convertedTextFlashcard =
+    val convertedFlashcard =
         flashcardRepositoryFirestore.documentSnapshotToFlashcard(mockDocumentSnapshot)
-    assertEquals(flashcard, convertedTextFlashcard)
+    assertEquals(flashcard, convertedFlashcard)
   }
 
   @Test

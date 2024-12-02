@@ -27,4 +27,8 @@ data class Flashcard(
     val userId: String,
     val folderId: String?,
     val noteId: String?
-)
+){
+    fun isMCQ(): Boolean {
+        return fakeBacks.isNotEmpty()
+    }
+}
