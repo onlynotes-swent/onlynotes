@@ -45,38 +45,17 @@ class FlashcardRepositoryFirestoreTest {
 
   private lateinit var flashcardRepositoryFirestore: FlashcardRepositoryFirestore
 
-  private val textFlashcard =
-      TextFlashcard(
+  private val flashcard =
+      Flashcard(
           id = "1",
           front = "front",
           back = "back",
-          lastReviewed = Timestamp.now(),
-          userId = "2",
-          folderId = "3",
-          noteId = "4")
-
-  private val imageFlashcard =
-      ImageFlashcard(
-          id = "1",
-          front = "front",
-          back = "back",
-          lastReviewed = Timestamp.now(),
-          userId = "2",
-          folderId = "3",
-          noteId = "4",
-          imageUrl = "https://example.com/image.jpg")
-
-  private val mcqFlashcard =
-      MCQFlashcard(
-          id = "1",
-          front = "front",
-          back = "back",
+          hasImage = false,
           fakeBacks = listOf("fake1", "fake2", "fake3"),
           lastReviewed = Timestamp.now(),
           userId = "2",
           folderId = "3",
-          noteId = "4",
-      )
+          noteId = "4")
 
   @Before
   fun setUp() {
@@ -123,19 +102,16 @@ class FlashcardRepositoryFirestoreTest {
 
     // Mock the DocumentSnapshot to return expected fields for a Flashcard
     `when`(mockDocumentSnapshot.exists()).thenReturn(true)
-    `when`(mockDocumentSnapshot.id).thenReturn(textFlashcard.id)
-    `when`(mockDocumentSnapshot.getString("type")).thenReturn(Flashcard.Type.TEXT.toString())
-    `when`(mockDocumentSnapshot.data)
-        .thenReturn(
-            mapOf(
-                "id" to textFlashcard.id,
-                "front" to textFlashcard.front,
-                "back" to textFlashcard.back,
-                "lastReviewed" to textFlashcard.lastReviewed,
-                "userId" to textFlashcard.userId,
-                "folderId" to textFlashcard.folderId,
-                "noteId" to textFlashcard.noteId,
-                "type" to Flashcard.Type.TEXT.toString()))
+    `when`(mockDocumentSnapshot.id).thenReturn(flashcard.id)
+    `when`(mockDocumentSnapshot.getString("front")).thenReturn(flashcard.front)
+    `when`(mockDocumentSnapshot.getString("back")).thenReturn(flashcard.back)
+    `when`(mockDocumentSnapshot.getString("latexFormula")).thenReturn(flashcard.latexFormula)
+    `when`(mockDocumentSnapshot.getBoolean("hasImage")).thenReturn(flashcard.hasImage)
+    `when`(mockDocumentSnapshot.get("fakeBacks")).thenReturn(flashcard.fakeBacks)
+    `when`(mockDocumentSnapshot.getTimestamp("lastReviewed")).thenReturn(flashcard.lastReviewed)
+    `when`(mockDocumentSnapshot.getString("userId")).thenReturn(flashcard.userId)
+    `when`(mockDocumentSnapshot.getString("folderId")).thenReturn(flashcard.folderId)
+    `when`(mockDocumentSnapshot.getString("noteId")).thenReturn(flashcard.noteId)
   }
 
   @Test
@@ -145,54 +121,17 @@ class FlashcardRepositoryFirestoreTest {
     assertNull(flashcardRepositoryFirestore.documentSnapshotToFlashcard(mockBadDocumentSnapshot))
     verifyErrorLog("Error converting document to Flashcard")
 
-    // Successful conversions: -------------------------------------------------------------------
-    // Mock the DocumentSnapshot to return expected fields for a TextFlashcard
-    val convertedTextFlashcard =
+    // Successful conversion of a DocumentSnapshot to a Flashcard
+    val convertedFlashcard =
         flashcardRepositoryFirestore.documentSnapshotToFlashcard(mockDocumentSnapshot)
-    assertEquals(textFlashcard, convertedTextFlashcard)
-
-    // Mock the DocumentSnapshot to return expected fields for an ImageFlashcard
-    `when`(mockDocumentSnapshot.getString("type")).thenReturn(Flashcard.Type.IMAGE.toString())
-    `when`(mockDocumentSnapshot.data)
-        .thenReturn(
-            mapOf(
-                "id" to imageFlashcard.id,
-                "front" to imageFlashcard.front,
-                "back" to imageFlashcard.back,
-                "lastReviewed" to imageFlashcard.lastReviewed,
-                "userId" to imageFlashcard.userId,
-                "folderId" to imageFlashcard.folderId,
-                "noteId" to imageFlashcard.noteId,
-                "imageUrl" to imageFlashcard.imageUrl,
-                "type" to Flashcard.Type.IMAGE.toString()))
-    val convertedImageFlashcard =
-        flashcardRepositoryFirestore.documentSnapshotToFlashcard(mockDocumentSnapshot)
-    assertEquals(imageFlashcard, convertedImageFlashcard)
-
-    // Mock the DocumentSnapshot to return expected fields for an MCQFlashcard
-    `when`(mockDocumentSnapshot.getString("type")).thenReturn(Flashcard.Type.MCQ.toString())
-    `when`(mockDocumentSnapshot.data)
-        .thenReturn(
-            mapOf(
-                "id" to mcqFlashcard.id,
-                "front" to mcqFlashcard.front,
-                "back" to mcqFlashcard.back,
-                "fakeBacks" to mcqFlashcard.fakeBacks,
-                "lastReviewed" to mcqFlashcard.lastReviewed,
-                "userId" to mcqFlashcard.userId,
-                "folderId" to mcqFlashcard.folderId,
-                "noteId" to mcqFlashcard.noteId,
-                "type" to Flashcard.Type.MCQ.toString()))
-    val convertedMCQFlashcard =
-        flashcardRepositoryFirestore.documentSnapshotToFlashcard(mockDocumentSnapshot)
-    assertEquals(mcqFlashcard, convertedMCQFlashcard)
+    assertEquals(flashcard, convertedFlashcard)
   }
 
   @Test
   fun getNewUid() {
-    `when`(mockDocumentReference.id).thenReturn(textFlashcard.id)
+    `when`(mockDocumentReference.id).thenReturn(flashcard.id)
     val uid = flashcardRepositoryFirestore.getNewUid()
-    assert(uid == textFlashcard.id)
+    assert(uid == flashcard.id)
   }
 
   @Test
@@ -204,7 +143,7 @@ class FlashcardRepositoryFirestoreTest {
 
     // Call the method under test
     flashcardRepositoryFirestore.getFlashcardsFrom(
-        textFlashcard.userId,
+        flashcard.userId,
         onSuccess = { flashcard -> flashcardTest = flashcard.firstOrNull() },
         onFailure = { fail("Failure callback should not be called") })
 
@@ -213,7 +152,7 @@ class FlashcardRepositoryFirestoreTest {
 
     // Assertions to verify that the correct flashcard is returned
     assertNotNull(flashcardTest)
-    assertEquals(textFlashcard, flashcardTest)
+    assertEquals(flashcard, flashcardTest)
   }
 
   @Test
@@ -228,7 +167,7 @@ class FlashcardRepositoryFirestoreTest {
     // Call getUserByEmail
     var failureCalled = false
     flashcardRepositoryFirestore.getFlashcardsFrom(
-        textFlashcard.userId,
+        flashcard.userId,
         onSuccess = { fail("Success callback should not be called") },
         onFailure = { failureCalled = true })
     assert(failureCalled)
@@ -240,7 +179,7 @@ class FlashcardRepositoryFirestoreTest {
 
     // Call the method under test
     flashcardRepositoryFirestore.getFlashcardById(
-        textFlashcard.id,
+        flashcard.id,
         onSuccess = { flashcard -> flashcardTest = flashcard },
         onFailure = { fail("Failure callback should not be called") })
 
@@ -249,7 +188,7 @@ class FlashcardRepositoryFirestoreTest {
 
     // Assertions to verify that the correct flashcard is returned
     assertNotNull(flashcardTest)
-    assertEquals(textFlashcard, flashcardTest)
+    assertEquals(flashcard, flashcardTest)
   }
 
   @Test
@@ -264,7 +203,7 @@ class FlashcardRepositoryFirestoreTest {
     // Call getUserByEmail
     var failureCalled = false
     flashcardRepositoryFirestore.getFlashcardById(
-        textFlashcard.id,
+        flashcard.id,
         onSuccess = { fail("Success callback should not be called") },
         onFailure = { failureCalled = true })
     assert(failureCalled)
@@ -280,7 +219,7 @@ class FlashcardRepositoryFirestoreTest {
 
     // Call the method under test
     flashcardRepositoryFirestore.getFlashcardsByFolder(
-        textFlashcard.folderId!!,
+        flashcard.folderId!!,
         onSuccess = { flashcards -> flashcardTest = flashcards.firstOrNull() },
         onFailure = { fail("Failure callback should not be called") })
 
@@ -289,7 +228,7 @@ class FlashcardRepositoryFirestoreTest {
 
     // Assertions to verify that the correct flashcard is returned
     assertNotNull(flashcardTest)
-    assertEquals(textFlashcard, flashcardTest)
+    assertEquals(flashcard, flashcardTest)
   }
 
   @Test
@@ -309,7 +248,7 @@ class FlashcardRepositoryFirestoreTest {
     }
 
     flashcardRepositoryFirestore.getFlashcardsByFolder(
-        textFlashcard.folderId!!,
+        flashcard.folderId!!,
         onSuccess = { fail("Success callback should not be called") },
         onFailure = { assertEquals(testException, it) })
 
@@ -326,7 +265,7 @@ class FlashcardRepositoryFirestoreTest {
 
     // Call the method under test
     flashcardRepositoryFirestore.getFlashcardsByNote(
-        textFlashcard.noteId!!,
+        flashcard.noteId!!,
         onSuccess = { flashcard -> flashcardTest = flashcard.firstOrNull() },
         onFailure = { fail("Failure callback should not be called") })
 
@@ -335,7 +274,7 @@ class FlashcardRepositoryFirestoreTest {
 
     // Assertions to verify that the correct flashcard is returned
     assertNotNull(flashcardTest)
-    assertEquals(textFlashcard, flashcardTest)
+    assertEquals(flashcard, flashcardTest)
   }
 
   @Test
@@ -355,7 +294,7 @@ class FlashcardRepositoryFirestoreTest {
     }
 
     flashcardRepositoryFirestore.getFlashcardsByNote(
-        textFlashcard.noteId!!,
+        flashcard.noteId!!,
         onSuccess = { fail("Success callback should not be called") },
         onFailure = { assertEquals(testException, it) })
 
@@ -368,7 +307,7 @@ class FlashcardRepositoryFirestoreTest {
 
     // This test verifies that when we add a new flashcard, the Firestore `collection()` method is
     // called.
-    flashcardRepositoryFirestore.addFlashcard(textFlashcard, onSuccess = {}, onFailure = {})
+    flashcardRepositoryFirestore.addFlashcard(flashcard, onSuccess = {}, onFailure = {})
 
     shadowOf(Looper.getMainLooper()).idle()
 
@@ -390,7 +329,7 @@ class FlashcardRepositoryFirestoreTest {
     }
 
     flashcardRepositoryFirestore.addFlashcard(
-        textFlashcard,
+        flashcard,
         onSuccess = { fail("Success callback should not be called") },
         onFailure = { assertEquals(testException, it) })
 
@@ -403,7 +342,7 @@ class FlashcardRepositoryFirestoreTest {
 
     // This test verifies that when we update a flashcard, the Firestore `collection()` method is
     // called.
-    flashcardRepositoryFirestore.updateFlashcard(textFlashcard, onSuccess = {}, onFailure = {})
+    flashcardRepositoryFirestore.updateFlashcard(flashcard, onSuccess = {}, onFailure = {})
 
     shadowOf(Looper.getMainLooper()).idle()
 
@@ -425,7 +364,7 @@ class FlashcardRepositoryFirestoreTest {
     }
 
     flashcardRepositoryFirestore.updateFlashcard(
-        textFlashcard,
+        flashcard,
         onSuccess = { fail("Success callback should not be called") },
         onFailure = { assertEquals(testException, it) })
 
@@ -436,7 +375,7 @@ class FlashcardRepositoryFirestoreTest {
   fun deleteFlashcard_callsDocument() {
     `when`(mockDocumentReference.delete()).thenReturn(Tasks.forResult(null)) // Simulate success
 
-    flashcardRepositoryFirestore.deleteFlashcard(textFlashcard, onSuccess = {}, onFailure = {})
+    flashcardRepositoryFirestore.deleteFlashcard(flashcard, onSuccess = {}, onFailure = {})
 
     shadowOf(Looper.getMainLooper()).idle()
 
@@ -458,7 +397,7 @@ class FlashcardRepositoryFirestoreTest {
     }
 
     flashcardRepositoryFirestore.deleteFlashcard(
-        textFlashcard,
+        flashcard,
         onSuccess = { fail("Success callback should not be called") },
         onFailure = { assertEquals(testException, it) })
 
