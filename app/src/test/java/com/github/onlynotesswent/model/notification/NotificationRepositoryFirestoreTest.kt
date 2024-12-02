@@ -37,13 +37,7 @@ class NotificationRepositoryFirestoreTest {
 
   private val testNotification =
       Notification(
-          id = "1",
-          title = "testTitle",
-          body = "testBody",
-          senderId = "1",
-          receiverId = "2",
-          timestamp = Timestamp.now(),
-          read = false)
+          id = "1", senderId = "1", receiverId = "2", timestamp = Timestamp.now(), read = false)
 
   @Before
   fun setUp() {
@@ -99,8 +93,6 @@ class NotificationRepositoryFirestoreTest {
     // ------------------------------------------------------------------------------------------
 
     `when`(mockDocumentSnapshot.getString("id")).thenReturn(testNotification.id)
-    `when`(mockDocumentSnapshot.getString("title")).thenReturn(testNotification.title)
-    `when`(mockDocumentSnapshot.getString("body")).thenReturn(testNotification.body)
     `when`(mockDocumentSnapshot.getString("senderId")).thenReturn(testNotification.senderId)
     `when`(mockDocumentSnapshot.getString("receiverId")).thenReturn(testNotification.receiverId)
     `when`(mockDocumentSnapshot.getTimestamp("timestamp")).thenReturn(testNotification.timestamp)

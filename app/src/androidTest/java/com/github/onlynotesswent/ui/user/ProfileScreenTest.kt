@@ -15,6 +15,8 @@ import com.github.onlynotesswent.model.file.FileRepository
 import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.note.NoteRepository
 import com.github.onlynotesswent.model.note.NoteViewModel
+import com.github.onlynotesswent.model.notification.NotificationRepository
+import com.github.onlynotesswent.model.notification.NotificationViewModel
 import com.github.onlynotesswent.model.user.Friends
 import com.github.onlynotesswent.model.user.User
 import com.github.onlynotesswent.model.user.UserRepository
@@ -39,9 +41,11 @@ class ProfileScreenTest {
   @Mock private lateinit var mockNavigationActions: NavigationActions
   @Mock private lateinit var mockNoteRepository: NoteRepository
   @Mock private lateinit var mockFileRepository: FileRepository
+  @Mock private lateinit var mockNotificationRepository: NotificationRepository
   private lateinit var noteViewModel: NoteViewModel
   private lateinit var userViewModel: UserViewModel
   private lateinit var fileViewModel: FileViewModel
+  private lateinit var notificationViewModel: NotificationViewModel
 
   private val testUid = "testUid"
   private val testUid2 = "testUid2"
@@ -105,10 +109,10 @@ class ProfileScreenTest {
   fun setUp() {
     // Mock is a way to create a fake object that can be used in place of a real object
     MockitoAnnotations.openMocks(this)
-    userViewModel = UserViewModel(mockUserRepository)
+    userViewModel = UserViewModel(mockUserRepository, mockNotificationRepository)
     noteViewModel = NoteViewModel(mockNoteRepository)
     fileViewModel = FileViewModel(mockFileRepository)
-
+    notificationViewModel = NotificationViewModel(mockNotificationRepository)
     // Mock the current route to be the user create screen
     `when`(mockNavigationActions.currentRoute()).thenReturn(Screen.USER_PROFILE)
 
@@ -197,12 +201,29 @@ class ProfileScreenTest {
       }
       onSuccess()
     }
+
+    `when`(
+            mockNotificationRepository.addNotification(
+                any(),
+                any(),
+                any(),
+            ))
+        .thenAnswer {
+          val onSuccess = it.getArgument<() -> Unit>(1)
+          onSuccess()
+        }
+    `when`(mockNotificationRepository.getNewUid()).thenReturn(testUid)
+
+    `when`(mockNotificationRepository.addNotification(any(), any(), any())).thenAnswer {
+      val onSuccess = it.getArgument<() -> Unit>(1)
+      onSuccess()
+    }
   }
 
   @Test
   fun displayAllComponents() {
     composeTestRule.setContent {
-      UserProfileScreen(mockNavigationActions, userViewModel, fileViewModel)
+      UserProfileScreen(mockNavigationActions, userViewModel, fileViewModel, notificationViewModel)
     }
 
     composeTestRule.onNodeWithTag("profileScaffold").assertExists()
@@ -227,7 +248,7 @@ class ProfileScreenTest {
   @Test
   fun displayAndNavigateToFollowersAndFollowing() {
     composeTestRule.setContent {
-      UserProfileScreen(mockNavigationActions, userViewModel, fileViewModel)
+      UserProfileScreen(mockNavigationActions, userViewModel, fileViewModel, notificationViewModel)
     }
 
     composeTestRule.onNodeWithTag("followingButton").assertIsDisplayed().performClick()
@@ -262,7 +283,7 @@ class ProfileScreenTest {
   @Test
   fun editProfileButtonNavigatesCorrectly() {
     composeTestRule.setContent {
-      UserProfileScreen(mockNavigationActions, userViewModel, fileViewModel)
+      UserProfileScreen(mockNavigationActions, userViewModel, fileViewModel, notificationViewModel)
     }
 
     composeTestRule.onNodeWithTag("editProfileButton").assertIsDisplayed().performClick()
@@ -272,7 +293,8 @@ class ProfileScreenTest {
   @Test
   fun followUnfollowButtonsWork() {
     composeTestRule.setContent {
-      PublicProfileScreen(mockNavigationActions, userViewModel, fileViewModel)
+      PublicProfileScreen(
+          mockNavigationActions, userViewModel, fileViewModel, notificationViewModel)
     }
 
     composeTestRule.onNodeWithTag("userNotFound").assertIsDisplayed()
@@ -321,7 +343,8 @@ class ProfileScreenTest {
   @Test
   fun profileLinkRedirectsToUserProfile() {
     composeTestRule.setContent {
-      PublicProfileScreen(mockNavigationActions, userViewModel, fileViewModel)
+      PublicProfileScreen(
+          mockNavigationActions, userViewModel, fileViewModel, notificationViewModel)
     }
 
     userViewModel.setProfileUser(testUser2)
@@ -338,7 +361,8 @@ class ProfileScreenTest {
   @Test
   fun goBackButtonNavigatesCorrectly() {
     composeTestRule.setContent {
-      PublicProfileScreen(mockNavigationActions, userViewModel, fileViewModel)
+      PublicProfileScreen(
+          mockNavigationActions, userViewModel, fileViewModel, notificationViewModel)
     }
 
     composeTestRule.onNodeWithTag("goBackButton").assertIsDisplayed().performClick()
@@ -348,7 +372,7 @@ class ProfileScreenTest {
   @Test
   fun logoutButtonWorksCorrectly() {
     composeTestRule.setContent {
-      UserProfileScreen(mockNavigationActions, userViewModel, fileViewModel)
+      UserProfileScreen(mockNavigationActions, userViewModel, fileViewModel, notificationViewModel)
     }
 
     composeTestRule.onNodeWithTag("logoutButton").assertIsDisplayed().performClick()
