@@ -29,7 +29,6 @@ import com.github.onlynotesswent.model.user.UserViewModel
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
 
-
 /**
  * Custom lazy grid that displays a list of notes and folders in a separate manner. If there are no
  * notes or folders, it displays a message to the user. The grid is scrollable.
