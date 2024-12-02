@@ -230,7 +230,7 @@ fun FolderContentScreen(
 @Composable
 fun UserNotFoundFolderContentScreen() {
   Column(
-      modifier = Modifier.fillMaxSize(),
+      modifier = Modifier.fillMaxSize().testTag("userNotFoundScreen"),
       verticalArrangement = Arrangement.Center,
       horizontalAlignment = Alignment.CenterHorizontally) {
         Text(stringResource(R.string.user_not_found))
