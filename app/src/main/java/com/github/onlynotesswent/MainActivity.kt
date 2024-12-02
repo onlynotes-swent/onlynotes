@@ -164,8 +164,7 @@ fun OnlyNotesApp(
             profilePictureTaker,
             fileViewModel,
             noteViewModel,
-            folderViewModel,
-            notificationViewModel)
+            folderViewModel)
       }
       composable(Screen.NOTIFICATIONS) {
         NotificationScreen(userViewModel, navigationActions, fileViewModel, notificationViewModel)

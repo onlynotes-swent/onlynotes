@@ -85,4 +85,6 @@
     <string name="want_to_follow_you">%1$s want to follow you</string>
     <string name="is_now_following_you">%1$s is now following you</string>
     <string name="you_have_rejected_the_follow_request_from">you have rejected the follow request from %1$s</string>
+    <string name="private_account">Private</string>
+    <string name="public_account">Public</string>
 </resources>
