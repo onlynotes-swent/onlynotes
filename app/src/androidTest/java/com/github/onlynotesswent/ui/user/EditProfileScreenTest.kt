@@ -13,6 +13,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextClearance
 import androidx.compose.ui.test.performTextInput
+import androidx.compose.ui.test.performTextReplacement
 import androidx.core.net.toUri
 import com.github.onlynotesswent.model.file.FileRepository
 import com.github.onlynotesswent.model.file.FileViewModel
@@ -130,6 +131,7 @@ class EditProfileScreenTest {
     composeTestRule.onNodeWithTag("inputFirstName").assertExists()
     composeTestRule.onNodeWithTag("inputLastName").assertExists()
     composeTestRule.onNodeWithTag("inputUserName").assertExists()
+    composeTestRule.onNodeWithTag("inputBio").assertExists()
     composeTestRule.onNodeWithTag("saveButton").assertExists()
     composeTestRule.onNodeWithTag("profilePicture").assertExists()
     composeTestRule.onNodeWithTag("displayBottomSheet").assertExists()
@@ -187,6 +189,11 @@ class EditProfileScreenTest {
     assert(userViewModel.currentUser.value?.lastName == testUser.lastName)
     composeTestRule.onNodeWithTag("saveButton").performClick()
     assert(userViewModel.currentUser.value?.lastName == "New Last Name")
+
+    composeTestRule.onNodeWithTag("inputBio").performTextReplacement("New Bio")
+    assert(userViewModel.currentUser.value?.bio == testUser.bio)
+    composeTestRule.onNodeWithTag("saveButton").performClick()
+    assert(userViewModel.currentUser.value?.bio == "New Bio")
   }
 
   @Test

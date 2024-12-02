@@ -87,4 +87,5 @@
     <string name="you_have_rejected_the_follow_request_from">you have rejected the follow request from %1$s</string>
     <string name="private_account">Private</string>
     <string name="public_account">Public</string>
+    <string name="biography">Biography</string>
 </resources>

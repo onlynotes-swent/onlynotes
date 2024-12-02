@@ -39,6 +39,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
@@ -68,6 +69,7 @@ import com.github.onlynotesswent.model.file.FileType
 import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.folder.FolderViewModel
 import com.github.onlynotesswent.model.note.NoteViewModel
+import com.github.onlynotesswent.model.user.User
 import com.github.onlynotesswent.model.user.UserRepositoryFirestore
 import com.github.onlynotesswent.model.user.UserViewModel
 import com.github.onlynotesswent.ui.navigation.BottomNavigationMenu
@@ -102,6 +104,7 @@ fun EditProfileScreen(
   val newFirstName = remember { mutableStateOf(user.value?.firstName ?: "") }
   val newLastName = remember { mutableStateOf(user.value?.lastName ?: "") }
   val newUserName = remember { mutableStateOf(user.value?.userName ?: "") }
+  val newBio = remember { mutableStateOf(user.value?.bio ?: "") }
   val profilePictureUri = remember { mutableStateOf("") }
   val userNameError = remember { mutableStateOf(false) }
   val saveEnabled = remember { mutableStateOf(true) }
@@ -141,6 +144,7 @@ fun EditProfileScreen(
                         if (newFirstName.value != user.value?.firstName ||
                             newLastName.value != user.value?.lastName ||
                             newUserName.value != user.value?.userName ||
+                            newBio.value != user.value?.bio ||
                             newIsAccountPublic.value != user.value?.isAccountPublic ||
                             hasProfilePictureBeenChanged.value) {
                           showGoingBackWithoutSavingChanges.value = true
@@ -162,6 +166,7 @@ fun EditProfileScreen(
                                 firstName = newFirstName.value.trim(),
                                 lastName = newLastName.value.trim(),
                                 userName = newUserName.value.trim(),
+                                bio = newBio.value.trim(),
                                 hasProfilePicture = profilePictureUri.value.isNotBlank(),
                                 isAccountPublic = newIsAccountPublic.value,
                             )
@@ -249,6 +254,7 @@ fun EditProfileScreen(
                   FirstNameTextField(newFirstName)
                   LastNameTextField(newLastName)
                   UserNameTextField(newUserName, userNameError)
+                  BioTextField(newBio)
 
                   // Save Button
                   saveEnabled.value = newUserName.value.isNotBlank()
@@ -369,6 +375,17 @@ fun EditProfileScreen(
                   }
                 }
           })
+}
+
+@Composable
+fun BioTextField(bioState: MutableState<String>) {
+  OutlinedTextField(
+      minLines = 2,
+      maxLines = 4,
+      value = bioState.value,
+      onValueChange = { bioState.value = User.formatBio(it) },
+      label = { Text(stringResource(R.string.biography)) },
+      modifier = Modifier.fillMaxWidth(0.8f).padding(vertical = 12.dp).testTag("inputBio"))
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
