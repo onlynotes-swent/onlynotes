@@ -1,9 +1,11 @@
 package com.github.onlynotesswent.model.flashcard.deck
 
 import android.util.Log
+import com.github.onlynotesswent.model.common.Visibility
 import com.google.android.gms.tasks.OnSuccessListener
 import com.google.android.gms.tasks.Task
 import com.google.firebase.FirebaseApp
+import com.google.firebase.Timestamp
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.DocumentSnapshot
@@ -44,7 +46,7 @@ class DeckRepositoryFirestoreTest {
   private val testFlashcardIds = listOf("7", "8")
 
   private val testDeck =
-      Deck(id = "1", name = "Deck", userId = "2", folderId = "3", flashcardIds = listOf("4", "5"))
+      Deck(id = "1", name = "Deck", userId = "2", folderId = "3", visibility = Visibility.PUBLIC, lastModified = Timestamp.now(), flashcardIds = listOf("4", "5"))
 
   private fun verifyErrorLog(msg: String) {
     // Get all the logs

@@ -33,6 +33,7 @@ class DeckRepositoryFirestore(private val db: FirebaseFirestore) : DeckRepositor
           visibility =
               Visibility.fromString(
                   document.getString("visibility") ?: throw Exception("Invalid deck visibility")),
+          lastModified = document.getTimestamp("lastModified") ?: throw Exception("Invalid last modified timestamp"),
           flashcardIds = document.get("flashcardIds") as List<String>? ?: emptyList())
     } catch (e: Exception) {
       Log.e(TAG, "Error converting document to Deck", e)
