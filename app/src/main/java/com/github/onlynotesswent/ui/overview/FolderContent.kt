@@ -52,6 +52,7 @@ import com.github.onlynotesswent.ui.common.ConfirmationPopup
 import com.github.onlynotesswent.ui.common.CustomDropDownMenu
 import com.github.onlynotesswent.ui.common.CustomDropDownMenuItem
 import com.github.onlynotesswent.ui.common.CustomLazyGrid
+import com.github.onlynotesswent.ui.common.CustomSeparatedLazyGrid
 import com.github.onlynotesswent.ui.common.FolderDialog
 import com.github.onlynotesswent.ui.common.NoteDialog
 import com.github.onlynotesswent.ui.navigation.NavigationActions
@@ -297,7 +298,8 @@ fun FolderContentTopBar(
       },
       navigationIcon = {
         IconButton(
-            onClick = { navigationActions.goBack() }, modifier = Modifier.testTag("goBackButton")) {
+            onClick = { navigationActions.goBackFolderContents(folder?.parentFolderId) },
+            modifier = Modifier.testTag("goBackButton")) {
               Icon(imageVector = Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "Back")
             }
       },
@@ -527,7 +529,7 @@ fun FolderContentScreenGrid(
     context: Context,
     navigationActions: NavigationActions
 ) {
-  CustomLazyGrid(
+  CustomSeparatedLazyGrid(
       modifier = Modifier.fillMaxSize().padding(paddingValues),
       notes = userFolderNotes,
       folders = userFolderSubFolders,

@@ -121,6 +121,19 @@ open class NavigationActions(
   }
 
   /**
+   * Navigate back to the folder contents screen.
+   *
+   * @param folderId The ID of the folder to navigate back to
+   */
+  open fun goBackFolderContents(folderId: String?) {
+      if (folderId != null) {
+          navigateTo(Screen.FOLDER_CONTENTS.replace(oldValue = "{folderId}", newValue = folderId))
+      } else {
+          navigateTo(TopLevelDestinations.OVERVIEW)
+      }
+  }
+
+  /**
    * Get the current route of the navigation controller.
    *
    * @return The current route
