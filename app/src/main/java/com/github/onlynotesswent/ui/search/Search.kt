@@ -155,7 +155,7 @@ fun SearchScreen(
                             contentDescription = "Chip Icon",
                             tint = MaterialTheme.colorScheme.onBackground)
                   },
-                  modifier = Modifier.padding(horizontal = 10.dp).testTag("userFilterChip"))
+                  modifier = Modifier.padding(horizontal = 5.dp).testTag("userFilterChip"))
             }
             item {
               FilterChip(
@@ -189,7 +189,7 @@ fun SearchScreen(
                             contentDescription = "Chip Icon",
                             tint = MaterialTheme.colorScheme.onBackground)
                   },
-                  modifier = Modifier.padding(horizontal = 10.dp).testTag("folderFilterChip"))
+                  modifier = Modifier.padding(horizontal = 5.dp).testTag("folderFilterChip"))
             }
             item {
               FilterChip(
@@ -221,24 +221,16 @@ fun SearchScreen(
         // To skip large nested if-else blocks, we can use a boolean to determine which list to
         // display.
         val displayUsers: Boolean =
-            searchQuery.value.isNotBlank() &&
-                searchType.value == SearchType.USERS &&
-                filteredUsers.value.isNotEmpty()
+            searchType.value == SearchType.USERS && filteredUsers.value.isNotEmpty()
 
         val displayNotes: Boolean =
-            searchQuery.value.isNotBlank() &&
-                searchType.value == SearchType.NOTES &&
-                filteredNotes.value.isNotEmpty()
+            searchType.value == SearchType.NOTES && filteredNotes.value.isNotEmpty()
 
         val displayFolders: Boolean =
-            searchQuery.value.isNotBlank() &&
-                searchType.value == SearchType.FOLDERS &&
-                filteredFolders.value.isNotEmpty()
+            searchType.value == SearchType.FOLDERS && filteredFolders.value.isNotEmpty()
 
         val displayDecks: Boolean =
-            searchQuery.value.isNotBlank() &&
-                searchType.value == SearchType.DECKS &&
-                filteredDecks.value.isNotEmpty()
+            searchType.value == SearchType.DECKS && filteredDecks.value.isNotEmpty()
 
         val displayLoader: Boolean =
             searchQuery.value.isNotBlank() &&
@@ -341,6 +333,13 @@ fun SearchScreen(
       }
 }
 
+/**
+ * Displays a deck item in the search screen.
+ *
+ * @param deck The deck to display.
+ * @param author The author of the deck.
+ * @param onClick The action to perform when the deck is clicked.
+ */
 @Composable
 fun DeckSearchItem(deck: Deck, author: String, onClick: () -> Unit) {
   Card(
@@ -380,6 +379,15 @@ fun DeckSearchItem(deck: Deck, author: String, onClick: () -> Unit) {
       }
 }
 
+/**
+ * Refreshes the list of notes, users, and folders periodically.
+ *
+ * @param searchQuery The search query to use.
+ * @param noteViewModel The ViewModel that provides the list of publicNotes to search from.
+ * @param userViewModel The ViewModel that provides the list of users to search from.
+ * @param folderViewModel The ViewModel that provides the list of folders to search from.
+ * @param deckViewModel The ViewModel that provides the list of decks to search from.
+ */
 @Composable
 private fun RefreshPeriodically(
     searchQuery: MutableState<String>,
@@ -407,5 +415,5 @@ enum class SearchType {
 }
 
 fun textMatchesSearch(text: String, searchWords: List<String>): Boolean {
-  return searchWords.all { text.contains(it, ignoreCase = true) }
+  return searchWords.all { text.contains(it, ignoreCase = true) } || searchWords.isEmpty()
 }

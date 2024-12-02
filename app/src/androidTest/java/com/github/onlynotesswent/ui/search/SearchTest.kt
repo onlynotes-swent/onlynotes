@@ -177,9 +177,19 @@ class SearchScreenTest {
 
   @Test
   fun testEmptySearchQuery() {
-    composeTestRule.onNodeWithTag("filteredNoteList").assertDoesNotExist()
-    composeTestRule.onNodeWithTag("filteredUserList").assertDoesNotExist()
     composeTestRule.onNodeWithTag("noSearchResults").assertIsNotDisplayed()
+
+    composeTestRule.onNodeWithTag("noteFilterChip").performClick()
+    composeTestRule.onNodeWithTag("filteredNoteList").assertIsDisplayed()
+
+    composeTestRule.onNodeWithTag("userFilterChip").performClick()
+    composeTestRule.onNodeWithTag("filteredUserList").assertIsDisplayed()
+
+    composeTestRule.onNodeWithTag("folderFilterChip").performClick()
+    composeTestRule.onNodeWithTag("filteredFolderList").assertIsDisplayed()
+
+    composeTestRule.onNodeWithTag("deckFilterChip").performClick()
+    composeTestRule.onNodeWithTag("filteredDeckList").assertIsDisplayed()
   }
 
   @Test
