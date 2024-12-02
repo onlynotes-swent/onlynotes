@@ -126,11 +126,11 @@ open class NavigationActions(
    * @param folderId The ID of the folder to navigate back to
    */
   open fun goBackFolderContents(folderId: String?) {
-      if (folderId != null) {
-          navigateTo(Screen.FOLDER_CONTENTS.replace(oldValue = "{folderId}", newValue = folderId))
-      } else {
-          navigateTo(TopLevelDestinations.OVERVIEW)
-      }
+    if (folderId != null) {
+      navigateTo(Screen.FOLDER_CONTENTS.replace(oldValue = "{folderId}", newValue = folderId))
+    } else {
+      navigateTo(TopLevelDestinations.OVERVIEW)
+    }
   }
 
   /**
