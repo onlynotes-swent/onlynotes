@@ -2,7 +2,9 @@ package com.github.onlynotesswent.model.folder
 
 import com.github.onlynotesswent.model.note.NoteRepository
 import com.github.onlynotesswent.model.note.NoteViewModel
+import com.google.firebase.Timestamp
 import junit.framework.TestCase.assertEquals
+import kotlinx.coroutines.test.runTest
 import org.hamcrest.CoreMatchers.`is`
 import org.hamcrest.MatcherAssert.assertThat
 import org.junit.Before
@@ -15,8 +17,6 @@ import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
 import org.robolectric.RobolectricTestRunner
-import com.google.firebase.Timestamp
-import kotlinx.coroutines.test.runTest
 
 @RunWith(RobolectricTestRunner::class)
 class FolderViewModelTest {
@@ -26,7 +26,13 @@ class FolderViewModelTest {
   @Mock private lateinit var mockNoteRepository: NoteRepository
   private lateinit var noteViewModel: NoteViewModel
 
-  private val testFolder = Folder(id = "1", name = "name", userId = "1", parentFolderId = "pid", lastModified = Timestamp.now())
+  private val testFolder =
+      Folder(
+          id = "1",
+          name = "name",
+          userId = "1",
+          parentFolderId = "pid",
+          lastModified = Timestamp.now())
 
   @Before
   fun setUp() {
@@ -153,8 +159,8 @@ class FolderViewModelTest {
 
   @Test
   fun updateFolderUpdatesStatesWhenSuccess() = runTest {
-    `when`(mockFolderRepository.updateFolder(eq(testFolder), any(), any(), any())).thenAnswer { invocation
-      ->
+    `when`(mockFolderRepository.updateFolder(eq(testFolder), any(), any(), any())).thenAnswer {
+        invocation ->
       val onSuccess = invocation.getArgument<() -> Unit>(1)
       onSuccess()
     }

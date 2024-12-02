@@ -93,7 +93,7 @@ class NoteRepositoryFirestoreTest {
           id = "1",
           title = "title",
           date = Timestamp.now(),
-            lastModified = Timestamp.now(),
+          lastModified = Timestamp.now(),
           visibility = Visibility.PRIVATE,
           userId = "1",
           folderId = "1",
@@ -110,9 +110,9 @@ class NoteRepositoryFirestoreTest {
       FirebaseApp.initializeApp(ApplicationProvider.getApplicationContext())
     }
 
-      val context = ApplicationProvider.getApplicationContext<Context>()
-      mockNoteDatabase = Room.inMemoryDatabaseBuilder(context, NoteDatabase::class.java).build()
-      mockNoteDao = mockNoteDatabase.noteDao()
+    val context = ApplicationProvider.getApplicationContext<Context>()
+    mockNoteDatabase = Room.inMemoryDatabaseBuilder(context, NoteDatabase::class.java).build()
+    mockNoteDao = mockNoteDatabase.noteDao()
 
     noteRepositoryFirestore = NoteRepositoryFirestore(mockFirestore, mockNoteDatabase, context)
 
@@ -142,7 +142,8 @@ class NoteRepositoryFirestoreTest {
     `when`(mockDocumentSnapshot.id).thenReturn(testNotePublic.id)
     `when`(mockDocumentSnapshot.getString("title")).thenReturn(testNotePublic.title)
     `when`(mockDocumentSnapshot.getTimestamp("date")).thenReturn(testNotePublic.date)
-      `when`(mockDocumentSnapshot.getTimestamp("lastModified")).thenReturn(testNotePublic.lastModified)
+    `when`(mockDocumentSnapshot.getTimestamp("lastModified"))
+        .thenReturn(testNotePublic.lastModified)
     `when`(mockDocumentSnapshot.getString("visibility"))
         .thenReturn(testNotePublic.visibility.toString())
     `when`(mockDocumentSnapshot.getString("courseCode"))
@@ -162,7 +163,8 @@ class NoteRepositoryFirestoreTest {
     `when`(mockDocumentSnapshot2.id).thenReturn(testNotePrivate.id)
     `when`(mockDocumentSnapshot2.getString("title")).thenReturn(testNotePrivate.title)
     `when`(mockDocumentSnapshot2.getTimestamp("date")).thenReturn(testNotePrivate.date)
-    `when`(mockDocumentSnapshot2.getTimestamp("lastModified")).thenReturn(testNotePrivate.lastModified)
+    `when`(mockDocumentSnapshot2.getTimestamp("lastModified"))
+        .thenReturn(testNotePrivate.lastModified)
     `when`(mockDocumentSnapshot2.getString("visibility"))
         .thenReturn(testNotePrivate.visibility.toString())
     `when`(mockDocumentSnapshot.getString("courseCode"))
@@ -181,7 +183,8 @@ class NoteRepositoryFirestoreTest {
     `when`(mockDocumentSnapshot3.id).thenReturn(testSubNotePublic.id)
     `when`(mockDocumentSnapshot3.getString("title")).thenReturn(testSubNotePublic.title)
     `when`(mockDocumentSnapshot3.getTimestamp("date")).thenReturn(testSubNotePublic.date)
-      `when`(mockDocumentSnapshot3.getTimestamp("lastModified")).thenReturn(testNotePrivate.lastModified)
+    `when`(mockDocumentSnapshot3.getTimestamp("lastModified"))
+        .thenReturn(testNotePrivate.lastModified)
     `when`(mockDocumentSnapshot3.getString("visibility"))
         .thenReturn(testSubNotePublic.visibility.toString())
     `when`(mockDocumentSnapshot3.getString("courseCode"))
@@ -201,7 +204,8 @@ class NoteRepositoryFirestoreTest {
     `when`(mockDocumentSnapshot4.id).thenReturn(testSubNotePrivate.id)
     `when`(mockDocumentSnapshot4.getString("title")).thenReturn(testSubNotePrivate.title)
     `when`(mockDocumentSnapshot4.getTimestamp("date")).thenReturn(testSubNotePrivate.date)
-      `when`(mockDocumentSnapshot4.getTimestamp("lastModified")).thenReturn(testNotePrivate.lastModified)
+    `when`(mockDocumentSnapshot4.getTimestamp("lastModified"))
+        .thenReturn(testNotePrivate.lastModified)
     `when`(mockDocumentSnapshot4.getString("visibility"))
         .thenReturn(testSubNotePrivate.visibility.toString())
     `when`(mockDocumentSnapshot4.getString("courseCode"))
@@ -281,7 +285,6 @@ class NoteRepositoryFirestoreTest {
 
   @Test
   fun getRootNotesFrom_callsDocuments() = runTest {
-
     `when`(mockQuerySnapshot.documents)
         .thenReturn(listOf(mockDocumentSnapshot, mockDocumentSnapshot2))
 

@@ -51,10 +51,21 @@ class FolderRepositoryFirestoreTest {
 
   private lateinit var folderRepositoryFirestore: FolderRepositoryFirestore
 
-  private val testFolder = Folder(id = "1", name = "name", userId = "1", parentFolderId = null, lastModified = Timestamp.now())
+  private val testFolder =
+      Folder(
+          id = "1",
+          name = "name",
+          userId = "1",
+          parentFolderId = null,
+          lastModified = Timestamp.now())
 
   private val testSubFolder =
-      Folder(id = "2", name = "subFolder", userId = "1", parentFolderId = "1", lastModified = Timestamp.now())
+      Folder(
+          id = "2",
+          name = "subFolder",
+          userId = "1",
+          parentFolderId = "1",
+          lastModified = Timestamp.now())
 
   @Before
   fun setUp() {
@@ -68,7 +79,8 @@ class FolderRepositoryFirestoreTest {
     mockFolderDatabase = Room.inMemoryDatabaseBuilder(context, FolderDatabase::class.java).build()
     mockFolderDao = mockFolderDatabase.folderDao()
 
-    folderRepositoryFirestore = FolderRepositoryFirestore(mockFirestore, mockFolderDatabase, context)
+    folderRepositoryFirestore =
+        FolderRepositoryFirestore(mockFirestore, mockFolderDatabase, context)
     noteViewModel = NoteViewModel(mockNoteRepository)
 
     `when`(mockFirestore.collection(any())).thenReturn(mockCollectionReference)
@@ -103,7 +115,8 @@ class FolderRepositoryFirestoreTest {
         .thenReturn(testSubFolder.parentFolderId)
     `when`(mockDocumentSnapshot2.getString("visibility"))
         .thenReturn(testSubFolder.visibility.toString())
-    `when`(mockDocumentSnapshot2.getTimestamp("lastModified")).thenReturn(testSubFolder.lastModified)
+    `when`(mockDocumentSnapshot2.getTimestamp("lastModified"))
+        .thenReturn(testSubFolder.lastModified)
   }
 
   private fun compareFolders(testFolder: Folder?, expectedFolder: Folder) {
@@ -135,7 +148,10 @@ class FolderRepositoryFirestoreTest {
         .thenReturn(listOf(mockDocumentSnapshot, mockDocumentSnapshot2))
     var receivedFolders: List<Folder>? = null
     folderRepositoryFirestore.getFoldersFromUid(
-        testFolder.userId, onSuccess = { receivedFolders = it }, onFailure = { assert(false) }, false)
+        testFolder.userId,
+        onSuccess = { receivedFolders = it },
+        onFailure = { assert(false) },
+        false)
     assertNotNull(receivedFolders)
 
     verify(timeout(100)) { (mockQuerySnapshot).documents }
@@ -147,7 +163,10 @@ class FolderRepositoryFirestoreTest {
         .thenReturn(listOf(mockDocumentSnapshot, mockDocumentSnapshot2))
     var receivedFolders: List<Folder>? = null
     folderRepositoryFirestore.getRootFoldersFromUid(
-        testFolder.userId, onSuccess = { receivedFolders = it }, onFailure = { assert(false) }, false)
+        testFolder.userId,
+        onSuccess = { receivedFolders = it },
+        onFailure = { assert(false) },
+        false)
     assertNotNull(receivedFolders)
 
     verify(timeout(100)) { (mockQuerySnapshot).documents }

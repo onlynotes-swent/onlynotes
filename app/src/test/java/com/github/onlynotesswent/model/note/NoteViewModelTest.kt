@@ -174,7 +174,8 @@ class NoteViewModelTest {
 
   @Test
   fun updateNoteUpdatesStatesWhenSuccess() = runTest {
-    `when`(mockNoteRepository.updateNote(eq(testNote), any(), any(), any())).thenAnswer { invocation ->
+    `when`(mockNoteRepository.updateNote(eq(testNote), any(), any(), any())).thenAnswer { invocation
+      ->
       val onSuccess = invocation.getArgument<() -> Unit>(1)
       onSuccess()
     }
