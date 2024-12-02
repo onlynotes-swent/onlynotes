@@ -23,10 +23,19 @@ class FlashcardRepositoryFirestore(private val db: FirebaseFirestore) : Flashcar
    */
   fun documentSnapshotToFlashcard(document: DocumentSnapshot): Flashcard? {
     return try {
-      val type =
-          Flashcard.Type.fromString(
-              document.getString("type") ?: throw Exception("Invalid flashcard type"))
-      Flashcard.from(type, document.data!!)
+      Flashcard(
+          id = document.id,
+          front = document.getString("front") ?: throw Exception("Front is null"),
+          back = document.getString("back") ?: throw Exception("Back is null"),
+          latexFormula =
+              document.getString("latexFormula") ?: throw Exception("Latex formula is null"),
+          hasImage = document.getBoolean("hasImage") ?: throw Exception("hasImage is null"),
+          fakeBacks =
+              document.get("fakeBacks") as List<String>? ?: throw Exception("Fake backs is null"),
+          lastReviewed = document.getTimestamp("lastReviewed"),
+          userId = document.getString("userId") ?: throw Exception("User ID is null"),
+          folderId = document.getString("folderId"),
+          noteId = document.getString("noteId"))
     } catch (e: Exception) {
       Log.e(TAG, "Error converting document to Flashcard", e)
       null
@@ -125,7 +134,7 @@ class FlashcardRepositoryFirestore(private val db: FirebaseFirestore) : Flashcar
   ) {
     db.collection(collectionPath)
         .document(flashcard.id)
-        .set(flashcard.toMap())
+        .set(flashcard)
         .addOnSuccessListener { onSuccess() }
         .addOnFailureListener { exception ->
           onFailure(exception)
@@ -140,7 +149,7 @@ class FlashcardRepositoryFirestore(private val db: FirebaseFirestore) : Flashcar
   ) {
     db.collection(collectionPath)
         .document(flashcard.id)
-        .set(flashcard.toMap())
+        .set(flashcard)
         .addOnSuccessListener { onSuccess() }
         .addOnFailureListener { exception ->
           onFailure(exception)
