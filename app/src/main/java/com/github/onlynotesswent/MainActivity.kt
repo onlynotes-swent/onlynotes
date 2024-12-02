@@ -137,9 +137,7 @@ fun OnlyNotesApp(
             deckViewModel,
             fileViewModel)
       }
-      composable(Screen.DECK_MENU) {
-        Text("Deck Menu Screen - not implemented yet")
-      }
+      composable(Screen.DECK_MENU) { Text("Deck Menu Screen - not implemented yet") }
     }
 
     navigation(

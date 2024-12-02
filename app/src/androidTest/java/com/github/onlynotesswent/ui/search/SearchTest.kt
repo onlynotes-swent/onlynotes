@@ -103,25 +103,23 @@ class SearchScreenTest {
   private val testFolders = listOf(testFolder1, testFolder2)
 
   private val testDeck1 =
-        Deck(
-            id = "1",
-            name = "Deck 1",
-            userId = "1",
-            folderId = "1",
-            visibility = Visibility.PUBLIC,
-            lastModified = Timestamp.now(),
-            flashcardIds = listOf("1", "2")
-        )
+      Deck(
+          id = "1",
+          name = "Deck 1",
+          userId = "1",
+          folderId = "1",
+          visibility = Visibility.PUBLIC,
+          lastModified = Timestamp.now(),
+          flashcardIds = listOf("1", "2"))
   private val testDeck2 =
-        Deck(
-            id = "2",
-            name = "Deck 2",
-            userId = "2",
-            folderId = "2",
-            visibility = Visibility.PUBLIC,
-            lastModified = Timestamp.now(),
-            flashcardIds = listOf("3", "4")
-        )
+      Deck(
+          id = "2",
+          name = "Deck 2",
+          userId = "2",
+          folderId = "2",
+          visibility = Visibility.PUBLIC,
+          lastModified = Timestamp.now(),
+          flashcardIds = listOf("3", "4"))
 
   private val testDecks = listOf(testDeck1, testDeck2)
 
@@ -161,7 +159,13 @@ class SearchScreenTest {
     userViewModel.addUser(testUser1, {}, {})
 
     composeTestRule.setContent {
-      SearchScreen(navigationActions, noteViewModel, userViewModel, folderViewModel, deckViewModel, fileViewModel)
+      SearchScreen(
+          navigationActions,
+          noteViewModel,
+          userViewModel,
+          folderViewModel,
+          deckViewModel,
+          fileViewModel)
     }
   }
 
@@ -303,7 +307,6 @@ class SearchScreenTest {
         .onFirst()
         .assertIsDisplayed()
     composeTestRule.onAllNodesWithTag("deckCard").assertCountEquals(2)
-
   }
 
   @Test

@@ -313,7 +313,8 @@ fun SearchScreen(
                               .userHandle(),
                   ) {
                     deckViewModel.selectDeck(filteredDecks.value[index])
-                    navigationActions.navigateTo(Screen.DECK_MENU.replace("{deckId}", filteredDecks.value[index].id))
+                    navigationActions.navigateTo(
+                        Screen.DECK_MENU.replace("{deckId}", filteredDecks.value[index].id))
                   }
                 }
               }

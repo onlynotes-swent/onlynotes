@@ -26,6 +26,8 @@ import androidx.navigation.navigation
 import androidx.test.espresso.intent.Intents
 import com.github.onlynotesswent.model.file.FileRepository
 import com.github.onlynotesswent.model.file.FileViewModel
+import com.github.onlynotesswent.model.flashcard.deck.DeckRepository
+import com.github.onlynotesswent.model.flashcard.deck.DeckViewModel
 import com.github.onlynotesswent.model.folder.FolderRepository
 import com.github.onlynotesswent.model.folder.FolderViewModel
 import com.github.onlynotesswent.model.note.Note
@@ -63,18 +65,21 @@ import org.mockito.kotlin.eq
 class EndToEndTest {
 
   // Mock repositories, view models, and other dependencies
-  private lateinit var navController: NavHostController
-  private lateinit var navigationActions: NavigationActions
+
   @Mock private lateinit var userRepository: UserRepository
-  private lateinit var userViewModel: UserViewModel
   @Mock private lateinit var noteRepository: NoteRepository
-  private lateinit var noteViewModel: NoteViewModel
   @Mock private lateinit var folderRepository: FolderRepository
-  private lateinit var folderViewModel: FolderViewModel
+  @Mock private lateinit var deckRepository: DeckRepository
   @Mock private lateinit var fileRepository: FileRepository
+  @Mock private lateinit var profilePictureTaker: ProfilePictureTaker
+  private lateinit var userViewModel: UserViewModel
+  private lateinit var noteViewModel: NoteViewModel
+  private lateinit var folderViewModel: FolderViewModel
+  private lateinit var deckViewModel: DeckViewModel
   private lateinit var fileViewModel: FileViewModel
 
-  @Mock private lateinit var profilePictureTaker: ProfilePictureTaker
+  private lateinit var navController: NavHostController
+  private lateinit var navigationActions: NavigationActions
 
   // Sample user and note data for testing
   private val testUid = "testUid123"
@@ -176,6 +181,7 @@ class EndToEndTest {
                         noteViewModel,
                         userViewModel,
                         folderViewModel,
+                        deckViewModel,
                         fileViewModel)
                   }
                 }
@@ -228,13 +234,13 @@ class EndToEndTest {
     `when`(noteRepository.updateNote(any(), any(), any())).thenAnswer {
       testNote = it.arguments[0] as Note
       noteViewModel.selectedNote(testNote)
-      val onSuccess = it.arguments[1] as () -> Unit
+      val onSuccess = it.getArgument<() -> Unit>(1)
       onSuccess()
     }
 
     // Mock get note by id
     `when`(noteRepository.getNoteById(any(), any(), any())).thenAnswer {
-      val onSuccess = it.arguments[1] as (Note) -> Unit
+      val onSuccess = it.getArgument<(Note) -> Unit>(1)
       onSuccess(testNote)
     }
 
@@ -305,30 +311,30 @@ class EndToEndTest {
 
     // Mock the user repository to return the specified user
     `when`(userRepository.getUserById(any(), any(), any(), any())).thenAnswer {
-      val onSuccess = it.arguments[1] as (User) -> Unit
-      val onNotFound = it.arguments[2] as () -> Unit
+      val onSuccess = it.getArgument<(User) -> Unit>(1)
+      val onNotFound = it.getArgument<() -> Unit>(2)
       val uid = it.arguments[0] as String
 
       uidToUser(uid)?.let { it1 -> onSuccess(it1) } ?: onNotFound()
     }
 
     `when`(userRepository.getUsersById(any(), any(), any())).thenAnswer {
-      val onSuccess = it.arguments[1] as (List<User>) -> Unit
-      val userIds = it.arguments[0] as List<String>
+      val onSuccess = it.getArgument<(List<User>) -> Unit>(1)
+      val userIds = it.getArgument<List<String>>(0)
 
       onSuccess(userIds.mapNotNull(uidToUser))
     }
 
     // Mock add user to initialize current user
     `when`(userRepository.addUser(any(), any(), any())).thenAnswer {
-      val onSuccess = it.arguments[1] as () -> Unit
+      val onSuccess = it.getArgument<() -> Unit>(0)
       onSuccess()
     }
     // Initialize current user
     userViewModel.addUser(testUser1, {}, {})
 
     `when`(userRepository.addFollowerTo(any(), any(), any(), any(), any())).thenAnswer {
-      val onSuccess = it.arguments[3] as () -> Unit
+      val onSuccess = it.getArgument<() -> Unit>(3)
       val userId = it.arguments[0] as String // testUser2
       val followerId = it.arguments[1] as String // testUser
       testUser2 =
@@ -345,7 +351,7 @@ class EndToEndTest {
     }
 
     `when`(userRepository.removeFollowerFrom(any(), any(), any(), any(), any())).thenAnswer {
-      val onSuccess = it.arguments[3] as () -> Unit
+      val onSuccess = it.getArgument<() -> Unit>(3)
       val userId = it.arguments[0] as String // testUser2
       val followerId = it.arguments[1] as String // testUser
       testUser2 =
@@ -361,7 +367,7 @@ class EndToEndTest {
     }
 
     `when`(userRepository.updateUser(any(), any(), any())).thenAnswer {
-      val onSuccess = it.arguments[1] as () -> Unit
+      val onSuccess = it.getArgument<() -> Unit>(1)
       onSuccess()
     }
 
