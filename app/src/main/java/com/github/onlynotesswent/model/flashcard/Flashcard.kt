@@ -28,6 +28,11 @@ data class Flashcard(
     val folderId: String?,
     val noteId: String?
 ){
+    /**
+     * Checks if the flashcard is a multiple choice question (MCQ).
+     *
+     * @return true if the flashcard is a MCQ, false otherwise.
+     */
     fun isMCQ(): Boolean {
         return fakeBacks.isNotEmpty()
     }
