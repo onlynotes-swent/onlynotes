@@ -32,6 +32,7 @@ object Screen {
   const val PUBLIC_PROFILE = "Public Profile Screen/{userId}"
   const val EDIT_PROFILE = "Edit Profile Screen"
   const val FOLDER_CONTENTS = "Folder Contents Screen/{folderId}"
+  const val DECK_MENU = "Deck Menu Screen/{deckId}"
 }
 
 data class Destination(

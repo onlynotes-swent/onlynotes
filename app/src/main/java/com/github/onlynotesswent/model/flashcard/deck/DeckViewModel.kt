@@ -30,7 +30,7 @@ class DeckViewModel(private val repository: DeckRepository) : ViewModel() {
 
   /** Initializes the DeckViewModel and the repository. */
   init {
-    repository.init {}
+    repository.init {getPublicDecks()}
   }
 
   companion object {

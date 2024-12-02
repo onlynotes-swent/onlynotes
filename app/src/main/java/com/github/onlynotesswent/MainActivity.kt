@@ -8,6 +8,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.scaleIn
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -135,6 +136,9 @@ fun OnlyNotesApp(
             folderViewModel,
             deckViewModel,
             fileViewModel)
+      }
+      composable(Screen.DECK_MENU) {
+        Text("Deck Menu Screen - not implemented yet")
       }
     }
 
