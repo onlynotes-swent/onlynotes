@@ -50,6 +50,7 @@ class EditMarkdownTest {
             "testNoteId",
             "testTitle",
             Timestamp.now(),
+            Timestamp.now(),
             Visibility.PUBLIC,
             Course("CS-311", "SwEnt", 2024, "testCoursePath"),
             "testUserId")

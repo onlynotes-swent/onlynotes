@@ -17,6 +17,7 @@ import com.github.onlynotesswent.utils.Scanner
 import com.google.firebase.Timestamp
 import java.io.File
 import java.io.IOException
+import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -38,7 +39,7 @@ class PdfViewerTest {
   @get:Rule val composeTestRule = createComposeRule()
 
   @Before
-  fun setUp() {
+  fun setUp() = runTest {
     MockitoAnnotations.openMocks(this)
     fileViewModel = FileViewModel(fileRepository)
     noteViewModel = NoteViewModel(noteRepository)
@@ -50,11 +51,12 @@ class PdfViewerTest {
             id = "1",
             title = "Sample Title",
             date = Timestamp.now(),
+            lastModified = Timestamp.now(),
             visibility = Visibility.DEFAULT,
             userId = "1",
             noteCourse = Course("CS-100", "Sample Class", 2024, "path"),
         )
-    `when`(noteRepository.getNoteById(any(), any(), any())).thenAnswer { invocation ->
+    `when`(noteRepository.getNoteById(any(), any(), any(), any())).thenAnswer { invocation ->
       val onSuccess = invocation.getArgument<(Note) -> Unit>(1)
       onSuccess(mockNote)
     }
