@@ -6,9 +6,7 @@ import com.github.onlynotesswent.model.file.FileType
 import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.flashcard.Flashcard
 import com.github.onlynotesswent.model.flashcard.FlashcardViewModel
-import com.github.onlynotesswent.model.flashcard.TextFlashcard
 import com.github.onlynotesswent.model.note.Note
-import com.google.firebase.Timestamp
 import com.google.gson.JsonParser
 
 class NotesToFlashcard(
@@ -78,13 +76,13 @@ class NotesToFlashcard(
           val answer = flashcardObject.get("answer").asString
 
           val flashcard =
-              TextFlashcard(
+              Flashcard(
                   id = flashcardViewModel.getNewUid(),
                   front = question,
                   back = answer,
-                  lastReviewed = Timestamp.now(),
+                  lastReviewed = null,
                   userId = note.userId,
-                  folderId = note.folderId ?: "",
+                  folderId = note.folderId,
                   noteId = note.id)
           flashcards.add(flashcard)
           flashcardViewModel.addFlashcard(flashcard)

@@ -203,8 +203,7 @@ class EndToEndTest {
                         profilePictureTaker,
                         fileViewModel,
                         noteViewModel,
-                        folderViewModel,
-                        notificationViewModel)
+                        folderViewModel)
                   }
                 }
               }
