@@ -65,6 +65,7 @@ class NotesToFlashcardTest {
           id = "1",
           title = "title",
           date = Timestamp.now(),
+          lastModified = Timestamp.now(),
           visibility = Visibility.DEFAULT,
           userId = "1",
           folderId = "1",
