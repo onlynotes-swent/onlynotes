@@ -22,14 +22,17 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.junit.runner.RunWith
 import org.mockito.Mock
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
+import org.mockito.junit.MockitoJUnitRunner
 import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.never
 
+@RunWith(MockitoJUnitRunner::class)
 class EditNoteTest {
   @Mock private lateinit var userRepository: UserRepository
   @Mock private lateinit var noteRepository: NoteRepository

@@ -21,12 +21,15 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.junit.runner.RunWith
 import org.mockito.Mock
 import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
+import org.mockito.junit.MockitoJUnitRunner
 import org.mockito.kotlin.any
 import org.mockito.kotlin.verify
 
+@RunWith(MockitoJUnitRunner::class)
 class PdfViewerTest {
   @Mock private lateinit var fileRepository: FileRepository
   @Mock private lateinit var noteRepository: NoteRepository
