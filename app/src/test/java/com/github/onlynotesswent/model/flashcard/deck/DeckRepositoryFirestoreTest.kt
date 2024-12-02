@@ -150,7 +150,10 @@ class DeckRepositoryFirestoreTest {
     `when`(mockDocumentSnapshot.getString("name")).thenReturn(testDeck.name)
     `when`(mockDocumentSnapshot.getString("userId")).thenReturn(testDeck.userId)
     `when`(mockDocumentSnapshot.getString("folderId")).thenReturn(testDeck.folderId)
+    `when`(mockDocumentSnapshot.getString("visibility")).thenReturn(testDeck.visibility.toString())
+    `when`(mockDocumentSnapshot.getTimestamp("lastModified")).thenReturn(testDeck.lastModified)
     `when`(mockDocumentSnapshot.get("flashcardIds")).thenReturn(testDeck.flashcardIds)
+
   }
 
   @Test
@@ -166,6 +169,8 @@ class DeckRepositoryFirestoreTest {
     `when`(mockDocumentSnapshotEmpty.getString("name")).thenReturn(null)
     `when`(mockDocumentSnapshotEmpty.getString("userId")).thenReturn(null)
     `when`(mockDocumentSnapshotEmpty.getString("folderId")).thenReturn(null)
+    `when`(mockDocumentSnapshotEmpty.get("visibility")).thenReturn(null)
+    `when`(mockDocumentSnapshotEmpty.get("lastModified")).thenReturn(null)
     `when`(mockDocumentSnapshotEmpty.get("flashcardIds")).thenReturn(null)
     val deckEmpty = deckRepository.documentSnapshotToDeck(mockDocumentSnapshotEmpty)
     assertEquals(null, deckEmpty)

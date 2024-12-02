@@ -132,6 +132,7 @@ class EndToEndTest {
     userViewModel = UserViewModel(userRepository, mockNotificationRepository)
     noteViewModel = NoteViewModel(noteRepository)
     folderViewModel = FolderViewModel(folderRepository)
+    deckViewModel = DeckViewModel(deckRepository)
     fileViewModel = FileViewModel(fileRepository)
     notificationViewModel = NotificationViewModel(mockNotificationRepository)
 
@@ -335,7 +336,7 @@ class EndToEndTest {
 
     // Mock add user to initialize current user
     `when`(userRepository.addUser(any(), any(), any())).thenAnswer {
-      val onSuccess = it.getArgument<() -> Unit>(0)
+      val onSuccess = it.getArgument<() -> Unit>(1)
       onSuccess()
     }
     // Initialize current user
