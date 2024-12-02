@@ -33,7 +33,6 @@ data class User(
     val pendingFriends: Friends = Friends(),
     // for now it's set to true, will be set to false when the notification feature is
     // implemented
-    // val isAccountPublic: Boolean = true
     @get:PropertyName("isAccountPublic") val isAccountPublic: Boolean = false
 ) {
   /**
