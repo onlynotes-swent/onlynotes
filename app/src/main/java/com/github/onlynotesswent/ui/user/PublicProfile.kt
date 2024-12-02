@@ -1,9 +1,7 @@
 package com.github.onlynotesswent.ui.user
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -12,10 +10,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -24,7 +20,10 @@ import androidx.compose.material.icons.automirrored.outlined.ExitToApp
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ElevatedCard
@@ -48,11 +47,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.rememberVectorPainter
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
@@ -63,12 +58,13 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.rememberAsyncImagePainter
 import com.github.onlynotesswent.R
-import com.github.onlynotesswent.model.file.FileType
 import com.github.onlynotesswent.model.file.FileViewModel
+import com.github.onlynotesswent.model.notification.NotificationViewModel
 import com.github.onlynotesswent.model.user.User
 import com.github.onlynotesswent.model.user.UserViewModel
+import com.github.onlynotesswent.ui.common.NonModifiableProfilePicture
+import com.github.onlynotesswent.ui.common.ThumbnailPic
 import com.github.onlynotesswent.ui.navigation.BottomNavigationMenu
 import com.github.onlynotesswent.ui.navigation.LIST_TOP_LEVEL_DESTINATION
 import com.github.onlynotesswent.ui.navigation.NavigationActions
@@ -89,13 +85,17 @@ import com.google.firebase.auth.FirebaseAuth
 fun UserProfileScreen(
     navigationActions: NavigationActions,
     userViewModel: UserViewModel,
-    fileViewModel: FileViewModel
+    fileViewModel: FileViewModel,
+    notificationViewModel: NotificationViewModel
 ) {
   val user = userViewModel.currentUser.collectAsState()
+  user.value?.let { userViewModel.refreshCurrentUser() }
+
   // Display the user's profile information
   ProfileScaffold(
       navigationActions = navigationActions,
       userViewModel = userViewModel,
+      notificationViewModel = notificationViewModel,
       includeBackButton = false,
       topBarTitle = stringResource(R.string.my_profile),
       floatingActionButton = {
@@ -125,13 +125,16 @@ fun UserProfileScreen(
 fun PublicProfileScreen(
     navigationActions: NavigationActions,
     userViewModel: UserViewModel,
-    fileViewModel: FileViewModel
+    fileViewModel: FileViewModel,
+    notificationViewModel: NotificationViewModel
 ) {
   val currentUser = userViewModel.currentUser.collectAsState()
   val profileUser = userViewModel.profileUser.collectAsState()
+  currentUser.value?.let { userViewModel.refreshCurrentUser() }
+  profileUser.value?.let { userViewModel.refreshProfileUser(it.uid) }
 
   // Display the user's profile information
-  ProfileScaffold(navigationActions, userViewModel) {
+  ProfileScaffold(navigationActions, userViewModel, notificationViewModel) {
     ProfileContent(profileUser, navigationActions, userViewModel, fileViewModel)
     if (profileUser.value != null && currentUser.value != null) {
       FollowUnfollowButton(userViewModel, profileUser.value!!.uid)
@@ -153,6 +156,7 @@ fun PublicProfileScreen(
 private fun ProfileScaffold(
     navigationActions: NavigationActions,
     userViewModel: UserViewModel,
+    notificationViewModel: NotificationViewModel,
     includeBackButton: Boolean = true,
     topBarTitle: String = stringResource(R.string.public_profile),
     floatingActionButton: @Composable () -> Unit = {},
@@ -172,6 +176,7 @@ private fun ProfileScaffold(
             title = topBarTitle,
             navigationActions = navigationActions,
             userViewModel = userViewModel,
+            notificationViewModel = notificationViewModel,
             includeBackButton = includeBackButton)
       },
       content = { paddingValues ->
@@ -204,6 +209,7 @@ fun TopProfileBar(
     title: String,
     navigationActions: NavigationActions,
     userViewModel: UserViewModel,
+    notificationViewModel: NotificationViewModel,
     includeBackButton: Boolean = true,
     onBackButtonClick: () -> Unit = { navigationActions.goBack() }
 ) {
@@ -218,6 +224,7 @@ fun TopProfileBar(
       },
       actions = {
         if (!includeBackButton) {
+          NotificationButton(navigationActions, userViewModel, notificationViewModel)
           LogoutButton {
             FirebaseAuth.getInstance().signOut()
             navigationActions.navigateTo(Screen.AUTH)
@@ -421,7 +428,7 @@ fun FollowUnfollowButton(userViewModel: UserViewModel, otherUserId: String) {
  * @param followerId The ID of the follower to remove.
  */
 @Composable
-fun RemoveFollowerButton(userViewModel: UserViewModel, followerId: String) {
+fun RemoveFollowerButton(userViewModel: UserViewModel, followerId: String, onClick: () -> Unit) {
   OutlinedButton(
       contentPadding = PaddingValues(horizontal = 10.dp),
       shape = RoundedCornerShape(25),
@@ -429,7 +436,10 @@ fun RemoveFollowerButton(userViewModel: UserViewModel, followerId: String) {
       onClick = {
         userViewModel.removeFollower(
             followerId,
-            { userViewModel.profileUser.value?.let { userViewModel.refreshProfileUser(it.uid) } },
+            {
+              userViewModel.profileUser.value?.let { userViewModel.refreshProfileUser(it.uid) }
+              onClick()
+            },
             {})
       }) {
         Text(
@@ -457,7 +467,7 @@ fun RemoveFollowerButton(userViewModel: UserViewModel, followerId: String) {
 @Composable
 fun UserBottomSheet(
     expanded: MutableState<Boolean>,
-    users: State<List<User>>,
+    users: MutableState<List<User>>,
     userViewModel: UserViewModel,
     fileViewModel: FileViewModel,
     navigationActions: NavigationActions,
@@ -485,10 +495,21 @@ fun UserBottomSheet(
                     modifier = Modifier.fillMaxWidth().padding(start = 30.dp, end = 10.dp),
                     horizontalAlignment = Alignment.Start) {
                       users.value.forEach { user ->
-                        UserItem(user, userViewModel, fileViewModel, isFollowerSheetOfCurrentUser) {
-                          expanded.value = false
-                          switchProfileTo(user, userViewModel, navigationActions)
-                        }
+                        UserItem(
+                            user,
+                            userViewModel,
+                            fileViewModel,
+                            isFollowerSheetOfCurrentUser,
+                            {
+                              expanded.value = false
+                              switchProfileTo(user, userViewModel, navigationActions)
+                            },
+                            {
+                              if (isFollowerSheetOfCurrentUser) {
+                                userViewModel.getFollowersFrom(
+                                    userViewModel.currentUser.value!!.uid, { users.value = it }, {})
+                              }
+                            })
                       }
                     }
               }
@@ -513,6 +534,7 @@ fun UserItem(
     fileViewModel: FileViewModel,
     isFollowerSheetOfCurrentUser: Boolean = false,
     onClick: () -> Unit,
+    onRemove: () -> Unit = {}
 ) {
   Row(
       modifier = Modifier.padding(8.dp).testTag("userItem").clickable { onClick() },
@@ -532,7 +554,7 @@ fun UserItem(
           Text(user.userHandle(), style = Typography.bodyLarge, modifier = Modifier.alpha(0.7f))
         }
     if (isFollowerSheetOfCurrentUser) {
-      RemoveFollowerButton(userViewModel, user.uid)
+      RemoveFollowerButton(userViewModel, user.uid, onRemove)
     } else if (user.uid != userViewModel.currentUser.collectAsState().value!!.uid) {
       FollowUnfollowButton(userViewModel, user.uid)
     }
@@ -585,68 +607,6 @@ fun DisplayBioCard(user: State<User?>) {
 }
 
 /**
- * Displays the user's thumbnail profile picture, by wrapping the NonModifiableProfilePicture
- * composable.
- *
- * @param user The user whose profile picture is to be displayed.
- * @param fileViewModel The ViewModel for downloading images.
- * @param size The size of the profile picture.
- */
-@Composable
-fun ThumbnailPic(user: User, fileViewModel: FileViewModel, size: Int = 40) {
-  val profilePictureUri = remember { mutableStateOf("") }
-  val userState = remember { mutableStateOf(user) }
-  NonModifiableProfilePicture(
-      userState, profilePictureUri, fileViewModel, size, "thumbnail--${user.uid}")
-}
-
-/**
- * Displays the user's profile picture.
- *
- * @param user The user whose profile picture is to be displayed.
- * @param profilePictureUri The URI of the profile picture.
- * @param fileViewModel The ViewModel for downloading images.
- * @param size The size of the profile picture.
- * @param testTag The test tag for the profile picture.
- */
-@Composable
-fun NonModifiableProfilePicture(
-    user: State<User?>,
-    profilePictureUri: MutableState<String>,
-    fileViewModel: FileViewModel,
-    size: Int = 150,
-    testTag: String = "profilePicture"
-) {
-  Box(modifier = Modifier.size(size.dp)) {
-    // Download the profile picture from Firebase Storage if it hasn't been downloaded yet
-    if (user.value!!.hasProfilePicture && profilePictureUri.value.isBlank()) {
-      fileViewModel.downloadFile(
-          user.value!!.uid,
-          FileType.PROFILE_PIC_JPEG,
-          context = LocalContext.current,
-          onSuccess = { file -> profilePictureUri.value = file.absolutePath })
-    }
-
-    // Profile Picture Painter
-    val painter =
-        if (user.value!!.hasProfilePicture && profilePictureUri.value.isNotBlank()) {
-          // Load the profile picture if it exists
-          rememberAsyncImagePainter(profilePictureUri.value)
-        } else {
-          // Load the default profile picture if it doesn't exist
-          rememberVectorPainter(Icons.Default.AccountCircle)
-        }
-
-    // Profile Picture
-    Image(
-        painter = painter,
-        contentDescription = "Profile Picture",
-        modifier = Modifier.testTag(testTag).size(size.dp).clip(CircleShape),
-        contentScale = ContentScale.Crop)
-  }
-}
-
-/**
  * Displays a logout button.
  *
  * @param onClick The action to be performed when the button is clicked.
@@ -662,4 +622,42 @@ fun LogoutButton(onClick: () -> Unit) {
       content = {
         Icon(imageVector = Icons.AutoMirrored.Outlined.ExitToApp, contentDescription = "Logout")
       })
+}
+
+/**
+ * Displays the notification button to navigate to the notification screen, with a badge to show the
+ * number of unread notifications.
+ */
+@Composable
+fun NotificationButton(
+    navigationActions: NavigationActions,
+    userViewModel: UserViewModel,
+    notificationViewModel: NotificationViewModel
+) {
+  userViewModel.currentUser.collectAsState().value?.let { user ->
+    notificationViewModel.getNotificationByReceiverId(user.uid)
+  }
+  val userNotifications = notificationViewModel.userNotifications.collectAsState()
+  val unreadNotificationsCount = userNotifications.value.filter { !it.read }.size
+  BadgedBox(
+      modifier =
+          Modifier.testTag("notificationButton").clickable {
+            navigationActions.navigateTo(Screen.NOTIFICATIONS)
+          },
+      badge = {
+        if (unreadNotificationsCount > 0) {
+          Badge(modifier = Modifier.align(Alignment.TopEnd)) {
+            Text(unreadNotificationsCount.toString(), color = Color.White)
+          }
+        }
+      },
+  ) {
+    Icon(
+        // notification icon
+        imageVector = Icons.Default.Notifications,
+        contentDescription = "Notifications",
+        tint =
+            if (unreadNotificationsCount > 0) MaterialTheme.colorScheme.primary
+            else Color.Unspecified)
+  }
 }

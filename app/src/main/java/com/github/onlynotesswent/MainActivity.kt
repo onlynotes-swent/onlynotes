@@ -25,6 +25,7 @@ import androidx.navigation.compose.rememberNavController
 import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.folder.FolderViewModel
 import com.github.onlynotesswent.model.note.NoteViewModel
+import com.github.onlynotesswent.model.notification.NotificationViewModel
 import com.github.onlynotesswent.model.user.UserViewModel
 import com.github.onlynotesswent.ui.authentication.SignInScreen
 import com.github.onlynotesswent.ui.navigation.NavigationActions
@@ -40,6 +41,7 @@ import com.github.onlynotesswent.ui.search.SearchScreen
 import com.github.onlynotesswent.ui.theme.AppTheme
 import com.github.onlynotesswent.ui.user.CreateUserScreen
 import com.github.onlynotesswent.ui.user.EditProfileScreen
+import com.github.onlynotesswent.ui.user.NotificationScreen
 import com.github.onlynotesswent.ui.user.PublicProfileScreen
 import com.github.onlynotesswent.ui.user.UserProfileScreen
 import com.github.onlynotesswent.utils.ProfilePictureTaker
@@ -77,6 +79,8 @@ fun OnlyNotesApp(
   val noteViewModel: NoteViewModel = viewModel(factory = NoteViewModel.Factory)
   val fileViewModel: FileViewModel = viewModel(factory = FileViewModel.Factory)
   val folderViewModel: FolderViewModel = viewModel(factory = FolderViewModel.Factory)
+  val notificationViewModel: NotificationViewModel =
+      viewModel(factory = NotificationViewModel.Factory)
 
   NavHost(navController = navController, startDestination = Route.AUTH) {
     navigation(
@@ -146,18 +150,22 @@ fun OnlyNotesApp(
         route = Route.PROFILE,
     ) {
       composable(Screen.USER_PROFILE) {
-        UserProfileScreen(navigationActions, userViewModel, fileViewModel)
+        UserProfileScreen(navigationActions, userViewModel, fileViewModel, notificationViewModel)
       }
-      composable(Screen.PUBLIC_PROFILE) { navBackStackEntry ->
-        val userId = navBackStackEntry.arguments?.getString("userId")
+      composable(Screen.PUBLIC_PROFILE) {
+        PublicProfileScreen(navigationActions, userViewModel, fileViewModel, notificationViewModel)
+        composable(Screen.PUBLIC_PROFILE) { navBackStackEntry ->
+          val userId = navBackStackEntry.arguments?.getString("userId")
 
-        // Refresh the user profile when the user Id changes
-        LaunchedEffect(userId) {
-          if (userId != null && userId != "{userId}") {
-            userViewModel.refreshProfileUser(userId)
+          // Refresh the user profile when the user Id changes
+          LaunchedEffect(userId) {
+            if (userId != null && userId != "{userId}") {
+              userViewModel.refreshProfileUser(userId)
+            }
           }
+          PublicProfileScreen(
+              navigationActions, userViewModel, fileViewModel, notificationViewModel)
         }
-        PublicProfileScreen(navigationActions, userViewModel, fileViewModel)
       }
       composable(Screen.EDIT_PROFILE) {
         EditProfileScreen(
@@ -166,7 +174,11 @@ fun OnlyNotesApp(
             profilePictureTaker,
             fileViewModel,
             noteViewModel,
-            folderViewModel)
+            folderViewModel,
+            notificationViewModel)
+      }
+      composable(Screen.NOTIFICATIONS) {
+        NotificationScreen(userViewModel, navigationActions, fileViewModel, notificationViewModel)
       }
     }
   }
