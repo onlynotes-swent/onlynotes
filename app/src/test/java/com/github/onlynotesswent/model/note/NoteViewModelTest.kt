@@ -4,6 +4,7 @@ import com.github.onlynotesswent.model.common.Course
 import com.github.onlynotesswent.model.common.Visibility
 import com.google.firebase.Timestamp
 import junit.framework.TestCase.assertEquals
+import kotlinx.coroutines.test.runTest
 import org.hamcrest.CoreMatchers.`is`
 import org.hamcrest.MatcherAssert.assertThat
 import org.junit.Before
@@ -27,6 +28,7 @@ class NoteViewModelTest {
           id = "1",
           title = "title",
           date = Timestamp.now(),
+          lastModified = Timestamp.now(),
           visibility = Visibility.DEFAULT,
           userId = "1",
           folderId = "1",
@@ -61,8 +63,8 @@ class NoteViewModelTest {
   }
 
   @Test
-  fun getNotesFromCallsRepository() {
-    `when`(mockNoteRepository.getNotesFrom(any(), any(), any())).thenAnswer {
+  fun getNotesFromCallsRepository() = runTest {
+    `when`(mockNoteRepository.getNotesFrom(any(), any(), any(), any())).thenAnswer {
       val onSuccess: (List<Note>) -> Unit = it.getArgument(1)
       onSuccess(listOf(testNote))
     }
@@ -71,8 +73,8 @@ class NoteViewModelTest {
   }
 
   @Test
-  fun getRootNotesFromCallsRepository() {
-    `when`(mockNoteRepository.getRootNotesFrom(any(), any(), any())).thenAnswer {
+  fun getRootNotesFromCallsRepository() = runTest {
+    `when`(mockNoteRepository.getRootNotesFrom(any(), any(), any(), any())).thenAnswer {
       val onSuccess: (List<Note>) -> Unit = it.getArgument(1)
       onSuccess(listOf(testNote))
     }
@@ -81,8 +83,8 @@ class NoteViewModelTest {
   }
 
   @Test
-  fun getNoteByIdCallsRepository() {
-    `when`(mockNoteRepository.getNoteById(any(), any(), any())).thenAnswer {
+  fun getNoteByIdCallsRepository() = runTest {
+    `when`(mockNoteRepository.getNoteById(any(), any(), any(), any())).thenAnswer {
       val onSuccess: (Note) -> Unit = it.getArgument(1)
       onSuccess(testNote)
     }
@@ -91,8 +93,8 @@ class NoteViewModelTest {
   }
 
   @Test
-  fun addNoteCallsRepository() {
-    `when`(mockNoteRepository.addNote(any(), any(), any())).thenAnswer {
+  fun addNoteCallsRepository() = runTest {
+    `when`(mockNoteRepository.addNote(any(), any(), any(), any())).thenAnswer {
       val onSuccess: () -> Unit = it.getArgument(1)
       onSuccess()
     }
@@ -103,12 +105,12 @@ class NoteViewModelTest {
 
     // To test default parameters
     noteViewModel.addNote(testNote)
-    verify(mockNoteRepository, times(2)).addNote(eq(testNote), any(), any())
+    verify(mockNoteRepository, times(2)).addNote(eq(testNote), any(), any(), any())
   }
 
   @Test
-  fun updateNoteCallsRepository() {
-    `when`(mockNoteRepository.updateNote(any(), any(), any())).thenAnswer {
+  fun updateNoteCallsRepository() = runTest {
+    `when`(mockNoteRepository.updateNote(any(), any(), any(), any())).thenAnswer {
       val onSuccess: () -> Unit = it.getArgument(1)
       onSuccess()
     }
@@ -119,12 +121,12 @@ class NoteViewModelTest {
 
     // To test default parameters
     noteViewModel.updateNote(testNote)
-    verify(mockNoteRepository, times(2)).updateNote(eq(testNote), any(), any())
+    verify(mockNoteRepository, times(2)).updateNote(eq(testNote), any(), any(), any())
   }
 
   @Test
-  fun deleteNoteByIdCallsRepository() {
-    `when`(mockNoteRepository.deleteNoteById(any(), any(), any())).thenAnswer {
+  fun deleteNoteByIdCallsRepository() = runTest {
+    `when`(mockNoteRepository.deleteNoteById(any(), any(), any(), any())).thenAnswer {
       val onSuccess: () -> Unit = it.getArgument(1)
       onSuccess()
     }
@@ -135,12 +137,12 @@ class NoteViewModelTest {
 
     // To test default parameters
     noteViewModel.deleteNoteById("1", "1")
-    verify(mockNoteRepository, times(2)).deleteNoteById(eq("1"), any(), any())
+    verify(mockNoteRepository, times(2)).deleteNoteById(eq("1"), any(), any(), any())
   }
 
   @Test
-  fun deleteNotesFromUser() {
-    `when`(mockNoteRepository.deleteNotesByUserId(any(), any(), any())).thenAnswer {
+  fun deleteNotesFromUser() = runTest {
+    `when`(mockNoteRepository.deleteNotesByUserId(any(), any(), any(), any())).thenAnswer {
       val onSuccess: () -> Unit = it.getArgument(1)
       onSuccess()
     }
@@ -151,12 +153,12 @@ class NoteViewModelTest {
 
     // To test default parameters
     noteViewModel.deleteNotesByUserId("1")
-    verify(mockNoteRepository, times(2)).deleteNotesByUserId(eq("1"), any(), any())
+    verify(mockNoteRepository, times(2)).deleteNotesByUserId(eq("1"), any(), any(), any())
   }
 
   @Test
-  fun getNotesFromFolderCallsRepository() {
-    `when`(mockNoteRepository.getNotesFromFolder(any(), any(), any())).thenAnswer {
+  fun getNotesFromFolderCallsRepository() = runTest {
+    `when`(mockNoteRepository.getNotesFromFolder(any(), any(), any(), any())).thenAnswer {
       val onSuccess: (List<Note>) -> Unit = it.getArgument(1)
       onSuccess(listOf(testNote))
     }
@@ -165,22 +167,22 @@ class NoteViewModelTest {
   }
 
   @Test
-  fun deleteNotesFromFolderCallsRepository() {
+  fun deleteNotesFromFolderCallsRepository() = runTest {
     noteViewModel.deleteNotesFromFolder("1")
-    verify(mockNoteRepository).deleteNotesFromFolder(eq("1"), any(), any())
+    verify(mockNoteRepository).deleteNotesFromFolder(eq("1"), any(), any(), any())
   }
 
   @Test
-  fun updateNoteUpdatesStatesWhenSuccess() {
-    `when`(mockNoteRepository.updateNote(eq(testNote), any(), any())).thenAnswer { invocation ->
+  fun updateNoteUpdatesStatesWhenSuccess() = runTest {
+    `when`(mockNoteRepository.updateNote(eq(testNote), any(), any(), any())).thenAnswer { invocation ->
       val onSuccess = invocation.getArgument<() -> Unit>(1)
       onSuccess()
     }
     noteViewModel.updateNote(testNote)
 
-    verify(mockNoteRepository).updateNote(eq(testNote), any(), any())
-    verify(mockNoteRepository).getRootNotesFrom(eq("1"), any(), any())
-    verify(mockNoteRepository).getNotesFromFolder(eq("1"), any(), any())
+    verify(mockNoteRepository).updateNote(eq(testNote), any(), any(), any())
+    verify(mockNoteRepository).getRootNotesFrom(eq("1"), any(), any(), any())
+    verify(mockNoteRepository).getNotesFromFolder(eq("1"), any(), any(), any())
   }
 
   @Test
