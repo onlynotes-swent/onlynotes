@@ -22,9 +22,14 @@ class DeckViewModelTest {
   private lateinit var deckViewModel: DeckViewModel
 
   private val testDeck: Deck =
-      Deck(id = "1", name = "Deck", userId = "2", folderId = "3",
-        visibility = Visibility.PUBLIC, lastModified = Timestamp.now(),
-        flashcardIds = listOf("4", "5"))
+      Deck(
+          id = "1",
+          name = "Deck",
+          userId = "2",
+          folderId = "3",
+          visibility = Visibility.PUBLIC,
+          lastModified = Timestamp.now(),
+          flashcardIds = listOf("4", "5"))
 
   @Before
   fun setUp() {

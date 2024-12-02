@@ -1,8 +1,6 @@
 package com.github.onlynotesswent.ui.search
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -13,7 +11,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
@@ -56,9 +53,9 @@ import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
 import com.github.onlynotesswent.ui.user.UserItem
 import com.github.onlynotesswent.ui.user.switchProfileTo
-import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
 import java.util.Locale
+import kotlinx.coroutines.delay
 
 /**
  * Displays the search screen where users can search notes by title.
@@ -142,85 +139,76 @@ fun SearchScreen(
                   Modifier.fillMaxWidth()
                       .padding(top = 16.dp, start = 16.dp, end = 16.dp)
                       .testTag("searchTextField"))
-            LazyRow(
-              modifier =
-                  Modifier.fillMaxWidth()
-                      .padding(vertical = 6.dp, horizontal = 20.dp)) {
-                item{
-                    FilterChip(
-                        searchType.value == SearchType.USERS,
-                        label = { Text(stringResource(R.string.users_maj), maxLines = 1) },
-                        onClick = {
-                          searchType.value = SearchType.USERS
-                          userViewModel.getAllUsers()
-                        },
-                        leadingIcon = {
-                          if (searchType.value == SearchType.USERS)
-                              Icon(
-                                  imageVector = Icons.Default.Check,
-                                  contentDescription = "Chip Icon",
-                                  tint = MaterialTheme.colorScheme.onBackground)
-                        },
-                        modifier = Modifier.padding(horizontal = 10.dp).testTag("userFilterChip"))
-                }
-                item {
-                    FilterChip(
-                        searchType.value == SearchType.NOTES,
-                        label = { Text(stringResource(R.string.notes_maj), maxLines = 1) },
-                        onClick = {
-                            searchType.value = SearchType.NOTES
-                            noteViewModel.getPublicNotes()
-                        },
-                        leadingIcon = {
-                            if (searchType.value == SearchType.NOTES)
-                                Icon(
-                                    imageVector = Icons.Default.Check,
-                                    contentDescription = "Chip Icon",
-                                    tint = MaterialTheme.colorScheme.onBackground
-                                )
-                        },
-                        modifier = Modifier.padding(horizontal = 5.dp).testTag("noteFilterChip")
-                    )
-                }
-                item {
-                    FilterChip(
-                        searchType.value == SearchType.FOLDERS,
-                        label = { Text(stringResource(R.string.folders_maj), maxLines = 1) },
-                        onClick = {
-                            searchType.value = SearchType.FOLDERS
-                            folderViewModel.getPublicFolders()
-                        },
-                        leadingIcon = {
-                            if (searchType.value == SearchType.FOLDERS)
-                                Icon(
-                                    imageVector = Icons.Default.Check,
-                                    contentDescription = "Chip Icon",
-                                    tint = MaterialTheme.colorScheme.onBackground
-                                )
-                        },
-                        modifier = Modifier.padding(horizontal = 10.dp).testTag("folderFilterChip")
-                    )
-                }
-                item {
-                    FilterChip(
-                        searchType.value == SearchType.DECKS,
-                        label = { Text(stringResource(R.string.decks_maj), maxLines = 1) },
-                        onClick = {
-                            searchType.value = SearchType.DECKS
-                            deckViewModel.getPublicDecks()
-                        },
-                        leadingIcon = {
-                            if (searchType.value == SearchType.DECKS)
-                                Icon(
-                                    imageVector = Icons.Default.Check,
-                                    contentDescription = "Chip Icon",
-                                    tint = MaterialTheme.colorScheme.onBackground
-                                )
-                        },
-                        modifier = Modifier.padding(horizontal = 5.dp).testTag("deckFilterChip")
-                    )
-                }
-              }
+          LazyRow(modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp, horizontal = 20.dp)) {
+            item {
+              FilterChip(
+                  searchType.value == SearchType.USERS,
+                  label = { Text(stringResource(R.string.users_maj), maxLines = 1) },
+                  onClick = {
+                    searchType.value = SearchType.USERS
+                    userViewModel.getAllUsers()
+                  },
+                  leadingIcon = {
+                    if (searchType.value == SearchType.USERS)
+                        Icon(
+                            imageVector = Icons.Default.Check,
+                            contentDescription = "Chip Icon",
+                            tint = MaterialTheme.colorScheme.onBackground)
+                  },
+                  modifier = Modifier.padding(horizontal = 10.dp).testTag("userFilterChip"))
+            }
+            item {
+              FilterChip(
+                  searchType.value == SearchType.NOTES,
+                  label = { Text(stringResource(R.string.notes_maj), maxLines = 1) },
+                  onClick = {
+                    searchType.value = SearchType.NOTES
+                    noteViewModel.getPublicNotes()
+                  },
+                  leadingIcon = {
+                    if (searchType.value == SearchType.NOTES)
+                        Icon(
+                            imageVector = Icons.Default.Check,
+                            contentDescription = "Chip Icon",
+                            tint = MaterialTheme.colorScheme.onBackground)
+                  },
+                  modifier = Modifier.padding(horizontal = 5.dp).testTag("noteFilterChip"))
+            }
+            item {
+              FilterChip(
+                  searchType.value == SearchType.FOLDERS,
+                  label = { Text(stringResource(R.string.folders_maj), maxLines = 1) },
+                  onClick = {
+                    searchType.value = SearchType.FOLDERS
+                    folderViewModel.getPublicFolders()
+                  },
+                  leadingIcon = {
+                    if (searchType.value == SearchType.FOLDERS)
+                        Icon(
+                            imageVector = Icons.Default.Check,
+                            contentDescription = "Chip Icon",
+                            tint = MaterialTheme.colorScheme.onBackground)
+                  },
+                  modifier = Modifier.padding(horizontal = 10.dp).testTag("folderFilterChip"))
+            }
+            item {
+              FilterChip(
+                  searchType.value == SearchType.DECKS,
+                  label = { Text(stringResource(R.string.decks_maj), maxLines = 1) },
+                  onClick = {
+                    searchType.value = SearchType.DECKS
+                    deckViewModel.getPublicDecks()
+                  },
+                  leadingIcon = {
+                    if (searchType.value == SearchType.DECKS)
+                        Icon(
+                            imageVector = Icons.Default.Check,
+                            contentDescription = "Chip Icon",
+                            tint = MaterialTheme.colorScheme.onBackground)
+                  },
+                  modifier = Modifier.padding(horizontal = 5.dp).testTag("deckFilterChip"))
+            }
+          }
         }
       },
       bottomBar = {
@@ -252,12 +240,12 @@ fun SearchScreen(
                 searchType.value == SearchType.DECKS &&
                 filteredDecks.value.isNotEmpty()
 
-        val displayLoader: Boolean = searchQuery.value.isNotBlank() && (
-                (searchType.value == SearchType.USERS && filteredUsers.value.isEmpty()) ||
-                (searchType.value == SearchType.NOTES && filteredNotes.value.isEmpty()) ||
-                (searchType.value == SearchType.FOLDERS && filteredFolders.value.isEmpty()) ||
-                (searchType.value == SearchType.DECKS && filteredDecks.value.isEmpty()))
-
+        val displayLoader: Boolean =
+            searchQuery.value.isNotBlank() &&
+                ((searchType.value == SearchType.USERS && filteredUsers.value.isEmpty()) ||
+                    (searchType.value == SearchType.NOTES && filteredNotes.value.isEmpty()) ||
+                    (searchType.value == SearchType.FOLDERS && filteredFolders.value.isEmpty()) ||
+                    (searchType.value == SearchType.DECKS && filteredDecks.value.isEmpty()))
 
         if (displayNotes) {
           LazyColumn(
@@ -364,19 +352,19 @@ fun DeckSearchItem(deck: Deck, author: String, onClick: () -> Unit) {
             Modifier.testTag("deckColumn").padding(10.dp).fillMaxWidth(),
         ) {
           Row {
-              Text(
-                  text = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-                      .format(deck.lastModified.toDate()),
-                  style = MaterialTheme.typography.bodyMedium,
-                  modifier = Modifier.padding(end=10.dp))
-              Spacer(modifier = Modifier.weight(1f))
-              Text(
-                    text = "${deck.flashcardIds.size} cards",
-                    style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.padding(start=10.dp)
-              )
+            Text(
+                text =
+                    SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+                        .format(deck.lastModified.toDate()),
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(end = 10.dp))
+            Spacer(modifier = Modifier.weight(1f))
+            Text(
+                text = "${deck.flashcardIds.size} cards",
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(start = 10.dp))
           }
-            Spacer(modifier = Modifier.height(8.dp))
+          Spacer(modifier = Modifier.height(8.dp))
           Text(
               text = deck.name,
               style = MaterialTheme.typography.bodyMedium,

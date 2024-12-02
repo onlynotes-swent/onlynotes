@@ -129,7 +129,12 @@ fun OnlyNotesApp(
     ) {
       composable(Screen.SEARCH) {
         SearchScreen(
-            navigationActions, noteViewModel, userViewModel, folderViewModel, deckViewModel, fileViewModel)
+            navigationActions,
+            noteViewModel,
+            userViewModel,
+            folderViewModel,
+            deckViewModel,
+            fileViewModel)
       }
     }
 

@@ -46,7 +46,14 @@ class DeckRepositoryFirestoreTest {
   private val testFlashcardIds = listOf("7", "8")
 
   private val testDeck =
-      Deck(id = "1", name = "Deck", userId = "2", folderId = "3", visibility = Visibility.PUBLIC, lastModified = Timestamp.now(), flashcardIds = listOf("4", "5"))
+      Deck(
+          id = "1",
+          name = "Deck",
+          userId = "2",
+          folderId = "3",
+          visibility = Visibility.PUBLIC,
+          lastModified = Timestamp.now(),
+          flashcardIds = listOf("4", "5"))
 
   private fun verifyErrorLog(msg: String) {
     // Get all the logs
