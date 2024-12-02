@@ -35,6 +35,22 @@ interface FolderRepository {
   )
 
   /**
+   * Adds a list of folders.
+   *
+   * @param folders The list of folders to add.
+   * @param onSuccess Callback to be invoked when the folders are added successfully.
+   * @param onFailure Callback to be invoked if an error occurs.
+   * @param useCache Whether to update data from cache. Should be true only if userId of the folders
+   *   is the current user.
+   */
+  suspend fun addFolders(
+      folders: List<Folder>,
+      onSuccess: () -> Unit,
+      onFailure: (Exception) -> Unit,
+      useCache: Boolean
+  )
+
+  /**
    * Deletes a folder by its ID.
    *
    * @param folderId The ID of the folder to delete.

@@ -66,6 +66,34 @@ class FolderRepositoryFirestore(
     }
   }
 
+  override suspend fun addFolders(
+      folders: List<Folder>,
+      onSuccess: () -> Unit,
+      onFailure: (Exception) -> Unit,
+      useCache: Boolean
+  ) {
+    // Update the cache if needed
+    if (useCache) {
+      withContext(Dispatchers.IO) { folderDao.insertFolders(folders) }
+    }
+
+    val batch = db.batch()
+    folders.forEach { folder ->
+      batch.set(db.collection(folderCollectionPath).document(folder.id), folder)
+    }
+
+    batch.commit().addOnCompleteListener { result ->
+      if (result.isSuccessful) {
+        onSuccess()
+      } else {
+        result.exception?.let { e: Exception ->
+          Log.e(TAG, "Failed to add folders: ${e.message}")
+          onFailure(e)
+        }
+      }
+    }
+  }
+
   override suspend fun deleteFolderById(
       folderId: String,
       onSuccess: () -> Unit,
@@ -406,7 +434,15 @@ class FolderRepositoryFirestore(
       firestoreFolders: List<Folder>,
       cachedFolders: List<Folder>
   ): List<Folder> {
-    return firestoreFolders // TODO: modify
+    val updatedFolders =
+        (firestoreFolders + cachedFolders)
+            .groupBy { it.id }
+            .map { (_, folder) -> folder.maxByOrNull { it.lastModified }!! }
+
+    // Update firestore and cache with newest data
+    addFolders(updatedFolders, {}, {}, true)
+
+    return updatedFolders
   }
 
   /**
