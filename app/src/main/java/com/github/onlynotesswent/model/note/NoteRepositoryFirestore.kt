@@ -409,12 +409,9 @@ class NoteRepositoryFirestore(
       cachedNotes: List<Note>
   ): List<Note> {
     val updatedNotes =
-        firestoreNotes.map { firestoreNote ->
-          val localNote = cachedNotes.find { it.id == firestoreNote.id }
-          if (localNote == null || firestoreNote.lastModified > localNote.lastModified)
-              firestoreNote // Firestore has newest data
-          else localNote // Local database has newest data
-        }
+        (firestoreNotes + cachedNotes)
+            .groupBy { it.id }
+            .map { (_, note) -> note.maxByOrNull { it.lastModified }!! }
 
     // Update firestore and cache with newest data
     addNotes(updatedNotes, {}, {}, true)
