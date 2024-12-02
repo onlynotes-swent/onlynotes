@@ -29,13 +29,15 @@ import junit.framework.TestCase.assertEquals
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.junit.runner.RunWith
 import org.mockito.Mock
-import org.mockito.Mockito.times
 import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
+import org.mockito.junit.MockitoJUnitRunner
 import org.mockito.kotlin.any
 import org.mockito.kotlin.verify
 
+@RunWith(MockitoJUnitRunner::class)
 class ProfileScreenTest {
   @Mock private lateinit var mockUserRepository: UserRepository
   @Mock private lateinit var mockNavigationActions: NavigationActions

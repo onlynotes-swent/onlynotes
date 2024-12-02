@@ -421,7 +421,7 @@ class EditProfileScreenTest {
   }
 
   @Test
-  fun testDeletAccount() = runTest {
+  fun testDeleteAccount() = runTest {
     composeTestRule.setContent {
       EditProfileScreen(
           mockNavigationActions,
