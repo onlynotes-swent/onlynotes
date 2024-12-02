@@ -49,6 +49,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewModelScope
 import com.github.onlynotesswent.R
 import com.github.onlynotesswent.model.common.Course
 import com.github.onlynotesswent.model.common.Visibility
@@ -63,6 +64,7 @@ import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
 import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
 import com.google.firebase.Timestamp
+import kotlinx.coroutines.launch
 
 /**
  * Displays the edit note screen, where users can update the title and content of an existing note.
@@ -414,17 +416,20 @@ fun SaveButton(
       enabled = noteTitle.isNotEmpty(),
       onClick = {
         val course = Course(courseCode, courseName, courseYear, "")
-        noteViewModel.updateNote(
-            Note(
-                id = note.id,
-                title = noteTitle,
-                date = Timestamp.now(), // Use current timestamp
-                visibility = visibility ?: Visibility.DEFAULT,
-                noteCourse = if (course == Course.EMPTY) null else course,
-                userId = note.userId,
-                folderId = note.folderId,
-                comments = note.comments))
-        noteViewModel.getNoteById(note.id)
+        noteViewModel.viewModelScope.launch {
+          noteViewModel.updateNote(
+              Note(
+                  id = note.id,
+                  title = noteTitle,
+                  date = note.date, // Use current timestamp
+                  lastModified = Timestamp.now(),
+                  visibility = visibility ?: Visibility.DEFAULT,
+                  noteCourse = if (course == Course.EMPTY) null else course,
+                  userId = note.userId,
+                  folderId = note.folderId,
+                  comments = note.comments))
+          noteViewModel.getNoteById(note.id)
+        }
         Toast.makeText(context, "Note saved", Toast.LENGTH_SHORT).show()
       },
       modifier = Modifier.testTag("saveNoteButton")) {
@@ -471,7 +476,9 @@ fun DeleteButton(
           title = stringResource(R.string.delete_note),
           text = stringResource(R.string.delete_note_text),
           onConfirm = {
-            noteViewModel.deleteNoteById(note.id, note.userId)
+            noteViewModel.viewModelScope.launch {
+              noteViewModel.deleteNoteById(note.id, note.userId)
+            }
             noteViewModel.selectedNote(null)
             navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
           },

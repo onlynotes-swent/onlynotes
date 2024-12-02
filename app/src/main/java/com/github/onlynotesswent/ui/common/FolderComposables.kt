@@ -29,6 +29,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewModelScope
 import com.github.onlynotesswent.R
 import com.github.onlynotesswent.model.common.Visibility
 import com.github.onlynotesswent.model.folder.Folder
@@ -36,6 +37,7 @@ import com.github.onlynotesswent.model.folder.FolderViewModel
 import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
+import kotlinx.coroutines.launch
 
 /**
  * Displays a single folder item in a card format. The card contains the folder's name. When
@@ -95,7 +97,9 @@ fun FolderItem(
                             val draggedNote = noteViewModel.draggedNote.value
                             if (draggedNote != null && draggedNote.id == draggedObjectId) {
                               // Update the dragged note with the new folder Id
-                              noteViewModel.updateNote(draggedNote.copy(folderId = folder.id))
+                              noteViewModel.viewModelScope.launch {
+                                noteViewModel.updateNote(draggedNote.copy(folderId = folder.id))
+                              }
                               noteViewModel.draggedNote(null)
                               dropSuccess.value = true
                               return true
@@ -106,8 +110,10 @@ fun FolderItem(
                                 draggedFolder.id == draggedObjectId &&
                                 draggedFolder.id != folder.id) {
                               // Update the dragged folder with the new parent folder Id.
-                              folderViewModel.updateFolder(
-                                  draggedFolder.copy(parentFolderId = folder.id))
+                              folderViewModel.viewModelScope.launch {
+                                folderViewModel.updateFolder(
+                                    draggedFolder.copy(parentFolderId = folder.id))
+                              }
                               folderViewModel.draggedFolder(null)
                               // Set dropSuccess to true to indicate that the drop was successful
                               dropSuccess.value = true

@@ -55,6 +55,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
+import androidx.lifecycle.viewModelScope
 import coil.compose.rememberAsyncImagePainter
 import com.github.onlynotesswent.R
 import com.github.onlynotesswent.model.file.FileType
@@ -69,6 +70,7 @@ import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Route
 import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
 import com.github.onlynotesswent.utils.ProfilePictureTaker
+import kotlinx.coroutines.launch
 
 /**
  * A composable function that displays the profile screen.
@@ -249,9 +251,15 @@ fun EditProfileScreen(
                               modifier = Modifier.testTag("confirmDeleteButton"),
                               onClick = {
                                 showDeleteAccountAlert.value = false
-                                noteViewModel.deleteNotesByUserId(user.value!!.uid)
-                                folderViewModel.deleteFoldersByUserId(user.value!!.uid)
-                                noteViewModel.getNoteById(user.value!!.uid)
+                                noteViewModel.viewModelScope.launch {
+                                  noteViewModel.deleteNotesByUserId(user.value!!.uid)
+                                }
+                                folderViewModel.viewModelScope.launch {
+                                  folderViewModel.deleteFoldersByUserId(user.value!!.uid)
+                                }
+                                noteViewModel.viewModelScope.launch {
+                                  noteViewModel.getNoteById(user.value!!.uid)
+                                }
                                 noteViewModel.userRootNotes.value.forEach {
                                   fileViewModel.deleteFile(it.id, FileType.NOTE_PDF)
                                 }

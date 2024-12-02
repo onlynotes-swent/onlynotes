@@ -33,6 +33,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewModelScope
 import com.github.onlynotesswent.R
 import com.github.onlynotesswent.model.note.Note
 import com.github.onlynotesswent.model.note.NoteViewModel
@@ -42,6 +43,7 @@ import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
 import java.text.SimpleDateFormat
 import java.util.Locale
+import kotlinx.coroutines.launch
 
 @Composable
 fun CommentsScreen(
@@ -69,8 +71,10 @@ fun CommentsScreen(
             navigationActions = navigationActions,
             onClick = {
               val commentsNotEmpty = updatedComments.commentsList.filter { it.content.isNotEmpty() }
-              noteViewModel.updateNote(
-                  note!!.copy(comments = Note.CommentCollection(commentsNotEmpty)))
+              noteViewModel.viewModelScope.launch {
+                noteViewModel.updateNote(
+                    note!!.copy(comments = Note.CommentCollection(commentsNotEmpty)))
+              }
             })
       },
       bottomBar = {
@@ -79,9 +83,11 @@ fun CommentsScreen(
             selectedItem = Screen.EDIT_NOTE_COMMENT,
             onClick = {
               val commentsNotEmpty = updatedComments.commentsList.filter { it.content.isNotEmpty() }
-              noteViewModel.updateNote(
-                  note!!.copy(comments = Note.CommentCollection(commentsNotEmpty)))
-              noteViewModel.getNoteById(note!!.id)
+              noteViewModel.viewModelScope.launch {
+                noteViewModel.updateNote(
+                    note!!.copy(comments = Note.CommentCollection(commentsNotEmpty)))
+                noteViewModel.getNoteById(note!!.id)
+              }
             })
       }) { paddingValues ->
         if (currentUser == null) {

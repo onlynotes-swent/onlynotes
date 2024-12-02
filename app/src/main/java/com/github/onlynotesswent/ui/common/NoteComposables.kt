@@ -37,6 +37,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewModelScope
 import com.github.onlynotesswent.R
 import com.github.onlynotesswent.model.common.Course
 import com.github.onlynotesswent.model.common.Visibility
@@ -49,6 +50,7 @@ import com.github.onlynotesswent.ui.navigation.Screen
 import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
 import java.text.SimpleDateFormat
 import java.util.Locale
+import kotlinx.coroutines.launch
 
 /**
  * Displays a single note item in a card format. The card contains the note's date, name, and user
@@ -88,12 +90,16 @@ fun NoteItem(
           if (currentUser.value!!.uid == note.userId) {
             val parentFolderId = folderViewModel.parentFolderId.value
             if (parentFolderId != null) {
-              noteViewModel.updateNote(note.copy(folderId = parentFolderId))
+              noteViewModel.viewModelScope.launch {
+                noteViewModel.updateNote(note.copy(folderId = parentFolderId))
+              }
               navigationActions.navigateTo(
                   Screen.FOLDER_CONTENTS.replace(
                       oldValue = "{folderId}", newValue = parentFolderId))
             } else {
-              noteViewModel.updateNote(note.copy(folderId = null))
+              noteViewModel.viewModelScope.launch {
+                noteViewModel.updateNote(note.copy(folderId = null))
+              }
               navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
             }
           } else {
