@@ -40,6 +40,7 @@ import com.github.onlynotesswent.model.user.User
 import com.github.onlynotesswent.model.user.UserViewModel
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
+import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -66,11 +67,17 @@ fun CommentsScreen(
             title = stringResource(R.string.comments),
             titleTestTag = "commentsTitle",
             noteViewModel = noteViewModel,
+            userViewModel = userViewModel,
             navigationActions = navigationActions,
             onClick = {
               val commentsNotEmpty = updatedComments.commentsList.filter { it.content.isNotEmpty() }
               noteViewModel.updateNote(
-                  note!!.copy(comments = Note.CommentCollection(commentsNotEmpty)))
+                  note = note!!.copy(comments = Note.CommentCollection(commentsNotEmpty)),
+                  onSuccess = {
+                      if (currentUser!!.uid != note?.userId) {
+                          navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
+                      }
+                  })
             })
       },
       bottomBar = {

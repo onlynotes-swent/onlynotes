@@ -88,6 +88,8 @@ fun ConfirmationPopup(title: String, text: String, onConfirm: () -> Unit, onDism
  *   [Visibility.PRIVATE]
  * @param oldName the previous name of the item (if renaming), defaults to an empty string
  * @param type the type of item (e.g., "Folder" or "Note") displayed in the dialog
+ * @param currentUserId the Id of the current user
+ * @param noteUserId the Id of the user who created the note
  */
 @Composable
 fun CreationDialog(
@@ -119,7 +121,7 @@ fun CreationDialog(
 
               // Spacing
               Spacer(modifier = Modifier.height(8.dp))
-              SelectVisibility(visibility, currentUserId, noteUserId) { visibility = it } //TODO continue here
+              SelectVisibility(visibility, currentUserId, noteUserId) { visibility = it }
             }
       },
       confirmButton = {

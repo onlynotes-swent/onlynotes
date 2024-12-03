@@ -129,4 +129,13 @@ open class NavigationActions(
   open fun currentRoute(): String {
     return navController.currentDestination?.route ?: ""
   }
+
+  /**
+   * Get the previous screen from the navigation controller.
+   *
+   * @return The previous screen
+   */
+  open fun getPreviousScreen(): String? {
+      return navController.previousBackStackEntry?.destination?.route
+  }
 }

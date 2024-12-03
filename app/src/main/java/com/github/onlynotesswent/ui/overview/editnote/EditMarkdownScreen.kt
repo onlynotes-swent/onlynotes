@@ -57,8 +57,10 @@ import com.github.onlynotesswent.R
 import com.github.onlynotesswent.model.file.FileType
 import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.note.NoteViewModel
+import com.github.onlynotesswent.model.user.UserViewModel
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
+import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
 import com.mohamedrejeb.richeditor.model.RichTextState
 import com.mohamedrejeb.richeditor.model.rememberRichTextState
 import com.mohamedrejeb.richeditor.ui.material3.RichTextEditor
@@ -78,16 +80,19 @@ import kotlinx.coroutines.delay
  *   previous screen.
  * @param noteViewModel ViewModel to manage the note's state and interactions.
  * @param fileViewModel ViewModel to handle file downloads and uploads for markdown files.
+ * @param userViewModel ViewModel to manage the user's state and interactions.
  */
 @Composable
 fun EditMarkdownScreen(
     navigationActions: NavigationActions,
     noteViewModel: NoteViewModel,
-    fileViewModel: FileViewModel
+    fileViewModel: FileViewModel,
+    userViewModel: UserViewModel
 ) {
   val state = rememberRichTextState()
   val context = LocalContext.current
   val selectedNote by noteViewModel.selectedNote.collectAsState()
+  val currentUser by userViewModel.currentUser.collectAsState()
   var markdownContent: File? by remember { mutableStateOf(null) }
   var isEditing by rememberSaveable { mutableStateOf(false) } // Add this line
 
@@ -128,13 +133,19 @@ fun EditMarkdownScreen(
             title = stringResource(R.string.content),
             titleTestTag = "contentTitle",
             noteViewModel = noteViewModel,
-            navigationActions = navigationActions)
+            userViewModel = userViewModel,
+            navigationActions = navigationActions,
+            onClick = {
+                if (selectedNote?.userId != currentUser?.uid) {
+                    navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
+                }
+            })
       },
       bottomBar = {
         EditNoteNavigationMenu(navigationActions, selectedItem = Screen.EDIT_NOTE_MARKDOWN)
       },
-      floatingActionButton = { // Add FAB here
-        if (!isEditing) {
+      floatingActionButton = {
+        if (!isEditing && selectedNote?.userId == currentUser?.uid ) {
           FloatingActionButton(
               modifier = Modifier.testTag("editMarkdownFAB"),
               onClick = {

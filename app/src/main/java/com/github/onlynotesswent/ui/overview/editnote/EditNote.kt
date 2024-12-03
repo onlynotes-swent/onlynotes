@@ -210,7 +210,9 @@ fun EditNoteGeneralTopBar(
               if (isModified) {
                 showDiscardChangesDialog = true
               } else {
-                if (noteViewModel.selectedNote.value?.folderId != null) {
+                if (navigationActions.getPreviousScreen() == Screen.SEARCH) {
+                  navigationActions.navigateTo(TopLevelDestinations.SEARCH)
+                } else if (noteViewModel.selectedNote.value?.folderId != null) {
                   navigationActions.navigateTo(
                       Screen.FOLDER_CONTENTS.replace(
                           oldValue = "{folderId}",

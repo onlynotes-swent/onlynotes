@@ -209,6 +209,7 @@ fun NoteDialog(
  * @param placeholder The placeholder to be displayed when the text field is in focus and the input
  *   text is empty.
  * @param modifier The modifier to be applied to the `OutlinedTextField`.
+ * @param enabled A boolean indicating whether the text field is enabled.
  * @param trailingIcon An optional trailing icon displayed at the end of the text field container.
  */
 @Composable

@@ -101,10 +101,10 @@ fun OnlyNotesApp(
         CommentsScreen(navigationActions, noteViewModel, userViewModel)
       }
       composable(Screen.EDIT_NOTE_PDF) {
-        PdfViewerScreen(noteViewModel, fileViewModel, scanner, navigationActions)
+        PdfViewerScreen(noteViewModel, fileViewModel, userViewModel, scanner, navigationActions)
       }
       composable(Screen.EDIT_NOTE_MARKDOWN) {
-        EditMarkdownScreen(navigationActions, noteViewModel, fileViewModel)
+        EditMarkdownScreen(navigationActions, noteViewModel, fileViewModel, userViewModel)
       }
       composable(
           route = Screen.FOLDER_CONTENTS,
