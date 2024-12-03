@@ -2,11 +2,11 @@ package com.github.onlynotesswent.ui.search
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
@@ -32,10 +32,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.github.onlynotesswent.R
 import com.github.onlynotesswent.model.file.FileViewModel
+import com.github.onlynotesswent.model.flashcard.deck.DeckViewModel
 import com.github.onlynotesswent.model.folder.FolderViewModel
 import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.model.user.UserViewModel
 import com.github.onlynotesswent.ui.common.CustomSeparatedLazyGrid
+import com.github.onlynotesswent.ui.common.DeckSearchItem
 import com.github.onlynotesswent.ui.common.NoteItem
 import com.github.onlynotesswent.ui.navigation.BottomNavigationMenu
 import com.github.onlynotesswent.ui.navigation.LIST_TOP_LEVEL_DESTINATION
@@ -60,6 +62,7 @@ fun SearchScreen(
     noteViewModel: NoteViewModel,
     userViewModel: UserViewModel,
     folderViewModel: FolderViewModel,
+    deckViewModel: DeckViewModel,
     fileViewModel: FileViewModel
 ) {
   val searchQuery = remember { mutableStateOf("") }
@@ -83,16 +86,21 @@ fun SearchScreen(
   val filteredFolders = remember { mutableStateOf(folders.value) }
   filteredFolders.value = folders.value.filter { textMatchesSearch(it.name, searchWords.value) }
 
+  val decks = deckViewModel.publicDecks.collectAsState()
+  val filteredDecks = remember { mutableStateOf(decks.value) }
+  filteredDecks.value = decks.value.filter { textMatchesSearch(it.name, searchWords.value) }
+
   val context = LocalContext.current
 
   // Refresh the list of notes, users, and folders periodically.
-  RefreshPeriodically(searchQuery, noteViewModel, userViewModel, folderViewModel)
+  RefreshPeriodically(searchQuery, noteViewModel, userViewModel, folderViewModel, deckViewModel)
   // Refresh the list of notes, users, and folders when the search query is empty,
   // typically when reloading the screen.
   if (searchQuery.value.isBlank()) {
     noteViewModel.getPublicNotes()
     userViewModel.getAllUsers()
     folderViewModel.getPublicFolders()
+    deckViewModel.getPublicDecks()
   }
 
   Scaffold(
@@ -121,52 +129,75 @@ fun SearchScreen(
                   Modifier.fillMaxWidth()
                       .padding(top = 16.dp, start = 16.dp, end = 16.dp)
                       .testTag("searchTextField"))
-          Row(modifier = Modifier.fillMaxWidth().padding(top = 6.dp, start = 30.dp)) {
-            FilterChip(
-                searchType.value == SearchType.USERS,
-                label = { Text(stringResource(R.string.users_maj)) },
-                onClick = {
-                  searchType.value = SearchType.USERS
-                  userViewModel.getAllUsers()
-                },
-                leadingIcon = {
-                  if (searchType.value == SearchType.USERS)
-                      Icon(
-                          imageVector = Icons.Default.Check,
-                          contentDescription = "Chip Icon",
-                          tint = MaterialTheme.colorScheme.onBackground)
-                },
-                modifier = Modifier.padding(horizontal = 10.dp).testTag("userFilterChip"))
-            FilterChip(
-                searchType.value == SearchType.NOTES,
-                label = { Text(stringResource(R.string.notes_maj)) },
-                onClick = {
-                  searchType.value = SearchType.NOTES
-                  noteViewModel.getPublicNotes()
-                },
-                leadingIcon = {
-                  if (searchType.value == SearchType.NOTES)
-                      Icon(
-                          imageVector = Icons.Default.Check,
-                          contentDescription = "Chip Icon",
-                          tint = MaterialTheme.colorScheme.onBackground)
-                },
-                modifier = Modifier.padding(horizontal = 5.dp).testTag("noteFilterChip"))
-            FilterChip(
-                searchType.value == SearchType.FOLDERS,
-                label = { Text(stringResource(R.string.folders_maj)) },
-                onClick = {
-                  searchType.value = SearchType.FOLDERS
-                  folderViewModel.getPublicFolders()
-                },
-                leadingIcon = {
-                  if (searchType.value == SearchType.FOLDERS)
-                      Icon(
-                          imageVector = Icons.Default.Check,
-                          contentDescription = "Chip Icon",
-                          tint = MaterialTheme.colorScheme.onBackground)
-                },
-                modifier = Modifier.padding(horizontal = 10.dp).testTag("folderFilterChip"))
+          LazyRow(modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp, horizontal = 20.dp)) {
+            item {
+              FilterChip(
+                  searchType.value == SearchType.USERS,
+                  label = { Text(stringResource(R.string.users_maj), maxLines = 1) },
+                  onClick = {
+                    searchType.value = SearchType.USERS
+                    userViewModel.getAllUsers()
+                  },
+                  leadingIcon = {
+                    if (searchType.value == SearchType.USERS)
+                        Icon(
+                            imageVector = Icons.Default.Check,
+                            contentDescription = "Chip Icon",
+                            tint = MaterialTheme.colorScheme.onBackground)
+                  },
+                  modifier = Modifier.padding(horizontal = 5.dp).testTag("userFilterChip"))
+            }
+            item {
+              FilterChip(
+                  searchType.value == SearchType.NOTES,
+                  label = { Text(stringResource(R.string.notes_maj), maxLines = 1) },
+                  onClick = {
+                    searchType.value = SearchType.NOTES
+                    noteViewModel.getPublicNotes()
+                  },
+                  leadingIcon = {
+                    if (searchType.value == SearchType.NOTES)
+                        Icon(
+                            imageVector = Icons.Default.Check,
+                            contentDescription = "Chip Icon",
+                            tint = MaterialTheme.colorScheme.onBackground)
+                  },
+                  modifier = Modifier.padding(horizontal = 5.dp).testTag("noteFilterChip"))
+            }
+            item {
+              FilterChip(
+                  searchType.value == SearchType.FOLDERS,
+                  label = { Text(stringResource(R.string.folders_maj), maxLines = 1) },
+                  onClick = {
+                    searchType.value = SearchType.FOLDERS
+                    folderViewModel.getPublicFolders()
+                  },
+                  leadingIcon = {
+                    if (searchType.value == SearchType.FOLDERS)
+                        Icon(
+                            imageVector = Icons.Default.Check,
+                            contentDescription = "Chip Icon",
+                            tint = MaterialTheme.colorScheme.onBackground)
+                  },
+                  modifier = Modifier.padding(horizontal = 5.dp).testTag("folderFilterChip"))
+            }
+            item {
+              FilterChip(
+                  searchType.value == SearchType.DECKS,
+                  label = { Text(stringResource(R.string.decks_maj), maxLines = 1) },
+                  onClick = {
+                    searchType.value = SearchType.DECKS
+                    deckViewModel.getPublicDecks()
+                  },
+                  leadingIcon = {
+                    if (searchType.value == SearchType.DECKS)
+                        Icon(
+                            imageVector = Icons.Default.Check,
+                            contentDescription = "Chip Icon",
+                            tint = MaterialTheme.colorScheme.onBackground)
+                  },
+                  modifier = Modifier.padding(horizontal = 5.dp).testTag("deckFilterChip"))
+            }
           }
         }
       },
@@ -180,25 +211,23 @@ fun SearchScreen(
         // To skip large nested if-else blocks, we can use a boolean to determine which list to
         // display.
         val displayUsers: Boolean =
-            searchQuery.value.isNotBlank() &&
-                searchType.value == SearchType.USERS &&
-                filteredUsers.value.isNotEmpty()
+            searchType.value == SearchType.USERS && filteredUsers.value.isNotEmpty()
 
         val displayNotes: Boolean =
-            searchQuery.value.isNotBlank() &&
-                searchType.value == SearchType.NOTES &&
-                filteredNotes.value.isNotEmpty()
+            searchType.value == SearchType.NOTES && filteredNotes.value.isNotEmpty()
 
         val displayFolders: Boolean =
-            searchQuery.value.isNotBlank() &&
-                searchType.value == SearchType.FOLDERS &&
-                filteredFolders.value.isNotEmpty()
+            searchType.value == SearchType.FOLDERS && filteredFolders.value.isNotEmpty()
+
+        val displayDecks: Boolean =
+            searchType.value == SearchType.DECKS && filteredDecks.value.isNotEmpty()
 
         val displayLoader: Boolean =
             searchQuery.value.isNotBlank() &&
                 ((searchType.value == SearchType.USERS && filteredUsers.value.isEmpty()) ||
                     (searchType.value == SearchType.NOTES && filteredNotes.value.isEmpty()) ||
-                    (searchType.value == SearchType.FOLDERS && filteredFolders.value.isEmpty()))
+                    (searchType.value == SearchType.FOLDERS && filteredFolders.value.isEmpty()) ||
+                    (searchType.value == SearchType.DECKS && filteredDecks.value.isEmpty()))
 
         if (displayNotes) {
           LazyColumn(
@@ -258,12 +287,33 @@ fun SearchScreen(
               columnContent = {})
         }
 
+        if (displayDecks) {
+          LazyColumn(
+              contentPadding = PaddingValues(horizontal = 16.dp),
+              modifier = Modifier.fillMaxWidth().padding(padding).testTag("filteredDeckList")) {
+                items(filteredDecks.value.size) { index ->
+                  DeckSearchItem(
+                      deck = filteredDecks.value[index],
+                      author =
+                          users.value
+                              .first { it.uid == filteredDecks.value[index].userId }
+                              .userHandle(),
+                  ) {
+                    deckViewModel.selectDeck(filteredDecks.value[index])
+                    navigationActions.navigateTo(
+                        Screen.DECK_MENU.replace("{deckId}", filteredDecks.value[index].id))
+                  }
+                }
+              }
+        }
+
         if (displayLoader) {
           val searchedText =
               when (searchType.value) {
                 SearchType.USERS -> stringResource(R.string.users_min)
                 SearchType.NOTES -> stringResource(R.string.notes_min)
                 SearchType.FOLDERS -> stringResource(R.string.folders_min)
+                SearchType.DECKS -> stringResource(R.string.decks_min)
               }
           Text(
               modifier =
@@ -278,12 +328,22 @@ fun SearchScreen(
       }
 }
 
+/**
+ * Refreshes the list of notes, users, and folders periodically.
+ *
+ * @param searchQuery The search query to use.
+ * @param noteViewModel The ViewModel that provides the list of publicNotes to search from.
+ * @param userViewModel The ViewModel that provides the list of users to search from.
+ * @param folderViewModel The ViewModel that provides the list of folders to search from.
+ * @param deckViewModel The ViewModel that provides the list of decks to search from.
+ */
 @Composable
 private fun RefreshPeriodically(
     searchQuery: MutableState<String>,
     noteViewModel: NoteViewModel,
     userViewModel: UserViewModel,
-    folderViewModel: FolderViewModel
+    folderViewModel: FolderViewModel,
+    deckViewModel: DeckViewModel
 ) {
   LaunchedEffect(Unit) {
     while (searchQuery.value.isNotBlank()) {
@@ -291,6 +351,7 @@ private fun RefreshPeriodically(
       noteViewModel.getPublicNotes()
       userViewModel.getAllUsers()
       folderViewModel.getPublicFolders()
+      deckViewModel.getPublicDecks()
     }
   }
 }
@@ -298,9 +359,10 @@ private fun RefreshPeriodically(
 enum class SearchType {
   USERS,
   NOTES,
-  FOLDERS
+  FOLDERS,
+  DECKS
 }
 
 fun textMatchesSearch(text: String, searchWords: List<String>): Boolean {
-  return searchWords.all { text.contains(it, ignoreCase = true) }
+  return searchWords.all { text.contains(it, ignoreCase = true) } || searchWords.isEmpty()
 }

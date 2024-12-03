@@ -33,6 +33,7 @@ object Screen {
   const val EDIT_PROFILE = "Edit Profile Screen"
   const val NOTIFICATIONS = "Notifications Screen"
   const val FOLDER_CONTENTS = "Folder Contents Screen/{folderId}"
+  const val DECK_MENU = "Deck Menu Screen/{deckId}"
 }
 
 data class Destination(

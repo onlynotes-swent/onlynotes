@@ -24,9 +24,13 @@ class DeckViewModel(private val repository: DeckRepository) : ViewModel() {
   private val _folderDecks = MutableStateFlow<List<Deck>>(emptyList())
   val folderDecks: StateFlow<List<Deck>> = _folderDecks.asStateFlow()
 
+  // The public decks
+  private val _publicDecks = MutableStateFlow<List<Deck>>(emptyList())
+  val publicDecks: StateFlow<List<Deck>> = _publicDecks.asStateFlow()
+
   /** Initializes the DeckViewModel and the repository. */
   init {
-    repository.init {}
+    repository.init { getPublicDecks() }
   }
 
   companion object {
@@ -51,6 +55,21 @@ class DeckViewModel(private val repository: DeckRepository) : ViewModel() {
    */
   fun getNewUid(): String {
     return repository.getNewUid()
+  }
+
+  /**
+   * Retrieves all public decks.
+   *
+   * @param onSuccess The callback to be executed when the public decks are retrieved.
+   * @param onFailure The callback to be executed when an error occurs.
+   */
+  fun getPublicDecks(onSuccess: (List<Deck>) -> Unit = {}, onFailure: (Exception) -> Unit = {}) {
+    repository.getPublicDecks(
+        { decks ->
+          _publicDecks.value = decks
+          onSuccess(decks)
+        },
+        { onFailure(it) })
   }
 
   /**
