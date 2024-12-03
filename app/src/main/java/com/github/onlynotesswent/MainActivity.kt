@@ -24,12 +24,14 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import com.github.onlynotesswent.model.file.FileViewModel
+import com.github.onlynotesswent.model.flashcard.FlashcardViewModel
 import com.github.onlynotesswent.model.flashcard.deck.DeckViewModel
 import com.github.onlynotesswent.model.folder.FolderViewModel
 import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.model.notification.NotificationViewModel
 import com.github.onlynotesswent.model.user.UserViewModel
 import com.github.onlynotesswent.ui.authentication.SignInScreen
+import com.github.onlynotesswent.ui.deck.DeckScreen
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Route
 import com.github.onlynotesswent.ui.navigation.Screen
@@ -84,6 +86,7 @@ fun OnlyNotesApp(
   val notificationViewModel: NotificationViewModel =
       viewModel(factory = NotificationViewModel.Factory)
   val deckViewModel: DeckViewModel = viewModel(factory = DeckViewModel.Factory)
+  val flashcardViewModel: FlashcardViewModel = viewModel(factory = FlashcardViewModel.Factory)
 
   NavHost(navController = navController, startDestination = Route.AUTH) {
     navigation(
@@ -151,7 +154,9 @@ fun OnlyNotesApp(
             deckViewModel,
             fileViewModel)
       }
-      composable(Screen.DECK_MENU) { Text("Deck Menu Screen - not implemented yet") }
+      composable(Screen.DECK_MENU) {
+        DeckScreen(userViewModel, deckViewModel, flashcardViewModel, fileViewModel, profilePictureTaker, navigationActions)
+      }
     }
 
     navigation(
