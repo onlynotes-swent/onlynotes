@@ -51,4 +51,14 @@ class NavigationActionsTest {
 
     assertThat(navigationActions.currentRoute(), `is`(Route.OVERVIEW))
   }
+
+  @Test
+  fun goBackFolderContentsCallsNavigateTo() {
+    navigationActions.goBackFolderContents("folderId")
+    verify(navHostController)
+        .navigate(Screen.FOLDER_CONTENTS.replace(oldValue = "{folderId}", newValue = "folderId"))
+
+    navigationActions.goBackFolderContents(null)
+    verify(navHostController).navigate(eq(Route.OVERVIEW), any<NavOptionsBuilder.() -> Unit>())
+  }
 }

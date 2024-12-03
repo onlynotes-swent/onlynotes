@@ -41,7 +41,10 @@ fun EditNoteTopBar(
         // it navigates to the overview screen.
         if (noteViewModel.selectedNote.value?.userId == userViewModel.currentUser.value?.uid) {
           if (noteViewModel.selectedNote.value?.folderId != null) {
-            navigationActions.navigateTo(Screen.FOLDER_CONTENTS)
+            navigationActions.navigateTo(
+              Screen.FOLDER_CONTENTS.replace(
+                  oldValue = "{folderId}",
+                  newValue = noteViewModel.selectedNote.value!!.folderId!!))
           } else {
             navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
           }

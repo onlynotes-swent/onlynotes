@@ -13,6 +13,14 @@ interface DeckRepository {
   fun init(onSuccess: () -> Unit)
 
   /**
+   * Retrieves all public decks.
+   *
+   * @param onSuccess The callback to be invoked when the decks are successfully retrieved.
+   * @param onFailure The callback to be invoked if an error occurs.
+   */
+  fun getPublicDecks(onSuccess: (List<Deck>) -> Unit, onFailure: (Exception) -> Unit)
+
+  /**
    * Retrieves all decks for the given user.
    *
    * @param userId The identifier of the user.

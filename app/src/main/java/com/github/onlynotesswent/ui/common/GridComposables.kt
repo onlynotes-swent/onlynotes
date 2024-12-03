@@ -6,9 +6,12 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.runtime.Composable
@@ -27,8 +30,8 @@ import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
 
 /**
- * Custom lazy grid that displays a list of notes and folders. If there are no notes or folders, it
- * displays a message to the user. The grid is scrollable.
+ * Custom lazy grid that displays a list of notes and folders in a separate manner. If there are no
+ * notes or folders, it displays a message to the user. The grid is scrollable.
  *
  * @param modifier The modifier for the grid.
  * @param notes The list of notes to be displayed.
@@ -44,7 +47,7 @@ import com.github.onlynotesswent.ui.navigation.Screen
  *   folders.
  */
 @Composable
-fun CustomLazyGrid(
+fun CustomSeparatedLazyGrid(
     modifier: Modifier,
     notes: State<List<Note>>,
     folders: State<List<Folder>>,
@@ -63,11 +66,11 @@ fun CustomLazyGrid(
   Box(modifier = modifier) {
     if (sortedNotes.isNotEmpty() || sortedFolders.isNotEmpty()) {
       LazyVerticalGrid(
-          columns = GridCells.Adaptive(minSize = 100.dp),
+          columns = GridCells.Fixed(6),
           contentPadding = PaddingValues(vertical = 20.dp),
           horizontalArrangement = Arrangement.spacedBy(4.dp),
           modifier = gridModifier) {
-            items(sortedFolders, key = { it.id }) { folder ->
+            items(sortedFolders, key = { it.id }, span = { GridItemSpan(2) }) { folder ->
               FolderItem(
                   folder = folder,
                   navigationActions = navigationActions,
@@ -79,7 +82,11 @@ fun CustomLazyGrid(
                             oldValue = "{folderId}", newValue = folder.id))
                   }
             }
-            items(sortedNotes, key = { it.id }) { note ->
+
+            // Spacer item to create space between folders and notes
+            item(span = { GridItemSpan(maxLineSpan) }) { Spacer(modifier = Modifier.height(50.dp)) }
+
+            items(sortedNotes, key = { it.id }, span = { GridItemSpan(3) }) { note ->
               NoteItem(
                   note = note,
                   currentUser = userViewModel.currentUser.collectAsState(),
