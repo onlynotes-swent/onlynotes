@@ -35,10 +35,12 @@ import com.github.onlynotesswent.model.common.Visibility
  * visibility options by clicking the left and right arrows.
  *
  * @param visibility The current visibility option.
+ * @param currentUserId The Id of the current user.
+ * @param noteUserId The Id of the user who created the note.
  * @param onVisibilityChange The action to perform when the visibility option is changed.
  */
 @Composable
-fun SelectVisibility(visibility: Visibility?, onVisibilityChange: (Visibility) -> Unit) {
+fun SelectVisibility(visibility: Visibility?, currentUserId: String, noteUserId: String, onVisibilityChange: (Visibility) -> Unit) {
   var selectedIndex by remember { mutableIntStateOf(Visibility.entries.indexOf(visibility)) }
 
   // Track the current visibility based on index
@@ -55,7 +57,8 @@ fun SelectVisibility(visibility: Visibility?, onVisibilityChange: (Visibility) -
                   if (selectedIndex > 0) selectedIndex - 1 else Visibility.entries.lastIndex
               onVisibilityChange(Visibility.entries[selectedIndex])
             },
-            modifier = Modifier.testTag("previousVisibility")) {
+            modifier = Modifier.testTag("previousVisibility"),
+            enabled = currentUserId == noteUserId) {
               Icon(
                   imageVector = Icons.Default.ChevronLeft,
                   contentDescription = "Previous Visibility")
@@ -94,7 +97,8 @@ fun SelectVisibility(visibility: Visibility?, onVisibilityChange: (Visibility) -
                   if (selectedIndex < Visibility.entries.lastIndex) selectedIndex + 1 else 0
               onVisibilityChange(Visibility.entries[selectedIndex])
             },
-            modifier = Modifier.testTag("nextVisibility")) {
+            modifier = Modifier.testTag("nextVisibility"),
+            enabled = currentUserId == noteUserId) {
               Icon(imageVector = Icons.Default.ChevronRight, contentDescription = "Next Visibility")
             }
       }

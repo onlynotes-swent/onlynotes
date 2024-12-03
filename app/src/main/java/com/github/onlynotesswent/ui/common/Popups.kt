@@ -96,7 +96,9 @@ fun CreationDialog(
     action: String,
     oldVisibility: Visibility? = Visibility.PRIVATE,
     oldName: String = "",
-    type: String
+    type: String,
+    currentUserId: String = "",
+    noteUserId: String = ""
 ) {
   var name by remember { mutableStateOf(oldName) }
   var visibility: Visibility? by remember { mutableStateOf(oldVisibility) }
@@ -117,7 +119,7 @@ fun CreationDialog(
 
               // Spacing
               Spacer(modifier = Modifier.height(8.dp))
-              SelectVisibility(visibility) { visibility = it }
+              SelectVisibility(visibility, currentUserId, noteUserId) { visibility = it } //TODO continue here
             }
       },
       confirmButton = {

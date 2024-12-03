@@ -160,7 +160,7 @@ fun FolderContentScreen(
                 oldName = updatedName,
                 oldVisibility = folder.value!!.visibility)
           }
-          if (showCreateNoteDialog) {
+          if (showCreateNoteDialog && currentUser.value!!.uid == folder.value?.userId) {
             NoteDialog(
                 onDismiss = { showCreateNoteDialog = false },
                 onConfirm = { newName, visibility ->

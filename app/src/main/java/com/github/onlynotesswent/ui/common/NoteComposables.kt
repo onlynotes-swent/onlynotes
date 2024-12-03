@@ -218,6 +218,7 @@ fun NoteDataTextField(
     label: String,
     placeholder: String,
     modifier: Modifier = Modifier,
+    enabled: Boolean,
     trailingIcon: @Composable (() -> Unit)? = null
 ) {
   OutlinedTextField(
@@ -226,6 +227,7 @@ fun NoteDataTextField(
       label = { Text(label) },
       placeholder = { Text(placeholder) },
       modifier = modifier,
+      enabled = enabled,
       trailingIcon = trailingIcon,
       colors =
           TextFieldDefaults.colors(
