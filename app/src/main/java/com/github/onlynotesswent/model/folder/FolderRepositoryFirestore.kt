@@ -3,6 +3,7 @@ package com.github.onlynotesswent.model.folder
 import android.content.Context
 import android.util.Log
 import com.github.onlynotesswent.model.cache.FolderDatabase
+import com.github.onlynotesswent.model.cache.NoteDatabase
 import com.github.onlynotesswent.model.common.Visibility
 import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.utils.NetworkUtils
@@ -19,11 +20,13 @@ import kotlinx.coroutines.withContext
 class FolderRepositoryFirestore(
     private val db: FirebaseFirestore,
     cache: FolderDatabase,
+    cacheNotes: NoteDatabase,
     private val context: Context
 ) : FolderRepository {
 
   private val folderCollectionPath = "folders"
   private val folderDao = cache.folderDao()
+  private val noteDao = cacheNotes.noteDao()
 
   companion object {
     private const val TAG = "FolderRepositoryFirestore"
@@ -356,9 +359,31 @@ class FolderRepositoryFirestore(
   ) {
     // Update the cache if needed
     if (useCache) {
-      withContext(Dispatchers.IO) {
-        // TODO: make recursive call to delete contents
-      }
+      getSubFoldersOf(
+          parentFolderId = folder.id,
+          onSuccess = { subFolders ->
+            subFolders.forEach { subFolder ->
+              CoroutineScope(Dispatchers.IO).launch {
+                deleteFolderContents(
+                    folder = subFolder,
+                    noteViewModel = noteViewModel,
+                    onSuccess = {},
+                    onFailure = {
+                      onFailure(it)
+                      Log.e(TAG, "Failed to delete folder contents: ${it.message}")
+                    },
+                    useCache = true)
+                noteDao.deleteNotesFromFolder(subFolder.id)
+                folderDao.deleteFolderById(subFolder.id)
+              }
+            }
+            onSuccess()
+          },
+          onFailure = { e: Exception ->
+            Log.e(TAG, "Failed to delete folder contents: ${e.message}")
+            onFailure(e)
+          },
+          useCache = true)
     }
 
     getSubFoldersOf(
@@ -375,11 +400,7 @@ class FolderRepositoryFirestore(
                     Log.e(TAG, "Failed to delete folder contents: ${it.message}")
                   },
                   useCache = useCache)
-            }
-            CoroutineScope(Dispatchers.IO).launch {
               noteViewModel.deleteNotesFromFolder(subFolder.id)
-            }
-            CoroutineScope(Dispatchers.IO).launch {
               deleteFolderById(
                   folderId = subFolder.id,
                   onSuccess = {},

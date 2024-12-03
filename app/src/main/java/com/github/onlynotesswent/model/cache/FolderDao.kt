@@ -24,7 +24,4 @@ interface FolderDao {
   @Query("DELETE FROM folder WHERE id = :folderId") fun deleteFolderById(folderId: String)
 
   @Query("DELETE FROM folder") fun deleteFolders()
-
-  @Query("DELETE FROM folder WHERE parentFolderId = :parentFolderId")
-  fun deleteSubfolders(parentFolderId: String)
 }

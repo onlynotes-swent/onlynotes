@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.github.onlynotesswent.model.cache.getFolderDatabase
+import com.github.onlynotesswent.model.cache.getNoteDatabase
 import com.github.onlynotesswent.model.note.NoteViewModel
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.firestore
@@ -50,7 +51,8 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
     fun factory(context: Context): ViewModelProvider.Factory = viewModelFactory {
       initializer {
         FolderViewModel(
-            FolderRepositoryFirestore(Firebase.firestore, getFolderDatabase(context), context))
+            FolderRepositoryFirestore(
+                Firebase.firestore, getFolderDatabase(context), getNoteDatabase(context), context))
       }
     }
   }
