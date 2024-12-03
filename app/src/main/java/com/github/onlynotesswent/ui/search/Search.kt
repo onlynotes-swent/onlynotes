@@ -35,7 +35,7 @@ import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.folder.FolderViewModel
 import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.model.user.UserViewModel
-import com.github.onlynotesswent.ui.common.CustomLazyGrid
+import com.github.onlynotesswent.ui.common.CustomSeparatedLazyGrid
 import com.github.onlynotesswent.ui.common.NoteItem
 import com.github.onlynotesswent.ui.navigation.BottomNavigationMenu
 import com.github.onlynotesswent.ui.navigation.LIST_TOP_LEVEL_DESTINATION
@@ -243,7 +243,7 @@ fun SearchScreen(
         }
 
         if (displayFolders) {
-          CustomLazyGrid(
+          CustomSeparatedLazyGrid(
               modifier = Modifier.fillMaxSize().padding(padding),
               notes = remember { mutableStateOf(emptyList()) },
               folders = filteredFolders,
