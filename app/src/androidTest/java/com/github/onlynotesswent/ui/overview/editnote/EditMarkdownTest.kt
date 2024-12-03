@@ -17,7 +17,6 @@ import com.github.onlynotesswent.model.note.NoteRepository
 import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
-import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
 import com.google.firebase.Timestamp
 import java.io.File
 import org.junit.Assert.assertThrows
@@ -25,6 +24,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.mockito.Mock
+import org.mockito.Mockito
 import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
@@ -52,7 +52,8 @@ class EditMarkdownTest {
             Timestamp.now(),
             Visibility.PUBLIC,
             Course("CS-311", "SwEnt", 2024, "testCoursePath"),
-            "testUserId")
+            "testUserId",
+            "1")
 
     noteViewModel.selectedNote(testNote)
 
@@ -89,7 +90,7 @@ class EditMarkdownTest {
   @Test
   fun clickGoBackButton() {
     composeTestRule.onNodeWithTag("closeButton").performClick()
-    verify(navigationActions).navigateTo(TopLevelDestinations.OVERVIEW)
+    Mockito.verify(navigationActions).navigateTo(Screen.FOLDER_CONTENTS.replace("{folderId}", "1"))
   }
 
   @Test
