@@ -136,6 +136,6 @@ open class NavigationActions(
    * @return The previous screen
    */
   open fun getPreviousScreen(): String? {
-      return navController.previousBackStackEntry?.destination?.route
+    return navController.previousBackStackEntry?.destination?.route
   }
 }

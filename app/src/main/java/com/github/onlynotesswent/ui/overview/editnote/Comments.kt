@@ -74,9 +74,9 @@ fun CommentsScreen(
               noteViewModel.updateNote(
                   note = note!!.copy(comments = Note.CommentCollection(commentsNotEmpty)),
                   onSuccess = {
-                      if (currentUser!!.uid != note?.userId) {
-                          navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
-                      }
+                    if (currentUser!!.uid != note?.userId) {
+                      navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
+                    }
                   })
             })
       },

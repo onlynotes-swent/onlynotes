@@ -106,9 +106,9 @@ fun EditNoteScreen(
 
   Scaffold(
       floatingActionButton = {
-          if (currentUser?.uid == note?.userId) {
-              DeleteButton(currentUser, note, navigationActions, noteViewModel)
-          }
+        if (currentUser?.uid == note?.userId) {
+          DeleteButton(currentUser, note, navigationActions, noteViewModel)
+        }
       },
       modifier = Modifier.testTag("editNoteScreen"),
       topBar = {
@@ -296,9 +296,7 @@ fun NoteSection(
         modifier = Modifier.fillMaxWidth().testTag("EditTitle textField"),
         enabled = currentUserId == noteUserId,
         trailingIcon = {
-          IconButton(
-              onClick = { onNoteTitleChange("") },
-              enabled = currentUserId == noteUserId) {
+          IconButton(onClick = { onNoteTitleChange("") }, enabled = currentUserId == noteUserId) {
             Icon(Icons.Outlined.Clear, contentDescription = "Clear Title")
           }
         })
@@ -417,7 +415,7 @@ fun ErrorScreen(errorText: String) {
  * @param courseYear The updated course year of the note.
  * @param noteViewModel The ViewModel that provides the current note to be edited and handles note
  *   updates.
- *   @param currentUserId The Id of the current user.
+ *     @param currentUserId The Id of the current user.
  */
 @Composable
 fun SaveButton(

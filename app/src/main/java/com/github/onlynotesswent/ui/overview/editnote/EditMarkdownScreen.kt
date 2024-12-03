@@ -136,16 +136,16 @@ fun EditMarkdownScreen(
             userViewModel = userViewModel,
             navigationActions = navigationActions,
             onClick = {
-                if (selectedNote?.userId != currentUser?.uid) {
-                    navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
-                }
+              if (selectedNote?.userId != currentUser?.uid) {
+                navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
+              }
             })
       },
       bottomBar = {
         EditNoteNavigationMenu(navigationActions, selectedItem = Screen.EDIT_NOTE_MARKDOWN)
       },
       floatingActionButton = {
-        if (!isEditing && selectedNote?.userId == currentUser?.uid ) {
+        if (!isEditing && selectedNote?.userId == currentUser?.uid) {
           FloatingActionButton(
               modifier = Modifier.testTag("editMarkdownFAB"),
               onClick = {

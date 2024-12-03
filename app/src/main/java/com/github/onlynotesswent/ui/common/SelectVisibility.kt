@@ -40,7 +40,12 @@ import com.github.onlynotesswent.model.common.Visibility
  * @param onVisibilityChange The action to perform when the visibility option is changed.
  */
 @Composable
-fun SelectVisibility(visibility: Visibility?, currentUserId: String, noteUserId: String, onVisibilityChange: (Visibility) -> Unit) {
+fun SelectVisibility(
+    visibility: Visibility?,
+    currentUserId: String,
+    noteUserId: String,
+    onVisibilityChange: (Visibility) -> Unit
+) {
   var selectedIndex by remember { mutableIntStateOf(Visibility.entries.indexOf(visibility)) }
 
   // Track the current visibility based on index

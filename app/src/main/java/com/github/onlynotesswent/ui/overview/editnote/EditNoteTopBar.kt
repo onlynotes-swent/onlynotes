@@ -35,15 +35,16 @@ fun EditNoteTopBar(
       title = title,
       titleTestTag = titleTestTag,
       onBackClick = {
-        onClick() 
-        // Unselects the note and navigates back to the previous screen. In case of a different user,
+        onClick()
+        // Unselects the note and navigates back to the previous screen. In case of a different
+        // user,
         // it navigates to the overview screen.
         if (noteViewModel.selectedNote.value?.userId == userViewModel.currentUser.value?.uid) {
-            if (noteViewModel.selectedNote.value?.folderId != null) {
-                navigationActions.navigateTo(Screen.FOLDER_CONTENTS)
-            } else {
-                navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
-            }
+          if (noteViewModel.selectedNote.value?.folderId != null) {
+            navigationActions.navigateTo(Screen.FOLDER_CONTENTS)
+          } else {
+            navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
+          }
         }
         noteViewModel.selectedNote(null)
       },
