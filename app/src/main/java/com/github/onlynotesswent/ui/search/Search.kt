@@ -1,13 +1,9 @@
 package com.github.onlynotesswent.ui.search
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -15,7 +11,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.Card
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -33,19 +28,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.font.FontStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.github.onlynotesswent.R
 import com.github.onlynotesswent.model.file.FileViewModel
-import com.github.onlynotesswent.model.flashcard.deck.Deck
 import com.github.onlynotesswent.model.flashcard.deck.DeckViewModel
 import com.github.onlynotesswent.model.folder.FolderViewModel
 import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.model.user.UserViewModel
 import com.github.onlynotesswent.ui.common.CustomSeparatedLazyGrid
+import com.github.onlynotesswent.ui.common.DeckSearchItem
 import com.github.onlynotesswent.ui.common.NoteItem
 import com.github.onlynotesswent.ui.navigation.BottomNavigationMenu
 import com.github.onlynotesswent.ui.navigation.LIST_TOP_LEVEL_DESTINATION
@@ -53,8 +45,6 @@ import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
 import com.github.onlynotesswent.ui.user.UserItem
 import com.github.onlynotesswent.ui.user.switchProfileTo
-import java.text.SimpleDateFormat
-import java.util.Locale
 import kotlinx.coroutines.delay
 
 /**
@@ -334,52 +324,6 @@ fun SearchScreen(
               text = stringResource(R.string.not_found_search, searchedText),
               textAlign = TextAlign.Center,
               color = MaterialTheme.colorScheme.onBackground)
-        }
-      }
-}
-
-/**
- * Displays a deck item in the search screen.
- *
- * @param deck The deck to display.
- * @param author The author of the deck.
- * @param onClick The action to perform when the deck is clicked.
- */
-@Composable
-fun DeckSearchItem(deck: Deck, author: String, onClick: () -> Unit) {
-  Card(
-      Modifier.testTag("deckCard")
-          .padding(4.dp)
-          .semantics(mergeDescendants = true, properties = {})
-          .fillMaxWidth()
-          .clickable(onClick = onClick)) {
-        Column(
-            Modifier.testTag("deckColumn").padding(10.dp).fillMaxWidth(),
-        ) {
-          Row {
-            Text(
-                text =
-                    SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-                        .format(deck.lastModified.toDate()),
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.padding(end = 10.dp))
-            Spacer(modifier = Modifier.weight(1f))
-            Text(
-                text = "${deck.flashcardIds.size} cards",
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.padding(start = 10.dp))
-          }
-          Spacer(modifier = Modifier.height(8.dp))
-          Text(
-              text = deck.name,
-              style = MaterialTheme.typography.bodyMedium,
-              fontWeight = FontWeight.Bold,
-              modifier = Modifier.padding(0.dp))
-          Text(
-              text = author,
-              style = MaterialTheme.typography.bodySmall,
-              fontStyle = FontStyle.Italic,
-              modifier = Modifier.padding(0.dp))
         }
       }
 }
