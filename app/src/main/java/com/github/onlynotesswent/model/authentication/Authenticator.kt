@@ -22,8 +22,6 @@ import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.auth
 import java.security.MessageDigest
 import java.util.UUID
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 
 /**
@@ -47,10 +45,8 @@ open class Authenticator(
    *
    * @param onSuccess The function to call on successful sign-in, that handles the AuthResult
    * @param onFailure The function to call on failed sign-in
-   * @param coroutineScope The coroutine scope to use for the sign-in request
    */
-  fun googleSignIn(
-      coroutineScope: CoroutineScope,
+  suspend fun googleSignIn(
       onSuccess: (AuthResult) -> Unit,
       onFailure: (Exception) -> Unit,
   ) {
@@ -65,31 +61,25 @@ open class Authenticator(
     val request: GetCredentialRequest =
         GetCredentialRequest.Builder().addCredentialOption(googleIdOption).build()
 
-    coroutineScope.launch {
-      try {
-        // Attempt to get the google credentials from CredentialManager
-        val result = credentialManager.getCredential(context = ctx, request = request)
-        handleSignIn(result, onSuccess, onFailure)
-      } catch (e: NoCredentialException) {
-        // If there are no credentials, prompt the user to add a Google account to the phone
-        val intent = Intent(ACTION_ADD_ACCOUNT)
-        intent.putExtra(EXTRA_ACCOUNT_TYPES, arrayOf("com.google"))
-        ctx.startActivity(intent)
-      } catch (e: GetCredentialException) {
-        Log.e(TAG, "Error getting credential", e)
-        onFailure(e)
-      }
+    try {
+      // Attempt to get the google credentials from CredentialManager
+      val result = credentialManager.getCredential(context = ctx, request = request)
+      handleSignIn(result, onSuccess, onFailure)
+    } catch (e: NoCredentialException) {
+      // If there are no credentials, prompt the user to add a Google account to the phone
+      val intent = Intent(ACTION_ADD_ACCOUNT)
+      intent.putExtra(EXTRA_ACCOUNT_TYPES, arrayOf("com.google"))
+      ctx.startActivity(intent)
+    } catch (e: GetCredentialException) {
+      Log.e(TAG, "Error getting credential", e)
+      onFailure(e)
     }
   }
 
-  /**
-   * Signs out the user from Firebase and from the Credential Manager
-   *
-   * @param coroutineScope The coroutine scope to use for the sign-out request
-   */
-  fun signOut(coroutineScope: CoroutineScope) {
+  /** Signs out the user from Firebase and from the Credential Manager */
+  suspend fun signOut() {
     Firebase.auth.signOut()
-    coroutineScope.launch { credentialManager.clearCredentialState(ClearCredentialStateRequest()) }
+    credentialManager.clearCredentialState(ClearCredentialStateRequest())
   }
 
   /**
@@ -139,7 +129,7 @@ open class Authenticator(
         }
       }
       else -> {
-        Log.e(TAG, "Unexpected type of credential: ${credential.type}")
+        Log.e(TAG, "Unexpected type of credential")
         onFailure(Exception("Login failed"))
       }
     }

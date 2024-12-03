@@ -40,6 +40,7 @@ import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
 import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
 import com.google.firebase.auth.AuthResult
+import kotlinx.coroutines.launch
 
 @Composable
 fun SignInScreen(
@@ -53,10 +54,11 @@ fun SignInScreen(
   val scope = rememberCoroutineScope()
 
   val onClickSignIn: () -> Unit = {
-    authenticator.googleSignIn(
-        coroutineScope = scope,
-        onSuccess = { authSuccessHandler(it, navigationActions, userViewModel, context) },
-        onFailure = { Toast.makeText(context, "Login Failed!", Toast.LENGTH_LONG).show() })
+    scope.launch {
+      authenticator.googleSignIn(
+          onSuccess = { authSuccessHandler(it, navigationActions, userViewModel, context) },
+          onFailure = { Toast.makeText(context, "Login Failed!", Toast.LENGTH_LONG).show() })
+    }
   }
 
   // Handle back button press

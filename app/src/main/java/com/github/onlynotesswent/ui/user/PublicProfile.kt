@@ -77,6 +77,7 @@ import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
 import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
 import com.github.onlynotesswent.ui.theme.Typography
+import kotlinx.coroutines.launch
 
 // User Profile Home screen:
 /**
@@ -228,7 +229,9 @@ fun TopProfileBar(
       actions = {
         if (!includeBackButton) {
           LogoutButton {
-            authenticator.signOut(scope) // Authenticator should be non-null if coded correctly
+            scope.launch {
+              authenticator.signOut()
+            } // Authenticator should be non-null if coded correctly
             navigationActions.navigateTo(Screen.AUTH)
           }
         }
