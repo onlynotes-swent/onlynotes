@@ -31,9 +31,11 @@
     <string name="users_maj">Users</string>
     <string name="notes_maj">Notes</string>
     <string name="folders_maj">Folders</string>
+    <string name="decks_maj">Decks</string>
     <string name="users_min">users</string>
     <string name="notes_min">notes</string>
     <string name="folders_min">folders</string>
+    <string name="decks_min">decks</string>
     <string name="not_found_search">No %1$s found matching your search.</string>
     <string name="create">Create</string>
     <string name="create_note">Create note</string>

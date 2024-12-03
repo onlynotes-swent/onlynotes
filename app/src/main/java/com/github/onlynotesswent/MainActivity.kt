@@ -8,6 +8,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.scaleIn
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -19,6 +20,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import com.github.onlynotesswent.model.file.FileViewModel
+import com.github.onlynotesswent.model.flashcard.deck.DeckViewModel
 import com.github.onlynotesswent.model.folder.FolderViewModel
 import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.model.notification.NotificationViewModel
@@ -77,6 +79,7 @@ fun OnlyNotesApp(
   val folderViewModel: FolderViewModel = viewModel(factory = FolderViewModel.Factory)
   val notificationViewModel: NotificationViewModel =
       viewModel(factory = NotificationViewModel.Factory)
+  val deckViewModel: DeckViewModel = viewModel(factory = DeckViewModel.Factory)
 
   NavHost(navController = navController, startDestination = Route.AUTH) {
     navigation(
@@ -131,8 +134,14 @@ fun OnlyNotesApp(
     ) {
       composable(Screen.SEARCH) {
         SearchScreen(
-            navigationActions, noteViewModel, userViewModel, folderViewModel, fileViewModel)
+            navigationActions,
+            noteViewModel,
+            userViewModel,
+            folderViewModel,
+            deckViewModel,
+            fileViewModel)
       }
+      composable(Screen.DECK_MENU) { Text("Deck Menu Screen - not implemented yet") }
     }
 
     navigation(

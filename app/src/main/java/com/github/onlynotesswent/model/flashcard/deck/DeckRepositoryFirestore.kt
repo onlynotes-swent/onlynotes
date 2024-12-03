@@ -1,6 +1,7 @@
 package com.github.onlynotesswent.model.flashcard.deck
 
 import android.util.Log
+import com.github.onlynotesswent.model.common.Visibility
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.DocumentSnapshot
@@ -30,8 +31,12 @@ class DeckRepositoryFirestore(private val db: FirebaseFirestore) : DeckRepositor
           userId = document.getString("userId") ?: throw Exception("Invalid user ID"),
           folderId = document.getString("folderId"),
           flashcardIds = document.get("flashcardIds") as List<String>? ?: emptyList(),
-          description =
-              document.getString("description") ?: throw Exception("Invalid deck description"))
+          visibility = Visibility.fromString(
+              document.getString("visibility") ?: throw Exception("Invalid deck visibility")),
+          lastModified = document.getTimestamp("lastModified")
+              ?: throw Exception("Invalid last modified timestamp"),
+          description = document.getString("description") ?: throw Exception("Invalid deck description")
+      )
     } catch (e: Exception) {
       Log.e(TAG, "Error converting document to Deck", e)
       null
@@ -48,6 +53,20 @@ class DeckRepositoryFirestore(private val db: FirebaseFirestore) : DeckRepositor
         onSuccess()
       }
     }
+  }
+
+  override fun getPublicDecks(onSuccess: (List<Deck>) -> Unit, onFailure: (Exception) -> Unit) {
+    db.collection(collectionPath)
+        .whereEqualTo("visibility", Visibility.PUBLIC.toString())
+        .get()
+        .addOnSuccessListener { querySnapshot ->
+          val decks = querySnapshot.documents.mapNotNull { documentSnapshotToDeck(it) }
+          onSuccess(decks)
+        }
+        .addOnFailureListener { exception ->
+          onFailure(exception)
+          Log.e(TAG, "Error getting public decks", exception)
+        }
   }
 
   override fun getDecksFrom(

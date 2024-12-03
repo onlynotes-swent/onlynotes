@@ -1,5 +1,7 @@
 package com.github.onlynotesswent.model.flashcard.deck
 
+import com.github.onlynotesswent.model.common.Visibility
+import com.google.firebase.Timestamp
 import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.fail
 import org.junit.Before
@@ -20,7 +22,14 @@ class DeckViewModelTest {
   private lateinit var deckViewModel: DeckViewModel
 
   private val testDeck: Deck =
-      Deck(id = "1", name = "Deck", userId = "2", folderId = "3", flashcardIds = listOf("4", "5"))
+      Deck(
+          id = "1",
+          name = "Deck",
+          userId = "2",
+          folderId = "3",
+          visibility = Visibility.PUBLIC,
+          lastModified = Timestamp.now(),
+          flashcardIds = listOf("4", "5"))
 
   @Before
   fun setUp() {
