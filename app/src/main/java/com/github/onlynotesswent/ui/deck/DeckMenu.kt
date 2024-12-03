@@ -318,7 +318,7 @@ fun FlashcardDialog(
       // Save button
       Button(
           onClick = {
-              flashcard.value?.copy(front = front.value, back = back.value)?.let {
+            flashcard.value?.copy(front = front.value, back = back.value)?.let {
               flashcardViewModel.updateFlashcard(it)
               deckViewModel.selectedDeck.value?.let { deck ->
                 val newDeck = deck.copy(flashcardIds = deck.flashcardIds + it.id)
