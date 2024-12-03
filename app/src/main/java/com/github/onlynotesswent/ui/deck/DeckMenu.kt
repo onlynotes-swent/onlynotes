@@ -43,8 +43,6 @@ import com.github.onlynotesswent.model.file.FileType
 import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.flashcard.Flashcard
 import com.github.onlynotesswent.model.flashcard.FlashcardViewModel
-import com.github.onlynotesswent.model.flashcard.ImageFlashcard
-import com.github.onlynotesswent.model.flashcard.TextFlashcard
 import com.github.onlynotesswent.model.flashcard.deck.DeckViewModel
 import com.github.onlynotesswent.model.user.User
 import com.github.onlynotesswent.model.user.UserViewModel
@@ -52,10 +50,10 @@ import com.github.onlynotesswent.ui.common.CustomDropDownMenu
 import com.github.onlynotesswent.ui.common.CustomDropDownMenuItem
 import com.github.onlynotesswent.ui.common.LoadingIndicator
 import com.github.onlynotesswent.ui.common.ScreenTopBar
+import com.github.onlynotesswent.ui.common.ThumbnailPic
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
 import com.github.onlynotesswent.ui.theme.Typography
-import com.github.onlynotesswent.ui.user.ThumbnailPic
 import com.github.onlynotesswent.ui.user.switchProfileTo
 import com.github.onlynotesswent.utils.ProfilePictureTaker
 
@@ -214,7 +212,7 @@ fun FlashcardViewItem(
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onPrimaryContainer)
           }
-          if (flashcard is ImageFlashcard) {
+          if (flashcard.hasImage) {
             // Show image
             val imageUri: MutableState<String?> = remember { mutableStateOf(null) }
             if (imageUri.value == null) {
@@ -290,7 +288,7 @@ fun FlashcardDialog(
       // Front
       TextField(
           value = front.value, onValueChange = { front.value = it }, label = { Text("Front") })
-      if (flashcard.value is ImageFlashcard) {
+      if (flashcard.value?.hasImage == true) {
         // Image
         val imageUri: MutableState<String?> = remember { mutableStateOf(null) }
         val hasImageBeenChanged = remember { mutableStateOf(false) }
@@ -320,25 +318,7 @@ fun FlashcardDialog(
       // Save button
       Button(
           onClick = {
-            var newFlashcard: Flashcard? = null
-            if (flashcard.value is TextFlashcard) {
-              val textFlashcard = flashcard.value as TextFlashcard
-              newFlashcard = textFlashcard.copy(front = front.value, back = back.value)
-            }
-            if (flashcard.value is ImageFlashcard) {
-              newFlashcard =
-                  ImageFlashcard(
-                      id = flashcard.value!!.id,
-                      front = front.value,
-                      back = back.value,
-                      imageUrl = (flashcard.value as ImageFlashcard).imageUrl,
-                      lastReviewed = flashcard.value!!.lastReviewed,
-                      userId = flashcard.value!!.userId,
-                      folderId = flashcard.value!!.folderId,
-                      noteId = flashcard.value!!.noteId)
-            }
-
-            newFlashcard?.let {
+              flashcard.value?.copy(front = front.value, back = back.value)?.let {
               flashcardViewModel.updateFlashcard(it)
               deckViewModel.selectedDeck.value?.let { deck ->
                 val newDeck = deck.copy(flashcardIds = deck.flashcardIds + it.id)
