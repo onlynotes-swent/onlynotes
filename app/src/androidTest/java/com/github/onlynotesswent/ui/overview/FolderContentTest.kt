@@ -130,6 +130,17 @@ class FolderContentTest {
 
   private val subfolder = Folder("3", "sub name", "1", "1", lastModified = Timestamp.now())
   private val folder = Folder("1", "1", "1", lastModified = Timestamp.now())
+
+  private val testUser =
+      User(
+          firstName = "testFirstName",
+          lastName = "testLastName",
+          userName = "testUserName",
+          email = "testEmail",
+          uid = "1",
+          dateOfJoining = Timestamp.now(),
+          rating = 0.0)
+
   @get:Rule val composeTestRule = createComposeRule()
 
   @Before
@@ -138,24 +149,6 @@ class FolderContentTest {
     userViewModel = UserViewModel(mockUserRepository)
     noteViewModel = NoteViewModel(mockNoteRepository)
     folderViewModel = FolderViewModel(mockFolderRepository)
-
-    // Mock the addUser method to call the onSuccess callback
-    `when`(mockUserRepository.addUser(any(), any(), any())).thenAnswer { invocation ->
-      val onSuccess = invocation.getArgument<() -> Unit>(1)
-      onSuccess()
-    }
-
-    val testUser =
-        User(
-            firstName = "testFirstName",
-            lastName = "testLastName",
-            userName = "testUserName",
-            email = "testEmail",
-            uid = "1",
-            dateOfJoining = Timestamp.now(),
-            rating = 0.0)
-
-    userViewModel.addUser(testUser, {}, {})
 
     // Mock the current route to be the user create screen
     `when`(mockNavigationActions.currentRoute()).thenReturn(Screen.FOLDER_CONTENTS)
@@ -169,12 +162,26 @@ class FolderContentTest {
       onSuccess(folderList)
     }
     `when`(mockFolderRepository.getNewFolderId()).thenAnswer { _ -> "mockFolderId" }
+  }
+
+  private fun init(selectedFolder: Folder) = runTest {
+    // Mock the addUser method to call the onSuccess callback
+    `when`(mockUserRepository.addUser(any(), any(), any())).thenAnswer { invocation ->
+      val onSuccess = invocation.getArgument<() -> Unit>(1)
+      onSuccess()
+    }
+    userViewModel.addUser(testUser, {}, {})
 
     noteViewModel.getRootNotesFrom("1")
     folderViewModel.getRootFoldersFromUid("1")
+
+    folderViewModel.selectedFolder(selectedFolder)
+    composeTestRule.setContent {
+      FolderContentScreen(mockNavigationActions, folderViewModel, noteViewModel, userViewModel)
+    }
   }
 
-  private fun init(selectedFolder: Folder) {
+  private fun initWithoutUser(selectedFolder: Folder) {
     folderViewModel.selectedFolder(selectedFolder)
     composeTestRule.setContent {
       FolderContentScreen(mockNavigationActions, folderViewModel, noteViewModel, userViewModel)
@@ -407,5 +414,35 @@ class FolderContentTest {
     composeTestRule.onNodeWithTag("deleteFolderContentsButton").assertIsDisplayed()
     composeTestRule.onNodeWithTag("deleteFolderContentsButton").performClick()
     composeTestRule.onNodeWithTag("noteCard").assertIsDisplayed()
+  }
+
+  @Test
+  fun noteDialogDisplaysCorrectly() = runTest {
+    init(folder)
+
+    `when`(mockNoteRepository.addNote(any(), any(), any(), any())).thenAnswer { invocation ->
+      val onSuccess = invocation.getArgument<() -> Unit>(1)
+      onSuccess()
+    }
+    `when`(mockNoteRepository.getNewUid()).thenReturn("4")
+    composeTestRule.onNodeWithTag("createSubNoteOrSubFolder").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("createSubNoteOrSubFolder").performClick()
+    composeTestRule.onNodeWithTag("createNote").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("createNote").performClick()
+    composeTestRule.onNodeWithTag("NoteDialog").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("inputNoteName").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("inputNoteName").performTextInput("test name")
+
+    composeTestRule.onNodeWithTag("confirmNoteAction").assertIsEnabled().assertIsDisplayed()
+    composeTestRule.onNodeWithTag("confirmNoteAction").performClick()
+
+    verify(mockNoteRepository).addNote(any(), any(), any(), any())
+    verify(mockNavigationActions).navigateTo(Screen.EDIT_NOTE)
+  }
+
+  @Test
+  fun userNotFoundScreenDisplaysCorrectly() {
+    initWithoutUser(folder)
+    composeTestRule.onNodeWithTag("userNotFoundScreen").assertIsDisplayed()
   }
 }

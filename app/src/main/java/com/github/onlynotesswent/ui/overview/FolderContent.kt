@@ -3,6 +3,7 @@ package com.github.onlynotesswent.ui.overview
 import android.content.Context
 import android.util.Log
 import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -51,7 +52,7 @@ import com.github.onlynotesswent.model.user.UserViewModel
 import com.github.onlynotesswent.ui.common.ConfirmationPopup
 import com.github.onlynotesswent.ui.common.CustomDropDownMenu
 import com.github.onlynotesswent.ui.common.CustomDropDownMenuItem
-import com.github.onlynotesswent.ui.common.CustomLazyGrid
+import com.github.onlynotesswent.ui.common.CustomSeparatedLazyGrid
 import com.github.onlynotesswent.ui.common.FolderDialog
 import com.github.onlynotesswent.ui.common.NoteDialog
 import com.github.onlynotesswent.ui.navigation.NavigationActions
@@ -100,6 +101,17 @@ fun FolderContentScreen(
 
   var updatedName by remember { mutableStateOf(folder.value!!.name) }
   var expandedFolder by remember { mutableStateOf(false) }
+
+  // Custom back handler to manage back navigation
+  BackHandler {
+    if (folder.value!!.parentFolderId != null) {
+      navigationActions.navigateTo(
+          Screen.FOLDER_CONTENTS.replace(
+              oldValue = "{folderId}", newValue = folder.value!!.parentFolderId!!))
+    } else {
+      navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
+    }
+  }
 
   if (currentUser.value == null) {
     UserNotFoundFolderContentScreen()
@@ -233,7 +245,7 @@ fun FolderContentScreen(
 @Composable
 fun UserNotFoundFolderContentScreen() {
   Column(
-      modifier = Modifier.fillMaxSize(),
+      modifier = Modifier.fillMaxSize().testTag("userNotFoundScreen"),
       verticalArrangement = Arrangement.Center,
       horizontalAlignment = Alignment.CenterHorizontally) {
         Text(stringResource(R.string.user_not_found))
@@ -300,7 +312,8 @@ fun FolderContentTopBar(
       },
       navigationIcon = {
         IconButton(
-            onClick = { navigationActions.goBack() }, modifier = Modifier.testTag("goBackButton")) {
+            onClick = { navigationActions.goBackFolderContents(folder?.parentFolderId) },
+            modifier = Modifier.testTag("goBackButton")) {
               Icon(imageVector = Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "Back")
             }
       },
@@ -544,7 +557,7 @@ fun FolderContentScreenGrid(
     context: Context,
     navigationActions: NavigationActions
 ) {
-  CustomLazyGrid(
+  CustomSeparatedLazyGrid(
       modifier = Modifier.fillMaxSize().padding(paddingValues),
       notes = userFolderNotes,
       folders = userFolderSubFolders,

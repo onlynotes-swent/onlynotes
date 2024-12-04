@@ -58,7 +58,7 @@ class PdfViewerTest {
             visibility = Visibility.DEFAULT,
             userId = "1",
             noteCourse = Course("CS-100", "Sample Class", 2024, "path"),
-        )
+            folderId = "1")
     `when`(noteRepository.getNoteById(any(), any(), any(), any())).thenAnswer { invocation ->
       val onSuccess = invocation.getArgument<(Note) -> Unit>(1)
       onSuccess(mockNote)
@@ -120,6 +120,13 @@ class PdfViewerTest {
     composeTestRule.onNodeWithTag("Comments").assertIsDisplayed()
     composeTestRule.onNodeWithTag("PDF").assertIsDisplayed()
     composeTestRule.onNodeWithTag("Content").assertIsDisplayed()
+  }
+
+  @Test
+  fun clickGoBackButton() {
+    composeTestRule.onNodeWithTag("closeButton").performClick()
+
+    verify(navigationActions).navigateTo(Screen.FOLDER_CONTENTS.replace("{folderId}", "1"))
   }
 
   @Test

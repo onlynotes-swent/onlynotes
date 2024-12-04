@@ -22,7 +22,7 @@ class FlashcardViewModelTest {
   private lateinit var flashcardViewModel: FlashcardViewModel
 
   private val flashcard =
-      TextFlashcard(
+      Flashcard(
           id = "1",
           front = "front",
           back = "back",

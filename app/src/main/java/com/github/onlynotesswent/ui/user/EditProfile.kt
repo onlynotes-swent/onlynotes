@@ -19,23 +19,31 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Public
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -62,7 +70,7 @@ import com.github.onlynotesswent.model.file.FileType
 import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.folder.FolderViewModel
 import com.github.onlynotesswent.model.note.NoteViewModel
-import com.github.onlynotesswent.model.notification.NotificationViewModel
+import com.github.onlynotesswent.model.user.User
 import com.github.onlynotesswent.model.user.UserRepositoryFirestore
 import com.github.onlynotesswent.model.user.UserViewModel
 import com.github.onlynotesswent.ui.navigation.BottomNavigationMenu
@@ -70,6 +78,7 @@ import com.github.onlynotesswent.ui.navigation.LIST_TOP_LEVEL_DESTINATION
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Route
 import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
+import com.github.onlynotesswent.ui.theme.Typography
 import com.github.onlynotesswent.utils.ProfilePictureTaker
 import kotlinx.coroutines.launch
 
@@ -90,14 +99,14 @@ fun EditProfileScreen(
     profilePictureTaker: ProfilePictureTaker,
     fileViewModel: FileViewModel,
     noteViewModel: NoteViewModel,
-    folderViewModel: FolderViewModel,
-    notificationViewModel: NotificationViewModel
+    folderViewModel: FolderViewModel
 ) {
   val user = userViewModel.currentUser.collectAsState()
 
   val newFirstName = remember { mutableStateOf(user.value?.firstName ?: "") }
   val newLastName = remember { mutableStateOf(user.value?.lastName ?: "") }
   val newUserName = remember { mutableStateOf(user.value?.userName ?: "") }
+  val newBio = remember { mutableStateOf(user.value?.bio ?: "") }
   val profilePictureUri = remember { mutableStateOf("") }
   val userNameError = remember { mutableStateOf(false) }
   val saveEnabled = remember { mutableStateOf(true) }
@@ -129,74 +138,37 @@ fun EditProfileScreen(
                 selectedItem = navigationActions.currentRoute())
           },
           topBar = {
-            TopProfileBar(
-                stringResource(R.string.edit_profile),
-                navigationActions,
-                userViewModel,
-                notificationViewModel,
-                includeBackButton = true,
-                onBackButtonClick = {
-                  if (newFirstName.value != user.value?.firstName ||
-                      newLastName.value != user.value?.lastName ||
-                      newUserName.value != user.value?.userName ||
-                      newIsAccountPublic.value != user.value?.isAccountPublic ||
-                      hasProfilePictureBeenChanged.value) {
-                    showGoingBackWithoutSavingChanges.value = true
-                  } else {
-                    navigationActions.goBack()
-                  }
-                })
-          },
-          content = { paddingValues ->
-            Column(
-                modifier = Modifier.fillMaxSize().padding(paddingValues),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally) {
-                  EditableProfilePicture(
-                      profilePictureTaker,
-                      userViewModel,
-                      profilePictureUri,
-                      fileViewModel,
-                      isProfilePictureUpToDate,
-                      hasProfilePictureBeenChanged,
-                      localContext,
-                      showSheet,
-                      sheetState,
-                  )
-
-                  // Text Fields for user information
-                  FirstNameTextField(newFirstName)
-                  LastNameTextField(newLastName)
-                  UserNameTextField(newUserName, userNameError)
-
-                  // Save Button
-                  saveEnabled.value = newUserName.value.isNotBlank()
-
-                  Button(
-                      modifier = Modifier.padding(top = 16.dp).testTag("deleteAccountButton"),
-                      colors =
-                          ButtonDefaults.buttonColors(
-                              containerColor = MaterialTheme.colorScheme.background,
-                              contentColor = MaterialTheme.colorScheme.error),
-                      border = BorderStroke(1.dp, MaterialTheme.colorScheme.error),
-                      onClick = { showDeleteAccountAlert.value = true },
-                      content = { Text("Delete Account") })
-
-                  Button(
-                      modifier = Modifier.padding(top = 16.dp).testTag("publicAccountButton"),
-                      onClick = { newIsAccountPublic.value = !newIsAccountPublic.value },
-                      content = {
-                        Text(
-                            if (newIsAccountPublic.value) "Account is Public"
-                            else "Account is Private")
-                      })
-                  SaveButton(
+            TopAppBar(
+                title = { Text(stringResource(R.string.edit_profile)) },
+                navigationIcon = {
+                  IconButton(
+                      onClick = {
+                        if (newFirstName.value != user.value?.firstName ||
+                            newLastName.value != user.value?.lastName ||
+                            newUserName.value != user.value?.userName ||
+                            newBio.value != user.value?.bio ||
+                            newIsAccountPublic.value != user.value?.isAccountPublic ||
+                            hasProfilePictureBeenChanged.value) {
+                          showGoingBackWithoutSavingChanges.value = true
+                        } else {
+                          navigationActions.goBack()
+                        }
+                      },
+                      Modifier.testTag("goBackButton")) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
+                            contentDescription = "Back")
+                      }
+                },
+                actions = {
+                  IconButton(
                       onClick = {
                         val updatedUser =
                             user.value!!.copy(
                                 firstName = newFirstName.value.trim(),
                                 lastName = newLastName.value.trim(),
                                 userName = newUserName.value.trim(),
+                                bio = newBio.value.trim(),
                                 hasProfilePicture = profilePictureUri.value.isNotBlank(),
                                 isAccountPublic = newIsAccountPublic.value,
                             )
@@ -254,7 +226,96 @@ fun EditProfileScreen(
                                   exception is UserRepositoryFirestore.UsernameTakenException
                             })
                       },
-                      enabled = saveEnabled)
+                      modifier = Modifier.testTag("saveButton"),
+                      enabled = saveEnabled.value) {
+                        Icon(
+                            imageVector = Icons.Default.Check,
+                            contentDescription = "Save Note",
+                            tint = MaterialTheme.colorScheme.onSurface)
+                      }
+                })
+          },
+          content = { paddingValues ->
+            Column(
+                modifier = Modifier.fillMaxSize().padding(paddingValues),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally) {
+                  EditableProfilePicture(
+                      profilePictureTaker,
+                      userViewModel,
+                      profilePictureUri,
+                      fileViewModel,
+                      isProfilePictureUpToDate,
+                      hasProfilePictureBeenChanged,
+                      localContext,
+                      showSheet,
+                      sheetState,
+                  )
+
+                  // Text Fields for user information
+                  FirstNameTextField(newFirstName)
+                  LastNameTextField(newLastName)
+                  UserNameTextField(newUserName, userNameError)
+                  BioTextField(newBio)
+
+                  // Save Button
+                  saveEnabled.value = newUserName.value.isNotBlank()
+
+                  Row(modifier = Modifier.padding(top = 16.dp)) {
+                    FilterChip(
+                        modifier =
+                            Modifier.width(130.dp).height(40.dp).testTag("publicAccountChip"),
+                        selected = newIsAccountPublic.value,
+                        onClick = { newIsAccountPublic.value = true },
+                        label = {
+                          Row(
+                              modifier = Modifier.fillMaxWidth(),
+                              horizontalArrangement = Arrangement.Center) {
+                                Text(
+                                    stringResource(R.string.public_account),
+                                    style = Typography.titleMedium)
+                              }
+                        },
+                        leadingIcon = {
+                          if (newIsAccountPublic.value)
+                              Icon(
+                                  imageVector = Icons.Default.Public,
+                                  contentDescription = "Public Account",
+                                  tint = MaterialTheme.colorScheme.onSurface)
+                        })
+                    Spacer(modifier = Modifier.width(16.dp))
+                    FilterChip(
+                        modifier =
+                            Modifier.width(130.dp).height(40.dp).testTag("privateAccountChip"),
+                        selected = !newIsAccountPublic.value,
+                        onClick = { newIsAccountPublic.value = false },
+                        label = {
+                          Row(
+                              modifier = Modifier.fillMaxWidth(),
+                              horizontalArrangement = Arrangement.Center) {
+                                Text(
+                                    stringResource(R.string.private_account),
+                                    style = Typography.titleMedium)
+                              }
+                        },
+                        leadingIcon = {
+                          if (!newIsAccountPublic.value)
+                              Icon(
+                                  imageVector = Icons.Default.Lock,
+                                  contentDescription = "Private Account",
+                                  tint = MaterialTheme.colorScheme.onSurface)
+                        })
+                  }
+
+                  Button(
+                      modifier = Modifier.padding(top = 16.dp).testTag("deleteAccountButton"),
+                      colors =
+                          ButtonDefaults.buttonColors(
+                              containerColor = MaterialTheme.colorScheme.background,
+                              contentColor = MaterialTheme.colorScheme.error),
+                      border = BorderStroke(1.dp, MaterialTheme.colorScheme.error),
+                      onClick = { showDeleteAccountAlert.value = true },
+                      content = { Text("Delete Account") })
 
                   if (showDeleteAccountAlert.value) {
                     AlertDialog(
@@ -322,6 +383,17 @@ fun EditProfileScreen(
                   }
                 }
           })
+}
+
+@Composable
+fun BioTextField(bioState: MutableState<String>) {
+  OutlinedTextField(
+      minLines = 2,
+      maxLines = 4,
+      value = bioState.value,
+      onValueChange = { bioState.value = User.formatBio(it) },
+      label = { Text(stringResource(R.string.biography)) },
+      modifier = Modifier.fillMaxWidth(0.8f).padding(vertical = 12.dp).testTag("inputBio"))
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

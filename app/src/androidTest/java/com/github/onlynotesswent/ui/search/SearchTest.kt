@@ -6,6 +6,9 @@ import com.github.onlynotesswent.model.common.Course
 import com.github.onlynotesswent.model.common.Visibility
 import com.github.onlynotesswent.model.file.FileRepository
 import com.github.onlynotesswent.model.file.FileViewModel
+import com.github.onlynotesswent.model.flashcard.deck.Deck
+import com.github.onlynotesswent.model.flashcard.deck.DeckRepository
+import com.github.onlynotesswent.model.flashcard.deck.DeckViewModel
 import com.github.onlynotesswent.model.folder.Folder
 import com.github.onlynotesswent.model.folder.FolderRepository
 import com.github.onlynotesswent.model.folder.FolderViewModel
@@ -32,10 +35,12 @@ class SearchScreenTest {
   @Mock private lateinit var noteRepository: NoteRepository
   @Mock private lateinit var userRepository: UserRepository
   @Mock private lateinit var folderRepository: FolderRepository
+  @Mock private lateinit var deckRepository: DeckRepository
   @Mock private lateinit var fileRepository: FileRepository
   private lateinit var noteViewModel: NoteViewModel
   private lateinit var userViewModel: UserViewModel
   private lateinit var folderViewModel: FolderViewModel
+  private lateinit var deckViewModel: DeckViewModel
   private lateinit var fileViewModel: FileViewModel
 
   @get:Rule val composeTestRule = createComposeRule()
@@ -101,6 +106,27 @@ class SearchScreenTest {
 
   private val testFolders = listOf(testFolder1, testFolder2)
 
+  private val testDeck1 =
+      Deck(
+          id = "1",
+          name = "Deck 1",
+          userId = "1",
+          folderId = "1",
+          visibility = Visibility.PUBLIC,
+          lastModified = Timestamp.now(),
+          flashcardIds = listOf("1", "2"))
+  private val testDeck2 =
+      Deck(
+          id = "2",
+          name = "Deck 2",
+          userId = "2",
+          folderId = "2",
+          visibility = Visibility.PUBLIC,
+          lastModified = Timestamp.now(),
+          flashcardIds = listOf("3", "4"))
+
+  private val testDecks = listOf(testDeck1, testDeck2)
+
   @Before
   fun setUp() {
     MockitoAnnotations.openMocks(this)
@@ -123,16 +149,27 @@ class SearchScreenTest {
       val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(0)
       onSuccess(testFolders)
     }
+    `when`(deckRepository.getPublicDecks(any(), any())).thenAnswer { invocation ->
+      val onSuccess = invocation.getArgument<(List<Deck>) -> Unit>(0)
+      onSuccess(testDecks)
+    }
 
     userViewModel = UserViewModel(userRepository)
     noteViewModel = NoteViewModel(noteRepository)
     folderViewModel = FolderViewModel(folderRepository)
+    deckViewModel = DeckViewModel(deckRepository)
     fileViewModel = FileViewModel(fileRepository)
 
     userViewModel.addUser(testUser1, {}, {})
 
     composeTestRule.setContent {
-      SearchScreen(navigationActions, noteViewModel, userViewModel, folderViewModel, fileViewModel)
+      SearchScreen(
+          navigationActions,
+          noteViewModel,
+          userViewModel,
+          folderViewModel,
+          deckViewModel,
+          fileViewModel)
     }
   }
 
@@ -144,9 +181,19 @@ class SearchScreenTest {
 
   @Test
   fun testEmptySearchQuery() {
-    composeTestRule.onNodeWithTag("filteredNoteList").assertDoesNotExist()
-    composeTestRule.onNodeWithTag("filteredUserList").assertDoesNotExist()
     composeTestRule.onNodeWithTag("noSearchResults").assertIsNotDisplayed()
+
+    composeTestRule.onNodeWithTag("noteFilterChip").performClick()
+    composeTestRule.onNodeWithTag("filteredNoteList").assertIsDisplayed()
+
+    composeTestRule.onNodeWithTag("userFilterChip").performClick()
+    composeTestRule.onNodeWithTag("filteredUserList").assertIsDisplayed()
+
+    composeTestRule.onNodeWithTag("folderFilterChip").performClick()
+    composeTestRule.onNodeWithTag("filteredFolderList").assertIsDisplayed()
+
+    composeTestRule.onNodeWithTag("deckFilterChip").performClick()
+    composeTestRule.onNodeWithTag("filteredDeckList").assertIsDisplayed()
   }
 
   @Test
@@ -186,10 +233,22 @@ class SearchScreenTest {
         .onFirst()
         .assertIsDisplayed()
     composeTestRule.onAllNodesWithTag("folderCard").assertCountEquals(1)
+
+    composeTestRule.onNodeWithTag("searchTextField").performTextReplacement(testDeck1.name)
+    composeTestRule.onNodeWithTag("deckFilterChip").performClick()
+
+    composeTestRule.onNodeWithTag("filteredDeckList").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("noSearchResults").assertIsNotDisplayed()
+    composeTestRule
+        .onAllNodesWithTag("deckCard")
+        .filter(hasText(testDeck1.name))
+        .onFirst()
+        .assertIsDisplayed()
   }
 
   @Test
   fun testValidSearchQueryShowsMultipleResults() {
+    // View 2 notes:
     composeTestRule.onNodeWithTag("searchTextField").performTextInput("Note")
     composeTestRule.onNodeWithTag("noteFilterChip").performClick()
 
@@ -207,6 +266,7 @@ class SearchScreenTest {
         .assertIsDisplayed()
     composeTestRule.onAllNodesWithTag("noteCard").assertCountEquals(2)
 
+    // View 2 users:
     composeTestRule.onNodeWithTag("searchTextField").performTextReplacement("User")
     composeTestRule.onNodeWithTag("userFilterChip").performClick()
 
@@ -226,6 +286,7 @@ class SearchScreenTest {
 
     composeTestRule.onAllNodesWithTag("userItem").assertCountEquals(2)
 
+    // View 2 folders:
     composeTestRule.onNodeWithTag("searchTextField").performTextReplacement("Folder")
     composeTestRule.onNodeWithTag("folderFilterChip").performClick()
 
@@ -242,6 +303,24 @@ class SearchScreenTest {
         .onFirst()
         .assertIsDisplayed()
     composeTestRule.onAllNodesWithTag("folderCard").assertCountEquals(2)
+
+    // View 2 decks:
+    composeTestRule.onNodeWithTag("searchTextField").performTextReplacement("Deck")
+    composeTestRule.onNodeWithTag("deckFilterChip").performClick()
+
+    composeTestRule.onNodeWithTag("filteredDeckList").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("noSearchResults").assertIsNotDisplayed()
+    composeTestRule
+        .onAllNodesWithTag("deckCard")
+        .filter(hasText(testDeck1.name))
+        .onFirst()
+        .assertIsDisplayed()
+    composeTestRule
+        .onAllNodesWithTag("deckCard")
+        .filter(hasText(testDeck2.name))
+        .onFirst()
+        .assertIsDisplayed()
+    composeTestRule.onAllNodesWithTag("deckCard").assertCountEquals(2)
   }
 
   @Test
@@ -251,15 +330,20 @@ class SearchScreenTest {
     composeTestRule.onNodeWithTag("noSearchResults").assertIsDisplayed()
     composeTestRule.onNodeWithText("No notes found matching your search.").assertIsDisplayed()
 
-    composeTestRule.onNodeWithTag("searchTextField").performTextInput("Non-existent User")
+    composeTestRule.onNodeWithTag("searchTextField").performTextReplacement("Non-existent User")
     composeTestRule.onNodeWithTag("userFilterChip").performClick()
     composeTestRule.onNodeWithTag("noSearchResults").assertIsDisplayed()
     composeTestRule.onNodeWithText("No users found matching your search.").assertIsDisplayed()
 
-    composeTestRule.onNodeWithTag("searchTextField").performTextInput("Non-existent Folder")
+    composeTestRule.onNodeWithTag("searchTextField").performTextReplacement("Non-existent Folder")
     composeTestRule.onNodeWithTag("folderFilterChip").performClick()
     composeTestRule.onNodeWithTag("noSearchResults").assertIsDisplayed()
     composeTestRule.onNodeWithText("No folders found matching your search.").assertIsDisplayed()
+
+    composeTestRule.onNodeWithTag("searchTextField").performTextReplacement("Non-existent Deck")
+    composeTestRule.onNodeWithTag("deckFilterChip").performClick()
+    composeTestRule.onNodeWithTag("noSearchResults").assertIsDisplayed()
+    composeTestRule.onNodeWithText("No decks found matching your search.").assertIsDisplayed()
   }
 
   @Test
@@ -294,5 +378,15 @@ class SearchScreenTest {
 
     val folderContentsScreen = Screen.FOLDER_CONTENTS.replace("{folderId}", testFolder1.id)
     verify(navigationActions).navigateTo(folderContentsScreen)
+  }
+
+  @Test
+  fun testDeckSelectionNavigatesToDeckMenuScreen() {
+    composeTestRule.onNodeWithTag("searchTextField").performTextInput(testDeck2.name)
+    composeTestRule.onNodeWithTag("deckFilterChip").performClick()
+    composeTestRule.onNodeWithTag("filteredDeckList").onChildren().onFirst().performClick()
+
+    val deckMenuScreen = Screen.DECK_MENU.replace("{deckId}", testDeck2.id)
+    verify(navigationActions).navigateTo(deckMenuScreen)
   }
 }

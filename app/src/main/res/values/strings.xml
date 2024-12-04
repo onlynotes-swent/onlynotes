@@ -31,9 +31,11 @@
     <string name="users_maj">Users</string>
     <string name="notes_maj">Notes</string>
     <string name="folders_maj">Folders</string>
+    <string name="decks_maj">Decks</string>
     <string name="users_min">users</string>
     <string name="notes_min">notes</string>
     <string name="folders_min">folders</string>
+    <string name="decks_min">decks</string>
     <string name="not_found_search">No %1$s found matching your search.</string>
     <string name="create">Create</string>
     <string name="create_note">Create note</string>
@@ -85,4 +87,7 @@
     <string name="want_to_follow_you">%1$s want to follow you</string>
     <string name="is_now_following_you">%1$s is now following you</string>
     <string name="you_have_rejected_the_follow_request_from">you have rejected the follow request from %1$s</string>
+    <string name="private_account">Private</string>
+    <string name="public_account">Public</string>
+    <string name="biography">Biography</string>
 </resources>
