@@ -96,7 +96,7 @@ fun FolderContentScreen(
   // Custom back handler to manage back navigation
   BackHandler {
     if (currentUser.value!!.uid != folder.value?.userId) {
-        navigationActions.navigateTo(TopLevelDestinations.SEARCH)
+      navigationActions.navigateTo(TopLevelDestinations.SEARCH)
     } else if (folder.value!!.parentFolderId != null) {
       navigationActions.navigateTo(
           Screen.FOLDER_CONTENTS.replace(
@@ -130,14 +130,14 @@ fun FolderContentScreen(
         },
         floatingActionButton = {
           if (currentUser.value!!.uid == folder.value?.userId) {
-              CreateSubItemFab(
-                  expandedFolder = expandedFolder,
-                  onExpandedFolderChange = { expandedFolder = it },
-                  showCreateFolderDialog = { showCreateFolderDialog = it },
-                  showCreateNoteDialog = { showCreateNoteDialog = it },
-                  noteViewModel = noteViewModel,
-                  folderViewModel = folderViewModel,
-                  folder = folder.value)
+            CreateSubItemFab(
+                expandedFolder = expandedFolder,
+                onExpandedFolderChange = { expandedFolder = it },
+                showCreateFolderDialog = { showCreateFolderDialog = it },
+                showCreateNoteDialog = { showCreateNoteDialog = it },
+                noteViewModel = noteViewModel,
+                folderViewModel = folderViewModel,
+                folder = folder.value)
           }
         }) { paddingValues ->
           FolderContentScreenGrid(
@@ -289,58 +289,62 @@ fun FolderContentTopBar(
       },
       navigationIcon = {
         IconButton(
-            onClick = { navigationActions.goBackFolderContents(folder?.parentFolderId, userViewModel, folder!!.userId) },
+            onClick = {
+              navigationActions.goBackFolderContents(
+                  folder?.parentFolderId, userViewModel, folder!!.userId)
+            },
             modifier = Modifier.testTag("goBackButton")) {
               Icon(imageVector = Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "Back")
             }
       },
       actions = {
         if (currentUser.value!!.uid == folder?.userId) {
-            CustomDropDownMenu(
-                modifier = Modifier.testTag("folderSettingsButton"),
-                menuItems =
-                listOf(
-                    CustomDropDownMenuItem(
-                        text = { Text(stringResource(R.string.update_folder)) },
-                        icon = {
+          CustomDropDownMenu(
+              modifier = Modifier.testTag("folderSettingsButton"),
+              menuItems =
+                  listOf(
+                      CustomDropDownMenuItem(
+                          text = { Text(stringResource(R.string.update_folder)) },
+                          icon = {
                             Icon(
-                                imageVector = Icons.Default.Edit, contentDescription = "UpdateFolder")
-                        },
-                        onClick = {
+                                imageVector = Icons.Default.Edit,
+                                contentDescription = "UpdateFolder")
+                          },
+                          onClick = {
                             onExpandedChange(false)
                             showUpdateDialog(true)
-                        },
-                        modifier = Modifier.testTag("updateFolderButton")),
-                    CustomDropDownMenuItem(
-                        text = { Text(stringResource(R.string.delete_folder)) },
-                        icon = {
+                          },
+                          modifier = Modifier.testTag("updateFolderButton")),
+                      CustomDropDownMenuItem(
+                          text = { Text(stringResource(R.string.delete_folder)) },
+                          icon = {
                             Icon(
                                 painter = painterResource(id = R.drawable.folder_delete_icon),
                                 contentDescription = "DeleteFolder")
-                        },
-                        onClick = {
+                          },
+                          onClick = {
                             onExpandedChange(false)
                             showDeleteFolderConfirmation = true
-                        },
-                        modifier = Modifier.testTag("deleteFolderButton")),
-                    CustomDropDownMenuItem(
-                        text = { Text(stringResource(R.string.delete_folder_contents)) },
-                        icon = {
+                          },
+                          modifier = Modifier.testTag("deleteFolderButton")),
+                      CustomDropDownMenuItem(
+                          text = { Text(stringResource(R.string.delete_folder_contents)) },
+                          icon = {
                             Icon(
                                 painter = painterResource(id = R.drawable.delete_folder_contents),
                                 contentDescription = "DeleteFolderContents")
-                        },
-                        onClick = {
+                          },
+                          onClick = {
                             onExpandedChange(false)
                             showDeleteFolderContentsConfirmation = true
-                        },
-                        modifier = Modifier.testTag("deleteFolderContentsButton"))),
-                fabIcon = {
-                    Icon(imageVector = Icons.Default.MoreVert, contentDescription = "settings")
-                },
-                expanded = expanded,
-                onFabClick = { onExpandedChange(true) },
-                onDismissRequest = { onExpandedChange(false) })
+                          },
+                          modifier = Modifier.testTag("deleteFolderContentsButton"))),
+              fabIcon = {
+                Icon(imageVector = Icons.Default.MoreVert, contentDescription = "settings")
+              },
+              expanded = expanded,
+              onFabClick = { onExpandedChange(true) },
+              onDismissRequest = { onExpandedChange(false) })
         }
         // Popup for delete folder confirmation
         if (showDeleteFolderConfirmation) {
@@ -348,24 +352,24 @@ fun FolderContentTopBar(
               title = stringResource(R.string.delete_folder),
               text = stringResource(R.string.confirm_delete_folder),
               onConfirm = {
-                  // Retrieve parent folder id to navigate to the parent folder
-                  val parentFolderId = folder?.parentFolderId
-                  folderViewModel.deleteFolderById(folder!!.id, folder.userId)
+                // Retrieve parent folder id to navigate to the parent folder
+                val parentFolderId = folder?.parentFolderId
+                folderViewModel.deleteFolderById(folder!!.id, folder.userId)
 
-                  if (parentFolderId != null) {
-                    navigationActions.navigateTo(
-                        Screen.FOLDER_CONTENTS.replace(
-                            oldValue = "{folderId}", newValue = parentFolderId))
-                  } else {
-                    navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
-                  }
+                if (parentFolderId != null) {
+                  navigationActions.navigateTo(
+                      Screen.FOLDER_CONTENTS.replace(
+                          oldValue = "{folderId}", newValue = parentFolderId))
+                } else {
+                  navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
+                }
 
-                  handleSubFoldersAndNotes(
-                      folder = folder,
-                      userFolderSubFolders = userFolderSubFolders.value,
-                      userFolderNotes = userFolderNotes.value,
-                      folderViewModel = folderViewModel,
-                      noteViewModel = noteViewModel)
+                handleSubFoldersAndNotes(
+                    folder = folder,
+                    userFolderSubFolders = userFolderSubFolders.value,
+                    userFolderNotes = userFolderNotes.value,
+                    folderViewModel = folderViewModel,
+                    noteViewModel = noteViewModel)
                 showDeleteFolderConfirmation = false
               },
               onDismiss = { showDeleteFolderConfirmation = false })
@@ -468,7 +472,6 @@ fun CreateSubItemFab(
                     onExpandedFolderChange(false)
                     showCreateFolderDialog(true)
                     folderViewModel.selectedParentFolderId(folder!!.id)
-
                   },
                   modifier = Modifier.testTag("createFolder"))),
       fabIcon = { Icon(imageVector = Icons.Default.Add, contentDescription = "AddNote") },

@@ -128,9 +128,13 @@ open class NavigationActions(
    *
    * @param folderId The ID of the folder to navigate back to
    */
-  open fun goBackFolderContents(folderId: String?, userViewModel: UserViewModel, folderUid: String) {
+  open fun goBackFolderContents(
+      folderId: String?,
+      userViewModel: UserViewModel,
+      folderUid: String
+  ) {
     if (userViewModel.currentUser.value?.uid != folderUid) {
-        navigateTo(TopLevelDestinations.SEARCH)
+      navigateTo(TopLevelDestinations.SEARCH)
     } else if (folderId != null) {
       navigateTo(Screen.FOLDER_CONTENTS.replace(oldValue = "{folderId}", newValue = folderId))
     } else {
