@@ -8,7 +8,8 @@ data class Notification(
     val receiverId: String,
     val timestamp: Timestamp,
     val read: Boolean,
-    val type: NotificationType = NotificationType.DEFAULT
+    val type: NotificationType = NotificationType.DEFAULT,
+    val content: String? = null
 ) {
   enum class NotificationType {
     FOLLOW_REQUEST,

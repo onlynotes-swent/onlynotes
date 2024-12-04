@@ -137,3 +137,49 @@ fun CreationDialog(
             }
       })
 }
+
+@Composable
+fun EnterTextPopup(
+    onDismiss: () -> Unit,
+    onConfirm: (String) -> Unit,
+    action: String,
+    type: String
+) {
+
+  var text by remember { mutableStateOf("") }
+
+  AlertDialog(
+      onDismissRequest = onDismiss,
+      title = { Text("$action $type") },
+      text = {
+        Column(
+            modifier = Modifier.padding(16.dp).testTag("${type}Dialog"),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            horizontalAlignment = Alignment.CenterHorizontally) {
+              OutlinedTextField(
+                  value = text,
+                  onValueChange = { text = Folder.formatName(it) },
+                  label = { Text(type) },
+                  modifier = Modifier.testTag("input${type}Name"))
+
+              // Spacing
+              Spacer(modifier = Modifier.height(8.dp))
+            }
+      },
+      confirmButton = {
+        Button(
+            enabled = text.isNotEmpty(),
+            onClick = { onConfirm(text) },
+            modifier = Modifier.testTag("confirm${type}Action")) {
+              Text(action)
+            }
+      },
+      dismissButton = {
+        OutlinedButton(
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.error),
+            onClick = onDismiss,
+            modifier = Modifier.testTag("dismiss${type}Action")) {
+              Text(stringResource(R.string.cancel), color = MaterialTheme.colorScheme.error)
+            }
+      })
+}
