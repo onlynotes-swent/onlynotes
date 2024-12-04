@@ -10,6 +10,10 @@ class FlashcardRepositoryFirestore(private val db: FirebaseFirestore) : Flashcar
 
   private val collectionPath = "flashcards"
 
+  companion object {
+    const val TAG = "FlashcardRepositoryFirestore"
+  }
+
   /**
    * Converts a Firestore DocumentSnapshot to a Flashcard object. Try catch block is used to handle
    * runtime exceptions.
@@ -21,12 +25,17 @@ class FlashcardRepositoryFirestore(private val db: FirebaseFirestore) : Flashcar
     return try {
       Flashcard(
           id = document.id,
-          front = document.getString("front")!!,
-          back = document.getString("back")!!,
-          nextReview = document.getTimestamp("nextReview")!!,
-          userId = document.getString("userId")!!,
-          folderId = document.getString("folderId")!!,
-          noteId = document.getString("noteId")!!)
+          front = document.getString("front") ?: throw Exception("Front is null"),
+          back = document.getString("back") ?: throw Exception("Back is null"),
+          latexFormula =
+              document.getString("latexFormula") ?: throw Exception("Latex formula is null"),
+          hasImage = document.getBoolean("hasImage") ?: throw Exception("hasImage is null"),
+          fakeBacks =
+              document.get("fakeBacks") as List<String>? ?: throw Exception("Fake backs is null"),
+          lastReviewed = document.getTimestamp("lastReviewed"),
+          userId = document.getString("userId") ?: throw Exception("User ID is null"),
+          folderId = document.getString("folderId"),
+          noteId = document.getString("noteId"))
     } catch (e: Exception) {
       Log.e(TAG, "Error converting document to Flashcard", e)
       null
@@ -72,15 +81,9 @@ class FlashcardRepositoryFirestore(private val db: FirebaseFirestore) : Flashcar
         .document(id)
         .get()
         .addOnSuccessListener { document ->
-          // Todo: Is this check necessary?
-          if (!document.exists()) {
-            onFailure(Exception("Flashcard not found"))
-            Log.e(TAG, "Flashcard not found")
-          } else {
-            val flashcard = documentSnapshotToFlashcard(document)
-            if (flashcard == null) onFailure(Exception("Error converting document to Flashcard"))
-            else onSuccess(flashcard)
-          }
+          val flashcard = documentSnapshotToFlashcard(document)
+          if (flashcard == null) onFailure(Exception("Error converting document to Flashcard"))
+          else onSuccess(flashcard)
         }
         .addOnFailureListener { exception ->
           onFailure(exception)
@@ -167,9 +170,5 @@ class FlashcardRepositoryFirestore(private val db: FirebaseFirestore) : Flashcar
           onFailure(exception)
           Log.e(TAG, "Error deleting flashcard", exception)
         }
-  }
-
-  companion object {
-    const val TAG = "FlashcardRepositoryFirestore"
   }
 }

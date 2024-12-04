@@ -1,6 +1,7 @@
 package com.github.onlynotesswent.ui.overview
 
 import android.content.Context
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -29,6 +30,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.github.onlynotesswent.MainActivity
 import com.github.onlynotesswent.R
 import com.github.onlynotesswent.model.folder.Folder
 import com.github.onlynotesswent.model.folder.FolderViewModel
@@ -37,7 +39,7 @@ import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.model.user.UserViewModel
 import com.github.onlynotesswent.ui.common.CustomDropDownMenu
 import com.github.onlynotesswent.ui.common.CustomDropDownMenuItem
-import com.github.onlynotesswent.ui.common.CustomLazyGrid
+import com.github.onlynotesswent.ui.common.CustomSeparatedLazyGrid
 import com.github.onlynotesswent.ui.common.FolderDialog
 import com.github.onlynotesswent.ui.common.NoteDialog
 import com.github.onlynotesswent.ui.navigation.BottomNavigationMenu
@@ -78,6 +80,12 @@ fun OverviewScreen(
   var expanded by remember { mutableStateOf(false) }
   var showCreateFolderDialog by remember { mutableStateOf(false) }
   var showCreateNoteDialog by remember { mutableStateOf(false) }
+
+  // Handle back press
+  BackHandler {
+    // Move the app to background
+    (context as MainActivity).moveTaskToBack(true)
+  }
 
   Scaffold(
       modifier = Modifier.testTag("overviewScreen"),
@@ -122,7 +130,7 @@ fun OverviewScreen(
                 showCreateNoteDialog = false
                 navigationActions.navigateTo(Screen.EDIT_NOTE)
               },
-              action = "Create")
+              action = stringResource(R.string.create))
         }
 
         // Logic to show the dialog to create a folder
@@ -227,15 +235,13 @@ fun OverviewScreenGrid(
     context: Context,
     navigationActions: NavigationActions
 ) {
-  CustomLazyGrid(
-      modifier =
-          Modifier.fillMaxSize()
-              .padding(top = 20.dp, bottom = paddingValues.calculateBottomPadding()),
+  CustomSeparatedLazyGrid(
+      modifier = Modifier.fillMaxSize(),
       notes = userRootNotes,
       folders = userRootFolders,
       gridModifier =
           Modifier.fillMaxWidth()
-              .padding(horizontal = 16.dp)
+              .padding(horizontal = 20.dp)
               .padding(paddingValues)
               .testTag("noteAndFolderList"),
       folderViewModel = folderViewModel,

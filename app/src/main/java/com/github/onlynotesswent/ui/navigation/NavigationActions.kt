@@ -31,7 +31,9 @@ object Screen {
   const val USER_PROFILE = "User Profile Screen"
   const val PUBLIC_PROFILE = "Public Profile Screen/{userId}"
   const val EDIT_PROFILE = "Edit Profile Screen"
+  const val NOTIFICATIONS = "Notifications Screen"
   const val FOLDER_CONTENTS = "Folder Contents Screen/{folderId}"
+  const val DECK_MENU = "Deck Menu Screen/{deckId}"
 }
 
 data class Destination(
@@ -118,6 +120,19 @@ open class NavigationActions(
   /** Navigate back to the previous screen. */
   open fun goBack() {
     navController.popBackStack()
+  }
+
+  /**
+   * Navigate back to the folder contents screen.
+   *
+   * @param folderId The ID of the folder to navigate back to
+   */
+  open fun goBackFolderContents(folderId: String?) {
+    if (folderId != null) {
+      navigateTo(Screen.FOLDER_CONTENTS.replace(oldValue = "{folderId}", newValue = folderId))
+    } else {
+      navigateTo(TopLevelDestinations.OVERVIEW)
+    }
   }
 
   /**

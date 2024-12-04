@@ -26,6 +26,7 @@ import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
+import org.mockito.kotlin.eq
 
 class CommentsTest {
   @Mock private lateinit var userRepository: UserRepository
@@ -53,7 +54,7 @@ class CommentsTest {
 
     // Mock the current route to be the note edit screen
     `when`(navigationActions.currentRoute()).thenReturn(Screen.EDIT_NOTE_COMMENT)
-    val mockNote =
+    val mockNote1 =
         Note(
             id = "1",
             title = "Sample Title",
@@ -63,18 +64,36 @@ class CommentsTest {
             noteCourse = Course("CS-100", "Sample Class", 2024, "path"),
         )
 
-    `when`(noteRepository.getNoteById(any(), any(), any())).thenAnswer { invocation ->
+    val mockNote2 =
+        Note(
+            id = "2",
+            title = "Sample Title2",
+            date = Timestamp.now(), // Use current timestamp
+            visibility = Visibility.DEFAULT,
+            userId = "1",
+            folderId = "1",
+            noteCourse = Course("CS-100", "Sample Class", 2024, "path"),
+        )
+
+    `when`(noteRepository.getNoteById(eq("1"), any(), any())).thenAnswer { invocation ->
       val onSuccess = invocation.getArgument<(Note) -> Unit>(1)
-      onSuccess(mockNote)
+      onSuccess(mockNote1)
     }
 
-    noteViewModel.getNoteById("mockNoteId")
+    `when`(noteRepository.getNoteById(eq("2"), any(), any())).thenAnswer { invocation ->
+      val onSuccess = invocation.getArgument<(Note) -> Unit>(1)
+      onSuccess(mockNote2)
+    }
+  }
 
+  private fun init(noteId: String) {
+    noteViewModel.getNoteById(noteId)
     composeTestRule.setContent { CommentsScreen(navigationActions, noteViewModel, userViewModel) }
   }
 
   @Test
   fun displayBaseComponents() {
+    init("1")
     // Top bar buttons
     composeTestRule.onNodeWithTag("closeButton").assertIsDisplayed()
 
@@ -91,6 +110,7 @@ class CommentsTest {
 
   @Test
   fun addAndDeleteComment() {
+    init("1")
     // Add a comment
     composeTestRule.onNodeWithTag("addCommentButton").performClick()
     composeTestRule.onNodeWithTag("EditCommentTextField").performTextInput("New comment")
@@ -104,6 +124,7 @@ class CommentsTest {
 
   @Test
   fun clickGoBackButton() {
+    init("1")
     composeTestRule.onNodeWithTag("closeButton").performClick()
 
     verify(navigationActions).navigateTo(TopLevelDestinations.OVERVIEW)
@@ -111,7 +132,17 @@ class CommentsTest {
   }
 
   @Test
+  fun clickGoBackButtonInsideFolder() {
+    init("2")
+    composeTestRule.onNodeWithTag("closeButton").performClick()
+
+    verify(navigationActions).navigateTo(Screen.FOLDER_CONTENTS.replace("{folderId}", "1"))
+    verify(noteRepository).updateNote(any(), any(), any())
+  }
+
+  @Test
   fun clickNavigationDetailButton() {
+    init("1")
     composeTestRule.onNodeWithTag("Detail").performClick()
     verify(navigationActions).navigateTo(Screen.EDIT_NOTE)
     verify(noteRepository).updateNote(any(), any(), any())
@@ -120,6 +151,7 @@ class CommentsTest {
 
   @Test
   fun clickNavigationPDFButton() {
+    init("1")
     composeTestRule.onNodeWithTag("PDF").performClick()
     verify(navigationActions).navigateTo(Screen.EDIT_NOTE_PDF)
     verify(noteRepository).updateNote(any(), any(), any())
@@ -128,6 +160,7 @@ class CommentsTest {
 
   @Test
   fun clickNavigationContentButton() {
+    init("1")
     composeTestRule.onNodeWithTag("Content").performClick()
     verify(navigationActions).navigateTo(Screen.EDIT_NOTE_MARKDOWN)
     verify(noteRepository).updateNote(any(), any(), any())

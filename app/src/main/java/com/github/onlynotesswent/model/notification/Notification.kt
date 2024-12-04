@@ -4,18 +4,16 @@ import com.google.firebase.Timestamp
 
 data class Notification(
     val id: String,
-    val title: String,
-    val body: String,
     val senderId: String?,
     val receiverId: String,
     val timestamp: Timestamp,
     val read: Boolean,
-    val type: Type = Type.DEFAULT
+    val type: NotificationType = NotificationType.DEFAULT
 ) {
-  enum class Type {
-    FRIEND_REQUEST,
-    FRIEND_REQUEST_ACCEPTED,
-    FRIEND_REQUEST_REJECTED,
+  enum class NotificationType {
+    FOLLOW_REQUEST,
+    FOLLOW_REQUEST_ACCEPTED,
+    FOLLOW_REQUEST_REJECTED,
     CHAT_MESSAGE,
     COMMENT,
     LIKE,

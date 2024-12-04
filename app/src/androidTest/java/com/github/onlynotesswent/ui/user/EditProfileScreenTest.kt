@@ -13,6 +13,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextClearance
 import androidx.compose.ui.test.performTextInput
+import androidx.compose.ui.test.performTextReplacement
 import androidx.core.net.toUri
 import com.github.onlynotesswent.model.authentication.Authenticator
 import com.github.onlynotesswent.model.file.FileRepository
@@ -21,6 +22,8 @@ import com.github.onlynotesswent.model.folder.FolderRepository
 import com.github.onlynotesswent.model.folder.FolderViewModel
 import com.github.onlynotesswent.model.note.NoteRepository
 import com.github.onlynotesswent.model.note.NoteViewModel
+import com.github.onlynotesswent.model.notification.NotificationRepository
+import com.github.onlynotesswent.model.notification.NotificationViewModel
 import com.github.onlynotesswent.model.user.User
 import com.github.onlynotesswent.model.user.UserRepository
 import com.github.onlynotesswent.model.user.UserRepositoryFirestore
@@ -49,11 +52,13 @@ class EditProfileScreenTest {
   @Mock private lateinit var mockNoteRepository: NoteRepository
   @Mock private lateinit var mockFileRepository: FileRepository
   @Mock private lateinit var mockFolderRepository: FolderRepository
+  @Mock private lateinit var mockNotificationRepository: NotificationRepository
   @Mock private lateinit var mockAuthenticator: Authenticator
   private lateinit var noteViewModel: NoteViewModel
   private lateinit var userViewModel: UserViewModel
   private lateinit var fileViewModel: FileViewModel
   private lateinit var folderViewModel: FolderViewModel
+  private lateinit var notificationViewModel: NotificationViewModel
   private val testUid = "testUid123"
   private val testUser =
       User(
@@ -77,6 +82,7 @@ class EditProfileScreenTest {
     noteViewModel = NoteViewModel(mockNoteRepository)
     fileViewModel = FileViewModel(mockFileRepository)
     folderViewModel = FolderViewModel(mockFolderRepository)
+    notificationViewModel = NotificationViewModel(mockNotificationRepository)
 
     // Mock the current route to be the user create screen
     `when`(mockNavigationActions.currentRoute()).thenReturn(Screen.EDIT_PROFILE)
@@ -127,10 +133,13 @@ class EditProfileScreenTest {
     composeTestRule.onNodeWithTag("inputFirstName").assertExists()
     composeTestRule.onNodeWithTag("inputLastName").assertExists()
     composeTestRule.onNodeWithTag("inputUserName").assertExists()
+    composeTestRule.onNodeWithTag("inputBio").assertExists()
     composeTestRule.onNodeWithTag("saveButton").assertExists()
     composeTestRule.onNodeWithTag("profilePicture").assertExists()
     composeTestRule.onNodeWithTag("displayBottomSheet").assertExists()
     composeTestRule.onNodeWithTag("deleteAccountButton").assertExists()
+    composeTestRule.onNodeWithTag("publicAccountChip").assertExists()
+    composeTestRule.onNodeWithTag("privateAccountChip").assertExists()
   }
 
   private fun hasError(): SemanticsMatcher {
@@ -184,6 +193,11 @@ class EditProfileScreenTest {
     assert(userViewModel.currentUser.value?.lastName == testUser.lastName)
     composeTestRule.onNodeWithTag("saveButton").performClick()
     assert(userViewModel.currentUser.value?.lastName == "New Last Name")
+
+    composeTestRule.onNodeWithTag("inputBio").performTextReplacement("New Bio")
+    assert(userViewModel.currentUser.value?.bio == testUser.bio)
+    composeTestRule.onNodeWithTag("saveButton").performClick()
+    assert(userViewModel.currentUser.value?.bio == "New Bio")
   }
 
   @Test

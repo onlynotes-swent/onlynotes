@@ -10,21 +10,23 @@ class NotificationRepositoryFirestore(private val db: FirebaseFirestore) : Notif
 
   private val collectionPath = "notifications"
 
-  fun documentSnapshotToNotification(document: DocumentSnapshot): Notification? {
+  private fun documentSnapshotToNotification(document: DocumentSnapshot): Notification? {
     return try {
       Notification(
           id = document.getString("id")!!,
-          title = document.getString("title")!!,
-          body = document.getString("body")!!,
           senderId = document.getString("senderId"),
           receiverId = document.getString("receiverId")!!,
           timestamp = document.getTimestamp("timestamp")!!,
           read = document.getBoolean("read")!!,
-          type = Notification.Type.valueOf(document.getString("type")!!))
+          type = Notification.NotificationType.valueOf(document.getString("type")!!))
     } catch (e: Exception) {
       Log.e(TAG, "Failed to convert document snapshot to notification", e)
       null
     }
+  }
+
+  override fun getNewUid(): String {
+    return db.collection(collectionPath).document().id
   }
 
   override fun init(onSuccess: () -> Unit) {
