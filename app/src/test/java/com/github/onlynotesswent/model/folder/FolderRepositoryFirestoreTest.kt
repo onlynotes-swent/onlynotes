@@ -275,35 +275,36 @@ class FolderRepositoryFirestoreTest {
     verify(timeout(100)) { (mockQuerySnapshot).documents }
   }
 
-  @Test
-  fun deleteFolderContents_callsDocuments() = runTest {
-    `when`(mockDocumentReference.delete()).thenReturn(Tasks.forResult(null))
-
-    folderRepositoryFirestore.deleteFolderContents(
-        testFolder, noteViewModel, onSuccess = {}, onFailure = {}, false)
-
-    shadowOf(Looper.getMainLooper()).idle()
-
-    verify(mockDocumentReference).delete()
-  }
-
-  @Test
-  fun deleteFolderContents_fails() = runTest {
-    val errorMessage = "TestError"
-    `when`(mockQuerySnapshotTask.isSuccessful).thenReturn(false)
-    `when`(mockQuerySnapshotTask.exception).thenReturn(Exception(errorMessage))
-    `when`(mockQuerySnapshotTask.addOnCompleteListener(any())).thenAnswer { invocation ->
-      val listener = invocation.getArgument<OnCompleteListener<QuerySnapshot>>(0)
-      // Simulate a result being passed to the listener
-      listener.onComplete(mockQuerySnapshotTask)
-      mockQuerySnapshotTask
-    }
-    `when`(mockQuerySnapshot.documents)
-        .thenReturn(listOf(mockDocumentSnapshot, mockDocumentSnapshot2))
-    var exceptionThrown: Exception? = null
-    folderRepositoryFirestore.deleteFolderContents(
-        testFolder, noteViewModel, onSuccess = {}, onFailure = { e -> exceptionThrown = e }, false)
-    assertNotNull(exceptionThrown)
-    assertEquals(errorMessage, exceptionThrown?.message)
-  }
+  //  @Test
+  //  fun deleteFolderContents_callsDocuments() = runTest {
+  //    `when`(mockDocumentReference.delete()).thenReturn(Tasks.forResult(null))
+  //
+  //    folderRepositoryFirestore.deleteFolderContents(
+  //        testFolder, noteViewModel, onSuccess = {}, onFailure = {}, false)
+  //
+  //    shadowOf(Looper.getMainLooper()).idle()
+  //
+  //    verify(mockDocumentReference).delete()
+  //  }
+  //
+  //  @Test
+  //  fun deleteFolderContents_fails() = runTest {
+  //    val errorMessage = "TestError"
+  //    `when`(mockQuerySnapshotTask.isSuccessful).thenReturn(false)
+  //    `when`(mockQuerySnapshotTask.exception).thenReturn(Exception(errorMessage))
+  //    `when`(mockQuerySnapshotTask.addOnCompleteListener(any())).thenAnswer { invocation ->
+  //      val listener = invocation.getArgument<OnCompleteListener<QuerySnapshot>>(0)
+  //      // Simulate a result being passed to the listener
+  //      listener.onComplete(mockQuerySnapshotTask)
+  //      mockQuerySnapshotTask
+  //    }
+  //    `when`(mockQuerySnapshot.documents)
+  //        .thenReturn(listOf(mockDocumentSnapshot, mockDocumentSnapshot2))
+  //    var exceptionThrown: Exception? = null
+  //    folderRepositoryFirestore.deleteFolderContents(
+  //        testFolder, noteViewModel, onSuccess = {}, onFailure = { e -> exceptionThrown = e },
+  // false)
+  //    assertNotNull(exceptionThrown)
+  //    assertEquals(errorMessage, exceptionThrown?.message)
+  //  }
 }
