@@ -92,7 +92,7 @@ class CommentsTest {
     }
   }
 
-  private fun init(noteId: String) {
+  private fun init(noteId: String) = runTest {
     noteViewModel.getNoteById(noteId)
     composeTestRule.setContent { CommentsScreen(navigationActions, noteViewModel, userViewModel) }
   }
