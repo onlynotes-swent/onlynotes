@@ -160,7 +160,8 @@ fun OnlyNotesApp(
             navigationActions, userViewModel, fileViewModel, notificationViewModel, authenticator)
       }
       composable(Screen.PUBLIC_PROFILE) {
-        PublicProfileScreen(navigationActions, userViewModel, fileViewModel, notificationViewModel, authenticator)
+        PublicProfileScreen(
+            navigationActions, userViewModel, fileViewModel, notificationViewModel, authenticator)
         composable(Screen.PUBLIC_PROFILE) { navBackStackEntry ->
           val userId = navBackStackEntry.arguments?.getString("userId")
 
