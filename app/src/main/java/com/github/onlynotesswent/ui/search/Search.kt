@@ -1,5 +1,6 @@
 package com.github.onlynotesswent.ui.search
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -43,6 +44,7 @@ import com.github.onlynotesswent.ui.navigation.BottomNavigationMenu
 import com.github.onlynotesswent.ui.navigation.LIST_TOP_LEVEL_DESTINATION
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
+import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
 import com.github.onlynotesswent.ui.user.UserItem
 import com.github.onlynotesswent.ui.user.switchProfileTo
 import kotlinx.coroutines.delay
@@ -101,6 +103,16 @@ fun SearchScreen(
     userViewModel.getAllUsers()
     folderViewModel.getPublicFolders()
     deckViewModel.getPublicDecks()
+  }
+
+  // Handle back press
+  BackHandler {
+     // Going back to edit note is not allowed since the note is not selected anymore
+     if (navigationActions.getPreviousScreen() == Screen.EDIT_NOTE) {
+         navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
+     } else {
+         navigationActions.goBack()
+     }
   }
 
   Scaffold(
