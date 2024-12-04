@@ -143,9 +143,11 @@ fun NotificationScreen(
                             userViewModel,
                             notificationViewModel)
                     Notification.NotificationType.CHAT_MESSAGE ->
-                        NotificationTypeMessage(
+                        NotificationTypeDefault(
                             stringResource(
                                 R.string.new_message_from, senderUser.value?.userHandle() ?: ""),
+                            // content will never be null for this type of notification
+                            notification.content!!,
                             notification,
                             senderUser,
                             navigationActions,
@@ -263,43 +265,6 @@ fun NotificationTypeFollowRequest(
                   Text(stringResource(R.string.reject), maxLines = 1)
                 }
           }
-        }
-      }
-}
-
-@Composable
-fun NotificationTypeMessage(
-    title: String,
-    notification: Notification,
-    senderUser: MutableState<User?>,
-    navigationActions: NavigationActions,
-    fileViewModel: FileViewModel,
-    userViewModel: UserViewModel,
-    notificationViewModel: NotificationViewModel
-) {
-  Box(
-      modifier =
-          Modifier.testTag("notification-${notification.id}")
-              .padding(8.dp)
-              .alpha(if (notification.read) 0.5f else 1f)) {
-        Column {
-          Text(title, style = Typography.titleMedium)
-          Row {
-            ThumbnailDynamicPic(
-                senderUser,
-                fileViewModel,
-                { senderUser.value?.let { switchProfileTo(it, userViewModel, navigationActions) } })
-
-            Spacer(modifier = Modifier.padding(5.dp))
-            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.Center) {
-              // the content should never be null for this type of notification
-              Text(notification.content!!, style = Typography.bodyLarge)
-            }
-            DeleteNotificationIcon(notification, notificationViewModel, userViewModel)
-          }
-        }
-        if (!notification.read) {
-          notificationViewModel.updateNotification(notification.copy(read = true))
         }
       }
 }

@@ -160,7 +160,7 @@ fun EnterTextPopup(
                   value = text,
                   onValueChange = { text = Folder.formatName(it) },
                   label = { Text(type) },
-                  modifier = Modifier.testTag("input${type}Name"))
+                  modifier = Modifier.testTag("input${type}"))
 
               // Spacing
               Spacer(modifier = Modifier.height(8.dp))
