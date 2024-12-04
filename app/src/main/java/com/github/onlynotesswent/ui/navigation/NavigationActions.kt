@@ -11,6 +11,7 @@ import androidx.compose.material.icons.outlined.Search
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
+import com.github.onlynotesswent.model.user.UserViewModel
 
 object Route {
   const val OVERVIEW = "Overview"
@@ -127,8 +128,10 @@ open class NavigationActions(
    *
    * @param folderId The ID of the folder to navigate back to
    */
-  open fun goBackFolderContents(folderId: String?) {
-    if (folderId != null) {
+  open fun goBackFolderContents(folderId: String?, userViewModel: UserViewModel, folderUid: String) {
+    if (userViewModel.currentUser.value?.uid != folderUid) {
+        navigateTo(TopLevelDestinations.SEARCH)
+    } else if (folderId != null) {
       navigateTo(Screen.FOLDER_CONTENTS.replace(oldValue = "{folderId}", newValue = folderId))
     } else {
       navigateTo(TopLevelDestinations.OVERVIEW)
