@@ -23,8 +23,6 @@ import org.junit.Assert.fail
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.ArgumentCaptor
-import org.mockito.Captor
 import org.mockito.Mock
 import org.mockito.Mockito.anyString
 import org.mockito.Mockito.doAnswer
@@ -39,9 +37,6 @@ import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
 class NotesToFlashcardTest {
-  // Helper function to capture arguments in Mockito tests, bypassing Kotlin's null-safety checks
-  private fun <T> capture(argumentCaptor: ArgumentCaptor<T>): T = argumentCaptor.capture()
-
   private val jsonResponse =
       """
     {
@@ -54,7 +49,12 @@ class NotesToFlashcardTest {
                 "index": 0,
                 "message": {
                     "role": "assistant",
-                    "content": "[{\"question\": \"What is cryptocurrency?\",\"answer\": \"Cryptocurrency is a digital payment system...\"},{\"question\": \"How does cryptocurrency work?\",\"answer\": \"Cryptocurrencies run on a distributed public ledger...\"},{\"question\": \"Cryptocurrency examples\",\"answer\": \"There are thousands of cryptocurrencies. Some of the best known include: Bitcoin, Ethereum...\"}]"
+                    "content": "[
+                    {\"question\": \"What is cryptocurrency?\",\"answer\": \"Cryptocurrency is a digital payment system...\"}
+                    ,{\"question\": \"How does cryptocurrency work?\",\"answer\": \"Cryptocurrencies run on a distributed public ledger...\"}
+                    ,{\"question\": \"Cryptocurrency examples\",\"answer\": \"There are thousands of cryptocurrencies. Some of the best known include: Bitcoin, Ethereum...\"}
+                    ,{\"question\": \"Which one of the following is a cryptocurrency?\",\"answer\": \"Bitcoin\",\"fakeBacks\": [\"PayPal\",\"Visa\",\"Mastercard\"]}
+                    ]"
                 },
                 "logprobs": null,
                 "finish_reason": "stop"
@@ -91,9 +91,6 @@ class NotesToFlashcardTest {
   @Mock private lateinit var mockOpenAI: OpenAI
 
   @Mock private lateinit var mockContext: Context
-
-  // Argument captor for Flashcard objects
-  @Captor private lateinit var flashcardCaptor: ArgumentCaptor<Flashcard>
 
   private var savedFlashcards = mutableListOf<Flashcard>()
 
@@ -153,13 +150,14 @@ class NotesToFlashcardTest {
       val flashcardUid = deck.flashcardIds
 
       // Check the number of flashcards
-      assertEquals(3, deck.flashcardIds.size)
-      assertEquals(3, savedFlashcards.size)
+      assertEquals(4, deck.flashcardIds.size)
+      assertEquals(4, savedFlashcards.size)
 
       // Check the flashcard IDs match
       assertEquals(flashcardUid[0], savedFlashcards[0].id)
       assertEquals(flashcardUid[1], savedFlashcards[1].id)
       assertEquals(flashcardUid[2], savedFlashcards[2].id)
+      assertEquals(flashcardUid[3], savedFlashcards[3].id)
 
       // Verify each flashcard's content
       assertEquals("What is cryptocurrency?", savedFlashcards[0].front)
@@ -173,6 +171,11 @@ class NotesToFlashcardTest {
       assertEquals(
           "There are thousands of cryptocurrencies. Some of the best known include: Bitcoin, Ethereum...",
           savedFlashcards[2].back)
+
+      assert(savedFlashcards[3].isMCQ())
+      assertEquals("Which one of the following is a cryptocurrency?", savedFlashcards[3].front)
+      assertEquals("Bitcoin", savedFlashcards[3].back)
+      assertEquals(listOf("PayPal", "Visa", "Mastercard"), savedFlashcards[3].fakeBacks)
 
       // Verify for each flashcard
       for (flashcard in savedFlashcards) {
@@ -190,11 +193,7 @@ class NotesToFlashcardTest {
         onFailure = { fail("Expected successful conversion") })
 
     // Verify that addFlashcard was called exactly three times with the correct flashcards
-    verify(mockFlashcardRepository, times(3)).addFlashcard(capture(flashcardCaptor), any(), any())
-
-    // Retrieve captured flashcards and validate them
-    val capturedFlashcards = flashcardCaptor.allValues
-    assertEquals(3, capturedFlashcards.size)
+    verify(mockFlashcardRepository, times(4)).addFlashcard(any(), any(), any())
   }
 
   @Test

@@ -31,7 +31,17 @@ class NotesToFlashcard(
   }
 
   private val promptPrefix =
-      "Convert the following notes into a JSON array of flashcards with 'question' and 'answer' fields, only return the json array with no additional text. Here is the note content: "
+      """Convert the following notes into a JSON array of flashcards. 
+       Each flashcard should include the fields:
+       - 'question' (front side of the flashcard),
+       - 'answer' (back side of the flashcard),
+       - 'latexFormula' (a LaTeX formula in LaTeX format, if applicable, can be empty otherwise),
+       - 'fakeBacks' (a list of incorrect answers for MCQs, can be empty for non-MCQs).
+       You can create flashcards as either:
+       1. Regular flashcards with 'question' and 'answer', or
+       2. MCQs with 'question', 'answer', and at least two 'fakeBacks'.
+       Return only the JSON array with no additional text. If the note content is empty, return an 
+       empty JSON array and no additional text. Here is the note content: """
 
   /**
    * Converts a note into a deck of flashcards using the OpenAI API.
@@ -92,12 +102,18 @@ class NotesToFlashcard(
           val flashcardObject = element.asJsonObject
           val question = flashcardObject.get("question").asString
           val answer = flashcardObject.get("answer").asString
+          val latexFormula = flashcardObject.get("latexFormula")?.asString ?: ""
+          val fakeBacks =
+              flashcardObject.getAsJsonArray("fakeBacks")?.map { it.asString } ?: emptyList()
 
           val flashcard =
               Flashcard(
                   id = flashcardViewModel.getNewUid(),
                   front = question,
                   back = answer,
+                  latexFormula = latexFormula,
+                  hasImage = false,
+                  fakeBacks = fakeBacks,
                   lastReviewed = null,
                   userId = note.userId,
                   folderId = note.folderId,
