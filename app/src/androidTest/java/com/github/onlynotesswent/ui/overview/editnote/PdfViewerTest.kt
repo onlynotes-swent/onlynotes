@@ -74,14 +74,14 @@ class PdfViewerTest {
     }
 
     val testUser =
-      User(
-        firstName = "testFirstName",
-        lastName = "testLastName",
-        userName = "testUserName",
-        email = "testEmail",
-        uid = "1",
-        dateOfJoining = Timestamp.now(),
-        rating = 0.0)
+        User(
+            firstName = "testFirstName",
+            lastName = "testLastName",
+            userName = "testUserName",
+            email = "testEmail",
+            uid = "1",
+            dateOfJoining = Timestamp.now(),
+            rating = 0.0)
     userViewModel.addUser(testUser, {}, {})
 
     // Create a valid PDF file programmatically

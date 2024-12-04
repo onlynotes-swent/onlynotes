@@ -69,14 +69,14 @@ class EditMarkdownTest {
     }
 
     val testUser =
-      User(
-        firstName = "testFirstName",
-        lastName = "testLastName",
-        userName = "testUserName",
-        email = "testEmail",
-        uid = "1",
-        dateOfJoining = Timestamp.now(),
-        rating = 0.0)
+        User(
+            firstName = "testFirstName",
+            lastName = "testLastName",
+            userName = "testUserName",
+            email = "testEmail",
+            uid = "1",
+            dateOfJoining = Timestamp.now(),
+            rating = 0.0)
     userViewModel.addUser(testUser, {}, {})
 
     // Mock the current route to be the user create screen

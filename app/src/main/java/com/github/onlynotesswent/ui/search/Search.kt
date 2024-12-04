@@ -107,12 +107,12 @@ fun SearchScreen(
 
   // Handle back press
   BackHandler {
-     // Going back to edit note is not allowed since the note is not selected anymore
-     if (navigationActions.getPreviousScreen() == Screen.EDIT_NOTE) {
-         navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
-     } else {
-         navigationActions.goBack()
-     }
+    // Going back to edit note is not allowed since the note is not selected anymore
+    if (navigationActions.getPreviousScreen() == Screen.EDIT_NOTE) {
+      navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
+    } else {
+      navigationActions.goBack()
+    }
   }
 
   Scaffold(
