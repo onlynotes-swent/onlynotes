@@ -194,7 +194,7 @@ fun PdfViewerScreen(
             navigationActions = navigationActions,
             onClick = {
               if (currentUser?.uid != note?.userId) {
-                navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
+                navigationActions.navigateTo(TopLevelDestinations.SEARCH)
               }
             })
       },

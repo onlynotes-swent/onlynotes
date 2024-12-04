@@ -75,7 +75,7 @@ fun CommentsScreen(
                   note = note!!.copy(comments = Note.CommentCollection(commentsNotEmpty)),
                   onSuccess = {
                     if (currentUser!!.uid != note?.userId) {
-                      navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
+                      navigationActions.navigateTo(TopLevelDestinations.SEARCH)
                     }
                   })
             })

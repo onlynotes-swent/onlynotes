@@ -137,7 +137,7 @@ fun EditMarkdownScreen(
             navigationActions = navigationActions,
             onClick = {
               if (selectedNote?.userId != currentUser?.uid) {
-                navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
+                navigationActions.navigateTo(TopLevelDestinations.SEARCH)
               }
             })
       },
