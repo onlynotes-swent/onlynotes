@@ -8,12 +8,16 @@ import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.flashcard.Flashcard
 import com.github.onlynotesswent.model.flashcard.FlashcardRepository
 import com.github.onlynotesswent.model.flashcard.FlashcardViewModel
+import com.github.onlynotesswent.model.flashcard.deck.Deck
+import com.github.onlynotesswent.model.flashcard.deck.DeckRepository
+import com.github.onlynotesswent.model.flashcard.deck.DeckViewModel
 import com.github.onlynotesswent.model.note.Note
 import com.google.firebase.FirebaseApp
 import com.google.firebase.Timestamp
 import com.google.gson.JsonSyntaxException
 import java.io.File
 import java.io.IOException
+import java.util.concurrent.atomic.AtomicInteger
 import org.junit.Assert.assertEquals
 import org.junit.Assert.fail
 import org.junit.Before
@@ -75,10 +79,14 @@ class NotesToFlashcardTest {
 
   private lateinit var flashcardViewModel: FlashcardViewModel
 
+  private lateinit var deckViewModel: DeckViewModel
+
   // Mock dependencies
   @Mock private lateinit var mockFlashcardRepository: FlashcardRepository
 
   @Mock private lateinit var mockFileViewModel: FileViewModel
+
+  @Mock private lateinit var mockDeckRepository: DeckRepository
 
   @Mock private lateinit var mockOpenAI: OpenAI
 
@@ -87,6 +95,10 @@ class NotesToFlashcardTest {
   // Argument captor for Flashcard objects
   @Captor private lateinit var flashcardCaptor: ArgumentCaptor<Flashcard>
 
+  private var savedFlashcards = mutableListOf<Flashcard>()
+
+  private val counter = AtomicInteger(0)
+
   @Before
   fun setup() {
     MockitoAnnotations.openMocks(this)
@@ -94,10 +106,13 @@ class NotesToFlashcardTest {
     // Initialize FirebaseApp with Robolectric context
     FirebaseApp.initializeApp(org.robolectric.RuntimeEnvironment.getApplication())
 
-    // Mock FlashcardRepository and set up FlashcardViewModel with it
+    // Setup view models
     flashcardViewModel = FlashcardViewModel(mockFlashcardRepository)
+    deckViewModel = DeckViewModel(mockDeckRepository)
+
     notesToFlashcard =
-        NotesToFlashcard(flashcardViewModel, mockFileViewModel, mockOpenAI, mockContext)
+        NotesToFlashcard(
+            flashcardViewModel, mockFileViewModel, deckViewModel, mockOpenAI, mockContext)
 
     val testFile = File.createTempFile("test", ".md")
     testFile.deleteOnExit()
@@ -108,13 +123,20 @@ class NotesToFlashcardTest {
           val onSuccess = invocation.getArgument<(File) -> Unit>(3)
           onSuccess(testFile)
         }
-
-    // Mock the return value for getNewUid
-    `when`(mockFlashcardRepository.getNewUid()).thenReturn("test")
   }
 
   @Test
   fun `convertNoteToFlashcards should parse JSON and create flashcards`() {
+    // Mock the repositories
+    `when`(mockFlashcardRepository.getNewUid()).thenReturn(counter.getAndIncrement().toString())
+    `when`(mockDeckRepository.getNewUid()).thenReturn("test")
+    `when`(mockFlashcardRepository.addFlashcard(any(), any(), any())).thenAnswer { invocation ->
+      savedFlashcards.add(invocation.getArgument(0))
+    }
+    `when`(mockDeckRepository.updateDeck(any(), any(), any())).thenAnswer { invocation ->
+      val onSuccess = invocation.getArgument<() -> Unit>(1)
+      onSuccess()
+    }
 
     // Mocking OpenAI's sendRequest to trigger onSuccess
     doAnswer { invocation ->
@@ -126,23 +148,34 @@ class NotesToFlashcardTest {
         .sendRequest(anyString(), any(), any(), anyString())
 
     // Capture the success callback's flashcards list
-    val onSuccess: (List<Flashcard>) -> Unit = { flashcards ->
-      assertEquals(3, flashcards.size)
+    val onSuccess: (Deck) -> Unit = { deck ->
+      // Verify the number of flashcards
+      val flashcardUid = deck.flashcardIds
+
+      // Check the number of flashcards
+      assertEquals(3, deck.flashcardIds.size)
+      assertEquals(3, savedFlashcards.size)
+
+      // Check the flashcard IDs match
+      assertEquals(flashcardUid[0], savedFlashcards[0].id)
+      assertEquals(flashcardUid[1], savedFlashcards[1].id)
+      assertEquals(flashcardUid[2], savedFlashcards[2].id)
 
       // Verify each flashcard's content
-      assertEquals("What is cryptocurrency?", flashcards[0].front)
-      assertEquals("Cryptocurrency is a digital payment system...", flashcards[0].back)
+      assertEquals("What is cryptocurrency?", savedFlashcards[0].front)
+      assertEquals("Cryptocurrency is a digital payment system...", savedFlashcards[0].back)
 
-      assertEquals("How does cryptocurrency work?", flashcards[1].front)
-      assertEquals("Cryptocurrencies run on a distributed public ledger...", flashcards[1].back)
+      assertEquals("How does cryptocurrency work?", savedFlashcards[1].front)
+      assertEquals(
+          "Cryptocurrencies run on a distributed public ledger...", savedFlashcards[1].back)
 
-      assertEquals("Cryptocurrency examples", flashcards[2].front)
+      assertEquals("Cryptocurrency examples", savedFlashcards[2].front)
       assertEquals(
           "There are thousands of cryptocurrencies. Some of the best known include: Bitcoin, Ethereum...",
-          flashcards[2].back)
+          savedFlashcards[2].back)
 
       // Verify for each flashcard
-      for (flashcard in flashcards) {
+      for (flashcard in savedFlashcards) {
         assertEquals(testNote.userId, flashcard.userId)
         assertEquals(testNote.id, flashcard.noteId)
         assertEquals(testNote.folderId, flashcard.folderId)
@@ -150,7 +183,7 @@ class NotesToFlashcardTest {
     }
 
     // Execute the method
-    notesToFlashcard.convertNoteToFlashcards(
+    notesToFlashcard.convertNoteToDeck(
         note = testNote,
         onSuccess = onSuccess,
         onFileNotFoundException = { fail("Expected successful conversion") },
@@ -165,7 +198,7 @@ class NotesToFlashcardTest {
   }
 
   @Test
-  fun `convertNoteToFlashcards failure`() {
+  fun `convertNoteToDeck failure`() {
     // Mocking OpenAI's sendRequest to trigger onFailure
     doAnswer { invocation ->
           val onFailure = invocation.getArgument<(IOException) -> Unit>(2)
@@ -179,7 +212,7 @@ class NotesToFlashcardTest {
     var failureCallbackCalled = false
 
     // Execute the method
-    notesToFlashcard.convertNoteToFlashcards(
+    notesToFlashcard.convertNoteToDeck(
         note = testNote,
         onSuccess = { fail("Expected failure but got success") },
         onFileNotFoundException = { fail("Expected failure but got not found") },
@@ -194,7 +227,7 @@ class NotesToFlashcardTest {
   }
 
   @Test
-  fun `convertNoteToFlashcards invalid JSON`() {
+  fun `convertNoteToDeck invalid JSON`() {
     // Mocking OpenAI's sendRequest to trigger onSuccess
     doAnswer { invocation ->
           val onSuccess = invocation.getArgument<(String) -> Unit>(1)
@@ -206,7 +239,7 @@ class NotesToFlashcardTest {
 
     // Set up a flag to ensure the failure callback was called
     var failureCallbackCalled = false
-    notesToFlashcard.convertNoteToFlashcards(
+    notesToFlashcard.convertNoteToDeck(
         note = testNote,
         onSuccess = { fail("Expected failure but got success") },
         onFileNotFoundException = { fail("Expected failure but got not found") },
