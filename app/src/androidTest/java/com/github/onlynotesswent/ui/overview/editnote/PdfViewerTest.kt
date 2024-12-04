@@ -11,6 +11,9 @@ import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.note.Note
 import com.github.onlynotesswent.model.note.NoteRepository
 import com.github.onlynotesswent.model.note.NoteViewModel
+import com.github.onlynotesswent.model.user.User
+import com.github.onlynotesswent.model.user.UserRepository
+import com.github.onlynotesswent.model.user.UserViewModel
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
 import com.github.onlynotesswent.utils.Scanner
@@ -29,10 +32,12 @@ import org.mockito.kotlin.verify
 class PdfViewerTest {
   @Mock private lateinit var fileRepository: FileRepository
   @Mock private lateinit var noteRepository: NoteRepository
+  @Mock private lateinit var userRepository: UserRepository
   @Mock private lateinit var navigationActions: NavigationActions
   @Mock private lateinit var mockScanner: Scanner
   private lateinit var noteViewModel: NoteViewModel
   private lateinit var fileViewModel: FileViewModel
+  private lateinit var userViewModel: UserViewModel
   private val pdfFile: File = File.createTempFile("test", ".pdf")
 
   @get:Rule val composeTestRule = createComposeRule()
@@ -42,6 +47,7 @@ class PdfViewerTest {
     MockitoAnnotations.openMocks(this)
     fileViewModel = FileViewModel(fileRepository)
     noteViewModel = NoteViewModel(noteRepository)
+    userViewModel = UserViewModel(userRepository)
 
     // Mock the current route to be the note edit screen
     `when`(navigationActions.currentRoute()).thenReturn(Screen.EDIT_NOTE_PDF)
@@ -61,6 +67,23 @@ class PdfViewerTest {
 
     noteViewModel.getNoteById("mockNoteId")
 
+    // Mock the addUser method to call the onSuccess callback
+    `when`(userRepository.addUser(any(), any(), any())).thenAnswer { invocation ->
+      val onSuccess = invocation.getArgument<() -> Unit>(1)
+      onSuccess()
+    }
+
+    val testUser =
+      User(
+        firstName = "testFirstName",
+        lastName = "testLastName",
+        userName = "testUserName",
+        email = "testEmail",
+        uid = "1",
+        dateOfJoining = Timestamp.now(),
+        rating = 0.0)
+    userViewModel.addUser(testUser, {}, {})
+
     // Create a valid PDF file programmatically
     createSamplePdf(pdfFile)
 
@@ -71,7 +94,7 @@ class PdfViewerTest {
     }
 
     composeTestRule.setContent {
-      PdfViewerScreen(noteViewModel, fileViewModel, mockScanner, navigationActions)
+      PdfViewerScreen(noteViewModel, fileViewModel, userViewModel, mockScanner, navigationActions)
     }
   }
 

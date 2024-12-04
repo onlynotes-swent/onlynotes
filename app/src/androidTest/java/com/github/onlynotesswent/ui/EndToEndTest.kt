@@ -174,7 +174,7 @@ class EndToEndTest {
                         navigationActions, folderViewModel, noteViewModel, userViewModel)
                   }
                   composable(Screen.EDIT_NOTE_MARKDOWN) {
-                    EditMarkdownScreen(navigationActions, noteViewModel, fileViewModel)
+                    EditMarkdownScreen(navigationActions, noteViewModel, fileViewModel, userViewModel)
                   }
                 }
                 navigation(

@@ -15,6 +15,9 @@ import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.note.Note
 import com.github.onlynotesswent.model.note.NoteRepository
 import com.github.onlynotesswent.model.note.NoteViewModel
+import com.github.onlynotesswent.model.user.User
+import com.github.onlynotesswent.model.user.UserRepository
+import com.github.onlynotesswent.model.user.UserViewModel
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
 import com.google.firebase.Timestamp
@@ -33,9 +36,11 @@ import org.mockito.kotlin.verify
 class EditMarkdownTest {
   @Mock private lateinit var noteRepository: NoteRepository
   @Mock private lateinit var fileRepository: FileRepository
+  @Mock private lateinit var userRepository: UserRepository
   @Mock private lateinit var navigationActions: NavigationActions
   private lateinit var noteViewModel: NoteViewModel
   private lateinit var fileViewModel: FileViewModel
+  private lateinit var userViewModel: UserViewModel
   @get:Rule val composeTestRule = createComposeRule()
 
   @Before
@@ -44,6 +49,7 @@ class EditMarkdownTest {
     MockitoAnnotations.openMocks(this)
     noteViewModel = NoteViewModel(noteRepository)
     fileViewModel = FileViewModel(fileRepository)
+    userViewModel = UserViewModel(userRepository)
 
     val testNote =
         Note(
@@ -52,10 +58,26 @@ class EditMarkdownTest {
             Timestamp.now(),
             Visibility.PUBLIC,
             Course("CS-311", "SwEnt", 2024, "testCoursePath"),
-            "testUserId",
+            "1",
             "1")
 
     noteViewModel.selectedNote(testNote)
+
+    `when`(userRepository.addUser(any(), any(), any())).thenAnswer { invocation ->
+      val onSuccess = invocation.getArgument<() -> Unit>(1)
+      onSuccess()
+    }
+
+    val testUser =
+      User(
+        firstName = "testFirstName",
+        lastName = "testLastName",
+        userName = "testUserName",
+        email = "testEmail",
+        uid = "1",
+        dateOfJoining = Timestamp.now(),
+        rating = 0.0)
+    userViewModel.addUser(testUser, {}, {})
 
     // Mock the current route to be the user create screen
     `when`(navigationActions.currentRoute()).thenReturn(Screen.EDIT_NOTE_MARKDOWN)
@@ -67,7 +89,7 @@ class EditMarkdownTest {
       onSuccess(testFile)
     }
     composeTestRule.setContent {
-      EditMarkdownScreen(navigationActions, noteViewModel, fileViewModel)
+      EditMarkdownScreen(navigationActions, noteViewModel, fileViewModel, userViewModel)
     }
   }
 
