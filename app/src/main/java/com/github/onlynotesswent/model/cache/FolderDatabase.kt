@@ -7,7 +7,7 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.github.onlynotesswent.model.folder.Folder
 
-@Database(entities = [Folder::class], version = 1)
+@Database(entities = [Folder::class], version = 1, exportSchema = false)
 @TypeConverters(TimestampConverter::class)
 abstract class FolderDatabase : RoomDatabase() {
   abstract fun folderDao(): FolderDao

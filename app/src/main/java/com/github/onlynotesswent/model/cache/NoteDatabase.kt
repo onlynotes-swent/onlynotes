@@ -7,7 +7,7 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.github.onlynotesswent.model.note.Note
 
-@Database(entities = [Note::class], version = 1)
+@Database(entities = [Note::class], version = 1, exportSchema = false)
 @TypeConverters(TimestampConverter::class, CommentCollectionConverter::class)
 abstract class NoteDatabase : RoomDatabase() {
   abstract fun noteDao(): NoteDao
