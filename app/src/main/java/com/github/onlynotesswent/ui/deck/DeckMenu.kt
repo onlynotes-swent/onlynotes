@@ -1,6 +1,10 @@
 package com.github.onlynotesswent.ui.deck
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -29,6 +33,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.VerticalDivider
@@ -39,6 +44,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontStyle
@@ -333,18 +339,23 @@ fun FlashcardDialog(
   val flashcard = flashcardViewModel.selectedFlashcard.collectAsState()
   val front = remember { mutableStateOf(flashcard.value?.front ?: "") }
   val back = remember { mutableStateOf(flashcard.value?.back ?: "") }
+  val fakeBacks = remember { mutableStateOf(flashcard.value?.fakeBacks ?: listOf()) }
+  var showFakeBacksDetails = remember { mutableStateOf(false) }
+
   Dialog(onDismissRequest = onDismissRequest) {
     Card {
       if (flashcard.value == null && mode == "Edit") {
         LoadingIndicator("Loading flashcard...")
       } else {
         Column(
-            modifier = Modifier.padding(10.dp),
+            modifier = Modifier.padding(20.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(10.dp)) {
               Text("$mode Flashcard", style = Typography.headlineSmall)
               // Front
               OutlinedTextField(
+                  modifier =
+                  Modifier.fillMaxWidth(),
                   value = front.value,
                   onValueChange = { front.value = it },
                   label = { Text("Front") })
@@ -411,8 +422,46 @@ fun FlashcardDialog(
 
               HorizontalDivider(modifier = Modifier.height(5.dp).padding(top = 10.dp))
               // Back
-              OutlinedTextField(
+              OutlinedTextField(modifier =
+              Modifier.fillMaxWidth(),
                   value = back.value, onValueChange = { back.value = it }, label = { Text("Back") })
+
+              // Fake backs
+              Box(
+                  modifier =
+                      Modifier.fillMaxWidth()
+                          .testTag("FakeBacks textField")
+                          .clickable { showFakeBacksDetails.value = !showFakeBacksDetails.value }
+                          .border(1.dp, OutlinedTextFieldDefaults.colors().unfocusedPlaceholderColor, OutlinedTextFieldDefaults.shape)) {
+                    val fakeBacksText =
+                        if (fakeBacks.value.isEmpty()) "No fake backs" else "Fake backs"
+                    Text(
+                        text = fakeBacksText,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.padding(16.dp))
+                  }
+
+              AnimatedVisibility(
+                  visible = showFakeBacksDetails.value,
+                  enter = expandVertically(),
+                  exit = shrinkVertically()) {
+                    Column(modifier = Modifier.fillMaxWidth()) {
+                      fakeBacks.value.forEachIndexed { index, fakeBack ->
+                        OutlinedTextField(
+                            value = fakeBack,
+                            onValueChange = { newValue ->
+                              fakeBacks.value =
+                                  fakeBacks.value.toMutableList().apply { set(index, newValue) }
+                            },
+                            label = { Text("Fake Back ${index + 1}") },
+                            placeholder = { Text("Enter fake back text") },
+                            modifier =
+                                Modifier.fillMaxWidth()
+                                    .testTag("EditFakeBack${index + 1} textField"))
+                      }
+                    }
+                  }
               // Save button
               Button(
                   onClick = {
@@ -422,12 +471,16 @@ fun FlashcardDialog(
 
                     val newFlashcard: Flashcard =
                         flashcard.value?.copy(
-                            front = front.value, back = back.value, hasImage = newHasImage)
+                            front = front.value,
+                            back = back.value,
+                            hasImage = newHasImage,
+                            fakeBacks = fakeBacks.value)
                             ?: Flashcard(
                                 id = flashcardViewModel.getNewUid(),
                                 front = front.value,
                                 back = back.value,
                                 hasImage = newHasImage,
+                                fakeBacks = fakeBacks.value,
                                 lastReviewed = null,
                                 userId = deckViewModel.selectedDeck.value!!.userId,
                                 folderId = null,
