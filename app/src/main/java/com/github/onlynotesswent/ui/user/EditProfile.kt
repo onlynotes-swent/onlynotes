@@ -63,7 +63,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
-import androidx.lifecycle.viewModelScope
 import coil.compose.rememberAsyncImagePainter
 import com.github.onlynotesswent.R
 import com.github.onlynotesswent.model.file.FileType
@@ -80,7 +79,6 @@ import com.github.onlynotesswent.ui.navigation.Route
 import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
 import com.github.onlynotesswent.ui.theme.Typography
 import com.github.onlynotesswent.utils.ProfilePictureTaker
-import kotlinx.coroutines.launch
 
 /**
  * A composable function that displays the profile screen.
@@ -328,21 +326,15 @@ fun EditProfileScreen(
                               modifier = Modifier.testTag("confirmDeleteButton"),
                               onClick = {
                                 showDeleteAccountAlert.value = false
-                                noteViewModel.viewModelScope.launch {
-                                  noteViewModel.deleteNotesFromUid(user.value!!.uid)
-                                }
-                                folderViewModel.viewModelScope.launch {
-                                  folderViewModel.deleteFoldersFromUid(user.value!!.uid)
-                                }
-                                noteViewModel.viewModelScope.launch {
-                                  noteViewModel.getNoteById(user.value!!.uid)
-                                }
+
+                                noteViewModel.deleteNotesFromUid(user.value!!.uid)
+                                folderViewModel.deleteFoldersFromUid(user.value!!.uid)
+                                noteViewModel.getNoteById(user.value!!.uid)
                                 noteViewModel.userRootNotes.value.forEach {
                                   fileViewModel.deleteFile(it.id, FileType.NOTE_PDF)
                                 }
                                 fileViewModel.deleteFile(
                                     user.value!!.uid, FileType.PROFILE_PIC_JPEG)
-
                                 userViewModel.deleteUserById(
                                     user.value!!.uid,
                                     onSuccess = { navigationActions.navigateTo(Route.AUTH) })

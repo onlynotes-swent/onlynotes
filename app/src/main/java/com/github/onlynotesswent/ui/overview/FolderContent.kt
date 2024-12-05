@@ -40,7 +40,6 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewModelScope
 import com.github.onlynotesswent.R
 import com.github.onlynotesswent.model.common.Course
 import com.github.onlynotesswent.model.folder.Folder
@@ -59,7 +58,6 @@ import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
 import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
 import com.google.firebase.Timestamp
-import kotlinx.coroutines.launch
 
 /**
  * Screen that displays the content of a folder.
@@ -80,16 +78,10 @@ fun FolderContentScreen(
   val currentUser = userViewModel.currentUser.collectAsState()
 
   val userFolderNotes = noteViewModel.folderNotes.collectAsState()
-  currentUser.let {
-    noteViewModel.viewModelScope.launch { noteViewModel.getNotesFromFolder(folder.value?.id ?: "") }
-  }
+  currentUser.let { noteViewModel.getNotesFromFolder(folder.value?.id ?: "") }
 
   val userFolderSubFolders = folderViewModel.folderSubFolders.collectAsState()
-  currentUser.let {
-    folderViewModel.viewModelScope.launch {
-      folderViewModel.getSubFoldersOf(folder.value?.id ?: "")
-    }
-  }
+  currentUser.let { folderViewModel.getSubFoldersOf(folder.value?.id ?: "") }
 
   val parentFolderId = folderViewModel.parentFolderId.collectAsState()
   val context = LocalContext.current
@@ -161,16 +153,14 @@ fun FolderContentScreen(
                 onDismiss = { showUpdateDialog = false },
                 onConfirm = { name, vis ->
                   if (currentUser.value!!.uid == folder.value?.userId) {
-                    folderViewModel.viewModelScope.launch {
-                      folderViewModel.updateFolder(
-                          Folder(
-                              id = folder.value!!.id,
-                              name = name,
-                              userId = folder.value!!.userId,
-                              parentFolderId = folder.value!!.parentFolderId,
-                              visibility = vis,
-                              lastModified = Timestamp.now()))
-                    }
+                    folderViewModel.updateFolder(
+                        Folder(
+                            id = folder.value!!.id,
+                            name = name,
+                            userId = folder.value!!.userId,
+                            parentFolderId = folder.value!!.parentFolderId,
+                            visibility = vis,
+                            lastModified = Timestamp.now()))
                     updatedName = name
                   } else {
                     Toast.makeText(
@@ -197,7 +187,7 @@ fun FolderContentScreen(
                           noteCourse = Course.EMPTY,
                           userId = userViewModel.currentUser.value!!.uid,
                           folderId = folder.value!!.id)
-                  noteViewModel.viewModelScope.launch { noteViewModel.addNote(note) }
+                  noteViewModel.addNote(note)
                   noteViewModel.selectedNote(note)
                   showCreateNoteDialog = false
                   navigationActions.navigateTo(Screen.EDIT_NOTE)
@@ -211,16 +201,14 @@ fun FolderContentScreen(
                 onConfirm = { name, visibility ->
                   if (currentUser.value!!.uid == folder.value?.userId) {
                     val folderId = folderViewModel.getNewFolderId()
-                    folderViewModel.viewModelScope.launch {
-                      folderViewModel.addFolder(
-                          Folder(
-                              id = folderId,
-                              name = name,
-                              userId = currentUser.value!!.uid,
-                              parentFolderId = parentFolderId.value,
-                              visibility = visibility,
-                              lastModified = Timestamp.now()))
-                    }
+                    folderViewModel.addFolder(
+                        Folder(
+                            id = folderId,
+                            name = name,
+                            userId = currentUser.value!!.uid,
+                            parentFolderId = parentFolderId.value,
+                            visibility = visibility,
+                            lastModified = Timestamp.now()))
                     if (parentFolderId.value != null) {
                       navigationActions.navigateTo(
                           Screen.FOLDER_CONTENTS.replace(
@@ -373,9 +361,7 @@ fun FolderContentTopBar(
                 if (currentUser.value!!.uid == folder?.userId) {
                   // Retrieve parent folder id to navigate to the parent folder
                   val parentFolderId = folder.parentFolderId
-                  folderViewModel.viewModelScope.launch {
-                    folderViewModel.deleteFolderById(folder.id, folder.userId)
-                  }
+                  folderViewModel.deleteFolderById(folder.id, folder.userId)
 
                   if (parentFolderId != null) {
                     navigationActions.navigateTo(
@@ -408,12 +394,8 @@ fun FolderContentTopBar(
               text = stringResource(R.string.confirm_delete_folder_contents),
               onConfirm = {
                 if (currentUser.value!!.uid == folder?.userId) {
-                  noteViewModel.viewModelScope.launch {
-                    noteViewModel.deleteNotesFromFolder(folder.id)
-                  }
-                  folderViewModel.viewModelScope.launch {
-                    folderViewModel.deleteFolderContents(folder, noteViewModel)
-                  }
+                  noteViewModel.deleteNotesFromFolder(folder.id)
+                  folderViewModel.deleteFolderContents(folder, noteViewModel)
                 } else {
                   Toast.makeText(
                           context, "You are not the owner of this folder", Toast.LENGTH_SHORT)
@@ -446,25 +428,17 @@ fun handleSubFoldersAndNotes(
   // elements to parent folder id
   if (folder.parentFolderId != null) {
     userFolderSubFolders.forEach { subFolder ->
-      folderViewModel.viewModelScope.launch {
-        folderViewModel.updateFolder(subFolder.copy(parentFolderId = folder.parentFolderId))
-      }
+      folderViewModel.updateFolder(subFolder.copy(parentFolderId = folder.parentFolderId))
     }
     userFolderNotes.forEach { note ->
-      noteViewModel.viewModelScope.launch {
-        noteViewModel.updateNote(note.copy(folderId = folder.parentFolderId))
-      }
+      noteViewModel.updateNote(note.copy(folderId = folder.parentFolderId))
     }
   } else {
     // Folder is root folder
     userFolderSubFolders.forEach { subFolder ->
-      folderViewModel.viewModelScope.launch {
-        folderViewModel.updateFolder(subFolder.copy(parentFolderId = null))
-      }
+      folderViewModel.updateFolder(subFolder.copy(parentFolderId = null))
     }
-    userFolderNotes.forEach { note ->
-      noteViewModel.viewModelScope.launch { noteViewModel.updateNote(note.copy(folderId = null)) }
-    }
+    userFolderNotes.forEach { note -> noteViewModel.updateNote(note.copy(folderId = null)) }
   }
 }
 

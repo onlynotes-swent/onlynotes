@@ -30,7 +30,6 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewModelScope
 import com.github.onlynotesswent.MainActivity
 import com.github.onlynotesswent.R
 import com.github.onlynotesswent.model.folder.Folder
@@ -48,7 +47,6 @@ import com.github.onlynotesswent.ui.navigation.LIST_TOP_LEVEL_DESTINATION
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
 import com.google.firebase.Timestamp
-import kotlinx.coroutines.launch
 
 /**
  * Displays the overview screen which contains a list of publicNotes retrieved from the ViewModel.
@@ -70,12 +68,12 @@ fun OverviewScreen(
 ) {
   val userRootNotes = noteViewModel.userRootNotes.collectAsState()
   userViewModel.currentUser.collectAsState().value?.let {
-    noteViewModel.viewModelScope.launch { noteViewModel.getRootNotesFromUid(it.uid) }
+    noteViewModel.getRootNotesFromUid(it.uid)
   }
 
   val userRootFolders = folderViewModel.userRootFolders.collectAsState()
   userViewModel.currentUser.collectAsState().value?.let {
-    folderViewModel.viewModelScope.launch { folderViewModel.getRootFoldersFromUid(it.uid) }
+    folderViewModel.getRootFoldersFromUid(it.uid)
   }
 
   val parentFolderId = folderViewModel.parentFolderId.collectAsState()
@@ -130,7 +128,7 @@ fun OverviewScreen(
                         visibility = visibility,
                         userId = userViewModel.currentUser.value!!.uid,
                         folderId = parentFolderId.value)
-                noteViewModel.viewModelScope.launch { noteViewModel.addNote(note) }
+                noteViewModel.addNote(note)
                 noteViewModel.selectedNote(note)
                 showCreateNoteDialog = false
                 navigationActions.navigateTo(Screen.EDIT_NOTE)
@@ -144,16 +142,15 @@ fun OverviewScreen(
               onDismiss = { showCreateFolderDialog = false },
               onConfirm = { newName, visibility ->
                 val folderId = folderViewModel.getNewFolderId()
-                folderViewModel.viewModelScope.launch {
-                  folderViewModel.addFolder(
-                      Folder(
-                          id = folderId,
-                          name = newName,
-                          userId = userViewModel.currentUser.value!!.uid,
-                          parentFolderId = parentFolderId.value,
-                          visibility = visibility,
-                          lastModified = Timestamp.now()))
-                }
+                folderViewModel.addFolder(
+                    Folder(
+                        id = folderId,
+                        name = newName,
+                        userId = userViewModel.currentUser.value!!.uid,
+                        parentFolderId = parentFolderId.value,
+                        visibility = visibility,
+                        lastModified = Timestamp.now()))
+
                 showCreateFolderDialog = false
                 navigationActions.navigateTo(
                     Screen.FOLDER_CONTENTS.replace(oldValue = "{folderId}", newValue = folderId))
@@ -265,12 +262,8 @@ fun OverviewScreenGrid(
             color = MaterialTheme.colorScheme.onBackground)
         Spacer(modifier = Modifier.height(50.dp))
         RefreshButton {
-          userViewModel.currentUser.value?.let {
-            noteViewModel.viewModelScope.launch { noteViewModel.getRootNotesFromUid(it.uid) }
-          }
-          userViewModel.currentUser.value?.let {
-            folderViewModel.viewModelScope.launch { folderViewModel.getRootFoldersFromUid(it.uid) }
-          }
+          userViewModel.currentUser.value?.let { noteViewModel.getRootNotesFromUid(it.uid) }
+          userViewModel.currentUser.value?.let { folderViewModel.getRootFoldersFromUid(it.uid) }
         }
         Spacer(modifier = Modifier.height(20.dp))
       })

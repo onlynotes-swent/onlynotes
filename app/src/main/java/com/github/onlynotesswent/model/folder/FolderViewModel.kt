@@ -105,20 +105,22 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
    * @param useCache Whether to update data from cache. Should be true only if userId of the folder
    *   is the current user.
    */
-  suspend fun addFolder(
+  fun addFolder(
       folder: Folder,
       onSuccess: () -> Unit = {},
       onFailure: (Exception) -> Unit = {},
       useCache: Boolean = false
   ) {
-    repository.addFolder(
-        folder = folder,
-        onSuccess = {
-          onSuccess()
-          viewModelScope.launch { getRootFoldersFromUid(folder.userId) }
-        },
-        onFailure = onFailure,
-        useCache = useCache)
+    viewModelScope.launch {
+      repository.addFolder(
+          folder = folder,
+          onSuccess = {
+            getRootFoldersFromUid(folder.userId)
+            onSuccess()
+          },
+          onFailure = onFailure,
+          useCache = useCache)
+    }
   }
 
   /**
@@ -131,21 +133,23 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
    * @param useCache Whether to update data from cache. Should be true only if [userId] is the
    *   current user.
    */
-  suspend fun deleteFolderById(
+  fun deleteFolderById(
       folderId: String,
       userId: String,
       onSuccess: () -> Unit = {},
       onFailure: (Exception) -> Unit = {},
       useCache: Boolean = false
   ) {
-    repository.deleteFolderById(
-        folderId = folderId,
-        onSuccess = {
-          onSuccess()
-          viewModelScope.launch { getRootFoldersFromUid(userId) }
-        },
-        onFailure = onFailure,
-        useCache = useCache)
+    viewModelScope.launch {
+      repository.deleteFolderById(
+          folderId = folderId,
+          onSuccess = {
+            getRootFoldersFromUid(userId)
+            onSuccess()
+          },
+          onFailure = onFailure,
+          useCache = useCache)
+    }
   }
 
   /**
@@ -157,20 +161,22 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
    * @param useCache Whether to update data from cache. Should be true only if [userId] is the
    *   current user.
    */
-  suspend fun deleteFoldersFromUid(
+  fun deleteFoldersFromUid(
       userId: String,
       onSuccess: () -> Unit = {},
       onFailure: (Exception) -> Unit = {},
       useCache: Boolean = false
   ) {
-    repository.deleteFoldersFromUid(
-        userId = userId,
-        onSuccess = {
-          onSuccess()
-          viewModelScope.launch { getRootFoldersFromUid(userId) }
-        },
-        onFailure = onFailure,
-        useCache = useCache)
+    viewModelScope.launch {
+      repository.deleteFoldersFromUid(
+          userId = userId,
+          onSuccess = {
+            getRootFoldersFromUid(userId)
+            onSuccess()
+          },
+          onFailure = onFailure,
+          useCache = useCache)
+    }
   }
 
   /**
@@ -182,20 +188,22 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
    * @param useCache Whether to update data from cache. Should be true only if [userId] is the
    *   current user.
    */
-  suspend fun getFoldersFromUid(
+  fun getFoldersFromUid(
       userId: String,
       onSuccess: (List<Folder>) -> Unit = {},
       onFailure: (Exception) -> Unit = {},
       useCache: Boolean = false
   ) {
-    repository.getFoldersFromUid(
-        userId = userId,
-        onSuccess = {
-          onSuccess(it)
-          _userFolders.value = it
-        },
-        onFailure = onFailure,
-        useCache = useCache)
+    viewModelScope.launch {
+      repository.getFoldersFromUid(
+          userId = userId,
+          onSuccess = {
+            _userFolders.value = it
+            onSuccess(it)
+          },
+          onFailure = onFailure,
+          useCache = useCache)
+    }
   }
 
   /**
@@ -207,20 +215,22 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
    * @param useCache Whether to update data from cache. Should be true only if [userId] is the
    *   current user.
    */
-  suspend fun getRootFoldersFromUid(
+  fun getRootFoldersFromUid(
       userId: String,
       onSuccess: (List<Folder>) -> Unit = {},
       onFailure: (Exception) -> Unit = {},
       useCache: Boolean = false
   ) {
-    repository.getRootFoldersFromUid(
-        userId = userId,
-        onSuccess = {
-          onSuccess(it)
-          _userRootFolders.value = it
-        },
-        onFailure = onFailure,
-        useCache = useCache)
+    viewModelScope.launch {
+      repository.getRootFoldersFromUid(
+          userId = userId,
+          onSuccess = {
+            _userRootFolders.value = it
+            onSuccess(it)
+          },
+          onFailure = onFailure,
+          useCache = useCache)
+    }
   }
 
   /**
@@ -232,20 +242,22 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
    * @param useCache Whether to update data from cache. Should be true only if userId of the folder
    *   is the current user.
    */
-  suspend fun getFolderById(
+  fun getFolderById(
       folderId: String,
       onSuccess: (Folder) -> Unit = {},
       onFailure: (Exception) -> Unit = {},
       useCache: Boolean = false
   ) {
-    repository.getFolderById(
-        folderId = folderId,
-        onSuccess = {
-          onSuccess(it)
-          _selectedFolder.value = it
-        },
-        onFailure = onFailure,
-        useCache = useCache)
+    viewModelScope.launch {
+      repository.getFolderById(
+          folderId = folderId,
+          onSuccess = {
+            _selectedFolder.value = it
+            onSuccess(it)
+          },
+          onFailure = onFailure,
+          useCache = useCache)
+    }
   }
 
   /**
@@ -257,23 +269,25 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
    * @param useCache Whether to update data from cache. Should be true only if userId of the folder
    *   is the current user.
    */
-  suspend fun updateFolder(
+  fun updateFolder(
       folder: Folder,
       onSuccess: () -> Unit = {},
       onFailure: (Exception) -> Unit = {},
       useCache: Boolean = false
   ) {
-    repository.updateFolder(
-        folder = folder,
-        onSuccess = {
-          onSuccess()
-          viewModelScope.launch { getRootFoldersFromUid(folder.userId) }
-          if (folder.parentFolderId != null) {
-            viewModelScope.launch { getSubFoldersOf(folder.parentFolderId) }
-          }
-        },
-        onFailure = onFailure,
-        useCache = useCache)
+    viewModelScope.launch {
+      repository.updateFolder(
+          folder = folder,
+          onSuccess = {
+            getRootFoldersFromUid(folder.userId)
+            if (folder.parentFolderId != null) {
+              getSubFoldersOf(folder.parentFolderId)
+            }
+            onSuccess()
+          },
+          onFailure = onFailure,
+          useCache = useCache)
+    }
   }
 
   /**
@@ -285,20 +299,22 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
    * @param useCache Whether to update data from cache. Should be true only if userId of the folder
    *   is the current user.
    */
-  suspend fun getSubFoldersOf(
+  fun getSubFoldersOf(
       parentFolderId: String,
       onSuccess: (List<Folder>) -> Unit = {},
       onFailure: (Exception) -> Unit = {},
       useCache: Boolean = false
   ) {
-    repository.getSubFoldersOf(
-        parentFolderId = parentFolderId,
-        onSuccess = {
-          onSuccess(it)
-          _folderSubFolders.value = it
-        },
-        onFailure = onFailure,
-        useCache = useCache)
+    viewModelScope.launch {
+      repository.getSubFoldersOf(
+          parentFolderId = parentFolderId,
+          onSuccess = {
+            _folderSubFolders.value = it
+            onSuccess(it)
+          },
+          onFailure = onFailure,
+          useCache = useCache)
+    }
   }
 
   /**
@@ -310,8 +326,8 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
   fun getPublicFolders(onSuccess: () -> Unit = {}, onFailure: (Exception) -> Unit = {}) {
     repository.getPublicFolders(
         onSuccess = {
-          onSuccess()
           _publicFolders.value = it
+          onSuccess()
         },
         onFailure = onFailure)
   }
@@ -326,21 +342,23 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
    * @param useCache Whether to update data from cache. Should be true only if userId of the folder
    *   is the current user.
    */
-  suspend fun deleteFolderContents(
+  fun deleteFolderContents(
       folder: Folder,
       noteViewModel: NoteViewModel,
       onSuccess: () -> Unit = {},
       onFailure: (Exception) -> Unit = {},
       useCache: Boolean = false
   ) {
-    repository.deleteFolderContents(
-        folder = folder,
-        noteViewModel = noteViewModel,
-        onSuccess = {
-          onSuccess()
-          viewModelScope.launch { getSubFoldersOf(folder.id) }
-        },
-        onFailure = onFailure,
-        useCache = useCache)
+    viewModelScope.launch {
+      repository.deleteFolderContents(
+          folder = folder,
+          noteViewModel = noteViewModel,
+          onSuccess = {
+            getSubFoldersOf(folder.id)
+            onSuccess()
+          },
+          onFailure = onFailure,
+          useCache = useCache)
+    }
   }
 }
