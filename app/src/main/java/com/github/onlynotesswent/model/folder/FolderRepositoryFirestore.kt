@@ -359,35 +359,6 @@ class FolderRepositoryFirestore(
       onFailure: (Exception) -> Unit,
       useCache: Boolean
   ) {
-    // Update the cache if needed
-    if (useCache) {
-      getSubFoldersOf(
-          parentFolderId = folder.id,
-          onSuccess = { subFolders ->
-            subFolders.forEach { subFolder ->
-              CoroutineScope(Dispatchers.IO).launch {
-                deleteFolderContents(
-                    folder = subFolder,
-                    noteViewModel = noteViewModel,
-                    onSuccess = {},
-                    onFailure = {
-                      onFailure(it)
-                      Log.e(TAG, "Failed to delete folder contents: ${it.message}")
-                    },
-                    useCache = true)
-                noteDao.deleteNotesFromFolder(subFolder.id)
-                folderDao.deleteFolderById(subFolder.id)
-              }
-            }
-            onSuccess()
-          },
-          onFailure = { e: Exception ->
-            Log.e(TAG, "Failed to delete folder contents: ${e.message}")
-            onFailure(e)
-          },
-          useCache = true)
-    }
-
     getSubFoldersOf(
         parentFolderId = folder.id,
         onSuccess = { subFolders ->
@@ -402,6 +373,13 @@ class FolderRepositoryFirestore(
                     Log.e(TAG, "Failed to delete folder contents: ${it.message}")
                   },
                   useCache = useCache)
+
+              // Update the cache if needed
+              if (useCache) {
+                noteDao.deleteNotesFromFolder(subFolder.id)
+                folderDao.deleteFolderById(subFolder.id)
+              }
+
               noteViewModel.deleteNotesFromFolder(subFolder.id)
               deleteFolderById(
                   folderId = subFolder.id,
