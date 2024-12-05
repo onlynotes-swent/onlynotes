@@ -64,7 +64,15 @@ fun NotificationScreen(
             title = { Text(stringResource(R.string.your_notifications)) },
             navigationIcon = {
               IconButton(
-                  onClick = { navigationActions.goBack() }, Modifier.testTag("goBackButton")) {
+                  onClick = {
+                    navigationActions.goBack()
+                    userNotifications.value.forEach { notification ->
+                      if (!notification.read) {
+                        notificationViewModel.updateNotification(notification.copy(read = true))
+                      }
+                    }
+                  },
+                  Modifier.testTag("goBackButton")) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
                         contentDescription = "Back")
@@ -194,9 +202,6 @@ fun NotificationTypeDefault(
             DeleteNotificationIcon(notification, notificationViewModel, userViewModel)
           }
         }
-        if (!notification.read) {
-          notificationViewModel.updateNotification(notification.copy(read = true))
-        }
       }
 }
 
@@ -239,7 +244,6 @@ fun NotificationTypeFollowRequest(
                   userViewModel.acceptFollowerRequest(notification.senderId!!)
                   notificationViewModel.updateNotification(
                       notification.copy(
-                          read = true,
                           type = Notification.NotificationType.FOLLOW_REQUEST_ACCEPTED))
                   notificationViewModel.getNotificationByReceiverId(
                       userViewModel.currentUser.value?.uid!!)
@@ -257,7 +261,6 @@ fun NotificationTypeFollowRequest(
                   userViewModel.declineFollowerRequest(notification.senderId!!)
                   notificationViewModel.updateNotification(
                       notification.copy(
-                          read = true,
                           type = Notification.NotificationType.FOLLOW_REQUEST_REJECTED))
                   notificationViewModel.getNotificationByReceiverId(
                       userViewModel.currentUser.value?.uid!!)

@@ -177,6 +177,7 @@ fun PublicProfileScreen(
                     onSuccess = { isMessagePopupShown.value = false },
                     onFailure = {})
               },
+              formatter = { s -> Notification.formatChatMessage(s) },
               action = stringResource(R.string.send),
               type = stringResource(R.string.message))
         }
@@ -714,9 +715,6 @@ fun SendMessageButton(
     notificationViewModel: NotificationViewModel,
     onSendMessageClick: () -> Unit
 ) {
-  userViewModel.currentUser.collectAsState().value?.let { user ->
-    notificationViewModel.getNotificationByReceiverId(user.uid)
-  }
   Button(
       onClick = onSendMessageClick,
       modifier = Modifier.testTag("sendMessageButton"),
