@@ -26,7 +26,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -91,8 +90,6 @@ fun SearchScreen(
   val decks = deckViewModel.publicDecks.collectAsState()
   val filteredDecks = remember { mutableStateOf(decks.value) }
   filteredDecks.value = decks.value.filter { textMatchesSearch(it.name, searchWords.value) }
-
-  val context = LocalContext.current
 
   // Refresh the list of notes, users, and folders periodically.
   RefreshPeriodically(searchQuery, noteViewModel, userViewModel, folderViewModel, deckViewModel)
@@ -253,7 +250,6 @@ fun SearchScreen(
                               .first { it.uid == filteredNotes.value[index].userId }
                               .userHandle(),
                       currentUser = userViewModel.currentUser.collectAsState(),
-                      context = context,
                       noteViewModel = noteViewModel,
                       folderViewModel = folderViewModel,
                       showDialog = false,
@@ -293,7 +289,6 @@ fun SearchScreen(
               folderViewModel = folderViewModel,
               noteViewModel = noteViewModel,
               userViewModel = userViewModel,
-              context = context,
               navigationActions = navigationActions,
               paddingValues = padding,
               columnContent = {})

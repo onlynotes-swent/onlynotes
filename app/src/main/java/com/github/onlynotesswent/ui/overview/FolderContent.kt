@@ -147,7 +147,6 @@ fun FolderContentScreen(
               folderViewModel = folderViewModel,
               noteViewModel = noteViewModel,
               userViewModel = userViewModel,
-              context = context,
               navigationActions = navigationActions)
           // Logic to show the dialog to update a folder
           if (showUpdateDialog) {
@@ -489,7 +488,6 @@ fun CreateSubItemFab(
  * @param folderViewModel the view model for the folder
  * @param noteViewModel the view model for the note
  * @param userViewModel the view model for the user
- * @param context the context of the app
  * @param navigationActions actions that can be performed in the app
  */
 @Composable
@@ -500,7 +498,6 @@ fun FolderContentScreenGrid(
     folderViewModel: FolderViewModel,
     noteViewModel: NoteViewModel,
     userViewModel: UserViewModel,
-    context: Context,
     navigationActions: NavigationActions
 ) {
   CustomSeparatedLazyGrid(
@@ -512,7 +509,6 @@ fun FolderContentScreenGrid(
       folderViewModel = folderViewModel,
       noteViewModel = noteViewModel,
       userViewModel = userViewModel,
-      context = context,
       navigationActions = navigationActions,
       paddingValues = paddingValues,
       columnContent = {

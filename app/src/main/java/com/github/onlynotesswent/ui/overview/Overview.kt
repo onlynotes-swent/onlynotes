@@ -1,6 +1,5 @@
 package com.github.onlynotesswent.ui.overview
 
-import android.content.Context
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
@@ -111,7 +110,6 @@ fun OverviewScreen(
             folderViewModel = folderViewModel,
             noteViewModel = noteViewModel,
             userViewModel = userViewModel,
-            context = context,
             navigationActions = navigationActions)
         if (showCreateNoteDialog) {
           NoteDialog(
@@ -221,7 +219,6 @@ fun CreateItemFab(
  * @param folderViewModel The ViewModel that provides the list of folders to display.
  * @param noteViewModel The ViewModel that provides the list of publicNotes to display.
  * @param userViewModel The ViewModel that provides the current user.
- * @param context The context of the app.
  * @param navigationActions The navigation view model used to transition between different screens.
  */
 @Composable
@@ -232,7 +229,6 @@ fun OverviewScreenGrid(
     folderViewModel: FolderViewModel,
     noteViewModel: NoteViewModel,
     userViewModel: UserViewModel,
-    context: Context,
     navigationActions: NavigationActions
 ) {
   CustomSeparatedLazyGrid(
@@ -247,7 +243,6 @@ fun OverviewScreenGrid(
       folderViewModel = folderViewModel,
       noteViewModel = noteViewModel,
       userViewModel = userViewModel,
-      context = context,
       navigationActions = navigationActions,
       paddingValues = paddingValues,
       columnContent = {

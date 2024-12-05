@@ -1,6 +1,5 @@
 package com.github.onlynotesswent.ui.common
 
-import android.content.Context
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -40,7 +39,6 @@ import com.github.onlynotesswent.ui.navigation.Screen
  * @param folderViewModel The ViewModel that provides the list of folders to display.
  * @param noteViewModel The ViewModel that provides the list of notes to display.
  * @param userViewModel The ViewModel that provides the current user.
- * @param context The context used to display the dialog.
  * @param navigationActions The navigation view model used to transition between different screens.
  * @param paddingValues The padding values for the grid.
  * @param columnContent The content to be displayed in the column when there are no notes or
@@ -55,7 +53,6 @@ fun CustomSeparatedLazyGrid(
     folderViewModel: FolderViewModel,
     noteViewModel: NoteViewModel,
     userViewModel: UserViewModel,
-    context: Context,
     navigationActions: NavigationActions,
     paddingValues: PaddingValues,
     columnContent: @Composable (ColumnScope.() -> Unit)
@@ -96,7 +93,6 @@ fun CustomSeparatedLazyGrid(
               NoteItem(
                   note = note,
                   currentUser = userViewModel.currentUser.collectAsState(),
-                  context = context,
                   noteViewModel = noteViewModel,
                   folderViewModel = folderViewModel,
                   showDialog = false,

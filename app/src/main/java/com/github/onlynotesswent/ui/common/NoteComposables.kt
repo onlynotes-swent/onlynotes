@@ -1,8 +1,6 @@
 package com.github.onlynotesswent.ui.common
 
 import android.content.ClipData
-import android.content.Context
-import android.widget.Toast
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.draganddrop.dragAndDropSource
@@ -58,7 +56,6 @@ import java.util.Locale
  * @param note The note data that will be displayed in this card.
  * @param author The author of the note.
  * @param currentUser The current user.
- * @param context The context used to display the dialog.
  * @param noteViewModel The ViewModel that provides the list of notes to display.
  * @param folderViewModel The ViewModel that provides the list of folders to display.
  * @param showDialog A boolean indicating whether the move out dialog should be displayed.
@@ -71,7 +68,6 @@ fun NoteItem(
     note: Note,
     author: String? = null,
     currentUser: State<User?>,
-    context: Context,
     noteViewModel: NoteViewModel,
     folderViewModel: FolderViewModel,
     showDialog: Boolean,
