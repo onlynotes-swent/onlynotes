@@ -212,7 +212,8 @@ fun EditNoteGeneralTopBar(
               if (isModified) {
                 showDiscardChangesDialog = true
               } else {
-                if (userViewModel.currentUser.value?.uid != noteViewModel.selectedNote.value?.userId) {
+                if (userViewModel.currentUser.value?.uid !=
+                    noteViewModel.selectedNote.value?.userId) {
                   navigationActions.navigateTo(TopLevelDestinations.SEARCH)
                 } else if (noteViewModel.selectedNote.value?.folderId != null) {
                   navigationActions.navigateTo(

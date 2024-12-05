@@ -24,7 +24,7 @@ data class Folder(
    * @return True if the folder is owned by the user, false otherwise.
    */
   fun isOwner(uid: String): Boolean {
-      return userId == uid
+    return userId == uid
   }
 
   companion object {

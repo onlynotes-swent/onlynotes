@@ -85,8 +85,7 @@ fun NoteItem(
           if (parentFolderId != null) {
             noteViewModel.updateNote(note.copy(folderId = parentFolderId))
             navigationActions.navigateTo(
-                Screen.FOLDER_CONTENTS.replace(
-                    oldValue = "{folderId}", newValue = parentFolderId))
+                Screen.FOLDER_CONTENTS.replace(oldValue = "{folderId}", newValue = parentFolderId))
           } else {
             noteViewModel.updateNote(note.copy(folderId = null))
             navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
@@ -127,17 +126,20 @@ fun NoteItem(
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onPrimaryContainer)
 
-                if (currentUser.value?.uid == note.userId && note.folderId != null &&
+                if (currentUser.value?.uid == note.userId &&
+                    note.folderId != null &&
                     navigationActions.currentRoute() == Screen.FOLDER_CONTENTS) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            // Show move out menu when clicking on the Icon
-                            modifier =
-                            Modifier.testTag("MoveOutButton").size(24.dp).clickable { showMoveOutDialog = true },
-                            imageVector = Icons.Filled.MoreVert,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onPrimaryContainer)
-                    }
+                  Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        // Show move out menu when clicking on the Icon
+                        modifier =
+                            Modifier.testTag("MoveOutButton").size(24.dp).clickable {
+                              showMoveOutDialog = true
+                            },
+                        imageVector = Icons.Filled.MoreVert,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer)
+                  }
                 }
               }
 

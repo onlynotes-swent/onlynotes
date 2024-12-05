@@ -54,20 +54,21 @@ fun SelectVisibility(
   Row(
       modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
       verticalAlignment = Alignment.CenterVertically,
-      horizontalArrangement = if (currentUserId == noteUserId) Arrangement.SpaceBetween else Arrangement.Center) {
+      horizontalArrangement =
+          if (currentUserId == noteUserId) Arrangement.SpaceBetween else Arrangement.Center) {
         // Left arrow to scroll backward
         if (currentUserId == noteUserId) {
-            IconButton(
-                onClick = {
-                    selectedIndex =
-                        if (selectedIndex > 0) selectedIndex - 1 else Visibility.entries.lastIndex
-                    onVisibilityChange(Visibility.entries[selectedIndex])
-                },
-                modifier = Modifier.testTag("previousVisibility")) {
+          IconButton(
+              onClick = {
+                selectedIndex =
+                    if (selectedIndex > 0) selectedIndex - 1 else Visibility.entries.lastIndex
+                onVisibilityChange(Visibility.entries[selectedIndex])
+              },
+              modifier = Modifier.testTag("previousVisibility")) {
                 Icon(
                     imageVector = Icons.Default.ChevronLeft,
                     contentDescription = "Previous Visibility")
-            }
+              }
         }
         // Crossfade animation for smooth visibility transitions
         Crossfade(targetState = currentVisibility, label = "VisibilityCrossfade") { targetVisibility
@@ -97,15 +98,17 @@ fun SelectVisibility(
 
         // Right arrow to scroll forward
         if (currentUserId == noteUserId) {
-            IconButton(
-                onClick = {
-                    selectedIndex =
-                        if (selectedIndex < Visibility.entries.lastIndex) selectedIndex + 1 else 0
-                    onVisibilityChange(Visibility.entries[selectedIndex])
-                },
-                modifier = Modifier.testTag("nextVisibility")) {
-                Icon(imageVector = Icons.Default.ChevronRight, contentDescription = "Next Visibility")
-            }
+          IconButton(
+              onClick = {
+                selectedIndex =
+                    if (selectedIndex < Visibility.entries.lastIndex) selectedIndex + 1 else 0
+                onVisibilityChange(Visibility.entries[selectedIndex])
+              },
+              modifier = Modifier.testTag("nextVisibility")) {
+                Icon(
+                    imageVector = Icons.Default.ChevronRight,
+                    contentDescription = "Next Visibility")
+              }
         }
       }
 }

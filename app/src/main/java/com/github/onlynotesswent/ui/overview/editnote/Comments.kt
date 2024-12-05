@@ -205,18 +205,18 @@ fun CommentsSection(
                         .size(50.dp), // Ensure consistent size for the delete button
                 contentAlignment = Alignment.Center) {
                   if (comment.userId == currentUser.uid || currentUser.uid == note.userId) {
-                      IconButton(
-                          onClick = {
-                              onCommentsChange(
-                                  updatedComments.deleteCommentByCommentId(comment.commentId))
-                          },
-                          modifier = Modifier.testTag("DeleteCommentButton")) {
+                    IconButton(
+                        onClick = {
+                          onCommentsChange(
+                              updatedComments.deleteCommentByCommentId(comment.commentId))
+                        },
+                        modifier = Modifier.testTag("DeleteCommentButton")) {
                           Icon(
                               imageVector = Icons.Default.Delete,
                               contentDescription = "Delete Comment",
                               tint = MaterialTheme.colorScheme.onError,
                           )
-                      }
+                        }
                   }
                 }
           }
