@@ -99,6 +99,16 @@ class NotificationScreenTest {
           read = true,
           type = Notification.NotificationType.FOLLOW)
 
+  private val testNotification6 =
+      Notification(
+          id = "testId6",
+          senderId = testUid2,
+          receiverId = testUid,
+          timestamp = Timestamp.now(),
+          read = true,
+          type = Notification.NotificationType.FOLLOW,
+          content = "testContent")
+
   @get:Rule val composeTestRule = createComposeRule()
 
   @Suppress("UNCHECKED_CAST")
@@ -166,7 +176,8 @@ class NotificationScreenTest {
             testNotification2,
             testNotification3,
             testNotification4,
-            testNotification5)
+            testNotification5,
+            testNotification6)
     `when`(mockNotificationRepository.getNotificationByReceiverId(any(), any(), any())).thenAnswer {
       val onSuccess = it.getArgument<(List<Notification>) -> Unit>(1)
       onSuccess(notificationList)

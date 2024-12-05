@@ -18,7 +18,8 @@ class NotificationRepositoryFirestore(private val db: FirebaseFirestore) : Notif
           receiverId = document.getString("receiverId")!!,
           timestamp = document.getTimestamp("timestamp")!!,
           read = document.getBoolean("read")!!,
-          type = Notification.NotificationType.valueOf(document.getString("type")!!))
+          type = Notification.NotificationType.valueOf(document.getString("type")!!),
+          content = document.getString("content"))
     } catch (e: Exception) {
       Log.e(TAG, "Failed to convert document snapshot to notification", e)
       null
