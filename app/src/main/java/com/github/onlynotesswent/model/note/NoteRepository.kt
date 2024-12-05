@@ -3,7 +3,7 @@ package com.github.onlynotesswent.model.note
 interface NoteRepository {
 
   /**
-   * \ Generates a new note ID.
+   * Generates a new note ID.
    *
    * @return The new note ID.
    */
