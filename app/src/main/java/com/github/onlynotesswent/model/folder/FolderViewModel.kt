@@ -241,6 +241,30 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
   }
 
   /**
+   * Retrieves a folder by its name.
+   *
+   * @param name The name of the folder to retrieve.
+   * @param userId The ID of the user that owns the folder.
+   * @param onFolderNotFound The function to call when the folder is not found.
+   * @param onSuccess The function to call when the folders are retrieved successfully.
+   * @param onFailure The function to call when the folder fails to be retrieved.
+   */
+  fun getDeckFoldersByName(
+      name: String,
+      userId: String,
+      onFolderNotFound: () -> Unit = {},
+      onSuccess: (List<Folder>) -> Unit = {},
+      onFailure: (Exception) -> Unit = {}
+  ) {
+    repository.getDeckFoldersByName(
+        name = name,
+        userId = userId,
+        onSuccess = { onSuccess(it) },
+        onFolderNotFound = onFolderNotFound,
+        onFailure = onFailure)
+  }
+
+  /**
    * Retrieves a folder by its ID.
    *
    * @param folderId The ID of the folder to retrieve.

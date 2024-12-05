@@ -95,6 +95,23 @@ interface FolderRepository {
   )
 
   /**
+   * Retrieves a folder by its name.
+   *
+   * @param name The name of the folder to retrieve.
+   * @param userId The ID of the user that owns the folder.
+   * @param onFolderNotFound Callback to be invoked if the folder is not found.
+   * @param onSuccess Callback to be invoked with the retrieved folders.
+   * @param onFailure Callback to be invoked if an error occurs.
+   */
+  fun getDeckFoldersByName(
+      name: String,
+      userId: String,
+      onFolderNotFound: () -> Unit,
+      onSuccess: (List<Folder>) -> Unit,
+      onFailure: (Exception) -> Unit
+  )
+
+  /**
    * Updates an existing folder.
    *
    * @param folder The folder with updated information.

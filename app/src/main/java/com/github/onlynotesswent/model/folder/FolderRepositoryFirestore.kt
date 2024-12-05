@@ -168,6 +168,33 @@ class FolderRepositoryFirestore(private val db: FirebaseFirestore) : FolderRepos
     }
   }
 
+  override fun getDeckFoldersByName(
+      name: String,
+      userId: String,
+      onFolderNotFound: () -> Unit,
+      onSuccess: (List<Folder>) -> Unit,
+      onFailure: (Exception) -> Unit
+  ) {
+    db.collection(folderCollectionPath).get().addOnCompleteListener { task ->
+      if (task.isSuccessful) {
+        val userFolders =
+            task.result.documents
+                .mapNotNull { document -> documentSnapshotToFolder(document) }
+                .filter { it.userId == userId && it.name == name && it.isDeckFolder }
+        if (userFolders.isNotEmpty()) {
+          onSuccess(userFolders)
+        } else {
+          onFolderNotFound()
+        }
+      } else {
+        task.exception?.let { e: Exception ->
+          onFailure(e)
+          Log.e(TAG, "Failed to retrieve deck folder: ${e.message}")
+        }
+      }
+    }
+  }
+
   override fun updateFolder(folder: Folder, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) {
     db.collection(folderCollectionPath).document(folder.id).set(folder).addOnCompleteListener {
         result ->

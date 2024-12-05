@@ -95,6 +95,23 @@ class FolderViewModelTest {
   }
 
   @Test
+  fun getDeckFoldersByNameCallsRepository() {
+    `when`(mockFolderRepository.getDeckFoldersByName(any(), any(), any(), any(), any()))
+        .thenAnswer {
+          val onSuccess: (List<Folder>) -> Unit = it.getArgument(3)
+          onSuccess(listOf(testFolder))
+        }
+    var deckFolders: List<Folder> = listOf()
+    folderViewModel.getDeckFoldersByName(
+        testFolder.name,
+        testFolder.userId,
+        { assert(false) },
+        { deckFolders = it },
+        { assert(false) })
+    assertEquals(deckFolders, listOf(testFolder))
+  }
+
+  @Test
   fun getFolderByIdCallsRepository() {
     `when`(mockFolderRepository.getFolderById(any(), any(), any())).thenAnswer {
       val onSuccess: (Folder) -> Unit = it.getArgument(1)
