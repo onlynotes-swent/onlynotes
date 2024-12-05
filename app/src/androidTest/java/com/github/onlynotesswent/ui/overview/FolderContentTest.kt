@@ -57,18 +57,6 @@ class FolderContentTest {
               noteCourse = Course("CS-100", "Sample Course", 2024, "path"),
           ))
 
-  private val subNoteList1 =
-      listOf(
-          Note(
-              id = "5",
-              title = "Sample Sub Note",
-              date = Timestamp.now(),
-              visibility = Visibility.DEFAULT,
-              userId = "2",
-              folderId = "2",
-              noteCourse = Course("CS-100", "Sample Course", 2024, "path"),
-          ))
-
   private val subNoteList2 =
       listOf(
           Note(
@@ -98,9 +86,6 @@ class FolderContentTest {
 
   private val subFolderListSameUser =
       listOf(Folder(id = "4", name = "name", userId = "1", parentFolderId = "1"))
-
-  private val folderListDifferentUser =
-      listOf(Folder(id = "2", name = "name", userId = "2", parentFolderId = "1"))
 
   private val subfolder = Folder("3", "sub name", "1", "1")
   private val folder = Folder("1", "1", "1")
@@ -282,26 +267,6 @@ class FolderContentTest {
     verify(mockNavigationActions).navigateTo(Screen.FOLDER_CONTENTS.replace("{folderId}", "1"))
   }
 
-  /*@Test
-  fun moveOutDifferentUserDoesNotMoveNote() {
-    init(folder)
-
-    `when`(mockNoteRepository.getNotesFromFolder(eq("2"), any(), any())).then { invocation ->
-      val onSuccess = invocation.getArgument<(List<Note>) -> Unit>(1)
-      onSuccess(subNoteList1)
-    }
-
-    noteViewModel.getNotesFromFolder("2")
-
-    composeTestRule.onNodeWithTag("noteCard").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("MoveOutButton").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("MoveOutButton").performClick()
-    composeTestRule.onNodeWithTag("popup").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("confirmButton").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("confirmButton").performClick()
-    composeTestRule.onNodeWithTag("noteCard").assertIsDisplayed()
-  }*/
-
   @Test
   fun moveOutSameUserDoesMoveNote() {
     init(folder)
@@ -360,35 +325,6 @@ class FolderContentTest {
         .onFirst()
         .assertIsDisplayed()
   }
-
-  /* @Test
-  fun deleteFolderContentsDifferentUserDoesNotDelete() {
-    init(folder)
-
-    `when`(mockFolderRepository.getSubFoldersOf(eq("1"), any(), any())).then { invocation ->
-      val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(1)
-      onSuccess(folderListDifferentUser)
-    }
-
-    `when`(mockNoteRepository.getNotesFromFolder(eq("1"), any(), any())).then { invocation ->
-      val onSuccess = invocation.getArgument<(List<Note>) -> Unit>(1)
-      onSuccess(subNoteList1)
-    }
-    folderViewModel.getSubFoldersOf("1")
-    noteViewModel.getNotesFromFolder("1")
-
-    composeTestRule.onNodeWithTag("noteCard").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("folderCard").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("folderCard").performClick()
-    val folderContentsScreen =
-        Screen.FOLDER_CONTENTS.replace(
-            oldValue = "{folderId}", newValue = folderListDifferentUser[0].id)
-    verify(mockNavigationActions).navigateTo(folderContentsScreen)
-    composeTestRule.onNodeWithTag("folderSettingsButton").performClick()
-    composeTestRule.onNodeWithTag("deleteFolderContentsButton").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("deleteFolderContentsButton").performClick()
-    composeTestRule.onNodeWithTag("noteCard").assertIsDisplayed()
-  }*/
 
   @Test
   fun noteDialogDisplaysCorrectly() {

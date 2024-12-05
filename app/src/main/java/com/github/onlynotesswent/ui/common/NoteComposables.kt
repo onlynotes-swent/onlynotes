@@ -226,6 +226,7 @@ fun NoteDataTextField(
               unfocusedIndicatorColor = MaterialTheme.colorScheme.onBackground,
               focusedContainerColor = MaterialTheme.colorScheme.background,
               unfocusedContainerColor = MaterialTheme.colorScheme.background,
+              // Set disabled text field colors to be less prominent
               disabledTextColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
               disabledLabelColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
               disabledPlaceholderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),

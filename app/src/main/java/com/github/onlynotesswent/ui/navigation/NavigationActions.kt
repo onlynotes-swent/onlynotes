@@ -125,9 +125,9 @@ open class NavigationActions(
   }
 
   /**
-   * Navigate back to the folder contents screen.
+   * Handle navigation when inside a folder.
    *
-   * @param folder The folder to navigate back to
+   * @param folder The current folder to navigate back from
    * @param userViewModel The UserViewModel to access the current user
    */
   open fun goBackFolderContents(folder: Folder, userViewModel: UserViewModel) {
