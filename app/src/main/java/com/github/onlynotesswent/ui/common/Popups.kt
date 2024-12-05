@@ -138,9 +138,9 @@ fun CreationDialog(
       })
 }
 
-
 /**
  * Generic dialog for entering text.
+ *
  * @param onDismiss callback to be invoked when the dialog is dismissed
  * @param onConfirm callback to be invoked when the user confirms the new text
  * @param formatter function to format the text
