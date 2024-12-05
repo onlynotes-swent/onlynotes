@@ -1,33 +1,46 @@
 package com.github.onlynotesswent.ui.common
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import com.github.onlynotesswent.R
 import com.github.onlynotesswent.model.common.Visibility
 import com.github.onlynotesswent.model.folder.Folder
+import com.github.onlynotesswent.model.folder.FolderViewModel
 
 /**
  * Composable function to display a popup dialog with a title, text, and confirm and dismiss
@@ -137,3 +150,89 @@ fun CreationDialog(
             }
       })
 }
+
+
+@Composable
+fun FileSystemPopup(
+    onDismiss: () -> Unit,
+    folderViewModel: FolderViewModel
+) {
+    var selectedFolder by remember { mutableStateOf<Folder?>(folderViewModel.selectedFolder.value) }
+    val folderSubFolders = folderViewModel.folderSubFolders.collectAsState()
+    val userRootFolders = folderViewModel.userRootFolders.collectAsState()
+    val initialFolder = remember { folderViewModel.selectedFolder.value }
+
+
+        Dialog(onDismissRequest = {
+            onDismiss()}) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth(0.9f) // Adjust the popup width
+                    .fillMaxHeight(0.5f)
+                    .padding(16.dp)
+                    .background(Color.White, shape = RoundedCornerShape(12.dp))
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .fillMaxHeight()
+                        .padding(16.dp)
+                        .verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    if (selectedFolder == null) {
+                        Text(
+                            text = "Contents of root folder",
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                        userRootFolders.value.forEach() { folder ->
+                            Text(
+                                text = folder.name,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(8.dp)
+                                    .clickable {
+                                        // Set the clicked folder as the selected folder
+                                        selectedFolder = folder
+                                        folderViewModel.getSubFoldersOf(folder.id)
+                                    }
+                            )
+                        }
+                    } else {
+                        // Display all folders in the selected folder
+                        Text(
+                            text = "Move selected item into: ${selectedFolder!!.name}",
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        folderSubFolders.value.forEach { subFolder ->
+                            Text(
+                                text = subFolder.name,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(8.dp)
+                                    .clickable {
+                                        // Navigate into the sub-folder
+                                        selectedFolder = subFolder
+                                        folderViewModel.getSubFoldersOf(subFolder.id)
+                                    }
+                            )
+                        }
+
+                        // Add a button to go back to the parent folder or root
+                        Spacer(modifier = Modifier.height(16.dp))
+                        ElevatedButton(
+                            onClick = {
+                                // Reset to the root folder list
+                                selectedFolder = null
+                            }
+                        ) {
+                            Text("Back to Root Folders")
+                        }
+                    }
+                }
+            }
+        }
+
+    }

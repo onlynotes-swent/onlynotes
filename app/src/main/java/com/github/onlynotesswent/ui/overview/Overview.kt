@@ -2,15 +2,26 @@ package com.github.onlynotesswent.ui.overview
 
 import android.content.Context
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.Icon
@@ -25,11 +36,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import com.github.onlynotesswent.MainActivity
 import com.github.onlynotesswent.R
 import com.github.onlynotesswent.model.folder.Folder
@@ -40,6 +53,7 @@ import com.github.onlynotesswent.model.user.UserViewModel
 import com.github.onlynotesswent.ui.common.CustomDropDownMenu
 import com.github.onlynotesswent.ui.common.CustomDropDownMenuItem
 import com.github.onlynotesswent.ui.common.CustomSeparatedLazyGrid
+import com.github.onlynotesswent.ui.common.FileSystemPopup
 import com.github.onlynotesswent.ui.common.FolderDialog
 import com.github.onlynotesswent.ui.common.NoteDialog
 import com.github.onlynotesswent.ui.navigation.BottomNavigationMenu
@@ -66,44 +80,46 @@ fun OverviewScreen(
     userViewModel: UserViewModel,
     folderViewModel: FolderViewModel
 ) {
-  val userRootNotes = noteViewModel.userRootNotes.collectAsState()
-  userViewModel.currentUser.collectAsState().value?.let { noteViewModel.getRootNotesFrom(it.uid) }
+    val userRootNotes = noteViewModel.userRootNotes.collectAsState()
+    userViewModel.currentUser.collectAsState().value?.let { noteViewModel.getRootNotesFrom(it.uid) }
 
-  val userRootFolders = folderViewModel.userRootFolders.collectAsState()
-  userViewModel.currentUser.collectAsState().value?.let {
-    folderViewModel.getRootFoldersFromUid(it.uid)
-  }
+    val userRootFolders = folderViewModel.userRootFolders.collectAsState()
+    userViewModel.currentUser.collectAsState().value?.let {
+        folderViewModel.getRootFoldersFromUid(it.uid)
+    }
 
-  val parentFolderId = folderViewModel.parentFolderId.collectAsState()
-  val context = LocalContext.current
+    val parentFolderId = folderViewModel.parentFolderId.collectAsState()
+    val context = LocalContext.current
 
-  var expanded by remember { mutableStateOf(false) }
-  var showCreateFolderDialog by remember { mutableStateOf(false) }
-  var showCreateNoteDialog by remember { mutableStateOf(false) }
+    var expanded by remember { mutableStateOf(false) }
+    var showCreateFolderDialog by remember { mutableStateOf(false) }
+    var showCreateNoteDialog by remember { mutableStateOf(false) }
 
-  // Handle back press
-  BackHandler {
-    // Move the app to background
-    (context as MainActivity).moveTaskToBack(true)
-  }
+    // Handle back press
+    BackHandler {
+        // Move the app to background
+        (context as MainActivity).moveTaskToBack(true)
+    }
 
-  Scaffold(
-      modifier = Modifier.testTag("overviewScreen"),
-      floatingActionButton = {
-        CreateItemFab(
-            expandedFab = expanded,
-            onExpandedFabChange = { expanded = it },
-            showCreateFolderDialog = { showCreateFolderDialog = it },
-            showCreateNoteDialog = { showCreateNoteDialog = it },
-            noteViewModel = noteViewModel,
-            folderViewModel = folderViewModel)
-      },
-      bottomBar = {
-        BottomNavigationMenu(
-            onTabSelect = { route -> navigationActions.navigateTo(route) },
-            tabList = LIST_TOP_LEVEL_DESTINATION,
-            selectedItem = navigationActions.currentRoute())
-      }) { paddingValues ->
+    Scaffold(
+        modifier = Modifier.testTag("overviewScreen"),
+        floatingActionButton = {
+            CreateItemFab(
+                expandedFab = expanded,
+                onExpandedFabChange = { expanded = it },
+                showCreateFolderDialog = { showCreateFolderDialog = it },
+                showCreateNoteDialog = { showCreateNoteDialog = it },
+                noteViewModel = noteViewModel,
+                folderViewModel = folderViewModel
+            )
+        },
+        bottomBar = {
+            BottomNavigationMenu(
+                onTabSelect = { route -> navigationActions.navigateTo(route) },
+                tabList = LIST_TOP_LEVEL_DESTINATION,
+                selectedItem = navigationActions.currentRoute()
+            )
+        }) { paddingValues ->
         OverviewScreenGrid(
             paddingValues = paddingValues,
             userRootNotes = userRootNotes,
@@ -112,48 +128,77 @@ fun OverviewScreen(
             noteViewModel = noteViewModel,
             userViewModel = userViewModel,
             context = context,
-            navigationActions = navigationActions)
+            navigationActions = navigationActions
+        )
         if (showCreateNoteDialog) {
-          NoteDialog(
-              onDismiss = { showCreateNoteDialog = false },
-              onConfirm = { newName, visibility ->
-                val note =
-                    Note(
-                        id = noteViewModel.getNewUid(),
-                        title = newName,
-                        date = Timestamp.now(),
-                        visibility = visibility,
-                        userId = userViewModel.currentUser.value!!.uid,
-                        folderId = parentFolderId.value)
-                noteViewModel.addNote(note)
-                noteViewModel.selectedNote(note)
-                showCreateNoteDialog = false
-                navigationActions.navigateTo(Screen.EDIT_NOTE)
-              },
-              action = stringResource(R.string.create))
+            NoteDialog(
+                onDismiss = { showCreateNoteDialog = false },
+                onConfirm = { newName, visibility ->
+                    val note =
+                        Note(
+                            id = noteViewModel.getNewUid(),
+                            title = newName,
+                            date = Timestamp.now(),
+                            visibility = visibility,
+                            userId = userViewModel.currentUser.value!!.uid,
+                            folderId = parentFolderId.value
+                        )
+                    noteViewModel.addNote(note)
+                    noteViewModel.selectedNote(note)
+                    showCreateNoteDialog = false
+                    navigationActions.navigateTo(Screen.EDIT_NOTE)
+                },
+                action = stringResource(R.string.create)
+            )
         }
+        var showPopup by remember { mutableStateOf(false) } // State to control the popup visibility
+        Button(onClick = { showPopup = true }) {
+            Text("FileSystem Overview")
+        }
+        Text(
+            text = "Selected Folder: ${folderViewModel.selectedFolder.value?.name ?: "None"}",
+            style = MaterialTheme.typography.bodySmall
+        )
+
+
+    if (showPopup){
+        FileSystemPopup(
+            onDismiss = { showPopup = false },
+            folderViewModel = folderViewModel
+        )
+    }
+
+
+    }
+
 
         // Logic to show the dialog to create a folder
         if (showCreateFolderDialog) {
-          FolderDialog(
-              onDismiss = { showCreateFolderDialog = false },
-              onConfirm = { newName, visibility ->
-                val folderId = folderViewModel.getNewFolderId()
-                folderViewModel.addFolder(
-                    Folder(
-                        id = folderId,
-                        name = newName,
-                        userId = userViewModel.currentUser.value!!.uid,
-                        parentFolderId = parentFolderId.value,
-                        visibility = visibility))
-                showCreateFolderDialog = false
-                navigationActions.navigateTo(
-                    Screen.FOLDER_CONTENTS.replace(oldValue = "{folderId}", newValue = folderId))
-              },
-              action = stringResource(R.string.create))
+            FolderDialog(
+                onDismiss = { showCreateFolderDialog = false },
+                onConfirm = { newName, visibility ->
+                    val folderId = folderViewModel.getNewFolderId()
+                    folderViewModel.addFolder(
+                        Folder(
+                            id = folderId,
+                            name = newName,
+                            userId = userViewModel.currentUser.value!!.uid,
+                            parentFolderId = parentFolderId.value,
+                            visibility = visibility
+                        )
+                    )
+                    showCreateFolderDialog = false
+                    navigationActions.navigateTo(
+                        Screen.FOLDER_CONTENTS.replace(oldValue = "{folderId}", newValue = folderId)
+                    )
+                },
+                action = stringResource(R.string.create)
+            )
         }
-      }
-}
+    }
+
+
+
 
 /**
  * Displays a floating action button that expands to show options to create a note or a folder.

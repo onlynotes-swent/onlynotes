@@ -67,6 +67,15 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
   fun selectedFolder(folder: Folder) {
     _selectedFolder.value = folder
   }
+    /**
+     * Clears the currently selected folder.
+     *
+     * This function resets the `_selectedFolder` state to `null`, effectively deselecting any folder
+     * that was previously selected.
+     */
+    fun clearSelectedFolder() {
+        _selectedFolder.value = null
+    }
 
   /**
    * Sets the dragged folder.
