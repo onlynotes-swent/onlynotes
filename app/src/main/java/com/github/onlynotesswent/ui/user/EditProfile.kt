@@ -329,7 +329,7 @@ fun EditProfileScreen(
                               onClick = {
                                 showDeleteAccountAlert.value = false
                                 noteViewModel.viewModelScope.launch {
-                                  noteViewModel.deleteNotesByUserId(user.value!!.uid)
+                                  noteViewModel.deleteNotesFromUid(user.value!!.uid)
                                 }
                                 folderViewModel.viewModelScope.launch {
                                   folderViewModel.deleteFoldersFromUid(user.value!!.uid)

@@ -269,13 +269,13 @@ class NoteRepositoryFirestoreTest {
   }
 
   @Test
-  fun getNotesFrom_callsDocuments() = runTest {
+  fun getNotesFromUid_callsDocuments() = runTest {
     // Ensure the QuerySnapshot returns a list of mock DocumentSnapshots
     `when`(mockQuerySnapshot.documents)
         .thenReturn(listOf(mockDocumentSnapshot, mockDocumentSnapshot2))
 
     var receivedNotes: List<Note>? = null
-    noteRepositoryFirestore.getNotesFrom(
+    noteRepositoryFirestore.getNotesFromUid(
         testNotePublic.userId, { receivedNotes = it }, { assert(false) }, false)
     assertNotNull(receivedNotes)
 
@@ -284,12 +284,12 @@ class NoteRepositoryFirestoreTest {
   }
 
   @Test
-  fun getRootNotesFrom_callsDocuments() = runTest {
+  fun getRootNotesFromUid_callsDocuments() = runTest {
     `when`(mockQuerySnapshot.documents)
         .thenReturn(listOf(mockDocumentSnapshot, mockDocumentSnapshot2))
 
     var receivedNotes: List<Note>? = null
-    noteRepositoryFirestore.getRootNotesFrom(
+    noteRepositoryFirestore.getRootNotesFromUid(
         testNotePublic.userId, { receivedNotes = it }, { assert(false) }, false)
     assertNotNull(receivedNotes)
 
@@ -333,17 +333,17 @@ class NoteRepositoryFirestoreTest {
   }
 
   @Test
-  fun deleteNotesByUserId_callsDocuments() = runTest {
+  fun deleteNotesFromUid_callsDocuments() = runTest {
     `when`(mockQuerySnapshot.documents)
         .thenReturn(listOf(mockDocumentSnapshot3, mockDocumentSnapshot4))
 
-    noteRepositoryFirestore.deleteNotesByUserId("1", onSuccess = {}, onFailure = {}, false)
+    noteRepositoryFirestore.deleteNotesFromUid("1", onSuccess = {}, onFailure = {}, false)
 
     verify(timeout(100)) { (mockQuerySnapshot).documents }
   }
 
   @Test
-  fun deleteNotesByUserId_fail() = runTest {
+  fun deleteNotesFromUid_fail() = runTest {
     val errorMessage = "TestError"
     `when`(mockQuerySnapshotTask.isSuccessful).thenReturn(false)
     `when`(mockQuerySnapshotTask.exception).thenReturn(Exception(errorMessage))
@@ -356,7 +356,7 @@ class NoteRepositoryFirestoreTest {
     `when`(mockQuerySnapshot.documents)
         .thenReturn(listOf(mockDocumentSnapshot3, mockDocumentSnapshot4))
     var exceptionThrown: Exception? = null
-    noteRepositoryFirestore.deleteNotesByUserId(
+    noteRepositoryFirestore.deleteNotesFromUid(
         "1", onSuccess = {}, onFailure = { e -> exceptionThrown = e }, false)
     assertNotNull(exceptionThrown)
     assertEquals(errorMessage, exceptionThrown?.message)

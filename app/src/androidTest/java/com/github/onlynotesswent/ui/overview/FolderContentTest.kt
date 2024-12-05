@@ -152,7 +152,8 @@ class FolderContentTest {
 
     // Mock the current route to be the user create screen
     `when`(mockNavigationActions.currentRoute()).thenReturn(Screen.FOLDER_CONTENTS)
-    `when`(mockNoteRepository.getRootNotesFrom(eq("1"), any(), any(), any())).then { invocation ->
+    `when`(mockNoteRepository.getRootNotesFromUid(eq("1"), any(), any(), any())).then { invocation
+      ->
       val onSuccess = invocation.getArgument<(List<Note>) -> Unit>(1)
       onSuccess(noteList)
     }
@@ -172,7 +173,7 @@ class FolderContentTest {
     }
     userViewModel.addUser(testUser, {}, {})
 
-    noteViewModel.getRootNotesFrom("1")
+    noteViewModel.getRootNotesFromUid("1")
     folderViewModel.getRootFoldersFromUid("1")
 
     folderViewModel.selectedFolder(selectedFolder)

@@ -260,7 +260,7 @@ class EndToEndTest {
     }
 
     // Mock retrieval of notes
-    `when`(noteRepository.getRootNotesFrom(eq(testUser1.uid), any(), any(), any())).thenAnswer {
+    `when`(noteRepository.getRootNotesFromUid(eq(testUser1.uid), any(), any(), any())).thenAnswer {
         invocation ->
       val onSuccess = invocation.getArgument<(List<Note>) -> Unit>(1)
       onSuccess(listOf(testNote))

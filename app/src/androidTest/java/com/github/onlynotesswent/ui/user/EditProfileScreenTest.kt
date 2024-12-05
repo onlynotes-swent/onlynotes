@@ -435,7 +435,7 @@ class EditProfileScreenTest {
     composeTestRule.onNodeWithTag("confirmDeleteButton").performClick()
 
     verify(mockUserRepository).deleteUserById(eq(testUid), any(), any(), any())
-    verify(mockNoteRepository).deleteNotesByUserId(eq(testUid), any(), any(), any())
+    verify(mockNoteRepository).deleteNotesFromUid(eq(testUid), any(), any(), any())
     verify(mockFolderRepository).deleteFoldersFromUid(eq(testUid), any(), any(), any())
     verify(mockFileRepository).deleteFile(eq(testUid), any(), any(), any(), any())
     verify(mockNavigationActions).navigateTo(Route.AUTH)

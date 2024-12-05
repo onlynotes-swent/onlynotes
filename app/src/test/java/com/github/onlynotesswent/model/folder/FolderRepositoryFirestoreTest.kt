@@ -222,7 +222,7 @@ class FolderRepositoryFirestoreTest {
   }
 
   @Test
-  fun deleteNotesByUserId_fail() = runTest {
+  fun deleteFoldersFromUid_fail() = runTest {
     val errorMessage = "TestError"
     `when`(mockQuerySnapshotTask.isSuccessful).thenReturn(false)
     `when`(mockQuerySnapshotTask.exception).thenReturn(Exception(errorMessage))

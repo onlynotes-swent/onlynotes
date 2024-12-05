@@ -73,7 +73,7 @@ class NoteRepositoryFirestore(
     }
   }
 
-  override suspend fun getNotesFrom(
+  override suspend fun getNotesFromUid(
       userId: String,
       onSuccess: (List<Note>) -> Unit,
       onFailure: (Exception) -> Unit,
@@ -81,7 +81,7 @@ class NoteRepositoryFirestore(
   ) {
     try {
       val cachedNotes: List<Note> =
-          if (useCache) withContext(Dispatchers.IO) { noteDao.getNotes() } else emptyList()
+          if (useCache) withContext(Dispatchers.IO) { noteDao.getNotesFromUid() } else emptyList()
 
       // If device is offline, fetch from from local database
       if (!NetworkUtils.isInternetAvailable(context)) {
@@ -111,7 +111,7 @@ class NoteRepositoryFirestore(
     }
   }
 
-  override suspend fun getRootNotesFrom(
+  override suspend fun getRootNotesFromUid(
       userId: String,
       onSuccess: (List<Note>) -> Unit,
       onFailure: (Exception) -> Unit,
@@ -119,7 +119,8 @@ class NoteRepositoryFirestore(
   ) {
     try {
       val cachedNotes: List<Note> =
-          if (useCache) withContext(Dispatchers.IO) { noteDao.getRootNotes() } else emptyList()
+          if (useCache) withContext(Dispatchers.IO) { noteDao.getRootNotesFromUid() }
+          else emptyList()
 
       // If device is offline, fetch from local database
       if (!NetworkUtils.isInternetAvailable(context)) {
@@ -195,7 +196,7 @@ class NoteRepositoryFirestore(
   ) {
     // Update the cache if needed
     if (useCache) {
-      withContext(Dispatchers.IO) { noteDao.insertNote(note) }
+      withContext(Dispatchers.IO) { noteDao.addNote(note) }
     }
 
     performFirestoreOperation(
@@ -212,7 +213,7 @@ class NoteRepositoryFirestore(
   ) {
     // Update the cache if needed
     if (useCache) {
-      withContext(Dispatchers.IO) { noteDao.insertNotes(notes) }
+      withContext(Dispatchers.IO) { noteDao.addNotes(notes) }
     }
 
     val batch = db.batch()
@@ -231,7 +232,7 @@ class NoteRepositoryFirestore(
   ) {
     // Update the cache if needed
     if (useCache) {
-      withContext(Dispatchers.IO) { noteDao.insertNote(note) }
+      withContext(Dispatchers.IO) { noteDao.addNote(note) }
       onSuccess()
     }
 
@@ -256,7 +257,7 @@ class NoteRepositoryFirestore(
         db.collection(collectionPath).document(id).delete(), onSuccess, onFailure)
   }
 
-  override suspend fun deleteNotesByUserId(
+  override suspend fun deleteNotesFromUid(
       userId: String,
       onSuccess: () -> Unit,
       onFailure: (Exception) -> Unit,
@@ -264,7 +265,7 @@ class NoteRepositoryFirestore(
   ) {
     // Update the cache if needed
     if (useCache) {
-      withContext(Dispatchers.IO) { noteDao.deleteNotes() }
+      withContext(Dispatchers.IO) { noteDao.deleteNotesFromUid() }
     }
 
     db.collection(collectionPath).get().addOnCompleteListener { task ->

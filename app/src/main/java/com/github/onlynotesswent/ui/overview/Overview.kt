@@ -70,7 +70,7 @@ fun OverviewScreen(
 ) {
   val userRootNotes = noteViewModel.userRootNotes.collectAsState()
   userViewModel.currentUser.collectAsState().value?.let {
-    noteViewModel.viewModelScope.launch { noteViewModel.getRootNotesFrom(it.uid) }
+    noteViewModel.viewModelScope.launch { noteViewModel.getRootNotesFromUid(it.uid) }
   }
 
   val userRootFolders = folderViewModel.userRootFolders.collectAsState()
@@ -266,7 +266,7 @@ fun OverviewScreenGrid(
         Spacer(modifier = Modifier.height(50.dp))
         RefreshButton {
           userViewModel.currentUser.value?.let {
-            noteViewModel.viewModelScope.launch { noteViewModel.getRootNotesFrom(it.uid) }
+            noteViewModel.viewModelScope.launch { noteViewModel.getRootNotesFromUid(it.uid) }
           }
           userViewModel.currentUser.value?.let {
             folderViewModel.viewModelScope.launch { folderViewModel.getRootFoldersFromUid(it.uid) }

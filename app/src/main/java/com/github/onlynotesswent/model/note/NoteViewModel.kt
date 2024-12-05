@@ -114,13 +114,13 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
    * @param useCache Whether to update data from cache. Should be true only if [userId] is the
    *   current user.
    */
-  suspend fun getNotesFrom(
+  suspend fun getNotesFromUid(
       userId: String,
       onSuccess: (List<Note>) -> Unit = {},
       onFailure: (Exception) -> Unit = {},
       useCache: Boolean = false
   ) {
-    repository.getNotesFrom(
+    repository.getNotesFromUid(
         userId = userId,
         onSuccess = {
           onSuccess(it)
@@ -139,13 +139,13 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
    * @param useCache Whether to update data from cache. Should be true only if [userId] is the
    *   current user.
    */
-  suspend fun getRootNotesFrom(
+  suspend fun getRootNotesFromUid(
       userId: String,
       onSuccess: (List<Note>) -> Unit = {},
       onFailure: (Exception) -> Unit = {},
       useCache: Boolean = false
   ) {
-    repository.getRootNotesFrom(
+    repository.getRootNotesFromUid(
         userId = userId,
         onSuccess = {
           onSuccess(it)
@@ -199,7 +199,7 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
         note = note,
         onSuccess = {
           onSuccess()
-          viewModelScope.launch { getRootNotesFrom(note.userId) }
+          viewModelScope.launch { getRootNotesFromUid(note.userId) }
         },
         onFailure = onFailure,
         useCache = useCache)
@@ -224,7 +224,7 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
         note = note,
         onSuccess = {
           onSuccess()
-          viewModelScope.launch { getRootNotesFrom(note.userId) }
+          viewModelScope.launch { getRootNotesFromUid(note.userId) }
           if (note.folderId != null) {
             viewModelScope.launch { getNotesFromFolder(note.folderId) }
           }
@@ -252,7 +252,7 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
         id = noteId,
         onSuccess = {
           onSuccess()
-          viewModelScope.launch { getRootNotesFrom(userId) }
+          viewModelScope.launch { getRootNotesFromUid(userId) }
         },
         onFailure = onFailure,
         useCache = useCache)
@@ -267,17 +267,17 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
    * @param useCache Whether to update data from cache. Should be true only if [userId] is the
    *   current user.
    */
-  suspend fun deleteNotesByUserId(
+  suspend fun deleteNotesFromUid(
       userId: String,
       onSuccess: () -> Unit = {},
       onFailure: (Exception) -> Unit = {},
       useCache: Boolean = false
   ) {
-    repository.deleteNotesByUserId(
+    repository.deleteNotesFromUid(
         userId = userId,
         onSuccess = {
           onSuccess()
-          viewModelScope.launch { getRootNotesFrom(userId) }
+          viewModelScope.launch { getRootNotesFromUid(userId) }
         },
         onFailure = onFailure,
         useCache = useCache)

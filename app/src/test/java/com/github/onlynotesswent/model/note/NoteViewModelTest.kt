@@ -63,22 +63,22 @@ class NoteViewModelTest {
   }
 
   @Test
-  fun getNotesFromCallsRepository() = runTest {
-    `when`(mockNoteRepository.getNotesFrom(any(), any(), any(), any())).thenAnswer {
+  fun getNotesFromUidCallsRepository() = runTest {
+    `when`(mockNoteRepository.getNotesFromUid(any(), any(), any(), any())).thenAnswer {
       val onSuccess: (List<Note>) -> Unit = it.getArgument(1)
       onSuccess(listOf(testNote))
     }
-    noteViewModel.getNotesFrom(testNote.userId)
+    noteViewModel.getNotesFromUid(testNote.userId)
     assertEquals(noteViewModel.userNotes.value, listOf(testNote))
   }
 
   @Test
-  fun getRootNotesFromCallsRepository() = runTest {
-    `when`(mockNoteRepository.getRootNotesFrom(any(), any(), any(), any())).thenAnswer {
+  fun getRootNotesFromUidCallsRepository() = runTest {
+    `when`(mockNoteRepository.getRootNotesFromUid(any(), any(), any(), any())).thenAnswer {
       val onSuccess: (List<Note>) -> Unit = it.getArgument(1)
       onSuccess(listOf(testNote))
     }
-    noteViewModel.getRootNotesFrom(testNote.userId)
+    noteViewModel.getRootNotesFromUid(testNote.userId)
     assertEquals(noteViewModel.userRootNotes.value, listOf(testNote))
   }
 
@@ -142,22 +142,22 @@ class NoteViewModelTest {
 
   @Test
   fun deleteNotesFromUser() = runTest {
-    `when`(mockNoteRepository.deleteNotesByUserId(any(), any(), any(), any())).thenAnswer {
+    `when`(mockNoteRepository.deleteNotesFromUid(any(), any(), any(), any())).thenAnswer {
       val onSuccess: () -> Unit = it.getArgument(1)
       onSuccess()
     }
 
     var onSuccessCalled = false
-    noteViewModel.deleteNotesByUserId(testNote.userId, { onSuccessCalled = true })
+    noteViewModel.deleteNotesFromUid(testNote.userId, { onSuccessCalled = true })
     assert(onSuccessCalled)
 
     // To test default parameters
-    noteViewModel.deleteNotesByUserId("1")
-    verify(mockNoteRepository, times(2)).deleteNotesByUserId(eq("1"), any(), any(), any())
+    noteViewModel.deleteNotesFromUid("1")
+    verify(mockNoteRepository, times(2)).deleteNotesFromUid(eq("1"), any(), any(), any())
   }
 
   @Test
-  fun getNotesFromFolderCallsRepository() = runTest {
+  fun getNotesFromUidFolderCallsRepository() = runTest {
     `when`(mockNoteRepository.getNotesFromFolder(any(), any(), any(), any())).thenAnswer {
       val onSuccess: (List<Note>) -> Unit = it.getArgument(1)
       onSuccess(listOf(testNote))
@@ -182,7 +182,7 @@ class NoteViewModelTest {
     noteViewModel.updateNote(testNote)
 
     verify(mockNoteRepository).updateNote(eq(testNote), any(), any(), any())
-    verify(mockNoteRepository).getRootNotesFrom(eq("1"), any(), any(), any())
+    verify(mockNoteRepository).getRootNotesFromUid(eq("1"), any(), any(), any())
     verify(mockNoteRepository).getNotesFromFolder(eq("1"), any(), any(), any())
   }
 

@@ -117,7 +117,7 @@ class OverviewTest {
   fun refreshButtonWorks() = runTest {
     // Mock the repositories to return an empty list of notes and folders, for the refresh button to
     // appear
-    `when`(noteRepository.getRootNotesFrom(eq("1"), any(), any(), any())).then { invocation ->
+    `when`(noteRepository.getRootNotesFromUid(eq("1"), any(), any(), any())).then { invocation ->
       val onSuccess = invocation.getArgument<(List<Note>) -> Unit>(1)
       onSuccess(listOf())
     }
@@ -130,7 +130,7 @@ class OverviewTest {
     composeTestRule.onNodeWithTag("refreshButton").assertIsDisplayed()
 
     // Mock the repositories to return a list of notes and folders
-    `when`(noteRepository.getRootNotesFrom(eq("1"), any(), any(), any())).then { invocation ->
+    `when`(noteRepository.getRootNotesFromUid(eq("1"), any(), any(), any())).then { invocation ->
       val onSuccess = invocation.getArgument<(List<Note>) -> Unit>(1)
       onSuccess(noteList)
     }
@@ -144,14 +144,14 @@ class OverviewTest {
     // Verify that the repositories were called twice, once during the initial load and once during
     // the
     // refresh click
-    verify(noteRepository, times(2)).getRootNotesFrom(eq("1"), any(), any(), any())
+    verify(noteRepository, times(2)).getRootNotesFromUid(eq("1"), any(), any(), any())
     verify(folderRepository, times(2)).getRootFoldersFromUid(eq("1"), any(), any(), any())
     composeTestRule.onNodeWithTag("noteAndFolderList").assertIsDisplayed()
   }
 
   @Test
   fun noteAndFolderListIsDisplayed() = runTest {
-    `when`(noteRepository.getRootNotesFrom(eq("1"), any(), any(), any())).then { invocation ->
+    `when`(noteRepository.getRootNotesFromUid(eq("1"), any(), any(), any())).then { invocation ->
       val onSuccess = invocation.getArgument<(List<Note>) -> Unit>(1)
       onSuccess(noteList)
     }
@@ -160,18 +160,18 @@ class OverviewTest {
       val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(1)
       onSuccess(folderList)
     }
-    noteViewModel.getRootNotesFrom("1")
+    noteViewModel.getRootNotesFromUid("1")
     folderViewModel.getRootFoldersFromUid("1")
     composeTestRule.onNodeWithTag("noteAndFolderList").assertIsDisplayed()
   }
 
   @Test
   fun editNoteClickCallsNavActions() = runTest {
-    `when`(noteRepository.getRootNotesFrom(eq("1"), any(), any(), any())).then { invocation ->
+    `when`(noteRepository.getRootNotesFromUid(eq("1"), any(), any(), any())).then { invocation ->
       val onSuccess = invocation.getArgument<(List<Note>) -> Unit>(1)
       onSuccess(noteList)
     }
-    noteViewModel.getRootNotesFrom("1")
+    noteViewModel.getRootNotesFromUid("1")
     composeTestRule.onNodeWithTag("noteCard").assertIsDisplayed()
     composeTestRule.onNodeWithTag("noteCard").performClick()
     verify(navigationActions).navigateTo(screen = Screen.EDIT_NOTE)
@@ -179,21 +179,21 @@ class OverviewTest {
 
   @Test
   fun displayTextWhenEmpty() = runTest {
-    `when`(noteRepository.getRootNotesFrom(eq("1"), any(), any(), any())).then { invocation ->
+    `when`(noteRepository.getRootNotesFromUid(eq("1"), any(), any(), any())).then { invocation ->
       val onSuccess = invocation.getArgument<(List<Note>) -> Unit>(1)
       onSuccess(listOf())
     }
-    noteViewModel.getRootNotesFrom("1")
+    noteViewModel.getRootNotesFromUid("1")
     composeTestRule.onNodeWithTag("emptyNoteAndFolderPrompt").assertIsDisplayed()
   }
 
   @Test
   fun displayTextWhenUserHasNoNotes() = runTest {
-    `when`(noteRepository.getRootNotesFrom(eq("1"), any(), any(), any())).then { invocation ->
+    `when`(noteRepository.getRootNotesFromUid(eq("1"), any(), any(), any())).then { invocation ->
       val onSuccess = invocation.getArgument<(List<Note>) -> Unit>(1)
       onSuccess(noteList)
     }
-    noteViewModel.getRootNotesFrom("2") // User 2 has no publicNotes
+    noteViewModel.getRootNotesFromUid("2") // User 2 has no publicNotes
     composeTestRule.onNodeWithTag("emptyNoteAndFolderPrompt").assertIsDisplayed()
   }
 
@@ -283,7 +283,7 @@ class OverviewTest {
 
   @Test
   fun dragAndDropNoteWorksCorrectly() = runTest {
-    `when`(noteRepository.getRootNotesFrom(eq("1"), any(), any(), any())).then { invocation ->
+    `when`(noteRepository.getRootNotesFromUid(eq("1"), any(), any(), any())).then { invocation ->
       val onSuccess = invocation.getArgument<(List<Note>) -> Unit>(1)
       onSuccess(noteList)
     }
@@ -292,7 +292,7 @@ class OverviewTest {
       val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(1)
       onSuccess(folderList)
     }
-    noteViewModel.getRootNotesFrom("1")
+    noteViewModel.getRootNotesFromUid("1")
     folderViewModel.getRootFoldersFromUid("1")
     composeTestRule.onNodeWithTag("noteAndFolderList").assertIsDisplayed()
 
