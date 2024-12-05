@@ -145,7 +145,7 @@ fun EditMarkdownScreen(
         EditNoteNavigationMenu(navigationActions, selectedItem = Screen.EDIT_NOTE_MARKDOWN)
       },
       floatingActionButton = {
-        if (!isEditing && selectedNote!!.isOwner(currentUser!!.uid)) {
+        if (!isEditing && selectedNote != null && selectedNote!!.isOwner(currentUser!!.uid)) {
           FloatingActionButton(
               modifier = Modifier.testTag("editMarkdownFAB"),
               onClick = {

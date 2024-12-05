@@ -129,7 +129,7 @@ fun PdfViewerScreen(
 
   Scaffold(
       floatingActionButton = {
-        if (note!!.isOwner(currentUser!!.uid)) {
+        if (note != null && note!!.isOwner(currentUser!!.uid)) {
           // Show a delete button if a PDF exists
           if (pdfExists) {
             var showDeleteConfirmation by remember { mutableStateOf(false) }
