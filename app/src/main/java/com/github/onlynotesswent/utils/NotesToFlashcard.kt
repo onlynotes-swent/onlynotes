@@ -60,6 +60,7 @@ class NotesToFlashcard(
    */
   fun convertNoteToDeck(
       note: Note,
+      folderId: String? = null,
       onSuccess: (Deck) -> Unit,
       onFileNotFoundException: () -> Unit,
       onFailure: (Exception) -> Unit
@@ -72,7 +73,7 @@ class NotesToFlashcard(
         onSuccess = { downloadedFile ->
           openAIClient.sendRequest(
               promptPrefix + downloadedFile.readText(),
-              { parseFlashcardsFromJson(it, note, onSuccess, onFailure) },
+              { parseFlashcardsFromJson(it, note, folderId, onSuccess, onFailure) },
               { onFailure(it) })
         },
         onFileNotFound = onFileNotFoundException,
@@ -85,12 +86,14 @@ class NotesToFlashcard(
    *
    * @param jsonResponse the JSON response from OpenAI API containing flashcard data
    * @param note the note to be converted into flashcards
+   * @param folderId the ID of the folder containing the note
    * @param onSuccess the callback function to invoke on a successful conversion
    * @param onFailure the callback function to invoke on a failed conversion
    */
   private fun parseFlashcardsFromJson(
       jsonResponse: String,
       note: Note,
+      folderId: String? = null,
       onSuccess: (Deck) -> Unit,
       onFailure: (Exception) -> Unit
   ) {
@@ -122,7 +125,7 @@ class NotesToFlashcard(
                   fakeBacks = fakeBacks,
                   lastReviewed = null,
                   userId = note.userId,
-                  folderId = note.folderId,
+                  folderId = folderId,
                   noteId = note.id)
           flashcards.add(flashcard)
           flashcardViewModel.addFlashcard(flashcard)
@@ -139,7 +142,7 @@ class NotesToFlashcard(
             id = deckViewModel.getNewUid(),
             name = note.title,
             userId = note.userId,
-            folderId = note.folderId,
+            folderId = folderId,
             visibility = note.visibility,
             lastModified = Timestamp.now(),
             flashcardIds = flashcards.map { it.id })
@@ -169,8 +172,9 @@ class NotesToFlashcard(
         null,
         onSuccess = { deckFolder ->
           processFolderRecursively(currentFolder, deckFolder, onSuccess, onFailure)
-          // Reset sub folder list
+          // Reset sub folder list and folder notes
           folderViewModel.getSubFoldersOf(parentFolderId = currentFolder.id)
+          noteViewModel.getNotesFromFolder(folderId = currentFolder.id)
         },
         onFailure = { error ->
           Log.e(
@@ -206,6 +210,7 @@ class NotesToFlashcard(
           notes.forEach { note ->
             convertNoteToDeck(
                 note,
+                folderId = deckFolder.id,
                 onSuccess = { deck -> folderFlashcardIds.addAll(deck.flashcardIds) },
                 onFileNotFoundException = { Log.e(TAG, "File not found for note ${note.id}") },
                 onFailure = { Log.e(TAG, "Failed to convert note ${note.id} to deck", it) })

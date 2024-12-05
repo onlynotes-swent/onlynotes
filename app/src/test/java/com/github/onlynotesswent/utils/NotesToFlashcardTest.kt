@@ -11,7 +11,12 @@ import com.github.onlynotesswent.model.flashcard.FlashcardViewModel
 import com.github.onlynotesswent.model.flashcard.deck.Deck
 import com.github.onlynotesswent.model.flashcard.deck.DeckRepository
 import com.github.onlynotesswent.model.flashcard.deck.DeckViewModel
+import com.github.onlynotesswent.model.folder.Folder
+import com.github.onlynotesswent.model.folder.FolderRepository
+import com.github.onlynotesswent.model.folder.FolderViewModel
 import com.github.onlynotesswent.model.note.Note
+import com.github.onlynotesswent.model.note.NoteRepository
+import com.github.onlynotesswent.model.note.NoteViewModel
 import com.google.firebase.FirebaseApp
 import com.google.firebase.Timestamp
 import com.google.gson.JsonSyntaxException
@@ -19,6 +24,9 @@ import java.io.File
 import java.io.IOException
 import java.util.concurrent.atomic.AtomicInteger
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
 import org.junit.Before
 import org.junit.Test
@@ -64,14 +72,53 @@ class NotesToFlashcardTest {
     """
           .trimIndent()
 
-  private val testNote =
+  private val testFolder =
+      Folder(
+          id = "1",
+          name = "folder1",
+          userId = "1",
+          visibility = Visibility.DEFAULT,
+      )
+
+  private val testSubfolder =
+      Folder(
+          id = "2",
+          name = "folder2",
+          userId = "1",
+          parentFolderId = "1",
+          visibility = Visibility.DEFAULT,
+      )
+
+  private val testNote1 =
       Note(
           id = "1",
           title = "title",
           date = Timestamp.now(),
           visibility = Visibility.DEFAULT,
           userId = "1",
-          folderId = "1",
+          folderId = testFolder.id,
+          noteCourse = Course("CS-100", "Sample Course", 2024, "path"),
+      )
+
+  private val testNote2 =
+      Note(
+          id = "2",
+          title = "title",
+          date = Timestamp.now(),
+          visibility = Visibility.DEFAULT,
+          userId = "1",
+          folderId = testFolder.id,
+          noteCourse = Course("CS-100", "Sample Course", 2024, "path"),
+      )
+
+  private val testNote3 =
+      Note(
+          id = "3",
+          title = "title",
+          date = Timestamp.now(),
+          visibility = Visibility.DEFAULT,
+          userId = "1",
+          folderId = testSubfolder.id,
           noteCourse = Course("CS-100", "Sample Course", 2024, "path"),
       )
 
@@ -81,6 +128,10 @@ class NotesToFlashcardTest {
 
   private lateinit var deckViewModel: DeckViewModel
 
+  private lateinit var folderViewModel: FolderViewModel
+
+  private lateinit var noteViewModel: NoteViewModel
+
   // Mock dependencies
   @Mock private lateinit var mockFlashcardRepository: FlashcardRepository
 
@@ -88,13 +139,21 @@ class NotesToFlashcardTest {
 
   @Mock private lateinit var mockDeckRepository: DeckRepository
 
+  @Mock private lateinit var mockFolderRepository: FolderRepository
+
+  @Mock private lateinit var mockNoteRepository: NoteRepository
+
   @Mock private lateinit var mockOpenAI: OpenAI
 
   @Mock private lateinit var mockContext: Context
 
-  private var savedFlashcards = mutableListOf<Flashcard>()
+  private val savedFlashcards = mutableListOf<Flashcard>()
 
-  private val counter = AtomicInteger(0)
+  private val savedDecks = mutableListOf<Deck>()
+
+  private val flashcardId = AtomicInteger(0)
+
+  private val folderId = AtomicInteger(3)
 
   @Before
   fun setup() {
@@ -106,10 +165,18 @@ class NotesToFlashcardTest {
     // Setup view models
     flashcardViewModel = FlashcardViewModel(mockFlashcardRepository)
     deckViewModel = DeckViewModel(mockDeckRepository)
+    folderViewModel = FolderViewModel(mockFolderRepository)
+    noteViewModel = NoteViewModel(mockNoteRepository)
 
     notesToFlashcard =
         NotesToFlashcard(
-            flashcardViewModel, mockFileViewModel, deckViewModel, mockOpenAI, mockContext)
+            flashcardViewModel,
+            mockFileViewModel,
+            deckViewModel,
+            noteViewModel,
+            folderViewModel,
+            mockOpenAI,
+            mockContext)
 
     val testFile = File.createTempFile("test", ".md")
     testFile.deleteOnExit()
@@ -120,20 +187,6 @@ class NotesToFlashcardTest {
           val onSuccess = invocation.getArgument<(File) -> Unit>(3)
           onSuccess(testFile)
         }
-  }
-
-  @Test
-  fun `convertNoteToFlashcards should parse JSON and create flashcards`() {
-    // Mock the repositories
-    `when`(mockFlashcardRepository.getNewUid()).thenReturn(counter.getAndIncrement().toString())
-    `when`(mockDeckRepository.getNewUid()).thenReturn("test")
-    `when`(mockFlashcardRepository.addFlashcard(any(), any(), any())).thenAnswer { invocation ->
-      savedFlashcards.add(invocation.getArgument(0))
-    }
-    `when`(mockDeckRepository.updateDeck(any(), any(), any())).thenAnswer { invocation ->
-      val onSuccess = invocation.getArgument<() -> Unit>(1)
-      onSuccess()
-    }
 
     // Mocking OpenAI's sendRequest to trigger onSuccess
     doAnswer { invocation ->
@@ -143,6 +196,105 @@ class NotesToFlashcardTest {
         }
         .`when`(mockOpenAI)
         .sendRequest(anyString(), any(), any(), anyString())
+
+    // Mock the repositories
+    `when`(mockFlashcardRepository.getNewUid()).thenReturn(flashcardId.getAndIncrement().toString())
+    `when`(mockDeckRepository.getNewUid()).thenReturn("test")
+    `when`(mockFlashcardRepository.addFlashcard(any(), any(), any())).thenAnswer { invocation ->
+      savedFlashcards.add(invocation.getArgument(0))
+    }
+    `when`(mockDeckRepository.updateDeck(any(), any(), any())).thenAnswer { invocation ->
+      savedDecks.add(invocation.getArgument(0))
+    }
+  }
+
+  @Test
+  fun convertFolderToDecks() {
+    // Initialize the view models, repositories and saved objects
+    savedFlashcards.clear()
+    savedDecks.clear()
+    folderViewModel.selectedFolder(testFolder)
+
+    `when`(mockFolderRepository.getSubFoldersOf(any(), any(), any())).thenAnswer { invocation ->
+      val parentFolderId = invocation.getArgument<String>(0)
+      val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(1)
+      if (parentFolderId == testFolder.id) {
+        onSuccess(listOf(testSubfolder))
+      } else {
+        onSuccess(emptyList())
+      }
+    }
+    folderViewModel.getSubFoldersOf(testFolder.id)
+
+    `when`(mockNoteRepository.getNotesFromFolder(any(), any(), any())).thenAnswer { invocation ->
+      val folderId = invocation.getArgument<String>(0)
+      val onSuccess = invocation.getArgument<(List<Note>) -> Unit>(1)
+      when (folderId) {
+        testFolder.id -> {
+          onSuccess(listOf(testNote1, testNote2))
+        }
+        testSubfolder.id -> {
+          onSuccess(listOf(testNote3))
+        }
+        else -> {
+          onSuccess(emptyList())
+        }
+      }
+    }
+    noteViewModel.getNotesFromFolder(testFolder.id)
+
+    `when`(mockFolderRepository.getNewFolderId()).thenAnswer {
+      folderId.getAndIncrement().toString()
+    }
+
+    val savedFolders = mutableListOf<Folder>()
+    `when`(mockFolderRepository.addFolder(any(), any(), any())).thenAnswer { invocation ->
+      savedFolders.add(invocation.getArgument(0))
+      val onSuccess = invocation.getArgument<() -> Unit>(1)
+      onSuccess()
+    }
+
+    `when`(mockFolderRepository.getDeckFoldersByName(any(), any(), any(), any(), any()))
+        .thenAnswer { invocation ->
+          val onFolderNotFound = invocation.getArgument<() -> Unit>(2)
+          onFolderNotFound()
+        }
+
+    notesToFlashcard.convertFolderToDecks(
+        onSuccess = {}, onFailure = { fail("Conversion failed with exception: $it") })
+
+    // Assert
+    // Check 4 decks were created
+    assertEquals(4, savedDecks.size)
+
+    // Check 16 flashcards were created
+    assertEquals(12, savedFlashcards.size)
+
+    // Check 2 folders were created
+    assertEquals(2, savedFolders.size)
+
+    // Check the hierarchy of deck folders
+    val parentFolder = savedFolders.first { it.id == "3" }
+    val subFolder = savedFolders.first { it.parentFolderId == parentFolder.id }
+    assertNotNull(subFolder)
+
+    // Check the parent folder has 3 decks
+    val parentDecks = savedDecks.filter { it.folderId == parentFolder.id }
+    assertEquals(3, parentDecks.size)
+    assertTrue(parentDecks.any { it.name == testFolder.name })
+    assertTrue(parentDecks.any { it.name == testNote1.title })
+    assertTrue(parentDecks.any { it.name == testNote2.title })
+
+    // Check the subfolder has 1 deck
+    val subFolderDecks = savedDecks.filter { it.folderId == subFolder.id }
+    assertEquals(1, subFolderDecks.size)
+    assertEquals(testNote3.title, subFolderDecks.first().name)
+  }
+
+  @Test
+  fun `convertNoteToFlashcards should parse JSON and create flashcards`() {
+    // Initialize the view models, repositories and saved objects
+    savedFlashcards.clear()
 
     // Capture the success callback's flashcards list
     val onSuccess: (Deck) -> Unit = { deck ->
@@ -179,15 +331,15 @@ class NotesToFlashcardTest {
 
       // Verify for each flashcard
       for (flashcard in savedFlashcards) {
-        assertEquals(testNote.userId, flashcard.userId)
-        assertEquals(testNote.id, flashcard.noteId)
-        assertEquals(testNote.folderId, flashcard.folderId)
+        assertEquals(testNote1.userId, flashcard.userId)
+        assertEquals(testNote1.id, flashcard.noteId)
+        assertNull(flashcard.folderId)
       }
     }
 
     // Execute the method
     notesToFlashcard.convertNoteToDeck(
-        note = testNote,
+        note = testNote1,
         onSuccess = onSuccess,
         onFileNotFoundException = { fail("Expected successful conversion") },
         onFailure = { fail("Expected successful conversion") })
@@ -212,7 +364,7 @@ class NotesToFlashcardTest {
 
     // Execute the method
     notesToFlashcard.convertNoteToDeck(
-        note = testNote,
+        note = testNote1,
         onSuccess = { fail("Expected failure but got success") },
         onFileNotFoundException = { fail("Expected failure but got not found") },
         onFailure = { error ->
@@ -239,7 +391,7 @@ class NotesToFlashcardTest {
     // Set up a flag to ensure the failure callback was called
     var failureCallbackCalled = false
     notesToFlashcard.convertNoteToDeck(
-        note = testNote,
+        note = testNote1,
         onSuccess = { fail("Expected failure but got success") },
         onFileNotFoundException = { fail("Expected failure but got not found") },
         onFailure = { error ->
