@@ -114,11 +114,11 @@ class FolderRepositoryFirestoreTest {
   }
 
   @Test
-  fun getFoldersFromUid_callsDocuments() {
+  fun getFoldersFromUserId_callsDocuments() {
     `when`(mockQuerySnapshot.documents)
         .thenReturn(listOf(mockDocumentSnapshot, mockDocumentSnapshot2))
     var receivedFolders: List<Folder>? = null
-    folderRepositoryFirestore.getFoldersFromUid(
+    folderRepositoryFirestore.getFoldersFromUserId(
         testFolder.userId, onSuccess = { receivedFolders = it }, onFailure = { assert(false) })
     assertNotNull(receivedFolders)
 
@@ -126,15 +126,56 @@ class FolderRepositoryFirestoreTest {
   }
 
   @Test
-  fun getRootFoldersFromUid_callsDocuments() {
+  fun getRootNoteFoldersFromUserId_callsDocuments() {
     `when`(mockQuerySnapshot.documents)
         .thenReturn(listOf(mockDocumentSnapshot, mockDocumentSnapshot2))
     var receivedFolders: List<Folder>? = null
-    folderRepositoryFirestore.getRootFoldersFromUid(
+    folderRepositoryFirestore.getRootNoteFoldersFromUserId(
         testFolder.userId, onSuccess = { receivedFolders = it }, onFailure = { assert(false) })
     assertNotNull(receivedFolders)
 
     verify(timeout(100)) { (mockQuerySnapshot).documents }
+  }
+
+  @Test
+  fun getRootDeckFoldersFromUserId_callsDocuments() {
+    `when`(mockQuerySnapshot.documents)
+        .thenReturn(listOf(mockDocumentSnapshot, mockDocumentSnapshot2))
+    var receivedFolders: List<Folder>? = null
+    folderRepositoryFirestore.getRootDeckFoldersFromUserId(
+        testFolder.userId, onSuccess = { receivedFolders = it }, onFailure = { assert(false) })
+    assertNotNull(receivedFolders)
+
+    verify(timeout(100)) { (mockQuerySnapshot).documents }
+  }
+
+  @Test
+  fun getDeckFoldersByName_callsDocuments() {
+    `when`(mockDocumentSnapshot.getBoolean("isDeckFolder")).thenReturn(true)
+    `when`(mockQuerySnapshot.documents)
+        .thenReturn(listOf(mockDocumentSnapshot, mockDocumentSnapshot2))
+    var receivedFolders: List<Folder>? = null
+    folderRepositoryFirestore.getDeckFoldersByName(
+        testFolder.name,
+        testFolder.userId,
+        onFolderNotFound = { assert(false) },
+        onSuccess = { receivedFolders = it },
+        onFailure = { assert(false) })
+    assertNotNull(receivedFolders)
+
+    verify(timeout(100)) { (mockQuerySnapshot).documents }
+  }
+
+  @Test
+  fun getDeckFoldersByName_callsOnFolderNotFound() {
+    `when`(mockQuerySnapshot.documents)
+        .thenReturn(listOf(mockDocumentSnapshot, mockDocumentSnapshot2))
+    folderRepositoryFirestore.getDeckFoldersByName(
+        testFolder.name,
+        testFolder.userId,
+        onFolderNotFound = { assert(true) },
+        onSuccess = { assert(false) },
+        onFailure = { assert(false) })
   }
 
   @Test

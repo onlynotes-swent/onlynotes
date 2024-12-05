@@ -92,13 +92,19 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
    * @param folder The folder to add.
    * @param onSuccess The function to call when the folder is added successfully.
    * @param onFailure The function to call when the folder fails to be added.
+   * @param isDeckView A flag indicating if the folder is a deck view.
    */
-  fun addFolder(folder: Folder, onSuccess: () -> Unit = {}, onFailure: (Exception) -> Unit = {}) {
+  fun addFolder(
+      folder: Folder,
+      onSuccess: () -> Unit = {},
+      onFailure: (Exception) -> Unit = {},
+      isDeckView: Boolean = false
+  ) {
     repository.addFolder(
         folder = folder,
         onSuccess = {
           onSuccess()
-          getRootFoldersFromUid(folder.userId)
+          getRootFoldersFromUserId(folder.userId, isDeckView)
         },
         onFailure = onFailure)
   }
@@ -110,18 +116,20 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
    * @param userId The ID of the user that owns the folder.
    * @param onSuccess The function to call when the folder is deleted successfully.
    * @param onFailure The function to call when the folder fails to be deleted.
+   * @param isDeckView A flag indicating if the folder is a deck view.
    */
   fun deleteFolderById(
       folderId: String,
       userId: String,
       onSuccess: () -> Unit = {},
-      onFailure: (Exception) -> Unit = {}
+      onFailure: (Exception) -> Unit = {},
+      isDeckView: Boolean = false
   ) {
     repository.deleteFolderById(
         folderId = folderId,
         onSuccess = {
           onSuccess()
-          getRootFoldersFromUid(userId)
+          getRootFoldersFromUserId(userId, isDeckView)
         },
         onFailure = onFailure)
   }
@@ -132,17 +140,19 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
    * @param userId The ID of the user to delete folders notes for.
    * @param onSuccess The function to call when the folders are deleted successfully.
    * @param onFailure The function to call when the folders fail to be deleted.
+   * @param isDeckView A flag indicating if the folder is a deck view.
    */
   fun deleteFoldersByUserId(
       userId: String,
       onSuccess: () -> Unit = {},
-      onFailure: (Exception) -> Unit = {}
+      onFailure: (Exception) -> Unit = {},
+      isDeckView: Boolean = false
   ) {
     repository.deleteFoldersByUserId(
         userId = userId,
         onSuccess = {
           onSuccess()
-          getRootFoldersFromUid(userId)
+          getRootFoldersFromUserId(userId, isDeckView)
         },
         onFailure = onFailure)
   }
@@ -154,12 +164,12 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
    * @param onSuccess The function to call when the folders are retrieved successfully.
    * @param onFailure The function to call when the folders fail to be retrieved.
    */
-  fun getFoldersFromUid(
+  fun getFoldersFromUserId(
       userId: String,
       onSuccess: (List<Folder>) -> Unit = {},
       onFailure: (Exception) -> Unit = {}
   ) {
-    repository.getFoldersFromUid(
+    repository.getFoldersFromUserId(
         userId = userId,
         onSuccess = {
           onSuccess(it)
@@ -175,17 +185,82 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
    * @param onSuccess The function to call when the root folders are retrieved successfully.
    * @param onFailure The function to call when the root folders fail to be retrieved.
    */
-  fun getRootFoldersFromUid(
+  fun getRootFoldersFromUserId(
+      userId: String,
+      isDeckView: Boolean = false,
+      onSuccess: (List<Folder>) -> Unit = {},
+      onFailure: (Exception) -> Unit = {}
+  ) {
+    if (isDeckView) {
+      getRootDeckFoldersFromUserId(userId, onSuccess, onFailure)
+    } else {
+      getRootNoteFoldersFromUserId(userId, onSuccess, onFailure)
+    }
+  }
+
+  /**
+   * Retrieves all root note folders owned by a user.
+   *
+   * @param userId The ID of the user to retrieve root folders for.
+   * @param onSuccess The function to call when the root folders are retrieved successfully.
+   * @param onFailure The function to call when the root folders fail to be retrieved.
+   */
+  fun getRootNoteFoldersFromUserId(
       userId: String,
       onSuccess: (List<Folder>) -> Unit = {},
       onFailure: (Exception) -> Unit = {}
   ) {
-    repository.getRootFoldersFromUid(
+    repository.getRootNoteFoldersFromUserId(
         userId = userId,
         onSuccess = {
           onSuccess(it)
           _userRootFolders.value = it
         },
+        onFailure = onFailure)
+  }
+
+  /**
+   * Retrieves all root deck folders owned by a user.
+   *
+   * @param userId The ID of the user to retrieve root folders for.
+   * @param onSuccess The function to call when the root folders are retrieved successfully.
+   * @param onFailure The function to call when the root folders fail to be retrieved.
+   */
+  fun getRootDeckFoldersFromUserId(
+      userId: String,
+      onSuccess: (List<Folder>) -> Unit = {},
+      onFailure: (Exception) -> Unit = {}
+  ) {
+    repository.getRootDeckFoldersFromUserId(
+        userId = userId,
+        onSuccess = {
+          onSuccess(it)
+          _userRootFolders.value = it
+        },
+        onFailure = onFailure)
+  }
+
+  /**
+   * Retrieves a folder by its name.
+   *
+   * @param name The name of the folder to retrieve.
+   * @param userId The ID of the user that owns the folder.
+   * @param onFolderNotFound The function to call when the folder is not found.
+   * @param onSuccess The function to call when the folders are retrieved successfully.
+   * @param onFailure The function to call when the folder fails to be retrieved.
+   */
+  fun getDeckFoldersByName(
+      name: String,
+      userId: String,
+      onFolderNotFound: () -> Unit = {},
+      onSuccess: (List<Folder>) -> Unit = {},
+      onFailure: (Exception) -> Unit = {}
+  ) {
+    repository.getDeckFoldersByName(
+        name = name,
+        userId = userId,
+        onSuccess = { onSuccess(it) },
+        onFolderNotFound = onFolderNotFound,
         onFailure = onFailure)
   }
 
@@ -216,17 +291,19 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
    * @param folder The folder with updated information.
    * @param onSuccess The function to call when the folder is updated successfully.
    * @param onFailure The function to call when the folder fails to be updated.
+   * @param isDeckView A flag indicating if the folder is a deck view.
    */
   fun updateFolder(
       folder: Folder,
       onSuccess: () -> Unit = {},
-      onFailure: (Exception) -> Unit = {}
+      onFailure: (Exception) -> Unit = {},
+      isDeckView: Boolean = false
   ) {
     repository.updateFolder(
         folder = folder,
         onSuccess = {
           onSuccess()
-          getRootFoldersFromUid(folder.userId)
+          getRootFoldersFromUserId(folder.userId, isDeckView)
           if (folder.parentFolderId != null) {
             getSubFoldersOf(folder.parentFolderId)
           }

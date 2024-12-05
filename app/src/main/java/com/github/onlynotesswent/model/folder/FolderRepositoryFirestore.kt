@@ -105,7 +105,7 @@ class FolderRepositoryFirestore(private val db: FirebaseFirestore) : FolderRepos
     }
   }
 
-  override fun getFoldersFromUid(
+  override fun getFoldersFromUserId(
       userId: String,
       onSuccess: (List<Folder>) -> Unit,
       onFailure: (Exception) -> Unit
@@ -126,7 +126,7 @@ class FolderRepositoryFirestore(private val db: FirebaseFirestore) : FolderRepos
     }
   }
 
-  override fun getRootFoldersFromUid(
+  override fun getRootNoteFoldersFromUserId(
       userId: String,
       onSuccess: (List<Folder>) -> Unit,
       onFailure: (Exception) -> Unit
@@ -136,12 +136,60 @@ class FolderRepositoryFirestore(private val db: FirebaseFirestore) : FolderRepos
         val rootFolders =
             task.result.documents
                 .mapNotNull { document -> documentSnapshotToFolder(document) }
-                .filter { it.userId == userId && it.parentFolderId == null } // Only root folders
+                .filter { it.userId == userId && it.parentFolderId == null && !it.isDeckFolder }
         onSuccess(rootFolders)
       } else {
         task.exception?.let { e: Exception ->
           onFailure(e)
           Log.e(TAG, "Failed to retrieve root folders from user: ${e.message}")
+        }
+      }
+    }
+  }
+
+  override fun getRootDeckFoldersFromUserId(
+      userId: String,
+      onSuccess: (List<Folder>) -> Unit,
+      onFailure: (Exception) -> Unit
+  ) {
+    db.collection(folderCollectionPath).get().addOnCompleteListener { task ->
+      if (task.isSuccessful) {
+        val rootFolders =
+            task.result.documents
+                .mapNotNull { document -> documentSnapshotToFolder(document) }
+                .filter { it.userId == userId && it.parentFolderId == null && it.isDeckFolder }
+        onSuccess(rootFolders)
+      } else {
+        task.exception?.let { e: Exception ->
+          onFailure(e)
+          Log.e(TAG, "Failed to retrieve root folders from user: ${e.message}")
+        }
+      }
+    }
+  }
+
+  override fun getDeckFoldersByName(
+      name: String,
+      userId: String,
+      onFolderNotFound: () -> Unit,
+      onSuccess: (List<Folder>) -> Unit,
+      onFailure: (Exception) -> Unit
+  ) {
+    db.collection(folderCollectionPath).get().addOnCompleteListener { task ->
+      if (task.isSuccessful) {
+        val userFolders =
+            task.result.documents
+                .mapNotNull { document -> documentSnapshotToFolder(document) }
+                .filter { it.userId == userId && it.name == name && it.isDeckFolder }
+        if (userFolders.isNotEmpty()) {
+          onSuccess(userFolders)
+        } else {
+          onFolderNotFound()
+        }
+      } else {
+        task.exception?.let { e: Exception ->
+          onFailure(e)
+          Log.e(TAG, "Failed to retrieve deck folder: ${e.message}")
         }
       }
     }
@@ -246,6 +294,7 @@ class FolderRepositoryFirestore(private val db: FirebaseFirestore) : FolderRepos
           id = document.id,
           name = document.getString("name")!!,
           userId = document.getString("userId")!!,
+          isDeckFolder = document.getBoolean("isDeckFolder") ?: false,
           parentFolderId = document.getString("parentFolderId"),
           visibility = Visibility.fromString(document.getString("visibility")!!))
     } catch (e: Exception) {

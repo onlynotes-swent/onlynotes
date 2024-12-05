@@ -130,7 +130,8 @@ class FolderContentTest {
       val onSuccess = invocation.getArgument<(List<Note>) -> Unit>(1)
       onSuccess(noteList)
     }
-    `when`(mockFolderRepository.getRootFoldersFromUid(eq("1"), any(), any())).then { invocation ->
+    `when`(mockFolderRepository.getRootNoteFoldersFromUserId(eq("1"), any(), any())).then {
+        invocation ->
       val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(1)
       onSuccess(folderList)
     }
@@ -147,7 +148,7 @@ class FolderContentTest {
     userViewModel.addUser(testUser, {}, {})
 
     noteViewModel.getRootNotesFrom("1")
-    folderViewModel.getRootFoldersFromUid("1")
+    folderViewModel.getRootFoldersFromUserId("1")
 
     folderViewModel.selectedFolder(selectedFolder)
     composeTestRule.setContent {
