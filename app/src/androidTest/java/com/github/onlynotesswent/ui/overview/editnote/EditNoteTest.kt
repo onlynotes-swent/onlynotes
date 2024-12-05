@@ -50,7 +50,7 @@ class EditNoteTest {
       onSuccess()
     }
 
-    val testUser = User("", "", "testUserName", "", "testUID", Timestamp.now(), 0.0)
+    val testUser = User("", "", "testUserName", "", "1", Timestamp.now(), 0.0)
     userViewModel.addUser(testUser, {}, {})
 
     // Mock the current route to be the note edit screen

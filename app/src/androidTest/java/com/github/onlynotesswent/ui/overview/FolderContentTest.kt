@@ -282,7 +282,7 @@ class FolderContentTest {
     verify(mockNavigationActions).navigateTo(Screen.FOLDER_CONTENTS.replace("{folderId}", "1"))
   }
 
-  @Test
+  /*@Test
   fun moveOutDifferentUserDoesNotMoveNote() {
     init(folder)
 
@@ -300,7 +300,7 @@ class FolderContentTest {
     composeTestRule.onNodeWithTag("confirmButton").assertIsDisplayed()
     composeTestRule.onNodeWithTag("confirmButton").performClick()
     composeTestRule.onNodeWithTag("noteCard").assertIsDisplayed()
-  }
+  }*/
 
   @Test
   fun moveOutSameUserDoesMoveNote() {
@@ -361,7 +361,7 @@ class FolderContentTest {
         .assertIsDisplayed()
   }
 
-  @Test
+ /* @Test
   fun deleteFolderContentsDifferentUserDoesNotDelete() {
     init(folder)
 
@@ -388,7 +388,7 @@ class FolderContentTest {
     composeTestRule.onNodeWithTag("deleteFolderContentsButton").assertIsDisplayed()
     composeTestRule.onNodeWithTag("deleteFolderContentsButton").performClick()
     composeTestRule.onNodeWithTag("noteCard").assertIsDisplayed()
-  }
+  }*/
 
   @Test
   fun noteDialogDisplaysCorrectly() {

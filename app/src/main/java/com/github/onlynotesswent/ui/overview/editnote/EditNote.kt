@@ -106,7 +106,7 @@ fun EditNoteScreen(
 
   Scaffold(
       floatingActionButton = {
-        if (note!!.isOwner(currentUser!!.uid)) {
+        if (note != null && note!!.isOwner(currentUser!!.uid)) {
           DeleteButton(currentUser, note, navigationActions, noteViewModel)
         }
       },

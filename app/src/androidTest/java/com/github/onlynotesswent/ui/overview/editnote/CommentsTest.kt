@@ -7,6 +7,9 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
 import com.github.onlynotesswent.model.common.Course
 import com.github.onlynotesswent.model.common.Visibility
+import com.github.onlynotesswent.model.folder.Folder
+import com.github.onlynotesswent.model.folder.FolderRepository
+import com.github.onlynotesswent.model.folder.FolderViewModel
 import com.github.onlynotesswent.model.note.Note
 import com.github.onlynotesswent.model.note.NoteRepository
 import com.github.onlynotesswent.model.note.NoteViewModel
@@ -31,10 +34,14 @@ import org.mockito.kotlin.eq
 class CommentsTest {
   @Mock private lateinit var userRepository: UserRepository
   @Mock private lateinit var noteRepository: NoteRepository
+  @Mock private lateinit var folderRepository: FolderRepository
   @Mock private lateinit var navigationActions: NavigationActions
   private lateinit var userViewModel: UserViewModel
   private lateinit var noteViewModel: NoteViewModel
+  private lateinit var folderViewModel: FolderViewModel
   @get:Rule val composeTestRule = createComposeRule()
+
+  private val testFolder = Folder("1", "Test Folder", "1")
 
   @Before
   fun setUp() {
@@ -42,6 +49,7 @@ class CommentsTest {
     // Mock is a way to create a fake object that can be used in place of a real object
     userViewModel = UserViewModel(userRepository)
     noteViewModel = NoteViewModel(noteRepository)
+    folderViewModel = FolderViewModel(folderRepository)
 
     // Mock the addUser method to call the onSuccess callback
     `when`(userRepository.addUser(any(), any(), any())).thenAnswer { invocation ->
@@ -49,7 +57,7 @@ class CommentsTest {
       onSuccess()
     }
 
-    val testUser = User("", "", "testUserName", "", "testUID", Timestamp.now(), 0.0)
+    val testUser = User("", "", "testUserName", "", "1", Timestamp.now(), 0.0)
     userViewModel.addUser(testUser, {}, {})
 
     // Mock the current route to be the note edit screen
@@ -83,6 +91,11 @@ class CommentsTest {
     `when`(noteRepository.getNoteById(eq("2"), any(), any())).thenAnswer { invocation ->
       val onSuccess = invocation.getArgument<(Note) -> Unit>(1)
       onSuccess(mockNote2)
+    }
+
+    `when`(folderRepository.getFolderById(eq("1"), any(), any())).thenAnswer { invocation ->
+      val onSuccess = invocation.getArgument<(Folder) -> Unit>(1)
+      onSuccess(testFolder)
     }
   }
 
@@ -134,9 +147,10 @@ class CommentsTest {
   @Test
   fun clickGoBackButtonInsideFolder() {
     init("2")
+    folderViewModel.getFolderById(testFolder.id)
     composeTestRule.onNodeWithTag("closeButton").performClick()
 
-    verify(navigationActions).navigateTo(Screen.FOLDER_CONTENTS.replace("{folderId}", "1"))
+    verify(navigationActions).navigateTo(Screen.FOLDER_CONTENTS.replace("{folderId}", testFolder.id))
     verify(noteRepository).updateNote(any(), any(), any())
   }
 
