@@ -52,7 +52,7 @@ class FolderRepositoryFirestore(
   ) {
     // Update the cache if needed
     if (useCache) {
-      withContext(Dispatchers.IO) { folderDao.insertFolder(folder) }
+      withContext(Dispatchers.IO) { folderDao.addFolder(folder) }
     }
 
     Log.e(TAG, "Adding folder: $folder")
@@ -77,7 +77,7 @@ class FolderRepositoryFirestore(
   ) {
     // Update the cache if needed
     if (useCache) {
-      withContext(Dispatchers.IO) { folderDao.insertFolders(folders) }
+      withContext(Dispatchers.IO) { folderDao.addFolders(folders) }
     }
 
     val batch = db.batch()
@@ -121,7 +121,7 @@ class FolderRepositoryFirestore(
     }
   }
 
-  override suspend fun deleteFoldersByUserId(
+  override suspend fun deleteFoldersFromUid(
       userId: String,
       onSuccess: () -> Unit,
       onFailure: (Exception) -> Unit,
@@ -129,7 +129,7 @@ class FolderRepositoryFirestore(
   ) {
     // Update the cache if needed
     if (useCache) {
-      withContext(Dispatchers.IO) { folderDao.deleteFolders() }
+      withContext(Dispatchers.IO) { folderDao.deleteFoldersFromUid() }
     }
 
     db.collection(folderCollectionPath).get().addOnCompleteListener { task ->
@@ -198,7 +198,8 @@ class FolderRepositoryFirestore(
   ) {
     try {
       val cachedFolders: List<Folder> =
-          if (useCache) withContext(Dispatchers.IO) { folderDao.getFolders() } else emptyList()
+          if (useCache) withContext(Dispatchers.IO) { folderDao.getFoldersFromUid() }
+          else emptyList()
 
       // If device is offline, fetch from local database
       if (!NetworkUtils.isInternetAvailable(context)) {
@@ -237,7 +238,8 @@ class FolderRepositoryFirestore(
   ) {
     try {
       val cachedFolders: List<Folder> =
-          if (useCache) withContext(Dispatchers.IO) { folderDao.getRootFolders() } else emptyList()
+          if (useCache) withContext(Dispatchers.IO) { folderDao.getRootFoldersFromUid() }
+          else emptyList()
 
       // If device is offline, fetch from local database
       if (!NetworkUtils.isInternetAvailable(context)) {
@@ -276,7 +278,7 @@ class FolderRepositoryFirestore(
   ) {
     // Update the cache if needed
     if (useCache) {
-      withContext(Dispatchers.IO) { folderDao.insertFolder(folder) }
+      withContext(Dispatchers.IO) { folderDao.addFolder(folder) }
       onSuccess()
     }
 
@@ -301,7 +303,7 @@ class FolderRepositoryFirestore(
   ) {
     try {
       val cachedFolders: List<Folder> =
-          if (useCache) withContext(Dispatchers.IO) { folderDao.getSubfolders(parentFolderId) }
+          if (useCache) withContext(Dispatchers.IO) { folderDao.getSubfoldersOf(parentFolderId) }
           else emptyList()
 
       // If device is offline, fetch from local database

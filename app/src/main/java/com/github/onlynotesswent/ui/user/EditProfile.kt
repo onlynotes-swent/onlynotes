@@ -332,7 +332,7 @@ fun EditProfileScreen(
                                   noteViewModel.deleteNotesByUserId(user.value!!.uid)
                                 }
                                 folderViewModel.viewModelScope.launch {
-                                  folderViewModel.deleteFoldersByUserId(user.value!!.uid)
+                                  folderViewModel.deleteFoldersFromUid(user.value!!.uid)
                                 }
                                 noteViewModel.viewModelScope.launch {
                                   noteViewModel.getNoteById(user.value!!.uid)

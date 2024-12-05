@@ -119,14 +119,14 @@ class FolderViewModelTest {
   }
 
   @Test
-  fun deleteFoldersByUserIdCallsRepository() = runTest {
-    `when`(mockFolderRepository.deleteFoldersByUserId(any(), any(), any(), any())).thenAnswer {
+  fun deleteFoldersFromUidCallsRepository() = runTest {
+    `when`(mockFolderRepository.deleteFoldersFromUid(any(), any(), any(), any())).thenAnswer {
       val onSuccess: () -> Unit = it.getArgument(1)
       onSuccess()
     }
 
     var onSuccessCalled = false
-    folderViewModel.deleteFoldersByUserId(testFolder.userId, { onSuccessCalled = true })
+    folderViewModel.deleteFoldersFromUid(testFolder.userId, { onSuccessCalled = true })
     assert(onSuccessCalled)
   }
 

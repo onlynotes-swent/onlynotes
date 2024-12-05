@@ -10,18 +10,19 @@ import com.github.onlynotesswent.model.folder.Folder
 interface FolderDao {
   @Query("SELECT * FROM folder WHERE id = :folderId") fun getFolderById(folderId: String): Folder?
 
-  @Query("SELECT * FROM folder") fun getFolders(): List<Folder>
+  @Query("SELECT * FROM folder") fun getFoldersFromUid(): List<Folder>
 
-  @Query("SELECT * FROM folder WHERE parentFolderId IS NULL") fun getRootFolders(): List<Folder>
+  @Query("SELECT * FROM folder WHERE parentFolderId IS NULL")
+  fun getRootFoldersFromUid(): List<Folder>
 
   @Query("SELECT * FROM folder WHERE parentFolderId = :parentFolderId")
-  fun getSubfolders(parentFolderId: String): List<Folder>
+  fun getSubfoldersOf(parentFolderId: String): List<Folder>
 
-  @Insert(onConflict = OnConflictStrategy.REPLACE) fun insertFolder(folder: Folder)
+  @Insert(onConflict = OnConflictStrategy.REPLACE) fun addFolder(folder: Folder)
 
-  @Insert(onConflict = OnConflictStrategy.REPLACE) fun insertFolders(folders: List<Folder>)
+  @Insert(onConflict = OnConflictStrategy.REPLACE) fun addFolders(folders: List<Folder>)
 
   @Query("DELETE FROM folder WHERE id = :folderId") fun deleteFolderById(folderId: String)
 
-  @Query("DELETE FROM folder") fun deleteFolders()
+  @Query("DELETE FROM folder") fun deleteFoldersFromUid()
 }

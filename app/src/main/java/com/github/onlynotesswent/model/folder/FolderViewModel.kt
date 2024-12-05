@@ -154,13 +154,13 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
    * @param useCache Whether to update data from cache. Should be true only if [userId] is the
    *   current user.
    */
-  suspend fun deleteFoldersByUserId(
+  suspend fun deleteFoldersFromUid(
       userId: String,
       onSuccess: () -> Unit = {},
       onFailure: (Exception) -> Unit = {},
       useCache: Boolean = false
   ) {
-    repository.deleteFoldersByUserId(
+    repository.deleteFoldersFromUid(
         userId = userId,
         onSuccess = {
           onSuccess()
