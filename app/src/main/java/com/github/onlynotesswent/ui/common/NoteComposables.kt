@@ -85,21 +85,15 @@ fun NoteItem(
         title = stringResource(R.string.move_note_out_of_folder),
         text = stringResource(R.string.move_note_out_of_folder_confirmation),
         onConfirm = {
-          if (currentUser.value!!.uid == note.userId) {
-            val parentFolderId = folderViewModel.parentFolderId.value
-            if (parentFolderId != null) {
-              noteViewModel.updateNote(note.copy(folderId = parentFolderId))
-              navigationActions.navigateTo(
-                  Screen.FOLDER_CONTENTS.replace(
-                      oldValue = "{folderId}", newValue = parentFolderId))
-            } else {
-              noteViewModel.updateNote(note.copy(folderId = null))
-              navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
-            }
+          val parentFolderId = folderViewModel.parentFolderId.value
+          if (parentFolderId != null) {
+            noteViewModel.updateNote(note.copy(folderId = parentFolderId))
+            navigationActions.navigateTo(
+                Screen.FOLDER_CONTENTS.replace(
+                    oldValue = "{folderId}", newValue = parentFolderId))
           } else {
-            Toast.makeText(
-                    context, "You can't move out a note that you didn't create", Toast.LENGTH_SHORT)
-                .show()
+            noteViewModel.updateNote(note.copy(folderId = null))
+            navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
           }
           showMoveOutDialog = false
         },
@@ -137,19 +131,17 @@ fun NoteItem(
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onPrimaryContainer)
 
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                  Icon(
-                      // Show move out menu when clicking on the Icon
-                      modifier =
-                          Modifier.testTag("MoveOutButton").size(24.dp).clickable(
-                              enabled =
-                                  note.folderId != null &&
-                                      navigationActions.currentRoute() == Screen.FOLDER_CONTENTS) {
-                                showMoveOutDialog = true
-                              },
-                      imageVector = Icons.Filled.MoreVert,
-                      contentDescription = null,
-                      tint = MaterialTheme.colorScheme.onPrimaryContainer)
+                if (currentUser.value?.uid == note.userId && note.folderId != null &&
+                    navigationActions.currentRoute() == Screen.FOLDER_CONTENTS) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            // Show move out menu when clicking on the Icon
+                            modifier =
+                            Modifier.testTag("MoveOutButton").size(24.dp).clickable { showMoveOutDialog = true },
+                            imageVector = Icons.Filled.MoreVert,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer)
+                    }
                 }
               }
 

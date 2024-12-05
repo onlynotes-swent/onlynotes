@@ -114,6 +114,7 @@ fun EditNoteScreen(
       topBar = {
         EditNoteGeneralTopBar(
             noteViewModel = noteViewModel,
+            userViewModel = userViewModel,
             navigationActions = navigationActions,
             actions = {
               if (note != null && currentUser != null && note?.userId == currentUser?.uid) {
@@ -175,6 +176,7 @@ fun EditNoteScreen(
  *
  * @param noteViewModel The ViewModel that provides the current note to be edited and handles note
  *   updates.
+ * @param userViewModel The ViewModel that provides the current user.
  * @param navigationActions The navigation view model used to transition between different screens.
  * @param actions The actions to display in the top app bar.
  * @param isModified A flag indicating whether the note has been modified.
@@ -183,6 +185,7 @@ fun EditNoteScreen(
 @Composable
 fun EditNoteGeneralTopBar(
     noteViewModel: NoteViewModel,
+    userViewModel: UserViewModel,
     navigationActions: NavigationActions,
     actions: @Composable RowScope.() -> Unit,
     isModified: Boolean
@@ -209,7 +212,7 @@ fun EditNoteGeneralTopBar(
               if (isModified) {
                 showDiscardChangesDialog = true
               } else {
-                if (navigationActions.getPreviousScreen() == Screen.SEARCH) {
+                if (userViewModel.currentUser.value?.uid != noteViewModel.selectedNote.value?.userId) {
                   navigationActions.navigateTo(TopLevelDestinations.SEARCH)
                 } else if (noteViewModel.selectedNote.value?.folderId != null) {
                   navigationActions.navigateTo(
