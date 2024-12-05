@@ -12,7 +12,6 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -155,7 +154,13 @@ fun OnlyNotesApp(
             fileViewModel)
       }
       composable(Screen.DECK_MENU) {
-        DeckScreen(userViewModel, deckViewModel, flashcardViewModel, fileViewModel, profilePictureTaker, navigationActions)
+        DeckScreen(
+            userViewModel,
+            deckViewModel,
+            flashcardViewModel,
+            fileViewModel,
+            profilePictureTaker,
+            navigationActions)
       }
     }
 
