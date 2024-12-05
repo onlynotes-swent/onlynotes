@@ -2,8 +2,7 @@ package com.github.onlynotesswent.model.folder
 
 import android.content.Context
 import android.util.Log
-import com.github.onlynotesswent.model.cache.FolderDatabase
-import com.github.onlynotesswent.model.cache.NoteDatabase
+import com.github.onlynotesswent.model.cache.CacheDatabase
 import com.github.onlynotesswent.model.common.Visibility
 import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.utils.NetworkUtils
@@ -19,14 +18,13 @@ import kotlinx.coroutines.withContext
 
 class FolderRepositoryFirestore(
     private val db: FirebaseFirestore,
-    cache: FolderDatabase,
-    cacheNotes: NoteDatabase,
+    private val cache: CacheDatabase,
     private val context: Context
 ) : FolderRepository {
 
   private val folderCollectionPath = "folders"
+  private val noteDao = cache.noteDao()
   private val folderDao = cache.folderDao()
-  private val noteDao = cacheNotes.noteDao()
 
   companion object {
     private const val TAG = "FolderRepositoryFirestore"

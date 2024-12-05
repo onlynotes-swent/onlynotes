@@ -2,7 +2,7 @@ package com.github.onlynotesswent.model.note
 
 import android.content.Context
 import android.util.Log
-import com.github.onlynotesswent.model.cache.NoteDatabase
+import com.github.onlynotesswent.model.cache.CacheDatabase
 import com.github.onlynotesswent.model.common.Course
 import com.github.onlynotesswent.model.common.Visibility
 import com.github.onlynotesswent.utils.NetworkUtils
@@ -18,7 +18,7 @@ import kotlinx.coroutines.withContext
 
 class NoteRepositoryFirestore(
     private val db: FirebaseFirestore,
-    cache: NoteDatabase,
+    private val cache: CacheDatabase,
     private val context: Context
 ) : NoteRepository {
 

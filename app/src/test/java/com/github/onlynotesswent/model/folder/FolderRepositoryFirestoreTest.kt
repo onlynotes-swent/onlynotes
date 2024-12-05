@@ -4,10 +4,9 @@ import android.content.Context
 import android.os.Looper
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
+import com.github.onlynotesswent.model.cache.CacheDatabase
 import com.github.onlynotesswent.model.cache.FolderDao
-import com.github.onlynotesswent.model.cache.FolderDatabase
 import com.github.onlynotesswent.model.cache.NoteDao
-import com.github.onlynotesswent.model.cache.NoteDatabase
 import com.github.onlynotesswent.model.note.NoteRepository
 import com.github.onlynotesswent.model.note.NoteViewModel
 import com.google.android.gms.tasks.OnCompleteListener
@@ -40,9 +39,8 @@ class FolderRepositoryFirestoreTest {
 
   @Mock private lateinit var mockFirestore: FirebaseFirestore
   @Mock private lateinit var mockFolderDao: FolderDao
-  @Mock private lateinit var mockFolderDatabase: FolderDatabase
   @Mock private lateinit var mockNoteDao: NoteDao
-  @Mock private lateinit var mockNoteDatabase: NoteDatabase
+  @Mock private lateinit var mockCacheDatabase: CacheDatabase
   @Mock private lateinit var mockDocumentReference: DocumentReference
   @Mock private lateinit var mockCollectionReference: CollectionReference
   @Mock private lateinit var mockDocumentSnapshot: DocumentSnapshot
@@ -80,13 +78,11 @@ class FolderRepositoryFirestoreTest {
     }
 
     val context = ApplicationProvider.getApplicationContext<Context>()
-    mockFolderDatabase = Room.inMemoryDatabaseBuilder(context, FolderDatabase::class.java).build()
-    mockFolderDao = mockFolderDatabase.folderDao()
-    mockNoteDatabase = Room.inMemoryDatabaseBuilder(context, NoteDatabase::class.java).build()
-    mockNoteDao = mockNoteDatabase.noteDao()
+    mockCacheDatabase = Room.inMemoryDatabaseBuilder(context, CacheDatabase::class.java).build()
+    mockNoteDao = mockCacheDatabase.noteDao()
+    mockFolderDao = mockCacheDatabase.folderDao()
 
-    folderRepositoryFirestore =
-        FolderRepositoryFirestore(mockFirestore, mockFolderDatabase, mockNoteDatabase, context)
+    folderRepositoryFirestore = FolderRepositoryFirestore(mockFirestore, mockCacheDatabase, context)
     noteViewModel = NoteViewModel(mockNoteRepository)
 
     `when`(mockFirestore.collection(any())).thenReturn(mockCollectionReference)

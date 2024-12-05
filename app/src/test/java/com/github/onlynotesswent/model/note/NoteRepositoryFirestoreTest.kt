@@ -4,8 +4,8 @@ import android.content.Context
 import android.os.Looper
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
+import com.github.onlynotesswent.model.cache.CacheDatabase
 import com.github.onlynotesswent.model.cache.NoteDao
-import com.github.onlynotesswent.model.cache.NoteDatabase
 import com.github.onlynotesswent.model.common.Course
 import com.github.onlynotesswent.model.common.Visibility
 import com.google.android.gms.tasks.OnCompleteListener
@@ -39,7 +39,7 @@ class NoteRepositoryFirestoreTest {
 
   @Mock private lateinit var mockFirestore: FirebaseFirestore
   @Mock private lateinit var mockNoteDao: NoteDao
-  @Mock private lateinit var mockNoteDatabase: NoteDatabase
+  @Mock private lateinit var mockCacheDatabase: CacheDatabase
   @Mock private lateinit var mockDocumentReference: DocumentReference
   @Mock private lateinit var mockCollectionReference: CollectionReference
   @Mock private lateinit var mockDocumentSnapshot: DocumentSnapshot
@@ -111,10 +111,10 @@ class NoteRepositoryFirestoreTest {
     }
 
     val context = ApplicationProvider.getApplicationContext<Context>()
-    mockNoteDatabase = Room.inMemoryDatabaseBuilder(context, NoteDatabase::class.java).build()
-    mockNoteDao = mockNoteDatabase.noteDao()
+    mockCacheDatabase = Room.inMemoryDatabaseBuilder(context, CacheDatabase::class.java).build()
+    mockNoteDao = mockCacheDatabase.noteDao()
 
-    noteRepositoryFirestore = NoteRepositoryFirestore(mockFirestore, mockNoteDatabase, context)
+    noteRepositoryFirestore = NoteRepositoryFirestore(mockFirestore, mockCacheDatabase, context)
 
     `when`(mockFirestore.collection(any())).thenReturn(mockCollectionReference)
     `when`(mockCollectionReference.document(any())).thenReturn(mockDocumentReference)
