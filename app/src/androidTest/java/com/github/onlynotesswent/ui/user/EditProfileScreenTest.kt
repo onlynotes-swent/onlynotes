@@ -31,7 +31,7 @@ import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Route
 import com.github.onlynotesswent.ui.navigation.Screen
 import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
-import com.github.onlynotesswent.utils.ProfilePictureTaker
+import com.github.onlynotesswent.utils.PictureTaker
 import com.google.firebase.Timestamp
 import org.junit.Before
 import org.junit.Rule
@@ -47,7 +47,7 @@ import org.mockito.kotlin.eq
 class EditProfileScreenTest {
   @Mock private lateinit var mockUserRepository: UserRepository
   @Mock private lateinit var mockNavigationActions: NavigationActions
-  @Mock private lateinit var profilePictureTaker: ProfilePictureTaker
+  @Mock private lateinit var pictureTaker: PictureTaker
   @Mock private lateinit var mockNoteRepository: NoteRepository
   @Mock private lateinit var mockFileRepository: FileRepository
   @Mock private lateinit var mockFolderRepository: FolderRepository
@@ -120,7 +120,7 @@ class EditProfileScreenTest {
       EditProfileScreen(
           mockNavigationActions,
           userViewModel,
-          profilePictureTaker,
+          pictureTaker,
           fileViewModel,
           noteViewModel,
           folderViewModel)
@@ -150,7 +150,7 @@ class EditProfileScreenTest {
       EditProfileScreen(
           mockNavigationActions,
           userViewModel,
-          profilePictureTaker,
+          pictureTaker,
           fileViewModel,
           noteViewModel,
           folderViewModel)
@@ -166,7 +166,7 @@ class EditProfileScreenTest {
       EditProfileScreen(
           mockNavigationActions,
           userViewModel,
-          profilePictureTaker,
+          pictureTaker,
           fileViewModel,
           noteViewModel,
           folderViewModel)
@@ -202,7 +202,7 @@ class EditProfileScreenTest {
       EditProfileScreen(
           mockNavigationActions,
           userViewModel,
-          profilePictureTaker,
+          pictureTaker,
           fileViewModel,
           noteViewModel,
           folderViewModel)
@@ -227,7 +227,7 @@ class EditProfileScreenTest {
       EditProfileScreen(
           mockNavigationActions,
           userViewModel,
-          profilePictureTaker,
+          pictureTaker,
           fileViewModel,
           noteViewModel,
           folderViewModel)
@@ -246,7 +246,7 @@ class EditProfileScreenTest {
       EditProfileScreen(
           mockNavigationActions,
           userViewModel,
-          profilePictureTaker,
+          pictureTaker,
           fileViewModel,
           noteViewModel,
           folderViewModel)
@@ -258,12 +258,12 @@ class EditProfileScreenTest {
 
   @Test
   fun addProfilePicture() {
-    doNothing().`when`(profilePictureTaker).pickImage()
+    doNothing().`when`(pictureTaker).pickImage()
     composeTestRule.setContent {
       EditProfileScreen(
           mockNavigationActions,
           userViewModel,
-          profilePictureTaker,
+          pictureTaker,
           fileViewModel,
           noteViewModel,
           folderViewModel)
@@ -273,7 +273,7 @@ class EditProfileScreenTest {
 
     composeTestRule.onNodeWithTag("addProfilePicture").assertIsEnabled()
     composeTestRule.onNodeWithTag("addProfilePicture").performClick()
-    verify(profilePictureTaker).pickImage()
+    verify(pictureTaker).pickImage()
   }
 
   @Test
@@ -295,7 +295,7 @@ class EditProfileScreenTest {
       EditProfileScreen(
           mockNavigationActions,
           userViewModel,
-          profilePictureTaker,
+          pictureTaker,
           fileViewModel,
           noteViewModel,
           folderViewModel)
@@ -306,8 +306,8 @@ class EditProfileScreenTest {
 
   @Test
   fun testUriHandling() {
-    doNothing().`when`(profilePictureTaker).pickImage()
-    `when`(profilePictureTaker.setOnImageSelected(any())).thenAnswer {
+    doNothing().`when`(pictureTaker).pickImage()
+    `when`(pictureTaker.setOnImageSelected(any())).thenAnswer {
       val onImageSelected = it.arguments[0] as (Uri?) -> Unit
       onImageSelected("testUri".toUri())
     }
@@ -316,7 +316,7 @@ class EditProfileScreenTest {
       EditProfileScreen(
           mockNavigationActions,
           userViewModel,
-          profilePictureTaker,
+          pictureTaker,
           fileViewModel,
           noteViewModel,
           folderViewModel)
@@ -325,13 +325,13 @@ class EditProfileScreenTest {
     composeTestRule.onNodeWithTag("displayBottomSheet").assertIsEnabled()
     composeTestRule.onNodeWithTag("displayBottomSheet").performClick()
     composeTestRule.onNodeWithTag("addProfilePicture").performClick()
-    verify(profilePictureTaker).pickImage()
+    verify(pictureTaker).pickImage()
   }
 
   @Test
   fun testChangingProfilePicture() {
-    doNothing().`when`(profilePictureTaker).pickImage()
-    `when`(profilePictureTaker.setOnImageSelected(any())).thenAnswer {
+    doNothing().`when`(pictureTaker).pickImage()
+    `when`(pictureTaker.setOnImageSelected(any())).thenAnswer {
       val onImageSelected = it.arguments[0] as (Uri?) -> Unit
       onImageSelected("testUri".toUri())
     }
@@ -340,7 +340,7 @@ class EditProfileScreenTest {
       EditProfileScreen(
           mockNavigationActions,
           userViewModel,
-          profilePictureTaker,
+          pictureTaker,
           fileViewModel,
           noteViewModel,
           folderViewModel)
@@ -378,7 +378,7 @@ class EditProfileScreenTest {
       EditProfileScreen(
           mockNavigationActions,
           userViewModel,
-          profilePictureTaker,
+          pictureTaker,
           fileViewModel,
           noteViewModel,
           folderViewModel)
@@ -401,7 +401,7 @@ class EditProfileScreenTest {
       EditProfileScreen(
           mockNavigationActions,
           userViewModel,
-          profilePictureTaker,
+          pictureTaker,
           fileViewModel,
           noteViewModel,
           folderViewModel)
@@ -422,7 +422,7 @@ class EditProfileScreenTest {
       EditProfileScreen(
           mockNavigationActions,
           userViewModel,
-          profilePictureTaker,
+          pictureTaker,
           fileViewModel,
           noteViewModel,
           folderViewModel)

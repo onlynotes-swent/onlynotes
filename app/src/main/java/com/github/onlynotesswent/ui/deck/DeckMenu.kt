@@ -74,7 +74,7 @@ import com.github.onlynotesswent.ui.common.ThumbnailPic
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.theme.Typography
 import com.github.onlynotesswent.ui.user.switchProfileTo
-import com.github.onlynotesswent.utils.ProfilePictureTaker
+import com.github.onlynotesswent.utils.PictureTaker
 
 @Composable
 fun DeckScreen(
@@ -82,7 +82,7 @@ fun DeckScreen(
     deckViewModel: DeckViewModel,
     flashcardViewModel: FlashcardViewModel,
     fileViewModel: FileViewModel,
-    profilePictureTaker: ProfilePictureTaker,
+    pictureTaker: PictureTaker,
     navigationActions: NavigationActions
 ) {
   val selectedDeck = deckViewModel.selectedDeck.collectAsState()
@@ -125,7 +125,7 @@ fun DeckScreen(
                   FlashcardDialog(
                       deckViewModel,
                       flashcardViewModel,
-                      profilePictureTaker,
+                      pictureTaker,
                       fileViewModel,
                       {
                         addCardDialogExpanded.value = false
@@ -211,7 +211,7 @@ fun DeckScreen(
                             deckViewModel = deckViewModel,
                             flashcardViewModel = flashcardViewModel,
                             fileViewModel = fileViewModel,
-                            profilePictureTaker = profilePictureTaker,
+                            pictureTaker = pictureTaker,
                             belongsToUser = belongsToUser)
                       }
                     }
@@ -226,7 +226,7 @@ fun FlashcardViewItem(
     deckViewModel: DeckViewModel,
     flashcardViewModel: FlashcardViewModel,
     fileViewModel: FileViewModel,
-    profilePictureTaker: ProfilePictureTaker,
+    pictureTaker: PictureTaker,
     belongsToUser: Boolean = false
 ) {
   val dropdownMenuExpanded = remember { mutableStateOf(false) }
@@ -236,7 +236,7 @@ fun FlashcardViewItem(
     FlashcardDialog(
         deckViewModel,
         flashcardViewModel,
-        profilePictureTaker,
+        pictureTaker,
         fileViewModel,
         {
           editDialogExpanded.value = false
@@ -353,7 +353,7 @@ private fun DeckFab(
 fun FlashcardDialog(
     deckViewModel: DeckViewModel,
     flashcardViewModel: FlashcardViewModel,
-    profilePictureTaker: ProfilePictureTaker,
+    pictureTaker: PictureTaker,
     fileViewModel: FileViewModel,
     onDismissRequest: () -> Unit,
     mode: String = "Create"
@@ -400,13 +400,13 @@ fun FlashcardDialog(
                               verticalAlignment = Alignment.CenterVertically) {
                                 IconButton(
                                     onClick = {
-                                      profilePictureTaker.setOnImageSelected { uri ->
+                                      pictureTaker.setOnImageSelected { uri ->
                                         if (uri != null) {
                                           imageUri.value = uri.toString()
                                           hasImageBeenChanged.value = true
                                         }
                                       }
-                                      profilePictureTaker.pickImage()
+                                      pictureTaker.pickImage()
                                     }) {
                                       Icon(
                                           imageVector = Icons.Default.ImageSearch,
@@ -575,13 +575,21 @@ fun FlashcardDialog(
                                 folderId = null,
                                 noteId = null)
 
+                    // Update elements asynchronously but in the correct order:
+                    //   flashcard -> deck -> fetch flashcards -> image (if needed)
                     flashcardViewModel.updateFlashcard(
                         newFlashcard,
                         onSuccess = {
                           val newDeck: Deck =
                               deckViewModel.selectedDeck.value!!.let { deck ->
                                 if (mode == "Create") {
-                                  deck.copy(flashcardIds = deck.flashcardIds + newFlashcard.id)
+                                  deck
+                                      .copy(flashcardIds = deck.flashcardIds + newFlashcard.id)
+                                      .let {
+                                        deckViewModel.updateDeck(
+                                            it, onSuccess = { deckViewModel.selectDeck(it) })
+                                        it
+                                      }
                                 } else deck
                               }
                           flashcardViewModel.fetchFlashcardsFromDeck(newDeck)

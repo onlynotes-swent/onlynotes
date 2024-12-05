@@ -47,7 +47,7 @@ import com.github.onlynotesswent.ui.user.EditProfileScreen
 import com.github.onlynotesswent.ui.user.NotificationScreen
 import com.github.onlynotesswent.ui.user.PublicProfileScreen
 import com.github.onlynotesswent.ui.user.UserProfileScreen
-import com.github.onlynotesswent.utils.ProfilePictureTaker
+import com.github.onlynotesswent.utils.PictureTaker
 import com.github.onlynotesswent.utils.Scanner
 
 class MainActivity : ComponentActivity() {
@@ -58,12 +58,12 @@ class MainActivity : ComponentActivity() {
     val serverClientId = getString(R.string.default_web_client_id)
 
     val scanner = Scanner(this).apply { init() }
-    val profilePictureTaker = ProfilePictureTaker(this).apply { init() }
+    val pictureTaker = PictureTaker(this).apply { init() }
 
     setContent {
       AppTheme {
         Surface(modifier = Modifier.fillMaxSize()) {
-          OnlyNotesApp(scanner, profilePictureTaker, serverClientId)
+          OnlyNotesApp(scanner, pictureTaker, serverClientId)
         }
       }
     }
@@ -73,7 +73,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun OnlyNotesApp(
     scanner: Scanner,
-    profilePictureTaker: ProfilePictureTaker,
+    pictureTaker: PictureTaker,
     serverClientId: String
 ) {
   val navController = rememberNavController()
@@ -159,7 +159,7 @@ fun OnlyNotesApp(
             deckViewModel,
             flashcardViewModel,
             fileViewModel,
-            profilePictureTaker,
+            pictureTaker,
             navigationActions)
       }
     }
@@ -190,7 +190,7 @@ fun OnlyNotesApp(
         EditProfileScreen(
             navigationActions,
             userViewModel,
-            profilePictureTaker,
+            pictureTaker,
             fileViewModel,
             noteViewModel,
             folderViewModel)

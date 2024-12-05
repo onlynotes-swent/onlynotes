@@ -52,7 +52,7 @@ import com.github.onlynotesswent.ui.user.CreateUserScreen
 import com.github.onlynotesswent.ui.user.EditProfileScreen
 import com.github.onlynotesswent.ui.user.PublicProfileScreen
 import com.github.onlynotesswent.ui.user.UserProfileScreen
-import com.github.onlynotesswent.utils.ProfilePictureTaker
+import com.github.onlynotesswent.utils.PictureTaker
 import com.google.firebase.Timestamp
 import org.junit.After
 import org.junit.Before
@@ -73,7 +73,7 @@ class EndToEndTest {
   @Mock private lateinit var folderRepository: FolderRepository
   @Mock private lateinit var deckRepository: DeckRepository
   @Mock private lateinit var fileRepository: FileRepository
-  @Mock private lateinit var profilePictureTaker: ProfilePictureTaker
+  @Mock private lateinit var pictureTaker: PictureTaker
   private lateinit var userViewModel: UserViewModel
   private lateinit var noteViewModel: NoteViewModel
   private lateinit var folderViewModel: FolderViewModel
@@ -207,7 +207,7 @@ class EndToEndTest {
                     EditProfileScreen(
                         navigationActions,
                         userViewModel,
-                        profilePictureTaker,
+                        pictureTaker,
                         fileViewModel,
                         noteViewModel,
                         folderViewModel)
