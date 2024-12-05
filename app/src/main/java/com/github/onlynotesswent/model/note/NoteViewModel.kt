@@ -6,7 +6,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
-import com.github.onlynotesswent.model.cache.getNoteDatabase
+import com.github.onlynotesswent.model.cache.NoteDatabase
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.firestore
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -49,7 +49,8 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
     fun factory(context: Context): ViewModelProvider.Factory = viewModelFactory {
       initializer {
         NoteViewModel(
-            NoteRepositoryFirestore(Firebase.firestore, getNoteDatabase(context), context))
+            NoteRepositoryFirestore(
+                Firebase.firestore, NoteDatabase.getNoteDatabase(context), context))
       }
     }
   }

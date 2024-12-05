@@ -11,17 +11,17 @@ import com.github.onlynotesswent.model.folder.Folder
 @TypeConverters(TimestampConverter::class)
 abstract class FolderDatabase : RoomDatabase() {
   abstract fun folderDao(): FolderDao
-}
 
-private lateinit var INSTANCE: FolderDatabase
+  companion object {
+    @Volatile private var INSTANCE: FolderDatabase? = null
 
-fun getFolderDatabase(context: Context): FolderDatabase {
-  if (!::INSTANCE.isInitialized) {
-    INSTANCE =
-        Room.databaseBuilder(
-                context.applicationContext, FolderDatabase::class.java, "folder_database")
-            .fallbackToDestructiveMigration()
-            .build()
+    fun getFolderDatabase(context: Context): FolderDatabase {
+      return INSTANCE
+          ?: synchronized(this) {
+            Room.databaseBuilder(context, FolderDatabase::class.java, "folder_database")
+                .build()
+                .also { INSTANCE = it }
+          }
+    }
   }
-  return INSTANCE
 }

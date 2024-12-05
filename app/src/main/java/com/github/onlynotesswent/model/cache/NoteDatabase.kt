@@ -11,16 +11,17 @@ import com.github.onlynotesswent.model.note.Note
 @TypeConverters(TimestampConverter::class, CommentCollectionConverter::class)
 abstract class NoteDatabase : RoomDatabase() {
   abstract fun noteDao(): NoteDao
-}
 
-private lateinit var INSTANCE: NoteDatabase
+  companion object {
+    @Volatile private var INSTANCE: NoteDatabase? = null
 
-fun getNoteDatabase(context: Context): NoteDatabase {
-  if (!::INSTANCE.isInitialized) {
-    INSTANCE =
-        Room.databaseBuilder(context.applicationContext, NoteDatabase::class.java, "note_database")
-            .fallbackToDestructiveMigration()
-            .build()
+    fun getNoteDatabase(context: Context): NoteDatabase {
+      return INSTANCE
+          ?: synchronized(this) {
+            Room.databaseBuilder(context, NoteDatabase::class.java, "note_database").build().also {
+              INSTANCE = it
+            }
+          }
+    }
   }
-  return INSTANCE
 }
