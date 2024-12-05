@@ -106,7 +106,7 @@ fun EditNoteScreen(
 
   Scaffold(
       floatingActionButton = {
-        if (currentUser?.uid == note?.userId) {
+        if (note!!.isOwner(currentUser!!.uid)) {
           DeleteButton(currentUser, note, navigationActions, noteViewModel)
         }
       },
@@ -117,7 +117,7 @@ fun EditNoteScreen(
             userViewModel = userViewModel,
             navigationActions = navigationActions,
             actions = {
-              if (note != null && currentUser != null && note?.userId == currentUser?.uid) {
+              if (note != null && currentUser != null && note!!.isOwner(currentUser!!.uid)) {
                 SaveButton(
                     noteTitle = noteTitle,
                     note = note!!,
@@ -163,7 +163,7 @@ fun EditNoteScreen(
                     visibility = visibility,
                     onVisibilityChange = { visibility = it },
                     currentUserId = currentUser!!.uid,
-                    noteUserId = note?.userId!!)
+                    note = note!!)
               }
         }
       }
@@ -212,8 +212,7 @@ fun EditNoteGeneralTopBar(
               if (isModified) {
                 showDiscardChangesDialog = true
               } else {
-                if (userViewModel.currentUser.value?.uid !=
-                    noteViewModel.selectedNote.value?.userId) {
+                if (!noteViewModel.selectedNote.value!!.isOwner(userViewModel.currentUser.value?.uid!!)) {
                   navigationActions.navigateTo(TopLevelDestinations.SEARCH)
                 } else if (noteViewModel.selectedNote.value?.folderId != null) {
                   navigationActions.navigateTo(
@@ -270,7 +269,7 @@ fun EditNoteGeneralTopBar(
  * @param visibility The visibility of the note.
  * @param onVisibilityChange The callback function to update the visibility.
  * @param currentUserId The Id of the current user.
- * @param noteUserId The Id of the user who created the note.
+ * @param note The note to be edited.
  */
 @Composable
 fun NoteSection(
@@ -285,7 +284,7 @@ fun NoteSection(
     visibility: Visibility,
     onVisibilityChange: (Visibility) -> Unit,
     currentUserId: String,
-    noteUserId: String
+    note: Note
 ) {
   var showCourseDetails by remember { mutableStateOf(false) }
 
@@ -297,9 +296,9 @@ fun NoteSection(
         label = "",
         placeholder = "Enter the new title here",
         modifier = Modifier.fillMaxWidth().testTag("EditTitle textField"),
-        enabled = currentUserId == noteUserId,
+        enabled = note.isOwner(currentUserId),
         trailingIcon = {
-          IconButton(onClick = { onNoteTitleChange("") }, enabled = currentUserId == noteUserId) {
+          IconButton(onClick = { onNoteTitleChange("") }, enabled = note.isOwner(currentUserId)) {
             Icon(Icons.Outlined.Clear, contentDescription = "Clear Title")
           }
         })
@@ -309,7 +308,7 @@ fun NoteSection(
 
   Column(modifier = Modifier.fillMaxWidth()) {
     Text(text = "Visibility", style = MaterialTheme.typography.titleMedium)
-    SelectVisibility(visibility, currentUserId, noteUserId) { onVisibilityChange(it) }
+    SelectVisibility(visibility, currentUserId, note.userId) { onVisibilityChange(it) }
   }
 
   Spacer(modifier = Modifier.height(8.dp))
@@ -365,7 +364,7 @@ fun NoteSection(
                 label = "Course Code",
                 placeholder = "Set the course code for the note",
                 modifier = Modifier.fillMaxWidth().testTag("EditCourseCode textField"),
-                enabled = currentUserId == noteUserId)
+                enabled = note.isOwner(currentUserId))
 
             // Course Name
             NoteDataTextField(
@@ -374,7 +373,7 @@ fun NoteSection(
                 label = "Course Name",
                 placeholder = "Set the course name for the note",
                 modifier = Modifier.fillMaxWidth().testTag("EditCourseName textField"),
-                enabled = currentUserId == noteUserId)
+                enabled = note.isOwner(currentUserId))
 
             // Course Year
             NoteDataTextField(
@@ -383,7 +382,7 @@ fun NoteSection(
                 label = "Course Year",
                 placeholder = "Set the course year for the note",
                 modifier = Modifier.fillMaxWidth().testTag("EditCourseYear textField"),
-                enabled = currentUserId == noteUserId)
+                enabled = note.isOwner(currentUserId))
           }
         }
   }

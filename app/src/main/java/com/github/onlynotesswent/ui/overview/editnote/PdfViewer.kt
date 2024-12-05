@@ -129,7 +129,7 @@ fun PdfViewerScreen(
 
   Scaffold(
       floatingActionButton = {
-        if (note?.userId == currentUser?.uid) {
+        if (note!!.isOwner(currentUser!!.uid)) {
           // Show a delete button if a PDF exists
           if (pdfExists) {
             var showDeleteConfirmation by remember { mutableStateOf(false) }
@@ -193,7 +193,7 @@ fun PdfViewerScreen(
             userViewModel = userViewModel,
             navigationActions = navigationActions,
             onClick = {
-              if (currentUser?.uid != note?.userId) {
+              if (!note!!.isOwner(currentUser!!.uid)) {
                 navigationActions.navigateTo(TopLevelDestinations.SEARCH)
               }
             })

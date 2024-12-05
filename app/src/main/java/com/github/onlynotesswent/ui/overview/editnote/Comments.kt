@@ -74,7 +74,7 @@ fun CommentsScreen(
               noteViewModel.updateNote(
                   note = note!!.copy(comments = Note.CommentCollection(commentsNotEmpty)),
                   onSuccess = {
-                    if (currentUser!!.uid != note?.userId) {
+                    if (!note!!.isOwner(currentUser!!.uid)) {
                       navigationActions.navigateTo(TopLevelDestinations.SEARCH)
                     }
                   })
@@ -204,7 +204,8 @@ fun CommentsSection(
                             shape = MaterialTheme.shapes.small)
                         .size(50.dp), // Ensure consistent size for the delete button
                 contentAlignment = Alignment.Center) {
-                  if (comment.userId == currentUser.uid || currentUser.uid == note.userId) {
+                  // Only creators of comments or note owner can delete their comments
+                  if (comment.isOwner(currentUser.uid) || note.isOwner(currentUser.uid)) {
                     IconButton(
                         onClick = {
                           onCommentsChange(

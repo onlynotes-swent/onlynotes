@@ -11,6 +11,7 @@ import androidx.compose.material.icons.outlined.Search
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
+import com.github.onlynotesswent.model.folder.Folder
 import com.github.onlynotesswent.model.user.UserViewModel
 
 object Route {
@@ -126,17 +127,17 @@ open class NavigationActions(
   /**
    * Navigate back to the folder contents screen.
    *
-   * @param folderId The ID of the folder to navigate back to
+   * @param folder The folder to navigate back to
+   * @param userViewModel The UserViewModel to access the current user
    */
   open fun goBackFolderContents(
-      folderId: String?,
-      userViewModel: UserViewModel,
-      folderUid: String
+      folder: Folder,
+      userViewModel: UserViewModel
   ) {
-    if (userViewModel.currentUser.value?.uid != folderUid) {
+    if (!folder.isOwner(userViewModel.currentUser.value!!.uid)) {
       navigateTo(TopLevelDestinations.SEARCH)
-    } else if (folderId != null) {
-      navigateTo(Screen.FOLDER_CONTENTS.replace(oldValue = "{folderId}", newValue = folderId))
+    } else if (folder.parentFolderId != null) {
+      navigateTo(Screen.FOLDER_CONTENTS.replace(oldValue = "{folderId}", newValue = folder.parentFolderId))
     } else {
       navigateTo(TopLevelDestinations.OVERVIEW)
     }

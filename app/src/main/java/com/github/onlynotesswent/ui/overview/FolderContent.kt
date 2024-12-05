@@ -95,7 +95,7 @@ fun FolderContentScreen(
 
   // Custom back handler to manage back navigation
   BackHandler {
-    if (currentUser.value!!.uid != folder.value?.userId) {
+    if (!folder.value!!.isOwner(currentUser.value!!.uid)) {
       navigationActions.navigateTo(TopLevelDestinations.SEARCH)
     } else if (folder.value!!.parentFolderId != null) {
       navigationActions.navigateTo(
@@ -129,7 +129,7 @@ fun FolderContentScreen(
               showUpdateDialog = { showUpdateDialog = it })
         },
         floatingActionButton = {
-          if (currentUser.value!!.uid == folder.value?.userId) {
+          if (folder.value!!.isOwner(currentUser.value!!.uid)) {
             CreateSubItemFab(
                 expandedFolder = expandedFolder,
                 onExpandedFolderChange = { expandedFolder = it },
@@ -167,7 +167,7 @@ fun FolderContentScreen(
                 oldName = updatedName,
                 oldVisibility = folder.value!!.visibility)
           }
-          if (showCreateNoteDialog && currentUser.value!!.uid == folder.value?.userId) {
+          if (showCreateNoteDialog && folder.value!!.isOwner(currentUser.value!!.uid)) {
             NoteDialog(
                 onDismiss = { showCreateNoteDialog = false },
                 onConfirm = { newName, visibility ->
@@ -289,15 +289,14 @@ fun FolderContentTopBar(
       navigationIcon = {
         IconButton(
             onClick = {
-              navigationActions.goBackFolderContents(
-                  folder?.parentFolderId, userViewModel, folder!!.userId)
+              navigationActions.goBackFolderContents(folder!!, userViewModel)
             },
             modifier = Modifier.testTag("goBackButton")) {
               Icon(imageVector = Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "Back")
             }
       },
       actions = {
-        if (currentUser.value!!.uid == folder?.userId) {
+        if (folder!!.isOwner(currentUser.value!!.uid)) {
           CustomDropDownMenu(
               modifier = Modifier.testTag("folderSettingsButton"),
               menuItems =
@@ -352,8 +351,8 @@ fun FolderContentTopBar(
               text = stringResource(R.string.confirm_delete_folder),
               onConfirm = {
                 // Retrieve parent folder id to navigate to the parent folder
-                val parentFolderId = folder?.parentFolderId
-                folderViewModel.deleteFolderById(folder!!.id, folder.userId)
+                val parentFolderId = folder.parentFolderId
+                folderViewModel.deleteFolderById(folder.id, folder.userId)
 
                 if (parentFolderId != null) {
                   navigationActions.navigateTo(
@@ -380,7 +379,7 @@ fun FolderContentTopBar(
               title = stringResource(R.string.delete_folder_contents),
               text = stringResource(R.string.confirm_delete_folder_contents),
               onConfirm = {
-                noteViewModel.deleteNotesFromFolder(folder!!.id)
+                noteViewModel.deleteNotesFromFolder(folder.id)
                 folderViewModel.deleteFolderContents(folder, noteViewModel)
                 showDeleteFolderContentsConfirmation = false
               },

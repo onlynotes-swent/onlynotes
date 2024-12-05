@@ -38,7 +38,7 @@ fun EditNoteTopBar(
         onClick()
         // Unselects the note and navigates back to the previous screen. In case of a different
         // user, it navigates to the search screen.
-        if (noteViewModel.selectedNote.value?.userId == userViewModel.currentUser.value?.uid) {
+        if (noteViewModel.selectedNote.value!!.isOwner(userViewModel.currentUser.value!!.uid)) {
           if (noteViewModel.selectedNote.value?.folderId != null) {
             navigationActions.navigateTo(
                 Screen.FOLDER_CONTENTS.replace(

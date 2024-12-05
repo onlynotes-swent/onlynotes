@@ -70,7 +70,7 @@ fun CustomSeparatedLazyGrid(
             // If the current user is not the owner of the folders (except for search screen),
             // only display the notes
             if ((sortedFolders.isNotEmpty() &&
-                userViewModel.currentUser.value?.uid == sortedFolders[0].userId) ||
+                sortedFolders[0].isOwner(userViewModel.currentUser.value!!.uid)) ||
                 navigationActions.currentRoute() == Screen.SEARCH) {
               items(sortedFolders, key = { it.id }, span = { GridItemSpan(2) }) { folder ->
                 FolderItem(

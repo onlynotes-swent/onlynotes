@@ -126,7 +126,7 @@ fun NoteItem(
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onPrimaryContainer)
 
-                if (currentUser.value?.uid == note.userId &&
+                if (note.isOwner(currentUser.value!!.uid) &&
                     note.folderId != null &&
                     navigationActions.currentRoute() == Screen.FOLDER_CONTENTS) {
                   Row(verticalAlignment = Alignment.CenterVertically) {

@@ -136,7 +136,7 @@ fun EditMarkdownScreen(
             userViewModel = userViewModel,
             navigationActions = navigationActions,
             onClick = {
-              if (selectedNote?.userId != currentUser?.uid) {
+              if (!selectedNote!!.isOwner(currentUser!!.uid)) {
                 navigationActions.navigateTo(TopLevelDestinations.SEARCH)
               }
             })
@@ -145,7 +145,7 @@ fun EditMarkdownScreen(
         EditNoteNavigationMenu(navigationActions, selectedItem = Screen.EDIT_NOTE_MARKDOWN)
       },
       floatingActionButton = {
-        if (!isEditing && selectedNote?.userId == currentUser?.uid) {
+        if (!isEditing && selectedNote!!.isOwner(currentUser!!.uid)) {
           FloatingActionButton(
               modifier = Modifier.testTag("editMarkdownFAB"),
               onClick = {
