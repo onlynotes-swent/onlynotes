@@ -327,17 +327,17 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
    * @return The converted Note object. Returns null if the conversion fails.
    */
   fun documentSnapshotToNote(document: DocumentSnapshot): Note? {
-      return try {
-          val id = document.id
-          val title = document.getString("title")!!
-          val date = document.getTimestamp("date")!!
-          val visibility = Visibility.fromString(document.getString("visibility")!!)
-          val userId = document.getString("userId")!!
-          val courseCode = document.getString("courseCode")?:""
-          val courseName = document.getString("courseName")?:""
-          val courseYear = document.getLong("courseYear")?.toInt()
-          val publicPath = document.getString("publicPath")?:""
-          val folderId = document.getString("folderId")
+    return try {
+      val id = document.id
+      val title = document.getString("title")!!
+      val date = document.getTimestamp("date")!!
+      val visibility = Visibility.fromString(document.getString("visibility")!!)
+      val userId = document.getString("userId")!!
+      val courseCode = document.getString("courseCode") ?: ""
+      val courseName = document.getString("courseName") ?: ""
+      val courseYear = document.getLong("courseYear")?.toInt()
+      val publicPath = document.getString("publicPath") ?: ""
+      val folderId = document.getString("folderId")
       val comments = commentStringToCommentClass(document.get("commentsList") as List<String>)
 
       val course = Course(courseCode, courseName, courseYear, publicPath)

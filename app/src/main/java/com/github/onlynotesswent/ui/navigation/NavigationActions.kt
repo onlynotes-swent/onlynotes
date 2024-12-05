@@ -130,14 +130,12 @@ open class NavigationActions(
    * @param folder The folder to navigate back to
    * @param userViewModel The UserViewModel to access the current user
    */
-  open fun goBackFolderContents(
-      folder: Folder,
-      userViewModel: UserViewModel
-  ) {
+  open fun goBackFolderContents(folder: Folder, userViewModel: UserViewModel) {
     if (!folder.isOwner(userViewModel.currentUser.value!!.uid)) {
       navigateTo(TopLevelDestinations.SEARCH)
     } else if (folder.parentFolderId != null) {
-      navigateTo(Screen.FOLDER_CONTENTS.replace(oldValue = "{folderId}", newValue = folder.parentFolderId))
+      navigateTo(
+          Screen.FOLDER_CONTENTS.replace(oldValue = "{folderId}", newValue = folder.parentFolderId))
     } else {
       navigateTo(TopLevelDestinations.OVERVIEW)
     }

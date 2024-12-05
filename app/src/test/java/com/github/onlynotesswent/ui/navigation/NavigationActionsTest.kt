@@ -3,7 +3,6 @@ package com.github.onlynotesswent.ui.navigation
 import androidx.navigation.NavDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.NavOptionsBuilder
-import com.github.onlynotesswent.model.folder.Folder
 import org.hamcrest.CoreMatchers.`is`
 import org.hamcrest.MatcherAssert.assertThat
 import org.junit.Before
@@ -20,9 +19,6 @@ class NavigationActionsTest {
   @Mock private lateinit var mockNavigationDestination: NavDestination
   @Mock private lateinit var mockNavHostController: NavHostController
   private lateinit var navigationActions: NavigationActions
-
-  private val subfolder = Folder("folderId", "folderName", "folderUser", "folderParentId")
-  private val folder = Folder("folderId2", "folderName2", "folderUser2")
 
   @Before
   fun setUp() {

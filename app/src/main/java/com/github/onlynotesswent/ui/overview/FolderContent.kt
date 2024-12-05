@@ -288,9 +288,7 @@ fun FolderContentTopBar(
       },
       navigationIcon = {
         IconButton(
-            onClick = {
-              navigationActions.goBackFolderContents(folder!!, userViewModel)
-            },
+            onClick = { navigationActions.goBackFolderContents(folder!!, userViewModel) },
             modifier = Modifier.testTag("goBackButton")) {
               Icon(imageVector = Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "Back")
             }
