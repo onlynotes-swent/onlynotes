@@ -116,7 +116,7 @@ fun EditNoteScreen(
             noteViewModel = noteViewModel,
             navigationActions = navigationActions,
             actions = {
-              if (note != null && currentUser != null) {
+              if (note != null && currentUser != null && note?.userId == currentUser?.uid) {
                 SaveButton(
                     noteTitle = noteTitle,
                     note = note!!,
@@ -124,8 +124,7 @@ fun EditNoteScreen(
                     courseCode = courseCode,
                     courseName = courseName,
                     courseYear = courseYear,
-                    noteViewModel = noteViewModel,
-                    currentUserId = currentUser!!.uid)
+                    noteViewModel = noteViewModel)
               }
             },
             isModified = isModified)
@@ -425,12 +424,11 @@ fun SaveButton(
     courseCode: String,
     courseName: String,
     courseYear: Int?,
-    noteViewModel: NoteViewModel,
-    currentUserId: String
+    noteViewModel: NoteViewModel
 ) {
   val context = LocalContext.current
   IconButton(
-      enabled = noteTitle.isNotEmpty() && note.userId == currentUserId,
+      enabled = noteTitle.isNotEmpty(),
       onClick = {
         val course = Course(courseCode, courseName, courseYear, "")
         noteViewModel.updateNote(

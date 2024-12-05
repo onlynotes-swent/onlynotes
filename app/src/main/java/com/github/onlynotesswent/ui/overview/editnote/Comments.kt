@@ -105,7 +105,7 @@ fun CommentsScreen(
                       .verticalScroll(rememberScrollState()),
               verticalArrangement = Arrangement.spacedBy(8.dp),
               horizontalAlignment = Alignment.CenterHorizontally) {
-                CommentsSection(updatedComments, { updatedComments = it })
+                CommentsSection(updatedComments, { updatedComments = it }, currentUser!!, note!!)
               }
         }
       }
@@ -148,11 +148,15 @@ fun AddCommentButton(
  *
  * @param updatedComments The collection of comments to be displayed and edited.
  * @param onCommentsChange The callback function to update the comments collection.
+ * @param currentUser The current user.
+ * @param note The note being edited.
  */
 @Composable
 fun CommentsSection(
     updatedComments: Note.CommentCollection,
     onCommentsChange: (Note.CommentCollection) -> Unit,
+    currentUser: User,
+    note: Note
 ) {
   if (updatedComments.commentsList.isEmpty()) {
     Text(
@@ -200,18 +204,20 @@ fun CommentsSection(
                             shape = MaterialTheme.shapes.small)
                         .size(50.dp), // Ensure consistent size for the delete button
                 contentAlignment = Alignment.Center) {
-                  IconButton(
-                      onClick = {
-                        onCommentsChange(
-                            updatedComments.deleteCommentByCommentId(comment.commentId))
-                      },
-                      modifier = Modifier.testTag("DeleteCommentButton")) {
-                        Icon(
-                            imageVector = Icons.Default.Delete,
-                            contentDescription = "Delete Comment",
-                            tint = MaterialTheme.colorScheme.onError,
-                        )
+                  if (comment.userId == currentUser.uid || currentUser.uid == note.userId) {
+                      IconButton(
+                          onClick = {
+                              onCommentsChange(
+                                  updatedComments.deleteCommentByCommentId(comment.commentId))
+                          },
+                          modifier = Modifier.testTag("DeleteCommentButton")) {
+                          Icon(
+                              imageVector = Icons.Default.Delete,
+                              contentDescription = "Delete Comment",
+                              tint = MaterialTheme.colorScheme.onError,
+                          )
                       }
+                  }
                 }
           }
     }
