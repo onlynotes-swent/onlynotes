@@ -109,7 +109,8 @@ class OverviewTest {
       val onSuccess = invocation.getArgument<(List<Note>) -> Unit>(1)
       onSuccess(listOf())
     }
-    `when`(folderRepository.getRootNoteFoldersFromUserId(eq("1"), any(), any())).then { invocation ->
+    `when`(folderRepository.getRootNoteFoldersFromUserId(eq("1"), any(), any())).then { invocation
+      ->
       val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(1)
       onSuccess(listOf())
     }
@@ -121,7 +122,8 @@ class OverviewTest {
       val onSuccess = invocation.getArgument<(List<Note>) -> Unit>(1)
       onSuccess(noteList)
     }
-    `when`(folderRepository.getRootNoteFoldersFromUserId(eq("1"), any(), any())).then { invocation ->
+    `when`(folderRepository.getRootNoteFoldersFromUserId(eq("1"), any(), any())).then { invocation
+      ->
       val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(1)
       onSuccess(folderList)
     }
@@ -141,7 +143,8 @@ class OverviewTest {
       val onSuccess = invocation.getArgument<(List<Note>) -> Unit>(1)
       onSuccess(noteList)
     }
-    `when`(folderRepository.getRootNoteFoldersFromUserId(eq("1"), any(), any())).then { invocation ->
+    `when`(folderRepository.getRootNoteFoldersFromUserId(eq("1"), any(), any())).then { invocation
+      ->
       val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(1)
       onSuccess(folderList)
     }
@@ -184,7 +187,8 @@ class OverviewTest {
 
   @Test
   fun selectFolderCallsNavActions() {
-    `when`(folderRepository.getRootNoteFoldersFromUserId(eq("1"), any(), any())).then { invocation ->
+    `when`(folderRepository.getRootNoteFoldersFromUserId(eq("1"), any(), any())).then { invocation
+      ->
       val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(1)
       onSuccess(folderList)
     }
@@ -271,7 +275,8 @@ class OverviewTest {
       val onSuccess = invocation.getArgument<(List<Note>) -> Unit>(1)
       onSuccess(noteList)
     }
-    `when`(folderRepository.getRootNoteFoldersFromUserId(eq("1"), any(), any())).then { invocation ->
+    `when`(folderRepository.getRootNoteFoldersFromUserId(eq("1"), any(), any())).then { invocation
+      ->
       val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(1)
       onSuccess(folderList)
     }
@@ -296,7 +301,8 @@ class OverviewTest {
 
   @Test
   fun dragAndDropFOlderWorksCorrectly() {
-    `when`(folderRepository.getRootNoteFoldersFromUserId(eq("1"), any(), any())).then { invocation ->
+    `when`(folderRepository.getRootNoteFoldersFromUserId(eq("1"), any(), any())).then { invocation
+      ->
       val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(1)
       onSuccess(folderList)
     }

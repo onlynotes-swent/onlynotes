@@ -130,8 +130,8 @@ class FolderContentTest {
       val onSuccess = invocation.getArgument<(List<Note>) -> Unit>(1)
       onSuccess(noteList)
     }
-    `when`(mockFolderRepository.getRootNoteFoldersFromUserId(eq("1"), any(), any())).then { invocation
-      ->
+    `when`(mockFolderRepository.getRootNoteFoldersFromUserId(eq("1"), any(), any())).then {
+        invocation ->
       val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(1)
       onSuccess(folderList)
     }
