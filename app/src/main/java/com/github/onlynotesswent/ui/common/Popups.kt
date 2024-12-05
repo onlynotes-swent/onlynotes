@@ -158,9 +158,8 @@ fun FileSystemPopup(
     folderViewModel: FolderViewModel
 ) {
     var selectedFolder by remember { mutableStateOf<Folder?>(folderViewModel.selectedFolder.value) }
-    val folderSubFolders = folderViewModel.folderSubFolders.collectAsState()
+    var folderSubFolders by remember { mutableStateOf<List<Folder>>(emptyList()) }
     val userRootFolders = folderViewModel.userRootFolders.collectAsState()
-    val initialFolder = remember { folderViewModel.selectedFolder.value }
 
 
         Dialog(onDismissRequest = {
@@ -193,8 +192,10 @@ fun FileSystemPopup(
                                     .padding(8.dp)
                                     .clickable {
                                         // Set the clicked folder as the selected folder
+                                        folderViewModel.getSubFoldersOfNoStateUpdate(folder.id, onSuccess = { subFolders ->
+                                            folderSubFolders = subFolders // Update the list
+                                        })
                                         selectedFolder = folder
-                                        folderViewModel.getSubFoldersOf(folder.id)
                                     }
                             )
                         }
@@ -206,7 +207,7 @@ fun FileSystemPopup(
                         )
                         Spacer(modifier = Modifier.height(8.dp))
 
-                        folderSubFolders.value.forEach { subFolder ->
+                        folderSubFolders.forEach { subFolder ->
                             Text(
                                 text = subFolder.name,
                                 modifier = Modifier
@@ -214,8 +215,11 @@ fun FileSystemPopup(
                                     .padding(8.dp)
                                     .clickable {
                                         // Navigate into the sub-folder
+
+                                        folderViewModel.getSubFoldersOfNoStateUpdate(subFolder.id, onSuccess = { subFolders ->
+                                            folderSubFolders = subFolders // Update the list
+                                        })
                                         selectedFolder = subFolder
-                                        folderViewModel.getSubFoldersOf(subFolder.id)
                                     }
                             )
                         }
