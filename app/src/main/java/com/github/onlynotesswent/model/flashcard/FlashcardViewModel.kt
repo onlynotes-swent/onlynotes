@@ -55,6 +55,11 @@ class FlashcardViewModel(private val repository: FlashcardRepository) : ViewMode
     _selectedFlashcard.value = flashcard
   }
 
+  /** Deselects the selected flashcard. */
+  fun deselectFlashcard() {
+    _selectedFlashcard.value = null
+  }
+
   /**
    * Generates a new unique ID.
    *

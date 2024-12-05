@@ -9,16 +9,22 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.ArrowDropUp
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.HideImage
 import androidx.compose.material.icons.filled.ImageSearch
@@ -100,7 +106,10 @@ fun DeckScreen(
         if (belongsToUser) {
           DeckFab(
               expandedDropdownMenu = fabDropdownMenuShown,
-              onAddCardClick = { addCardDialogExpanded.value = true },
+              onAddCardClick = {
+                addCardDialogExpanded.value = true
+                flashcardViewModel.deselectFlashcard()
+              },
               onImportDeckClick = { importDialogExpanded.value = true })
         }
       }) { innerPadding ->
@@ -118,7 +127,10 @@ fun DeckScreen(
                       flashcardViewModel,
                       profilePictureTaker,
                       fileViewModel,
-                      { addCardDialogExpanded.value = false },
+                      {
+                        addCardDialogExpanded.value = false
+                        flashcardViewModel.deselectFlashcard()
+                      },
                       mode = "Create")
                 }
                 if (importDialogExpanded.value) {
@@ -226,12 +238,22 @@ fun FlashcardViewItem(
         flashcardViewModel,
         profilePictureTaker,
         fileViewModel,
-        { editDialogExpanded.value = false },
+        {
+          editDialogExpanded.value = false
+          flashcardViewModel.deselectFlashcard()
+        },
         mode = "Edit")
   }
 
   Card(modifier = Modifier.testTag("flashcardItem").fillMaxWidth()) {
     Box(contentAlignment = Alignment.CenterStart, modifier = Modifier.padding(10.dp)) {
+      if (flashcard.isMCQ()) {
+        Text(
+            "MCQ",
+            style = Typography.bodyLarge,
+            fontStyle = FontStyle.Italic,
+            modifier = Modifier.align(Alignment.TopStart))
+      }
       // Show front and options icon
       Box(modifier = Modifier.align(Alignment.TopEnd)) {
         Icon(
@@ -354,8 +376,7 @@ fun FlashcardDialog(
               Text("$mode Flashcard", style = Typography.headlineSmall)
               // Front
               OutlinedTextField(
-                  modifier =
-                  Modifier.fillMaxWidth(),
+                  modifier = Modifier.fillMaxWidth(),
                   value = front.value,
                   onValueChange = { front.value = it },
                   label = { Text("Front") })
@@ -364,67 +385,84 @@ fun FlashcardDialog(
               val imageUri: MutableState<String?> = remember { mutableStateOf(null) }
               val hasImageBeenChanged = remember { mutableStateOf(false) }
 
-              Row {
-                IconButton(
-                    onClick = {
-                      profilePictureTaker.setOnImageSelected { uri ->
-                        if (uri != null) {
-                          imageUri.value = uri.toString()
-                          hasImageBeenChanged.value = true
+              // Remove image block when fake backs drop down is open to save space on screen
+              AnimatedVisibility(
+                  visible = !showFakeBacksDetails.value,
+                  enter = expandVertically(),
+                  exit = shrinkVertically()) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(10.dp),
+                        modifier = Modifier.fillMaxWidth()) {
+                          // Image control buttons (delete and add)
+                          Row(
+                              horizontalArrangement = Arrangement.spacedBy(10.dp),
+                              verticalAlignment = Alignment.CenterVertically) {
+                                IconButton(
+                                    onClick = {
+                                      profilePictureTaker.setOnImageSelected { uri ->
+                                        if (uri != null) {
+                                          imageUri.value = uri.toString()
+                                          hasImageBeenChanged.value = true
+                                        }
+                                      }
+                                      profilePictureTaker.pickImage()
+                                    }) {
+                                      Icon(
+                                          imageVector = Icons.Default.ImageSearch,
+                                          contentDescription = "Add image")
+                                    }
+                                if (imageUri.value != null) {
+                                  Spacer(modifier = Modifier.width(0.dp))
+                                  IconButton(
+                                      onClick = {
+                                        imageUri.value = null
+                                        hasImageBeenChanged.value = true
+                                      }) {
+                                        Icon(
+                                            imageVector = Icons.Default.HideImage,
+                                            contentDescription = "Remove image")
+                                      }
+                                }
+                              }
+                          // Image loading indicator
+                          if (flashcard.value?.hasImage == true &&
+                              imageUri.value == null &&
+                              !hasImageBeenChanged.value) {
+                            fileViewModel.downloadFile(
+                                flashcard.value!!.id,
+                                FileType.FLASHCARD_IMAGE,
+                                context = LocalContext.current,
+                                onSuccess = { file -> imageUri.value = file.absolutePath })
+                            LoadingIndicator(
+                                "Image is being downloaded...",
+                                Modifier.fillMaxWidth(),
+                                loadingIndicatorSize = 24.dp,
+                                spacerHeight = 5.dp)
+                          }
+                          // Image placeholder
+                          if (flashcard.value?.hasImage != true &&
+                              imageUri.value == null &&
+                              !hasImageBeenChanged.value) {
+                            Text("Add an image", style = Typography.bodyMedium)
+                          }
+                          // Image
+                          imageUri.value?.let {
+                            Image(
+                                painter = rememberAsyncImagePainter(it),
+                                contentDescription = "Flashcard image",
+                                modifier = Modifier.height(100.dp))
+                          }
                         }
-                      }
-                      profilePictureTaker.pickImage()
-                    }) {
-                      Icon(
-                          imageVector = Icons.Default.ImageSearch, contentDescription = "Add image")
-                    }
-                if (imageUri.value != null) {
-                  Spacer(modifier = Modifier.width(0.dp))
-                  IconButton(
-                      onClick = {
-                        imageUri.value = null
-                        hasImageBeenChanged.value = true
-                      }) {
-                        Icon(
-                            imageVector = Icons.Default.HideImage,
-                            contentDescription = "Remove image")
-                      }
-                }
-              }
-
-              if (flashcard.value?.hasImage == true &&
-                  imageUri.value == null &&
-                  !hasImageBeenChanged.value) {
-                fileViewModel.downloadFile(
-                    flashcard.value!!.id,
-                    FileType.FLASHCARD_IMAGE,
-                    context = LocalContext.current,
-                    onSuccess = { file -> imageUri.value = file.absolutePath })
-                LoadingIndicator(
-                    "Image is being downloaded...",
-                    Modifier.fillMaxWidth(),
-                    loadingIndicatorSize = 24.dp,
-                    spacerHeight = 5.dp)
-              }
-
-              if (flashcard.value?.hasImage != true &&
-                  imageUri.value == null &&
-                  !hasImageBeenChanged.value) {
-                Text("Add an image", style = Typography.bodyMedium)
-              }
-
-              imageUri.value?.let {
-                Image(
-                    painter = rememberAsyncImagePainter(it),
-                    contentDescription = "Flashcard image",
-                    modifier = Modifier.height(100.dp))
-              }
+                  }
 
               HorizontalDivider(modifier = Modifier.height(5.dp).padding(top = 10.dp))
               // Back
-              OutlinedTextField(modifier =
-              Modifier.fillMaxWidth(),
-                  value = back.value, onValueChange = { back.value = it }, label = { Text("Back") })
+              OutlinedTextField(
+                  modifier = Modifier.fillMaxWidth(),
+                  value = back.value,
+                  onValueChange = { back.value = it },
+                  label = { Text("Back") })
 
               // Fake backs
               Box(
@@ -432,35 +470,86 @@ fun FlashcardDialog(
                       Modifier.fillMaxWidth()
                           .testTag("FakeBacks textField")
                           .clickable { showFakeBacksDetails.value = !showFakeBacksDetails.value }
-                          .border(1.dp, OutlinedTextFieldDefaults.colors().unfocusedPlaceholderColor, OutlinedTextFieldDefaults.shape)) {
+                          .border(
+                              1.dp,
+                              OutlinedTextFieldDefaults.colors().unfocusedPlaceholderColor,
+                              OutlinedTextFieldDefaults.shape)) {
                     val fakeBacksText =
-                        if (fakeBacks.value.isEmpty()) "No fake backs" else "Fake backs"
+                        if (fakeBacks.value.isEmpty()) "Add fake backs for MCQ"
+                        else "Fake backs for MCQ"
                     Text(
                         text = fakeBacksText,
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onSurface,
                         modifier = Modifier.padding(16.dp))
+                    Icon(
+                        imageVector =
+                            if (showFakeBacksDetails.value) Icons.Default.ArrowDropUp
+                            else Icons.Default.ArrowDropDown,
+                        contentDescription = "Show fake backs",
+                        tint = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.align(Alignment.CenterEnd))
                   }
 
               AnimatedVisibility(
+                  modifier = Modifier.fillMaxWidth(),
                   visible = showFakeBacksDetails.value,
                   enter = expandVertically(),
                   exit = shrinkVertically()) {
-                    Column(modifier = Modifier.fillMaxWidth()) {
-                      fakeBacks.value.forEachIndexed { index, fakeBack ->
-                        OutlinedTextField(
-                            value = fakeBack,
-                            onValueChange = { newValue ->
-                              fakeBacks.value =
-                                  fakeBacks.value.toMutableList().apply { set(index, newValue) }
-                            },
-                            label = { Text("Fake Back ${index + 1}") },
-                            placeholder = { Text("Enter fake back text") },
-                            modifier =
-                                Modifier.fillMaxWidth()
-                                    .testTag("EditFakeBack${index + 1} textField"))
-                      }
-                    }
+                    LazyColumn(
+                        state =
+                            rememberLazyListState(
+                                initialFirstVisibleItemIndex = fakeBacks.value.size),
+                        modifier = Modifier.fillMaxWidth().heightIn(max = 250.dp),
+                        contentPadding = PaddingValues(horizontal = 10.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally) {
+                          items(fakeBacks.value.size) { index ->
+                            Row(
+                                modifier = Modifier.fillMaxWidth().animateItem(),
+                                verticalAlignment = Alignment.CenterVertically) {
+                                  OutlinedTextField(
+                                      value = fakeBacks.value[index],
+                                      onValueChange = { newValue ->
+                                        fakeBacks.value =
+                                            fakeBacks.value.toMutableList().apply {
+                                              set(index, newValue)
+                                            }
+                                      },
+                                      label = { Text("Fake Back ${index + 1}") },
+                                      placeholder = { Text("Enter fake back text") },
+                                      modifier =
+                                          Modifier.weight(1f)
+                                              .testTag("EditFakeBack${index + 1} textField"))
+                                  IconButton(
+                                      onClick = {
+                                        fakeBacks.value =
+                                            fakeBacks.value.toMutableList().apply {
+                                              removeAt(index)
+                                            }
+                                      }) {
+                                        Icon(
+                                            imageVector = Icons.Default.Delete,
+                                            tint = Color.Red,
+                                            contentDescription = "Remove fake back")
+                                      }
+                                }
+                          }
+                          item {
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                                verticalAlignment = Alignment.CenterVertically) {
+                                  IconButton(onClick = { fakeBacks.value = fakeBacks.value + "" }) {
+                                    Icon(
+                                        imageVector = Icons.Default.Add,
+                                        contentDescription = "Add fake back")
+                                  }
+                                  Text(
+                                      "Add fake back",
+                                      style = Typography.bodyLarge,
+                                      fontStyle = FontStyle.Italic)
+                                }
+                          }
+                        }
                   }
               // Save button
               Button(
