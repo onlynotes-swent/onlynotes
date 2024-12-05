@@ -69,13 +69,26 @@ interface FolderRepository {
   )
 
   /**
-   * Retrieves all root folders owned by a user.
+   * Retrieves all root note folders owned by a user.
    *
    * @param userId The ID of the user to retrieve folders for.
    * @param onSuccess Callback to be invoked with the retrieved folders.
    * @param onFailure Callback to be invoked if an error occurs.
    */
-  fun getRootFoldersFromUid(
+  fun getRootNoteFoldersFromUid(
+      userId: String,
+      onSuccess: (List<Folder>) -> Unit,
+      onFailure: (Exception) -> Unit
+  )
+
+  /**
+   * Retrieves all root deck folders owned by a user.
+   *
+   * @param userId The ID of the user to retrieve decks for.
+   * @param onSuccess Callback to be invoked with the retrieved decks.
+   * @param onFailure Callback to be invoked if an error occurs.
+   */
+  fun getRootDeckFoldersFromUid(
       userId: String,
       onSuccess: (List<Folder>) -> Unit,
       onFailure: (Exception) -> Unit
