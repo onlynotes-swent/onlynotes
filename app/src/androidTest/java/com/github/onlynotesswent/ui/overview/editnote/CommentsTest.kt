@@ -150,7 +150,8 @@ class CommentsTest {
     folderViewModel.getFolderById(testFolder.id)
     composeTestRule.onNodeWithTag("closeButton").performClick()
 
-    verify(navigationActions).navigateTo(Screen.FOLDER_CONTENTS.replace("{folderId}", testFolder.id))
+    verify(navigationActions)
+        .navigateTo(Screen.FOLDER_CONTENTS.replace("{folderId}", testFolder.id))
     verify(noteRepository).updateNote(any(), any(), any())
   }
 
