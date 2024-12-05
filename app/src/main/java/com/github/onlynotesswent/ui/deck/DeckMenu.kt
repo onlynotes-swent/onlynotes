@@ -50,6 +50,7 @@ import com.github.onlynotesswent.model.file.FileType
 import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.flashcard.Flashcard
 import com.github.onlynotesswent.model.flashcard.FlashcardViewModel
+import com.github.onlynotesswent.model.flashcard.deck.Deck
 import com.github.onlynotesswent.model.flashcard.deck.DeckViewModel
 import com.github.onlynotesswent.model.user.User
 import com.github.onlynotesswent.model.user.UserViewModel
@@ -181,8 +182,10 @@ fun DeckScreen(
 
                 // Deck cards
                 LazyColumn(
-                    modifier = Modifier.fillMaxWidth(0.9f).padding(10.dp),
-                    verticalArrangement = Arrangement.spacedBy(5.dp),
+                    modifier =
+                        Modifier.fillMaxWidth(0.9f)
+                            .padding(top = 15.dp, start = 10.dp, end = 10.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
                     horizontalAlignment = Alignment.CenterHorizontally) {
                       items(deckFlashcards.value.size) { index ->
                         FlashcardViewItem(
@@ -251,6 +254,11 @@ fun FlashcardViewItem(
           // Show image
           val imageUri: MutableState<String?> = remember { mutableStateOf(null) }
           if (imageUri.value == null) {
+            LoadingIndicator(
+                "Image is being downloaded...",
+                loadingIndicatorSize = 24.dp,
+                spacerHeight = 5.dp,
+                style = MaterialTheme.typography.bodySmall)
             fileViewModel.downloadFile(
                 flashcard.id,
                 FileType.FLASHCARD_IMAGE,
@@ -381,7 +389,11 @@ fun FlashcardDialog(
                     FileType.FLASHCARD_IMAGE,
                     context = LocalContext.current,
                     onSuccess = { file -> imageUri.value = file.absolutePath })
-                Text("Image is being downloaded...", style = Typography.bodyMedium)
+                LoadingIndicator(
+                    "Image is being downloaded...",
+                    Modifier.fillMaxWidth(),
+                    loadingIndicatorSize = 24.dp,
+                    spacerHeight = 5.dp)
               }
 
               if (flashcard.value?.hasImage != true &&
@@ -424,26 +436,27 @@ fun FlashcardDialog(
                     flashcardViewModel.updateFlashcard(
                         newFlashcard,
                         onSuccess = {
-                          if (mode == "Create") {
-                            deckViewModel.selectedDeck.value?.let { deck ->
-                              val newDeck =
+                          val newDeck: Deck =
+                              deckViewModel.selectedDeck.value!!.let { deck ->
+                                if (mode == "Create") {
                                   deck.copy(flashcardIds = deck.flashcardIds + newFlashcard.id)
-                              deckViewModel.updateDeck(newDeck)
-                            }
-                          }
-                          flashcardViewModel.fetchFlashcardsFromDeck(
-                              deckViewModel.selectedDeck.value!!)
+                                } else deck
+                              }
+                          flashcardViewModel.fetchFlashcardsFromDeck(newDeck)
                           onDismissRequest()
                         })
 
                     if (hasImageBeenChanged.value && imageUri.value != null) {
                       fileViewModel.uploadFile(
-                          flashcard.value!!.id,
+                          newFlashcard.id,
                           imageUri.value!!.toUri(),
                           FileType.FLASHCARD_IMAGE,
                           onSuccess = { hasImageBeenChanged.value = false },
                           onFailure = {})
-                    } else if (hasImageBeenChanged.value && imageUri.value == null) {
+                    } else if (flashcard.value != null &&
+                        hasImageBeenChanged.value &&
+                        imageUri.value == null) {
+                      // No need to delete the image if it's a new flashcard, it will not find it
                       fileViewModel.deleteFile(
                           flashcard.value!!.id,
                           FileType.FLASHCARD_IMAGE,
