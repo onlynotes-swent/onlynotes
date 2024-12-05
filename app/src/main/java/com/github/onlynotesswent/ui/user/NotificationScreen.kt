@@ -67,7 +67,8 @@ fun NotificationScreen(
                   onClick = {
                     navigationActions.goBack()
                     userNotifications.value.forEach { notification ->
-                      if (!notification.read) {
+                      if (!notification.read &&
+                          notification.type != Notification.NotificationType.FOLLOW_REQUEST) {
                         notificationViewModel.updateNotification(notification.copy(read = true))
                       }
                     }
