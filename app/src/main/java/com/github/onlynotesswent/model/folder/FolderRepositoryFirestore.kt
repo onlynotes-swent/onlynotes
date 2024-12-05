@@ -105,7 +105,7 @@ class FolderRepositoryFirestore(private val db: FirebaseFirestore) : FolderRepos
     }
   }
 
-  override fun getFoldersFromUid(
+  override fun getFoldersFromUserId(
       userId: String,
       onSuccess: (List<Folder>) -> Unit,
       onFailure: (Exception) -> Unit
@@ -126,7 +126,7 @@ class FolderRepositoryFirestore(private val db: FirebaseFirestore) : FolderRepos
     }
   }
 
-  override fun getRootNoteFoldersFromUid(
+  override fun getRootNoteFoldersFromUserId(
       userId: String,
       onSuccess: (List<Folder>) -> Unit,
       onFailure: (Exception) -> Unit
@@ -147,7 +147,7 @@ class FolderRepositoryFirestore(private val db: FirebaseFirestore) : FolderRepos
     }
   }
 
-  override fun getRootDeckFoldersFromUid(
+  override fun getRootDeckFoldersFromUserId(
       userId: String,
       onSuccess: (List<Folder>) -> Unit,
       onFailure: (Exception) -> Unit

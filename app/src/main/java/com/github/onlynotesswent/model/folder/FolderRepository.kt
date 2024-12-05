@@ -62,7 +62,7 @@ interface FolderRepository {
    * @param onSuccess Callback to be invoked with the retrieved folders.
    * @param onFailure Callback to be invoked if an error occurs.
    */
-  fun getFoldersFromUid(
+  fun getFoldersFromUserId(
       userId: String,
       onSuccess: (List<Folder>) -> Unit,
       onFailure: (Exception) -> Unit
@@ -75,7 +75,7 @@ interface FolderRepository {
    * @param onSuccess Callback to be invoked with the retrieved folders.
    * @param onFailure Callback to be invoked if an error occurs.
    */
-  fun getRootNoteFoldersFromUid(
+  fun getRootNoteFoldersFromUserId(
       userId: String,
       onSuccess: (List<Folder>) -> Unit,
       onFailure: (Exception) -> Unit
@@ -88,7 +88,7 @@ interface FolderRepository {
    * @param onSuccess Callback to be invoked with the retrieved decks.
    * @param onFailure Callback to be invoked if an error occurs.
    */
-  fun getRootDeckFoldersFromUid(
+  fun getRootDeckFoldersFromUserId(
       userId: String,
       onSuccess: (List<Folder>) -> Unit,
       onFailure: (Exception) -> Unit

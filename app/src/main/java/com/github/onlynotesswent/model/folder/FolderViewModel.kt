@@ -104,7 +104,7 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
         folder = folder,
         onSuccess = {
           onSuccess()
-          getRootFoldersFromUid(folder.userId, isDeckView)
+          getRootFoldersFromUserId(folder.userId, isDeckView)
         },
         onFailure = onFailure)
   }
@@ -129,7 +129,7 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
         folderId = folderId,
         onSuccess = {
           onSuccess()
-          getRootFoldersFromUid(userId, isDeckView)
+          getRootFoldersFromUserId(userId, isDeckView)
         },
         onFailure = onFailure)
   }
@@ -152,7 +152,7 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
         userId = userId,
         onSuccess = {
           onSuccess()
-          getRootFoldersFromUid(userId, isDeckView)
+          getRootFoldersFromUserId(userId, isDeckView)
         },
         onFailure = onFailure)
   }
@@ -164,12 +164,12 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
    * @param onSuccess The function to call when the folders are retrieved successfully.
    * @param onFailure The function to call when the folders fail to be retrieved.
    */
-  fun getFoldersFromUid(
+  fun getFoldersFromUserId(
       userId: String,
       onSuccess: (List<Folder>) -> Unit = {},
       onFailure: (Exception) -> Unit = {}
   ) {
-    repository.getFoldersFromUid(
+    repository.getFoldersFromUserId(
         userId = userId,
         onSuccess = {
           onSuccess(it)
@@ -185,28 +185,16 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
    * @param onSuccess The function to call when the root folders are retrieved successfully.
    * @param onFailure The function to call when the root folders fail to be retrieved.
    */
-  fun getRootFoldersFromUid(
+  fun getRootFoldersFromUserId(
       userId: String,
       isDeckView: Boolean = false,
       onSuccess: (List<Folder>) -> Unit = {},
       onFailure: (Exception) -> Unit = {}
   ) {
     if (isDeckView) {
-      repository.getRootDeckFoldersFromUid(
-          userId = userId,
-          onSuccess = {
-            onSuccess(it)
-            _userRootFolders.value = it
-          },
-          onFailure = onFailure)
+      getRootDeckFoldersFromUserId(userId, onSuccess, onFailure)
     } else {
-      repository.getRootNoteFoldersFromUid(
-          userId = userId,
-          onSuccess = {
-            onSuccess(it)
-            _userRootFolders.value = it
-          },
-          onFailure = onFailure)
+      getRootNoteFoldersFromUserId(userId, onSuccess, onFailure)
     }
   }
 
@@ -217,12 +205,12 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
    * @param onSuccess The function to call when the root folders are retrieved successfully.
    * @param onFailure The function to call when the root folders fail to be retrieved.
    */
-  fun getRootNoteFoldersFromUid(
+  fun getRootNoteFoldersFromUserId(
       userId: String,
       onSuccess: (List<Folder>) -> Unit = {},
       onFailure: (Exception) -> Unit = {}
   ) {
-    repository.getRootNoteFoldersFromUid(
+    repository.getRootNoteFoldersFromUserId(
         userId = userId,
         onSuccess = {
           onSuccess(it)
@@ -238,12 +226,12 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
    * @param onSuccess The function to call when the root folders are retrieved successfully.
    * @param onFailure The function to call when the root folders fail to be retrieved.
    */
-  fun getRootDeckFoldersFromUid(
+  fun getRootDeckFoldersFromUserId(
       userId: String,
       onSuccess: (List<Folder>) -> Unit = {},
       onFailure: (Exception) -> Unit = {}
   ) {
-    repository.getRootDeckFoldersFromUid(
+    repository.getRootDeckFoldersFromUserId(
         userId = userId,
         onSuccess = {
           onSuccess(it)
@@ -291,7 +279,7 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
         folder = folder,
         onSuccess = {
           onSuccess()
-          getRootFoldersFromUid(folder.userId, isDeckView)
+          getRootFoldersFromUserId(folder.userId, isDeckView)
           if (folder.parentFolderId != null) {
             getSubFoldersOf(folder.parentFolderId)
           }

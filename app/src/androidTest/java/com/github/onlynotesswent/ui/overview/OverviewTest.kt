@@ -109,7 +109,7 @@ class OverviewTest {
       val onSuccess = invocation.getArgument<(List<Note>) -> Unit>(1)
       onSuccess(listOf())
     }
-    `when`(folderRepository.getRootNoteFoldersFromUid(eq("1"), any(), any())).then { invocation ->
+    `when`(folderRepository.getRootNoteFoldersFromUserId(eq("1"), any(), any())).then { invocation ->
       val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(1)
       onSuccess(listOf())
     }
@@ -121,7 +121,7 @@ class OverviewTest {
       val onSuccess = invocation.getArgument<(List<Note>) -> Unit>(1)
       onSuccess(noteList)
     }
-    `when`(folderRepository.getRootNoteFoldersFromUid(eq("1"), any(), any())).then { invocation ->
+    `when`(folderRepository.getRootNoteFoldersFromUserId(eq("1"), any(), any())).then { invocation ->
       val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(1)
       onSuccess(folderList)
     }
@@ -131,7 +131,7 @@ class OverviewTest {
     // the
     // refresh click
     verify(noteRepository, times(2)).getRootNotesFrom(eq("1"), any(), any())
-    verify(folderRepository, times(2)).getRootNoteFoldersFromUid(eq("1"), any(), any())
+    verify(folderRepository, times(2)).getRootNoteFoldersFromUserId(eq("1"), any(), any())
     composeTestRule.onNodeWithTag("noteAndFolderList").assertIsDisplayed()
   }
 
@@ -141,12 +141,12 @@ class OverviewTest {
       val onSuccess = invocation.getArgument<(List<Note>) -> Unit>(1)
       onSuccess(noteList)
     }
-    `when`(folderRepository.getRootNoteFoldersFromUid(eq("1"), any(), any())).then { invocation ->
+    `when`(folderRepository.getRootNoteFoldersFromUserId(eq("1"), any(), any())).then { invocation ->
       val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(1)
       onSuccess(folderList)
     }
     noteViewModel.getRootNotesFrom("1")
-    folderViewModel.getRootFoldersFromUid("1")
+    folderViewModel.getRootFoldersFromUserId("1")
     composeTestRule.onNodeWithTag("noteAndFolderList").assertIsDisplayed()
   }
 
@@ -184,11 +184,11 @@ class OverviewTest {
 
   @Test
   fun selectFolderCallsNavActions() {
-    `when`(folderRepository.getRootNoteFoldersFromUid(eq("1"), any(), any())).then { invocation ->
+    `when`(folderRepository.getRootNoteFoldersFromUserId(eq("1"), any(), any())).then { invocation ->
       val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(1)
       onSuccess(folderList)
     }
-    folderViewModel.getRootFoldersFromUid("1")
+    folderViewModel.getRootFoldersFromUserId("1")
     composeTestRule.onAllNodesWithTag("folderCard").onFirst().assertIsDisplayed()
     composeTestRule.onAllNodesWithTag("folderCard").onFirst().performClick()
     val folderContentsScreen =
@@ -271,12 +271,12 @@ class OverviewTest {
       val onSuccess = invocation.getArgument<(List<Note>) -> Unit>(1)
       onSuccess(noteList)
     }
-    `when`(folderRepository.getRootNoteFoldersFromUid(eq("1"), any(), any())).then { invocation ->
+    `when`(folderRepository.getRootNoteFoldersFromUserId(eq("1"), any(), any())).then { invocation ->
       val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(1)
       onSuccess(folderList)
     }
     noteViewModel.getRootNotesFrom("1")
-    folderViewModel.getRootFoldersFromUid("1")
+    folderViewModel.getRootFoldersFromUserId("1")
     composeTestRule.onNodeWithTag("noteAndFolderList").assertIsDisplayed()
 
     composeTestRule.onNodeWithTag("noteCard").assertIsDisplayed()
@@ -296,11 +296,11 @@ class OverviewTest {
 
   @Test
   fun dragAndDropFOlderWorksCorrectly() {
-    `when`(folderRepository.getRootNoteFoldersFromUid(eq("1"), any(), any())).then { invocation ->
+    `when`(folderRepository.getRootNoteFoldersFromUserId(eq("1"), any(), any())).then { invocation ->
       val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(1)
       onSuccess(folderList)
     }
-    folderViewModel.getRootFoldersFromUid("1")
+    folderViewModel.getRootFoldersFromUserId("1")
     composeTestRule
         .onAllNodesWithTag("folderCard")
         .filter(hasText("name2"))
