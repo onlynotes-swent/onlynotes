@@ -29,9 +29,18 @@ data class Note(
     val folderId: String? = null,
     val comments: CommentCollection = CommentCollection()
 ) {
+  /**
+   * Checks if the note is owned by the user with the given Id.
+   *
+   * @param uid The Id of the user to check.
+   * @return `true` if the note is owned by the user; `false` otherwise.
+   */
+  fun isOwner(uid: String): Boolean {
+    return userId == uid
+  }
 
   companion object {
-    // note title max length
+    // Note title max length
     private const val TITLE_MAX_LENGTH = 35
 
     /**
