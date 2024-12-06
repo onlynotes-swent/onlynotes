@@ -667,6 +667,7 @@ fun FlashcardDialog(
                   }
               // Save button
               Button(
+                  enabled = front.value.isNotBlank() && back.value.isNotBlank(),
                   onClick = {
                     val newHasImage: Boolean =
                         if (hasImageBeenChanged.value) imageUri.value != null
