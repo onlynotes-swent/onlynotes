@@ -1,5 +1,6 @@
 package com.github.onlynotesswent.ui.deck
 
+import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
@@ -19,6 +20,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.lazy.staggeredgrid.LazyHorizontalStaggeredGrid
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.filled.Add
@@ -26,9 +32,12 @@ import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.ArrowDropUp
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.HideImage
 import androidx.compose.material.icons.filled.ImageSearch
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.SaveAlt
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.DropdownMenu
@@ -89,15 +98,19 @@ fun DeckScreen(
     pictureTaker: PictureTaker,
     navigationActions: NavigationActions
 ) {
+  val context = LocalContext.current
   val selectedDeck = deckViewModel.selectedDeck.collectAsState()
   val deckFlashcards = flashcardViewModel.deckFlashcards.collectAsState()
   val belongsToUser =
       selectedDeck.value?.userId == userViewModel.currentUser.collectAsState().value?.uid
-  val fabDropdownMenuShown = remember { mutableStateOf(false) }
+  val userFabDropdownMenuShown = remember { mutableStateOf(false) }
   val author: MutableState<User?> = remember { mutableStateOf(null) }
 
   val addCardDialogExpanded = remember { mutableStateOf(false) }
   val importDialogExpanded = remember { mutableStateOf(false) }
+  val editDialogExpanded = remember { mutableStateOf(false) }
+
+  val publicFabDropdownMenuShown = remember { mutableStateOf(false) }
 
   selectedDeck.value?.let { flashcardViewModel.fetchFlashcardsFromDeck(it) }
   selectedDeck.value?.userId?.let { userId ->
@@ -109,19 +122,33 @@ fun DeckScreen(
       floatingActionButton = {
         if (belongsToUser) {
           DeckFab(
-              expandedDropdownMenu = fabDropdownMenuShown,
+              expandedDropdownMenu = userFabDropdownMenuShown,
               onAddCardClick = {
                 addCardDialogExpanded.value = true
                 flashcardViewModel.deselectFlashcard()
               },
-              onImportDeckClick = { importDialogExpanded.value = true })
+              onImportDeckClick = { importDialogExpanded.value = true },
+              onEditClick = { editDialogExpanded.value = true })
+        } else {
+          PublicDeckFab(
+              publicFabDropdownMenuShown,
+              onSaveClick = {
+                Toast.makeText(context, "Not Implemented", Toast.LENGTH_LONG).show()
+              },
+              onSaveCopyClick = {
+                Toast.makeText(context, "Not Implemented", Toast.LENGTH_LONG).show()
+              })
         }
       }) { innerPadding ->
         if (selectedDeck.value == null) {
           LoadingIndicator("Loading deck...")
         } else {
           Column(
-              modifier = Modifier.fillMaxWidth().padding(innerPadding).padding(10.dp),
+              modifier =
+                  Modifier.fillMaxWidth()
+                      .padding(innerPadding)
+                      .padding(10.dp)
+                      .verticalScroll(rememberScrollState()),
               horizontalAlignment = Alignment.CenterHorizontally,
               verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 // Dialogs:
@@ -136,8 +163,7 @@ fun DeckScreen(
                         flashcardViewModel.deselectFlashcard()
                       },
                       mode = "Create")
-                }
-                if (importDialogExpanded.value) {
+                } else if (importDialogExpanded.value) {
                   Dialog(onDismissRequest = { importDialogExpanded.value = false }) {
                     Card {
                       Column(
@@ -151,6 +177,21 @@ fun DeckScreen(
                             Button(onClick = { importDialogExpanded.value = false }) {
                               Text("Import")
                             }
+                          }
+                    }
+                  }
+                } else if (editDialogExpanded.value) {
+                  Dialog(onDismissRequest = { editDialogExpanded.value = false }) {
+                    Card {
+                      Column(
+                          modifier = Modifier.padding(10.dp),
+                          horizontalAlignment = Alignment.CenterHorizontally,
+                          verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                            Text("Edit Deck", style = Typography.headlineSmall)
+                            // TODO: Edit deck functionality
+                            Text("Not Implemented yet", style = Typography.bodyMedium)
+                            // Save button
+                            Button(onClick = { editDialogExpanded.value = false }) { Text("Save") }
                           }
                     }
                   }
@@ -191,18 +232,29 @@ fun DeckScreen(
                     selectedDeck.value!!.description,
                     style = Typography.bodyMedium,
                     modifier = Modifier.padding(10.dp))
+
                 // Deck play mode buttons
-                Box {
-                  Deck.PlayMode.entries.forEach {
-                    PlayButton(it, selectedDeck, deckViewModel, navigationActions)
-                  }
-                }
+                LazyHorizontalStaggeredGrid(
+                    modifier =
+                        Modifier.heightIn(max = 100.dp)
+                            .padding(5.dp)
+                            .align(Alignment.CenterHorizontally),
+                    rows = StaggeredGridCells.Adaptive(minSize = 35.dp)) {
+                      items(Deck.PlayMode.entries.size) { index ->
+                        PlayButton(
+                            Deck.PlayMode.entries[index],
+                            selectedDeck,
+                            deckViewModel,
+                            navigationActions)
+                      }
+                    }
 
                 // Deck cards
                 LazyColumn(
                     reverseLayout = true,
                     modifier =
                         Modifier.fillMaxWidth(0.9f)
+                            .heightIn(max = 600.dp)
                             .padding(top = 15.dp, start = 10.dp, end = 10.dp),
                     verticalArrangement = Arrangement.spacedBy(10.dp),
                     horizontalAlignment = Alignment.CenterHorizontally) {
@@ -236,13 +288,15 @@ fun PlayButton(
         Deck.PlayMode.ALL -> stringResource(R.string.play_mode_all_combined)
       }
   Button(
+      shape = RoundedCornerShape(25),
+      modifier = Modifier.padding(1.dp),
       onClick = {
         deckViewModel.selectDeck(selectedDeck.value!!)
         navigationActions.navigateTo(
             Screen.DECK_PLAY.replace("{deckId}", selectedDeck.value!!.id)
                 .replace("{mode}", playMode.toString()))
       }) {
-        Text(label)
+        Text(label, maxLines = 2)
       }
 }
 
@@ -348,17 +402,47 @@ private fun DeckMenuTopAppBar(onBackButtonClick: () -> Unit) {
 }
 
 @Composable
-private fun DeckFab(
+private fun PublicDeckFab(
     expandedDropdownMenu: MutableState<Boolean>,
-    onAddCardClick: () -> Unit,
-    onImportDeckClick: () -> Unit
+    onSaveClick: () -> Unit,
+    onSaveCopyClick: () -> Unit
 ) {
   CustomDropDownMenu(
       modifier = Modifier.testTag("deckFab"),
       menuItems =
           listOf(
               CustomDropDownMenuItem(
-                  text = { Text("Add card") },
+                  text = { Text("Save to favorites") },
+                  icon = {
+                    Icon(imageVector = Icons.Default.Star, contentDescription = "Save deck")
+                  },
+                  onClick = onSaveClick),
+              CustomDropDownMenuItem(
+                  text = { Text("Create local copy") },
+                  icon = {
+                    Icon(imageVector = Icons.Default.SaveAlt, contentDescription = "Save copy")
+                  },
+                  onClick = onSaveCopyClick),
+          ),
+      expanded = expandedDropdownMenu.value,
+      onFabClick = { expandedDropdownMenu.value = !expandedDropdownMenu.value },
+      onDismissRequest = { expandedDropdownMenu.value = false },
+      fabIcon = { Icon(imageVector = Icons.Default.Download, contentDescription = "Save Deck") })
+}
+
+@Composable
+private fun DeckFab(
+    expandedDropdownMenu: MutableState<Boolean>,
+    onAddCardClick: () -> Unit,
+    onImportDeckClick: () -> Unit,
+    onEditClick: () -> Unit
+) {
+  CustomDropDownMenu(
+      modifier = Modifier.testTag("deckFab"),
+      menuItems =
+          listOf(
+              CustomDropDownMenuItem(
+                  text = { Text("Add new card") },
                   icon = { Icon(imageVector = Icons.Default.Add, contentDescription = "Add card") },
                   onClick = onAddCardClick),
               CustomDropDownMenuItem(
@@ -366,13 +450,17 @@ private fun DeckFab(
                   icon = {
                     Icon(imageVector = Icons.Default.Download, contentDescription = "Import deck")
                   },
-                  onClick = onImportDeckClick)),
+                  onClick = onImportDeckClick),
+              CustomDropDownMenuItem(
+                  text = { Text("Edit Deck") },
+                  icon = {
+                    Icon(imageVector = Icons.Default.Edit, contentDescription = "Edit deck")
+                  },
+                  onClick = onEditClick)),
       expanded = expandedDropdownMenu.value,
       onFabClick = { expandedDropdownMenu.value = !expandedDropdownMenu.value },
       onDismissRequest = { expandedDropdownMenu.value = false },
-      fabIcon = {
-        Icon(imageVector = Icons.Default.Add, contentDescription = "Add card or import deck")
-      })
+      fabIcon = { Icon(imageVector = Icons.Default.Edit, contentDescription = "Edit Deck") })
 }
 
 @Composable

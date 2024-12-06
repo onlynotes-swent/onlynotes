@@ -91,8 +91,8 @@
     <string name="public_account">Public</string>
     <string name="biography">Biography</string>
     <string name="flashcards">Flashcards</string>
-    <string name="play_mode_flashcards">Flashcards</string>
+    <string name="play_mode_flashcards">Flip Through Flashcards</string>
     <string name="play_mode_match_cards">Match Cards</string>
-    <string name="play_mode_mcq">Multiple Choice</string>
+    <string name="play_mode_mcq">Multiple Choice Questions</string>
     <string name="play_mode_all_combined">All Combined</string>
 </resources>
