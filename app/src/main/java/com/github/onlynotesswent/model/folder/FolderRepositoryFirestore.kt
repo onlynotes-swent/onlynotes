@@ -53,11 +53,6 @@ class FolderRepositoryFirestore(
       withContext(Dispatchers.IO) { folderDao.addFolder(folder) }
     }
 
-    if (!NetworkUtils.isInternetAvailable(context)) {
-      onSuccess()
-      return
-    }
-
     db.collection(folderCollectionPath).document(folder.id).set(folder).addOnCompleteListener {
         result ->
       if (result.isSuccessful) {
@@ -80,11 +75,6 @@ class FolderRepositoryFirestore(
     // Update the cache if needed
     if (useCache) {
       withContext(Dispatchers.IO) { folderDao.addFolders(folders) }
-    }
-
-    if (!NetworkUtils.isInternetAvailable(context)) {
-      onSuccess()
-      return
     }
 
     val batch = db.batch()
@@ -115,11 +105,6 @@ class FolderRepositoryFirestore(
       withContext(Dispatchers.IO) { folderDao.deleteFolderById(folderId) }
     }
 
-    if (!NetworkUtils.isInternetAvailable(context)) {
-      onSuccess()
-      return
-    }
-
     db.collection(folderCollectionPath).document(folderId).delete().addOnCompleteListener { result
       ->
       if (result.isSuccessful) {
@@ -142,11 +127,6 @@ class FolderRepositoryFirestore(
     // Update the cache if needed
     if (useCache) {
       withContext(Dispatchers.IO) { folderDao.deleteFoldersFromUid() }
-    }
-
-    if (!NetworkUtils.isInternetAvailable(context)) {
-      onSuccess()
-      return
     }
 
     db.collection(folderCollectionPath).get().addOnCompleteListener { task ->
@@ -296,11 +276,6 @@ class FolderRepositoryFirestore(
     // Update the cache if needed
     if (useCache) {
       withContext(Dispatchers.IO) { folderDao.addFolder(folder) }
-    }
-
-    if (!NetworkUtils.isInternetAvailable(context)) {
-      onSuccess()
-      return
     }
 
     db.collection(folderCollectionPath).document(folder.id).set(folder).addOnCompleteListener {

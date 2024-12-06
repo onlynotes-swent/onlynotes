@@ -199,11 +199,6 @@ class NoteRepositoryFirestore(
       withContext(Dispatchers.IO) { noteDao.addNote(note) }
     }
 
-    if (!NetworkUtils.isInternetAvailable(context)) {
-      onSuccess()
-      return
-    }
-
     performFirestoreOperation(
         db.collection(collectionPath).document(note.id).set(convertNotes(note)),
         onSuccess,
@@ -219,11 +214,6 @@ class NoteRepositoryFirestore(
     // Update the cache if needed
     if (useCache) {
       withContext(Dispatchers.IO) { noteDao.addNotes(notes) }
-    }
-
-    if (!NetworkUtils.isInternetAvailable(context)) {
-      onSuccess()
-      return
     }
 
     val batch = db.batch()
@@ -245,11 +235,6 @@ class NoteRepositoryFirestore(
       withContext(Dispatchers.IO) { noteDao.addNote(note) }
     }
 
-    if (!NetworkUtils.isInternetAvailable(context)) {
-      onSuccess()
-      return
-    }
-
     performFirestoreOperation(
         db.collection(collectionPath).document(note.id).set(convertNotes(note)),
         onSuccess,
@@ -267,11 +252,6 @@ class NoteRepositoryFirestore(
       withContext(Dispatchers.IO) { noteDao.deleteNoteById(id) }
     }
 
-    if (!NetworkUtils.isInternetAvailable(context)) {
-      onSuccess()
-      return
-    }
-
     performFirestoreOperation(
         db.collection(collectionPath).document(id).delete(), onSuccess, onFailure)
   }
@@ -285,11 +265,6 @@ class NoteRepositoryFirestore(
     // Update the cache if needed
     if (useCache) {
       withContext(Dispatchers.IO) { noteDao.deleteNotesFromUid() }
-    }
-
-    if (!NetworkUtils.isInternetAvailable(context)) {
-      onSuccess()
-      return
     }
 
     db.collection(collectionPath).get().addOnCompleteListener { task ->
@@ -357,11 +332,6 @@ class NoteRepositoryFirestore(
     // Update the cache if needed
     if (useCache) {
       withContext(Dispatchers.IO) { noteDao.deleteNotesFromFolder(folderId) }
-    }
-
-    if (!NetworkUtils.isInternetAvailable(context)) {
-      onSuccess()
-      return
     }
 
     db.collection(collectionPath).get().addOnCompleteListener { task ->
