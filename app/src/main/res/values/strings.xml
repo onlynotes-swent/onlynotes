@@ -90,7 +90,10 @@
     <string name="private_account">Private</string>
     <string name="public_account">Public</string>
     <string name="biography">Biography</string>
-    <string name="flashcards">Flashcards</string>
+    <string name="send">Send</string>
+    <string name="message">message</string>
+    <string name="new_message_from">New Message from %1$s</string>
+    <string name="no_notifications">You don\'t have notifications</string>
     <string name="play_mode_flashcards">Flip Through Flashcards</string>
     <string name="play_mode_match_cards">Match Cards</string>
     <string name="play_mode_mcq">Multiple Choice Questions</string>

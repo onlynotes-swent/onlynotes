@@ -66,7 +66,12 @@ class DeckViewModel(private val repository: DeckRepository) : ViewModel() {
     return repository.getNewUid()
   }
 
-  /** Retrieves all public decks. */
+  /**
+   * Retrieves all public decks.
+   *
+   * @param onSuccess The callback to be executed when the public decks are retrieved.
+   * @param onFailure The callback to be executed when an error occurs.
+   */
   fun getPublicDecks(onSuccess: (List<Deck>) -> Unit = {}, onFailure: (Exception) -> Unit = {}) {
     repository.getPublicDecks(
         { decks ->

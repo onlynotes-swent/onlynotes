@@ -137,3 +137,59 @@ fun CreationDialog(
             }
       })
 }
+
+/**
+ * Generic dialog for entering text.
+ *
+ * @param onDismiss callback to be invoked when the dialog is dismissed
+ * @param onConfirm callback to be invoked when the user confirms the new text
+ * @param formatter function to format the text
+ * @param action the action to be performed (eg. "Send")
+ * @param type the type of item displayed in the dialog (eg. "Message")
+ */
+@Composable
+fun EnterTextPopup(
+    onDismiss: () -> Unit,
+    onConfirm: (String) -> Unit,
+    formatter: (String) -> String,
+    action: String,
+    type: String
+) {
+
+  var text by remember { mutableStateOf("") }
+
+  AlertDialog(
+      onDismissRequest = onDismiss,
+      title = { Text("$action $type") },
+      text = {
+        Column(
+            modifier = Modifier.padding(16.dp).testTag("${type}Dialog"),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            horizontalAlignment = Alignment.CenterHorizontally) {
+              OutlinedTextField(
+                  value = text,
+                  onValueChange = { text = formatter(it) },
+                  label = { Text(type) },
+                  modifier = Modifier.testTag("input${type}"))
+
+              // Spacing
+              Spacer(modifier = Modifier.height(8.dp))
+            }
+      },
+      confirmButton = {
+        Button(
+            enabled = text.isNotEmpty(),
+            onClick = { onConfirm(text) },
+            modifier = Modifier.testTag("confirm${type}Action")) {
+              Text(action)
+            }
+      },
+      dismissButton = {
+        OutlinedButton(
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.error),
+            onClick = onDismiss,
+            modifier = Modifier.testTag("dismiss${type}Action")) {
+              Text(stringResource(R.string.cancel), color = MaterialTheme.colorScheme.error)
+            }
+      })
+}
