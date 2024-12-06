@@ -45,6 +45,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -53,11 +54,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.core.net.toUri
 import coil.compose.rememberAsyncImagePainter
+import com.github.onlynotesswent.R
 import com.github.onlynotesswent.model.file.FileType
 import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.flashcard.Flashcard
@@ -72,6 +75,7 @@ import com.github.onlynotesswent.ui.common.LoadingIndicator
 import com.github.onlynotesswent.ui.common.ScreenTopBar
 import com.github.onlynotesswent.ui.common.ThumbnailPic
 import com.github.onlynotesswent.ui.navigation.NavigationActions
+import com.github.onlynotesswent.ui.navigation.Screen
 import com.github.onlynotesswent.ui.theme.Typography
 import com.github.onlynotesswent.ui.user.switchProfileTo
 import com.github.onlynotesswent.utils.PictureTaker
@@ -188,18 +192,15 @@ fun DeckScreen(
                     style = Typography.bodyMedium,
                     modifier = Modifier.padding(10.dp))
                 // Deck play mode buttons
-                Button(
-                    onClick = {
-                      deckViewModel.selectDeck(selectedDeck.value!!)
-                      // TODO: implement play screen
-                      // navigationActions.navigateTo(
-                      //    Screen.DECK_PLAY.replace("{deckId}", selectedDeck.value!!.id))
-                    }) {
-                      Text("Play")
-                    }
+                Box {
+                  Deck.PlayMode.entries.forEach {
+                    PlayButton(it, selectedDeck, deckViewModel, navigationActions)
+                  }
+                }
 
                 // Deck cards
                 LazyColumn(
+                    reverseLayout = true,
                     modifier =
                         Modifier.fillMaxWidth(0.9f)
                             .padding(top = 15.dp, start = 10.dp, end = 10.dp),
@@ -217,6 +218,31 @@ fun DeckScreen(
                     }
               }
         }
+      }
+}
+
+@Composable
+fun PlayButton(
+    playMode: Deck.PlayMode,
+    selectedDeck: State<Deck?>,
+    deckViewModel: DeckViewModel,
+    navigationActions: NavigationActions,
+) {
+  val label: String =
+      when (playMode) {
+        Deck.PlayMode.FLASHCARD -> stringResource(R.string.play_mode_flashcards)
+        Deck.PlayMode.MATCH -> stringResource(R.string.play_mode_match_cards)
+        Deck.PlayMode.MCQ -> stringResource(R.string.play_mode_mcq)
+        Deck.PlayMode.ALL -> stringResource(R.string.play_mode_all_combined)
+      }
+  Button(
+      onClick = {
+        deckViewModel.selectDeck(selectedDeck.value!!)
+        navigationActions.navigateTo(
+            Screen.DECK_PLAY.replace("{deckId}", selectedDeck.value!!.id)
+                .replace("{mode}", playMode.toString()))
+      }) {
+        Text(label)
       }
 }
 

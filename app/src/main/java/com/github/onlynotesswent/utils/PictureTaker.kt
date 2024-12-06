@@ -37,8 +37,8 @@ open class PictureTaker(private val activity: ComponentActivity) {
   }
 
   /**
-   * Opens the image picker to select a picture. The image picker is configured to crop the
-   * image to a square shape and use only the gallery for selection
+   * Opens the image picker to select a picture. The image picker is configured to crop the image to
+   * a square shape and use only the gallery for selection
    */
   open fun pickImage(fromGalleryOnly: Boolean = true, cropToSquare: Boolean = true) {
     ImagePicker.with(activity)

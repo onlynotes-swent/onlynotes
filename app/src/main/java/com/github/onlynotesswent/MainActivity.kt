@@ -24,12 +24,14 @@ import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.flashcard.FlashcardViewModel
+import com.github.onlynotesswent.model.flashcard.deck.Deck
 import com.github.onlynotesswent.model.flashcard.deck.DeckViewModel
 import com.github.onlynotesswent.model.folder.FolderViewModel
 import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.model.notification.NotificationViewModel
 import com.github.onlynotesswent.model.user.UserViewModel
 import com.github.onlynotesswent.ui.authentication.SignInScreen
+import com.github.onlynotesswent.ui.deck.DeckPlayScreen
 import com.github.onlynotesswent.ui.deck.DeckScreen
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Route
@@ -71,11 +73,7 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun OnlyNotesApp(
-    scanner: Scanner,
-    pictureTaker: PictureTaker,
-    serverClientId: String
-) {
+fun OnlyNotesApp(scanner: Scanner, pictureTaker: PictureTaker, serverClientId: String) {
   val navController = rememberNavController()
   val navigationActions = NavigationActions(navController)
   val userViewModel: UserViewModel = viewModel(factory = UserViewModel.Factory)
@@ -161,6 +159,18 @@ fun OnlyNotesApp(
             fileViewModel,
             pictureTaker,
             navigationActions)
+      }
+      composable(Screen.DECK_PLAY) { navBackStackEntry ->
+        val deckId = navBackStackEntry.arguments?.getString("deckId")
+        val mode = navBackStackEntry.arguments?.getString("mode")
+
+        // Refresh deck if it is not null
+        LaunchedEffect(deckId) {
+          if (deckId != null && deckId != "{deckId}")
+              deckViewModel.getDeckById(
+                  deckId, { deckViewModel.playDeckWithMode(it, Deck.PlayMode.fromString(mode)) })
+        }
+        DeckPlayScreen()
       }
     }
 

@@ -24,4 +24,17 @@ data class Deck(
     val lastModified: Timestamp,
     val description: String = "",
     val flashcardIds: List<String> = emptyList()
-)
+) {
+  enum class PlayMode {
+    FLASHCARD,
+    MATCH,
+    MCQ,
+    ALL;
+
+    companion object {
+      fun fromString(s: String?): PlayMode {
+        return entries.find { it.toString() == s } ?: FLASHCARD
+      }
+    }
+  }
+}
