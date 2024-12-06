@@ -151,7 +151,9 @@ fun OnlyNotesApp(scanner: Scanner, pictureTaker: PictureTaker, serverClientId: S
             deckViewModel,
             fileViewModel)
       }
-      composable(Screen.DECK_MENU) {
+      composable(Screen.DECK_MENU) { navBackStackEntry ->
+        val deckId = navBackStackEntry.arguments?.getString("deckId")
+        deckId?.let { deckViewModel.getDeckById(it) }
         DeckScreen(
             userViewModel,
             deckViewModel,

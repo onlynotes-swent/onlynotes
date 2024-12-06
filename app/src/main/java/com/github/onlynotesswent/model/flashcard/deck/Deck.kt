@@ -37,4 +37,17 @@ data class Deck(
       }
     }
   }
+
+  companion object {
+    private const val DESCRIPTION_MAX_LEN = 200
+    private const val TITLE_MAX_LEN = 75
+
+    fun formatDescription(s: String): String {
+      return s.trimStart().take(DESCRIPTION_MAX_LEN)
+    }
+
+    fun formatTitle(s: String): String {
+      return s.trimStart().take(TITLE_MAX_LEN)
+    }
+  }
 }

@@ -70,6 +70,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.core.net.toUri
 import coil.compose.rememberAsyncImagePainter
 import com.github.onlynotesswent.R
+import com.github.onlynotesswent.model.common.Visibility
 import com.github.onlynotesswent.model.file.FileType
 import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.flashcard.Flashcard
@@ -82,12 +83,14 @@ import com.github.onlynotesswent.ui.common.CustomDropDownMenu
 import com.github.onlynotesswent.ui.common.CustomDropDownMenuItem
 import com.github.onlynotesswent.ui.common.LoadingIndicator
 import com.github.onlynotesswent.ui.common.ScreenTopBar
+import com.github.onlynotesswent.ui.common.SelectVisibility
 import com.github.onlynotesswent.ui.common.ThumbnailPic
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
 import com.github.onlynotesswent.ui.theme.Typography
 import com.github.onlynotesswent.ui.user.switchProfileTo
 import com.github.onlynotesswent.utils.PictureTaker
+import com.google.firebase.Timestamp
 
 @Composable
 fun DeckScreen(
@@ -111,6 +114,7 @@ fun DeckScreen(
   val editDialogExpanded = remember { mutableStateOf(false) }
 
   val publicFabDropdownMenuShown = remember { mutableStateOf(false) }
+  // TODO: add mutable states for save to favourites and create local copy
 
   selectedDeck.value?.let { flashcardViewModel.fetchFlashcardsFromDeck(it) }
   selectedDeck.value?.userId?.let { userId ->
@@ -147,7 +151,7 @@ fun DeckScreen(
               modifier =
                   Modifier.fillMaxWidth()
                       .padding(innerPadding)
-                      .padding(10.dp)
+                      .padding(start = 15.dp, top = 10.dp, end = 10.dp)
                       .verticalScroll(rememberScrollState()),
               horizontalAlignment = Alignment.CenterHorizontally,
               verticalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -181,20 +185,7 @@ fun DeckScreen(
                     }
                   }
                 } else if (editDialogExpanded.value) {
-                  Dialog(onDismissRequest = { editDialogExpanded.value = false }) {
-                    Card {
-                      Column(
-                          modifier = Modifier.padding(10.dp),
-                          horizontalAlignment = Alignment.CenterHorizontally,
-                          verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                            Text("Edit Deck", style = Typography.headlineSmall)
-                            // TODO: Edit deck functionality
-                            Text("Not Implemented yet", style = Typography.bodyMedium)
-                            // Save button
-                            Button(onClick = { editDialogExpanded.value = false }) { Text("Save") }
-                          }
-                    }
-                  }
+                  EditDeckDialog(deckViewModel, userViewModel, { editDialogExpanded.value = false })
                 }
 
                 // Card count and author name
@@ -774,4 +765,61 @@ fun FlashcardItemDropdownMenu(
               dropdownMenuExpanded.value = false
             })
       }
+}
+
+@Composable
+fun EditDeckDialog(
+    deckViewModel: DeckViewModel,
+    userViewModel: UserViewModel,
+    onDismissRequest: () -> Unit,
+    mode: String = "Edit",
+) {
+  val deck: State<Deck?> = deckViewModel.selectedDeck.collectAsState()
+  val deckTitle = remember { mutableStateOf(deck.value?.name ?: "") }
+  val deckDescription = remember { mutableStateOf(deck.value?.description ?: "") }
+  val deckVisibility = remember { mutableStateOf(deck.value?.visibility ?: Visibility.DEFAULT) }
+
+  Dialog(onDismissRequest = onDismissRequest) {
+    Card {
+      Column(
+          modifier = Modifier.padding(10.dp),
+          horizontalAlignment = Alignment.CenterHorizontally,
+          verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Text("$mode Deck", style = Typography.headlineSmall)
+            OutlinedTextField(
+                value = deckTitle.value,
+                onValueChange = { deckTitle.value = Deck.formatTitle(it) },
+                maxLines = 1)
+            SelectVisibility(deckVisibility.value, { deckVisibility.value = it })
+            OutlinedTextField(
+                value = deckDescription.value,
+                onValueChange = { deckDescription.value = Deck.formatDescription(it) },
+                minLines = 2,
+                maxLines = 5,
+            )
+            // Save button
+            Button(
+                onClick = {
+                  val newDeck =
+                      deck.value?.copy(
+                          name = deckTitle.value,
+                          description = deckDescription.value,
+                          visibility = deckVisibility.value,
+                          lastModified = Timestamp.now())
+                          ?: Deck(
+                              id = deckViewModel.getNewUid(),
+                              name = deckTitle.value,
+                              userId = userViewModel.currentUser.value!!.uid,
+                              folderId = null,
+                              visibility = deckVisibility.value,
+                              description = deckDescription.value,
+                              lastModified = Timestamp.now())
+                  deckViewModel.updateDeck(newDeck, { deckViewModel.selectDeck(newDeck) })
+                  onDismissRequest()
+                }) {
+                  Text("Save")
+                }
+          }
+    }
+  }
 }
