@@ -341,13 +341,25 @@ class OverviewTest {
     }
     folderViewModel.getRootFoldersFromUid("1")
 
+    val subFolderList =
+        listOf(
+            Folder(id = "10", name = "SubFolder1", userId = "1", parentFolderId = "8"),
+            Folder(id = "11", name = "SubFolder2", userId = "1", parentFolderId = "8"))
+
+    `when`(folderRepository.getSubFoldersOf(eq("8"), any<(List<Folder>) -> Unit>(), any()))
+        .thenAnswer { invocation ->
+          val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(1)
+          onSuccess(subFolderList)
+        }
+
     composeTestRule.onNodeWithTag("showFileSystemButton").assertIsDisplayed()
     composeTestRule.onNodeWithTag("showFileSystemButton").performClick()
     composeTestRule.onNodeWithTag("FileSystemPopup").assertIsDisplayed()
     composeTestRule.onNodeWithTag("FileSystemPopupFolderChoiceBox8").assertIsDisplayed()
     composeTestRule.onNodeWithTag("FileSystemPopupFolderChoiceBox9").assertIsDisplayed()
-    // composeTestRule.onNodeWithTag("FileSystemPopupFolderChoiceText").assertIsDisplayed()
-    // composeTestRule.onNodeWithTag("FileSystemPopupFolderChoiceText").assertIsDisplayed()
-
+    composeTestRule.onNodeWithTag("FileSystemPopupFolderChoiceBox8").performClick()
+    composeTestRule.onNodeWithTag("FileSystemPopupFolderChoiceBox8").assertIsNotDisplayed()
+    composeTestRule.onNodeWithTag("FileSystemPopupFolderChoiceBox10").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("FileSystemPopupFolderChoiceBox11").assertIsDisplayed()
   }
 }

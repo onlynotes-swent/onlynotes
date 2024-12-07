@@ -221,7 +221,8 @@ fun FileSystemPopup(onDismiss: () -> Unit, folderViewModel: FolderViewModel) {
                     folderSubFolders.forEach { subFolder ->
                       Box(
                           modifier =
-                              Modifier.fillMaxWidth()
+                              Modifier.testTag("FileSystemPopupFolderChoiceBox" + subFolder.id)
+                                  .fillMaxWidth()
                                   .background(
                                       color = MaterialTheme.colorScheme.surface,
                                       shape = RoundedCornerShape(8.dp))
