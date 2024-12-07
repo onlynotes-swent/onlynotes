@@ -4,7 +4,6 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
-import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextReplacement
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -129,7 +128,8 @@ class DeckMenuTest {
     }
 
     // Mock the user repository to get the test user
-    `when`(mockUserRepository.getUserById(eq(testUser.uid), any(), any(), any())).thenAnswer { invocation ->
+    `when`(mockUserRepository.getUserById(eq(testUser.uid), any(), any(), any())).thenAnswer {
+        invocation ->
       val onSuccess = invocation.getArgument<(User) -> Unit>(1)
       onSuccess(testUser)
     }
@@ -250,9 +250,14 @@ class DeckMenuTest {
     }
 
     // Flashcard item actions
-    composeTestRule.onNodeWithTag("flashcardOptions--testFlashcardId1").assertIsDisplayed().performClick()
+    composeTestRule
+        .onNodeWithTag("flashcardOptions--testFlashcardId1")
+        .assertIsDisplayed()
+        .performClick()
     for (i in 1..1000000) println("Test")
-    composeTestRule.onNodeWithTag("flashcardOptionsMenu", useUnmergedTree = true).assertIsDisplayed()
+    composeTestRule
+        .onNodeWithTag("flashcardOptionsMenu", useUnmergedTree = true)
+        .assertIsDisplayed()
     composeTestRule.onNodeWithTag("deleteFlashcardMenuItem").assertIsDisplayed()
     composeTestRule.onNodeWithTag("editFlashcardMenuItem").assertIsDisplayed().performClick()
 
