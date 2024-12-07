@@ -91,4 +91,8 @@
     <string name="private_account">Private</string>
     <string name="public_account">Public</string>
     <string name="biography">Biography</string>
+    <string name="send">Send</string>
+    <string name="message">message</string>
+    <string name="new_message_from">New Message from %1$s</string>
+    <string name="no_notifications">You don\'t have notifications</string>
 </resources>
