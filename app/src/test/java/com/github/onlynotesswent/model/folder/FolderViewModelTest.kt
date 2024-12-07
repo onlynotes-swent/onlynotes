@@ -162,10 +162,4 @@ class FolderViewModelTest {
     verify(mockFolderRepository).getRootFoldersFromUid(eq("1"), any(), any())
     verify(mockFolderRepository).getSubFoldersOf(eq("pid"), any(), any())
   }
-
-  @Test
-  fun draggedFolderUpdatesCorrectly() {
-    folderViewModel.draggedFolder(testFolder)
-    assertThat(folderViewModel.draggedFolder.value, `is`(testFolder))
-  }
 }

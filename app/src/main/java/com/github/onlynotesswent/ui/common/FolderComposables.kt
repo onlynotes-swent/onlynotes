@@ -1,11 +1,9 @@
 package com.github.onlynotesswent.ui.common
 
-import android.content.ClipData
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.draganddrop.dragAndDropSource
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.draganddrop.dragAndDropTarget
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -22,7 +20,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draganddrop.DragAndDropEvent
 import androidx.compose.ui.draganddrop.DragAndDropTarget
-import androidx.compose.ui.draganddrop.DragAndDropTransferData
 import androidx.compose.ui.draganddrop.toAndroidDragEvent
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
@@ -65,24 +62,10 @@ fun FolderItem(
           Modifier.testTag("folderCard")
               .semantics(mergeDescendants = true, properties = {})
               .padding(vertical = 4.dp)
-              .dragAndDropSource {
-                detectTapGestures(
-                    // When tapping on a folder, perform onCLick
-                    onTap = { onClick() },
-                    onLongPress = {
-                      // Only allow drag-and-drop for root folders
-                      if (folder.parentFolderId == null) {
-                        folderViewModel.draggedFolder(folder)
-                        // Start a drag-and-drop operation to transfer the data being dragged
-                        startTransfer(
-                            DragAndDropTransferData(
-                                // Transfer the folder Id as a ClipData object
-                                ClipData.newPlainText("Folder", folder.id)))
-                      }
-                    })
-              } // Enable drag-and-drop for the folder (as a target)
+              .clickable(onClick = onClick)
+               // Enable drag-and-drop for the folder as a target
               .dragAndDropTarget(
-                  // Accept any drag-and-drop event (either folder or note in this case)
+                  // Accept any drag-and-drop event (just a note in this case)
                   shouldStartDragAndDrop = { true },
                   // Handle the drop event
                   target =
@@ -97,19 +80,6 @@ fun FolderItem(
                               // Update the dragged note with the new folder Id
                               noteViewModel.updateNote(draggedNote.copy(folderId = folder.id))
                               noteViewModel.draggedNote(null)
-                              dropSuccess.value = true
-                              return true
-                            }
-                            // Get the dragged folder in case a folder is being dragged
-                            val draggedFolder = folderViewModel.draggedFolder.value
-                            if (draggedFolder != null &&
-                                draggedFolder.id == draggedObjectId &&
-                                draggedFolder.id != folder.id) {
-                              // Update the dragged folder with the new parent folder Id.
-                              folderViewModel.updateFolder(
-                                  draggedFolder.copy(parentFolderId = folder.id))
-                              folderViewModel.draggedFolder(null)
-                              // Set dropSuccess to true to indicate that the drop was successful
                               dropSuccess.value = true
                               return true
                             }
