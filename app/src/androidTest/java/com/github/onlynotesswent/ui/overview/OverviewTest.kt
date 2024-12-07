@@ -59,8 +59,8 @@ class OverviewTest {
 
   private val folderList =
       listOf(
-          Folder(id = "2", name = "name", userId = "1", parentFolderId = "1"),
-          Folder(id = "3", name = "name2", userId = "1", parentFolderId = "1"))
+          Folder(id = "2", name = "name", userId = "1", parentFolderId = null),
+          Folder(id = "3", name = "name2", userId = "1", parentFolderId = null))
 
   @get:Rule val composeTestRule = createComposeRule()
 
@@ -250,37 +250,6 @@ class OverviewTest {
   }
 
   @Test
-  fun openFileSystem() {
-    composeTestRule.onNodeWithTag("FileSystemPopup").assertIsNotDisplayed()
-    composeTestRule.onNodeWithTag("showFileSystemButton").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("showFileSystemButton").performClick()
-    composeTestRule.onNodeWithTag("FileSystemPopup").assertIsDisplayed()
-  }
-
-  @Test
-  fun navigateFileSystem() {
-    val userRootFoldersFlow =
-        listOf(
-            Folder(id = "8", name = "Root Folder 1", userId = "1", parentFolderId = "1"),
-            Folder(id = "9", name = "Root Folder 2", userId = "2", parentFolderId = "1"))
-
-    `when`(folderRepository.getRootFoldersFromUid(eq("1"), any(), any())).then { invocation ->
-      val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(1)
-      onSuccess(userRootFoldersFlow)
-    }
-    folderViewModel.getRootFoldersFromUid("1")
-
-    composeTestRule.onNodeWithTag("showFileSystemButton").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("showFileSystemButton").performClick()
-    composeTestRule.onNodeWithTag("FileSystemPopup").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("FileSystemPopupFolderChoiceBox8").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("FileSystemPopupFolderChoiceBox9").assertIsDisplayed()
-    // composeTestRule.onNodeWithTag("FileSystemPopupFolderChoiceText").assertIsDisplayed()
-    // composeTestRule.onNodeWithTag("FileSystemPopupFolderChoiceText").assertIsDisplayed()
-
-  }
-
-  @Test
   fun createFolderDialogWorks() {
     composeTestRule.onNodeWithTag("createNoteOrFolder").performClick()
     composeTestRule.onNodeWithTag("createFolder").performClick()
@@ -299,6 +268,16 @@ class OverviewTest {
 
   @Test
   fun dragAndDropNoteWorksCorrectly() {
+    `when`(noteRepository.getRootNotesFrom(eq("1"), any(), any())).then { invocation ->
+      val onSuccess = invocation.getArgument<(List<Note>) -> Unit>(1)
+      onSuccess(noteList)
+    }
+    `when`(folderRepository.getRootFoldersFromUid(eq("1"), any(), any())).then { invocation ->
+      val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(1)
+      onSuccess(folderList)
+    }
+    noteViewModel.getRootNotesFrom("1")
+    folderViewModel.getRootFoldersFromUid("1")
     composeTestRule.onNodeWithTag("noteAndFolderList").assertIsDisplayed()
 
     composeTestRule.onNodeWithTag("noteCard").assertIsDisplayed()
@@ -339,5 +318,36 @@ class OverviewTest {
           advanceEventTime(5000)
           up()
         }
+  }
+
+  @Test
+  fun openFileSystem() {
+    composeTestRule.onNodeWithTag("FileSystemPopup").assertIsNotDisplayed()
+    composeTestRule.onNodeWithTag("showFileSystemButton").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("showFileSystemButton").performClick()
+    composeTestRule.onNodeWithTag("FileSystemPopup").assertIsDisplayed()
+  }
+
+  @Test
+  fun navigateFileSystem() {
+    val userRootFoldersFlow =
+        listOf(
+            Folder(id = "8", name = "Root Folder 1", userId = "1", parentFolderId = "1"),
+            Folder(id = "9", name = "Root Folder 2", userId = "2", parentFolderId = "1"))
+
+    `when`(folderRepository.getRootFoldersFromUid(eq("1"), any(), any())).then { invocation ->
+      val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(1)
+      onSuccess(userRootFoldersFlow)
+    }
+    folderViewModel.getRootFoldersFromUid("1")
+
+    composeTestRule.onNodeWithTag("showFileSystemButton").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("showFileSystemButton").performClick()
+    composeTestRule.onNodeWithTag("FileSystemPopup").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("FileSystemPopupFolderChoiceBox8").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("FileSystemPopupFolderChoiceBox9").assertIsDisplayed()
+    // composeTestRule.onNodeWithTag("FileSystemPopupFolderChoiceText").assertIsDisplayed()
+    // composeTestRule.onNodeWithTag("FileSystemPopupFolderChoiceText").assertIsDisplayed()
+
   }
 }
