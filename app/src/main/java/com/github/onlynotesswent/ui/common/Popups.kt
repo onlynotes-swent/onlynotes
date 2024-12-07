@@ -198,7 +198,8 @@ fun FileSystemPopup(onDismiss: () -> Unit, folderViewModel: FolderViewModel) {
                     userRootFolders.value.forEach { folder ->
                       Box(
                           modifier =
-                              Modifier.fillMaxWidth()
+                              Modifier.testTag("FileSystemPopupFolderChoiceBox" + folder.id)
+                                  .fillMaxWidth()
                                   .background(
                                       color = MaterialTheme.colorScheme.surface,
                                       shape = RoundedCornerShape(8.dp))
@@ -210,6 +211,7 @@ fun FileSystemPopup(onDismiss: () -> Unit, folderViewModel: FolderViewModel) {
                                   }
                                   .padding(12.dp)) {
                             Text(
+                                modifier = Modifier.testTag("FileSystemPopupFolderChoiceText"),
                                 text = folder.name,
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurface)
