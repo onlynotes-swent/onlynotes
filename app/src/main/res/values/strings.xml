@@ -1,4 +1,7 @@
 <resources>
+    <string name="file_system_folders_in_root">Folders in: root</string>
+    <string name="file_system_back_to_root">Back to Root Folder</string>
+    <string name="show_file_manager">File Manager</string>
     <string name="app_name">OnlyNotes</string>
     <string name="title_activity_main">MainActivity</string>
     <string name="title_activity_second">SecondActivity</string>
