@@ -191,15 +191,17 @@ fun EditNoteGeneralTopBar(
     isModified: Boolean
 ) {
   var showDiscardChangesDialog by remember { mutableStateOf(false) }
+  val note by noteViewModel.selectedNote.collectAsState()
+  val currentUser by userViewModel.currentUser.collectAsState()
 
   TopAppBar(
       title = {
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth().padding(end = if (currentUser?.uid != note?.userId) 50.dp else 0.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center) {
               Text(
-                  "Edit Note",
+                  if (currentUser?.uid == note?.userId) "Edit Note" else "View Note",
                   color = MaterialTheme.colorScheme.onSurface,
                   modifier = Modifier.testTag("editNoteTitle"))
             }
@@ -212,8 +214,7 @@ fun EditNoteGeneralTopBar(
               if (isModified) {
                 showDiscardChangesDialog = true
               } else {
-                if (!noteViewModel.selectedNote.value!!.isOwner(
-                    userViewModel.currentUser.value?.uid!!)) {
+                if (!note!!.isOwner(currentUser!!.uid)) {
                   navigationActions.navigateTo(TopLevelDestinations.SEARCH)
                 } else if (noteViewModel.selectedNote.value?.folderId != null) {
                   navigationActions.navigateTo(
