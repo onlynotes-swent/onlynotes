@@ -245,7 +245,7 @@ fun FileSystemPopup(onDismiss: () -> Unit, folderViewModel: FolderViewModel) {
             Box(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
               ElevatedButton(
                   onClick = { selectedFolder = null }, modifier = Modifier.fillMaxWidth()) {
-                    Text("Back to Root Folder")
+                    Text("R.string.file_system_back_to_root")
                   }
             }
           }

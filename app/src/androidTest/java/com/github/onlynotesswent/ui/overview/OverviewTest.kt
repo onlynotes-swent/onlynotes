@@ -333,7 +333,7 @@ class OverviewTest {
     val userRootFoldersFlow =
         listOf(
             Folder(id = "8", name = "Root Folder 1", userId = "1", parentFolderId = "1"),
-            Folder(id = "9", name = "Root Folder 2", userId = "2", parentFolderId = "1"))
+            Folder(id = "9", name = "Root Folder 2", userId = "1S", parentFolderId = "1"))
 
     `when`(folderRepository.getRootFoldersFromUid(eq("1"), any(), any())).then { invocation ->
       val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(1)

@@ -17,7 +17,6 @@ import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -94,9 +93,7 @@ fun FolderContentScreen(
 
   var updatedName by remember { mutableStateOf(folder.value!!.name) }
   var expandedFolder by remember { mutableStateOf(false) }
-  var showFileSystemPopup by remember {
-    mutableStateOf(true)
-  } // State to control the popup visibility
+
   // Custom back handler to manage back navigation
   BackHandler {
     if (folder.value!!.parentFolderId != null) {
@@ -142,7 +139,6 @@ fun FolderContentScreen(
               context = context,
               folder = folder.value)
         }) { paddingValues ->
-          Button(onClick = { showFileSystemPopup = true }) { Text("FileSystem Overview") }
           Text(
               text = "Selected Folder: ${folderViewModel.selectedFolder.value?.name ?: "None"}",
               style = MaterialTheme.typography.bodySmall)
