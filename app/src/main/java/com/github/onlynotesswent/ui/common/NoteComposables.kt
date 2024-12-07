@@ -102,7 +102,7 @@ fun NoteItem(
               .padding(4.dp)
               .semantics(mergeDescendants = true, properties = {})
               .fillMaxWidth()
-              // Enable drag and drop for the note card (as a source)
+              // Enable drag and drop for the note card as a source
               .dragAndDropSource {
                 detectTapGestures(
                     onTap = { onClick() },
@@ -127,8 +127,7 @@ fun NoteItem(
                     color = MaterialTheme.colorScheme.onPrimaryContainer)
 
                 if (note.isOwner(currentUser.value!!.uid) &&
-                    note.folderId != null &&
-                    navigationActions.currentRoute() == Screen.FOLDER_CONTENTS) {
+                    navigationActions.currentRoute() != Screen.SEARCH) {
                   Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
                         // Show move out menu when clicking on the Icon

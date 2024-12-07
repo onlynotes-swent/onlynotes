@@ -99,8 +99,8 @@ fun UserProfileScreen(
   user.value?.let { userViewModel.refreshCurrentUser() }
 
   BackHandler {
-      // As a convention we navigate to the overview screen when the back button is pressed
-      navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
+    // As a convention we navigate to the overview screen when the back button is pressed
+    navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
   }
 
   // Display the user's profile information

@@ -63,7 +63,7 @@ fun FolderItem(
               .semantics(mergeDescendants = true, properties = {})
               .padding(vertical = 4.dp)
               .clickable(onClick = onClick)
-               // Enable drag-and-drop for the folder as a target
+              // Enable drag-and-drop for the folder as a target
               .dragAndDropTarget(
                   // Accept any drag-and-drop event (just a note in this case)
                   shouldStartDragAndDrop = { true },

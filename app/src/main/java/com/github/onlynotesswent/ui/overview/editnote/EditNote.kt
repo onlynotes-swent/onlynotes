@@ -197,7 +197,9 @@ fun EditNoteGeneralTopBar(
   TopAppBar(
       title = {
         Row(
-            modifier = Modifier.fillMaxWidth().padding(end = if (currentUser?.uid != note?.userId) 50.dp else 0.dp),
+            modifier =
+                Modifier.fillMaxWidth()
+                    .padding(end = if (currentUser?.uid != note?.userId) 50.dp else 0.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center) {
               Text(
