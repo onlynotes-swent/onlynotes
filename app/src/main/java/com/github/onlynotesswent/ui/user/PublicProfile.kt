@@ -1,7 +1,6 @@
 package com.github.onlynotesswent.ui.user
 
 import android.widget.Toast
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -97,11 +96,6 @@ fun UserProfileScreen(
 ) {
   val user = userViewModel.currentUser.collectAsState()
   user.value?.let { userViewModel.refreshCurrentUser() }
-
-  BackHandler {
-    // As a convention we navigate to the overview screen when the back button is pressed
-    navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
-  }
 
   // Display the user's profile information
   ProfileScaffold(
