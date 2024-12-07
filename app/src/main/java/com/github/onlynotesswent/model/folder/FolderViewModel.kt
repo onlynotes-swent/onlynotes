@@ -332,10 +332,16 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
   fun getSubFoldersOfNoStateUpdate(
       parentFolderId: String,
       onSuccess: (List<Folder>) -> Unit,
-      onFailure: (Exception) -> Unit = {}
+      onFailure: (Exception) -> Unit = {},
+      useCache: Boolean = false
   ) {
-    repository.getSubFoldersOf(
-        parentFolderId = parentFolderId, onSuccess = { onSuccess(it) }, onFailure = onFailure)
+    viewModelScope.launch {
+      repository.getSubFoldersOf(
+          parentFolderId = parentFolderId,
+          onSuccess = { onSuccess(it) },
+          onFailure = onFailure,
+          useCache = useCache)
+    }
   }
 
   /**

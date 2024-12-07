@@ -134,6 +134,7 @@ fun OverviewScreen(
             userViewModel = userViewModel,
             context = context,
             navigationActions = navigationActions)
+
         if (showCreateNoteDialog) {
           NoteDialog(
               onDismiss = { showCreateNoteDialog = false },
@@ -155,9 +156,9 @@ fun OverviewScreen(
               action = stringResource(R.string.create))
         }
 
-      if (showFilePopup) {
+        if (showFilePopup) {
           FileSystemPopup(onDismiss = { showFilePopup = false }, folderViewModel = folderViewModel)
-      }
+        }
 
         // Logic to show the dialog to create a folder
         if (showCreateFolderDialog) {
