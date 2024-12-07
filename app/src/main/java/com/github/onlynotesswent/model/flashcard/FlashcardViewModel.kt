@@ -82,7 +82,12 @@ class FlashcardViewModel(private val repository: FlashcardRepository) : ViewMode
       onFailure: (Exception) -> Unit = {}
   ) {
     repository.getFlashcardsById(
-        deck.flashcardIds, onSuccess = { _deckFlashcards.value = it }, onFailure = {})
+        deck.flashcardIds,
+        onSuccess = {
+          _deckFlashcards.value = it
+          onSuccess(it)
+        },
+        onFailure)
   }
 
   /**

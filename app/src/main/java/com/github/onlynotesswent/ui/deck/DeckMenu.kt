@@ -122,7 +122,7 @@ fun DeckScreen(
   val editDialogExpanded = remember { mutableStateOf(false) }
 
   val publicFabDropdownMenuShown = remember { mutableStateOf(false) }
-  // TODO: add mutable states for save to favourites and create local copy
+  // TODO: add mutable states for save to favourites and create local copy dialogs
 
   val sortOptionsShown = remember { mutableStateOf(false) }
   val sortMode = remember { mutableStateOf(SortMode.ALPHABETICAL) }
@@ -167,6 +167,7 @@ fun DeckScreen(
           Column(
               modifier =
                   Modifier.fillMaxWidth()
+                      .testTag("deckScreenColumn")
                       .padding(innerPadding)
                       .padding(start = 15.dp, top = 10.dp, end = 10.dp)
                       .verticalScroll(rememberScrollState()),
@@ -217,6 +218,7 @@ fun DeckScreen(
                               selectedDeck.value!!.flashcardIds.size.let { count ->
                                 if (count == 1) "1 card" else "$count cards"
                               },
+                          modifier = Modifier.testTag("deckCardCount"),
                           style = Typography.bodyLarge,
                           fontStyle = FontStyle.Italic)
                       VerticalDivider(modifier = Modifier.height(25.dp))
@@ -232,7 +234,8 @@ fun DeckScreen(
                               Text(
                                   text = user.userHandle(),
                                   style = Typography.bodyLarge,
-                                  fontStyle = FontStyle.Italic)
+                                  fontStyle = FontStyle.Italic,
+                                  modifier = Modifier.testTag("deckAuthorName"))
                             }
                       }
                     }
@@ -240,35 +243,38 @@ fun DeckScreen(
                 Text(
                     selectedDeck.value!!.name,
                     style = Typography.displayMedium,
-                    modifier = Modifier.padding(vertical = 10.dp))
+                    modifier = Modifier.padding(vertical = 10.dp).testTag("deckTitle"))
                 // Deck description
                 Text(
                     selectedDeck.value!!.description,
                     style = Typography.bodyMedium,
-                    modifier = Modifier.padding(10.dp))
+                    modifier = Modifier.padding(10.dp).testTag("deckDescription"))
 
                 // Deck play mode buttons
                 FilledTonalButton(
                     onClick = { playModesShown.value = !playModesShown.value },
-                    modifier = Modifier.padding(vertical = 15.dp)) {
+                    modifier = Modifier.padding(vertical = 15.dp).testTag("deckPlayButton")) {
                       Row(verticalAlignment = Alignment.CenterVertically) {
                         Text("Play", style = MaterialTheme.typography.headlineMedium)
                         Icon(Icons.Default.PlayArrow, contentDescription = "play")
                       }
                     }
 
-                // Deck cards
+                // Deck sort options
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(10.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.padding(vertical = 5.dp)) {
-                      IconButton(onClick = { sortOptionsShown.value = !sortOptionsShown.value }) {
-                        Icon(Icons.AutoMirrored.Filled.Sort, contentDescription = null)
-                      }
+                      IconButton(
+                          onClick = { sortOptionsShown.value = !sortOptionsShown.value },
+                          modifier = Modifier.testTag("sortOptionsButton")) {
+                            Icon(Icons.AutoMirrored.Filled.Sort, contentDescription = null)
+                          }
                       AnimatedVisibility(visible = sortOptionsShown.value) {
                         LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                           items(SortMode.entries.size) { index ->
                             FilterChip(
+                                modifier = Modifier.testTag("sortOptionChip"),
                                 selected = sortMode.value == SortMode.entries[index],
                                 onClick = {
                                   sortMode.value = SortMode.entries[index]
@@ -289,10 +295,11 @@ fun DeckScreen(
                         }
                       }
                     }
-
+                // Deck cards lazy column
                 LazyColumn(
                     modifier =
                         Modifier.fillMaxWidth(0.9f)
+                            .testTag("deckFlashcardsList")
                             .heightIn(max = 600.dp)
                             .padding(horizontal = 10.dp),
                     verticalArrangement = Arrangement.spacedBy(10.dp),
@@ -412,22 +419,23 @@ fun FlashcardViewItem(
         mode = "Edit")
   }
 
-  Card(modifier = Modifier.testTag("flashcardItem").fillMaxWidth()) {
+  Card(modifier = Modifier.testTag("flashcardItem--${flashcard.id}").fillMaxWidth()) {
     Box(contentAlignment = Alignment.CenterStart, modifier = Modifier.padding(10.dp)) {
       if (flashcard.isMCQ()) {
         Text(
             "MCQ",
             style = Typography.bodyLarge,
             fontStyle = FontStyle.Italic,
-            modifier = Modifier.align(Alignment.TopStart))
+            modifier = Modifier.align(Alignment.TopStart).testTag("flashcardMCQ--${flashcard.id}"))
       }
       // Show front and options icon
       Box(modifier = Modifier.align(Alignment.TopEnd)) {
         Icon(
             modifier =
-                Modifier.testTag("flashcardOptions").clickable(enabled = belongsToUser) {
-                  dropdownMenuExpanded.value = true
-                },
+                Modifier.testTag("flashcardOptions--${flashcard.id}").clickable(
+                    enabled = belongsToUser) {
+                      dropdownMenuExpanded.value = true
+                    },
             imageVector = Icons.Filled.MoreVert,
             contentDescription = null,
             tint = MaterialTheme.colorScheme.onPrimaryContainer)
@@ -444,13 +452,18 @@ fun FlashcardViewItem(
           horizontalAlignment = Alignment.CenterHorizontally,
           verticalArrangement = Arrangement.spacedBy(10.dp),
       ) {
-        Text(flashcard.front, style = Typography.bodyMedium)
+        Text(
+            flashcard.front,
+            style = Typography.bodyMedium,
+            modifier = Modifier.testTag("flashcardFront--${flashcard.id}"))
         if (flashcard.hasImage) {
           // Show image
           val imageUri: MutableState<String?> = remember { mutableStateOf(null) }
           if (imageUri.value == null) {
             LoadingIndicator(
                 "Image is being downloaded...",
+                modifier =
+                    Modifier.fillMaxWidth().testTag("flashcardImageLoading--${flashcard.id}"),
                 loadingIndicatorSize = 24.dp,
                 spacerHeight = 5.dp,
                 style = MaterialTheme.typography.bodySmall)
@@ -464,12 +477,15 @@ fun FlashcardViewItem(
             Image(
                 painter = rememberAsyncImagePainter(it),
                 contentDescription = "Flashcard image",
-                modifier = Modifier.height(100.dp))
+                modifier = Modifier.height(100.dp).testTag("flashcardImage--${flashcard.id}"))
           }
         }
         HorizontalDivider(modifier = Modifier.height(5.dp).padding(5.dp))
         // Show back
-        Text(flashcard.back, style = Typography.bodyMedium)
+        Text(
+            flashcard.back,
+            style = Typography.bodyMedium,
+            modifier = Modifier.testTag("flashcardBack--${flashcard.id}"))
       }
     }
   }
@@ -495,7 +511,7 @@ private fun PublicDeckFab(
     onSaveCopyClick: () -> Unit
 ) {
   CustomDropDownMenu(
-      modifier = Modifier.testTag("deckFab"),
+      modifier = Modifier.testTag("publicDeckFab"),
       menuItems =
           listOf(
               CustomDropDownMenuItem(
@@ -566,7 +582,7 @@ fun FlashcardDialog(
   var showFakeBacksDetails = remember { mutableStateOf(false) }
 
   Dialog(onDismissRequest = onDismissRequest) {
-    Card {
+    Card(modifier = Modifier.testTag("flashcardDialog--$mode").padding(5.dp)) {
       if (flashcard.value == null && mode == "Edit") {
         LoadingIndicator("Loading flashcard...")
       } else {
@@ -577,7 +593,7 @@ fun FlashcardDialog(
               Text("$mode Flashcard", style = Typography.headlineSmall)
               // Front
               OutlinedTextField(
-                  modifier = Modifier.fillMaxWidth(),
+                  modifier = Modifier.fillMaxWidth().testTag("frontTextField"),
                   value = front.value,
                   onValueChange = { front.value = it },
                   label = { Text("Front") })
@@ -600,6 +616,7 @@ fun FlashcardDialog(
                               horizontalArrangement = Arrangement.spacedBy(10.dp),
                               verticalAlignment = Alignment.CenterVertically) {
                                 IconButton(
+                                    modifier = Modifier.testTag("addImageIconButton"),
                                     onClick = {
                                       pictureTaker.setOnImageSelected { uri ->
                                         if (uri != null) {
@@ -616,6 +633,7 @@ fun FlashcardDialog(
                                 if (imageUri.value != null) {
                                   Spacer(modifier = Modifier.width(0.dp))
                                   IconButton(
+                                      modifier = Modifier.testTag("removeImageIconButton"),
                                       onClick = {
                                         imageUri.value = null
                                         hasImageBeenChanged.value = true
@@ -637,7 +655,7 @@ fun FlashcardDialog(
                                 onSuccess = { file -> imageUri.value = file.absolutePath })
                             LoadingIndicator(
                                 "Image is being downloaded...",
-                                Modifier.fillMaxWidth(),
+                                Modifier.fillMaxWidth().testTag("imageLoadingIndicator"),
                                 loadingIndicatorSize = 24.dp,
                                 spacerHeight = 5.dp)
                           }
@@ -660,7 +678,7 @@ fun FlashcardDialog(
               HorizontalDivider(modifier = Modifier.height(5.dp).padding(top = 10.dp))
               // Back
               OutlinedTextField(
-                  modifier = Modifier.fillMaxWidth(),
+                  modifier = Modifier.fillMaxWidth().testTag("backTextField"),
                   value = back.value,
                   onValueChange = { back.value = it },
                   label = { Text("Back") })
@@ -669,7 +687,7 @@ fun FlashcardDialog(
               Box(
                   modifier =
                       Modifier.fillMaxWidth()
-                          .testTag("FakeBacks textField")
+                          .testTag("FakeBacksBox")
                           .clickable { showFakeBacksDetails.value = !showFakeBacksDetails.value }
                           .border(
                               1.dp,
@@ -722,6 +740,7 @@ fun FlashcardDialog(
                                           Modifier.weight(1f)
                                               .testTag("EditFakeBack${index + 1} textField"))
                                   IconButton(
+                                      modifier = Modifier.testTag("removeFakeBack$index"),
                                       onClick = {
                                         fakeBacks.value =
                                             fakeBacks.value.toMutableList().apply {
@@ -754,6 +773,7 @@ fun FlashcardDialog(
                   }
               // Save button
               Button(
+                  modifier = Modifier.testTag("saveFlashcardButton"),
                   enabled = front.value.isNotBlank() && back.value.isNotBlank(),
                   onClick = {
                     val newHasImage: Boolean =
@@ -787,8 +807,8 @@ fun FlashcardDialog(
                                 if (mode == "Create") {
                                   deck
                                       .copy(
-                                          flashcardIds =
-                                              listOf(newFlashcard.id) + deck.flashcardIds)
+                                          flashcardIds = // prepend new flashcard
+                                          listOf(newFlashcard.id) + deck.flashcardIds)
                                       .let {
                                         deckViewModel.updateDeck(
                                             it, onSuccess = { deckViewModel.selectDeck(it) })
@@ -845,9 +865,11 @@ fun FlashcardItemDropdownMenu(
               flashcardViewModel.selectFlashcard(flashcard)
               editDialogExpanded.value = true
               dropdownMenuExpanded.value = false
-            })
+            },
+            modifier = Modifier.testTag("editFlashcardMenuItem"))
         DropdownMenuItem(
             text = @Composable { Text("Delete") },
+            modifier = Modifier.testTag("deleteFlashcardMenuItem"),
             onClick = {
               val newDeck =
                   deckViewModel.selectedDeck.value?.copy(
@@ -887,16 +909,19 @@ fun EditDeckDialog(
             OutlinedTextField(
                 value = deckTitle.value,
                 onValueChange = { deckTitle.value = Deck.formatTitle(it) },
-                maxLines = 1)
+                maxLines = 1,
+                modifier = Modifier.testTag("deckTitleTextField"),
+            )
             SelectVisibility(deckVisibility.value, { deckVisibility.value = it })
             OutlinedTextField(
                 value = deckDescription.value,
                 onValueChange = { deckDescription.value = Deck.formatDescription(it) },
                 minLines = 2,
                 maxLines = 5,
-            )
+                modifier = Modifier.testTag("deckDescriptionTextField"))
             // Save button
             Button(
+                modifier = Modifier.testTag("deckSaveButton"),
                 onClick = {
                   val newDeck =
                       deck.value?.copy(
