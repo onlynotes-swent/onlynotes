@@ -182,7 +182,8 @@ fun FileSystemPopup(onDismiss: () -> Unit, folderViewModel: FolderViewModel) {
                         .padding(vertical = 12.dp, horizontal = 16.dp)) {
                   Text(
                       text =
-                          if (selectedFolder == null) "Folders in: root"
+                          if (selectedFolder == null)
+                              stringResource(R.string.file_system_folders_in_root)
                           else "Folders in: ${selectedFolder!!.name}",
                       style = MaterialTheme.typography.bodyMedium,
                       color = MaterialTheme.colorScheme.onPrimary)
@@ -245,7 +246,7 @@ fun FileSystemPopup(onDismiss: () -> Unit, folderViewModel: FolderViewModel) {
             Box(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
               ElevatedButton(
                   onClick = { selectedFolder = null }, modifier = Modifier.fillMaxWidth()) {
-                    Text("R.string.file_system_back_to_root")
+                    Text(stringResource(R.string.file_system_back_to_root))
                   }
             }
           }
