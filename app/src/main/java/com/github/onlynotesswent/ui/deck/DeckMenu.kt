@@ -8,8 +8,6 @@ import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,6 +20,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -171,8 +170,7 @@ fun DeckScreen(
                       .padding(innerPadding)
                       .padding(start = 15.dp, top = 10.dp, end = 10.dp)
                       .verticalScroll(rememberScrollState()),
-              horizontalAlignment = Alignment.CenterHorizontally,
-              verticalArrangement = Arrangement.spacedBy(10.dp)) {
+              horizontalAlignment = Alignment.CenterHorizontally) {
                 // Dialogs:
                 if (addCardDialogExpanded.value) {
                   FlashcardDialog(
@@ -239,7 +237,10 @@ fun DeckScreen(
                       }
                     }
                 // Deck Title
-                Text(selectedDeck.value!!.name, style = Typography.displayMedium)
+                Text(
+                    selectedDeck.value!!.name,
+                    style = Typography.displayMedium,
+                    modifier = Modifier.padding(vertical = 10.dp))
                 // Deck description
                 Text(
                     selectedDeck.value!!.description,
@@ -247,46 +248,49 @@ fun DeckScreen(
                     modifier = Modifier.padding(10.dp))
 
                 // Deck play mode buttons
-                FilledTonalButton(onClick = { playModesShown.value = !playModesShown.value }) {
-                  Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text("Play")
-                    Icon(Icons.Default.PlayArrow, contentDescription = "play")
-                  }
-                }
+                FilledTonalButton(
+                    onClick = { playModesShown.value = !playModesShown.value },
+                    modifier = Modifier.padding(vertical = 15.dp)) {
+                      Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text("Play", style = MaterialTheme.typography.headlineMedium)
+                        Icon(Icons.Default.PlayArrow, contentDescription = "play")
+                      }
+                    }
 
                 // Deck cards
-                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                  IconButton(onClick = { sortOptionsShown.value = !sortOptionsShown.value }) {
-                    Icon(Icons.AutoMirrored.Filled.Sort, contentDescription = null)
-                  }
-                  AnimatedVisibility(visible = sortOptionsShown.value) {
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(10.dp),
-                        modifier =
-                            Modifier.scrollable(rememberScrollState(), Orientation.Horizontal)) {
-                          SortMode.entries.forEach {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(vertical = 5.dp)) {
+                      IconButton(onClick = { sortOptionsShown.value = !sortOptionsShown.value }) {
+                        Icon(Icons.AutoMirrored.Filled.Sort, contentDescription = null)
+                      }
+                      AnimatedVisibility(visible = sortOptionsShown.value) {
+                        LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                          items(SortMode.entries.size) { index ->
                             FilterChip(
-                                selected = sortMode.value == it,
+                                selected = sortMode.value == SortMode.entries[index],
                                 onClick = {
-                                  sortMode.value = it
+                                  sortMode.value = SortMode.entries[index]
                                   sortStatus.value = sortStatus.value.next()
                                 },
-                                label = { Text(it.toReadableString()) },
+                                label = {
+                                  Text(SortMode.entries[index].toReadableString(), maxLines = 1)
+                                },
                                 leadingIcon = {
-                                  if (sortMode.value == it &&
+                                  if (sortMode.value == SortMode.entries[index] &&
                                       sortStatus.value == SortStatus.HIGH_LOW)
                                       Icon(Icons.Default.ArrowUpward, contentDescription = null)
-                                  else if (sortMode.value == it &&
+                                  else if (sortMode.value == SortMode.entries[index] &&
                                       sortStatus.value == SortStatus.LOW_HIGH)
                                       Icon(Icons.Default.ArrowDownward, contentDescription = null)
                                 })
                           }
                         }
-                  }
-                }
+                      }
+                    }
 
                 LazyColumn(
-                    reverseLayout = true,
                     modifier =
                         Modifier.fillMaxWidth(0.9f)
                             .heightIn(max = 600.dp)
@@ -358,6 +362,7 @@ fun PlayModesBottomSheet(
           Column(verticalArrangement = Arrangement.spacedBy(20.dp)) {
             Deck.PlayMode.entries.forEach {
               Row(
+                  verticalAlignment = Alignment.CenterVertically,
                   modifier =
                       Modifier.clickable {
                         navigationActions.navigateTo(
@@ -781,7 +786,9 @@ fun FlashcardDialog(
                               deckViewModel.selectedDeck.value!!.let { deck ->
                                 if (mode == "Create") {
                                   deck
-                                      .copy(flashcardIds = deck.flashcardIds + newFlashcard.id)
+                                      .copy(
+                                          flashcardIds =
+                                              listOf(newFlashcard.id) + deck.flashcardIds)
                                       .let {
                                         deckViewModel.updateDeck(
                                             it, onSuccess = { deckViewModel.selectDeck(it) })
