@@ -41,7 +41,7 @@ fun EditNoteNavigationMenu(
                   showDiscardChangesDialog = true
                   navigateTo = tab.screen
                 } else {
-                  tab.screen?.let { navigationActions.navigateTo(it) }
+                  tab.screen?.let { navigationActions.navigateToAndPop(it) }
                   onClick()
                 }
               },
@@ -72,7 +72,7 @@ fun EditNoteNavigationMenu(
         onConfirm = {
           // Discard changes and navigate away
           showDiscardChangesDialog = false
-          navigateTo?.let { navigationActions.navigateTo(it) }
+          navigateTo?.let { navigationActions.navigateToAndPop(it) }
           onClick()
         },
         onDismiss = {

@@ -1,5 +1,6 @@
 package com.github.onlynotesswent.ui.search
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -25,7 +26,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -43,6 +43,7 @@ import com.github.onlynotesswent.ui.navigation.BottomNavigationMenu
 import com.github.onlynotesswent.ui.navigation.LIST_TOP_LEVEL_DESTINATION
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
+import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
 import com.github.onlynotesswent.ui.user.UserItem
 import com.github.onlynotesswent.ui.user.switchProfileTo
 import kotlinx.coroutines.delay
@@ -90,8 +91,6 @@ fun SearchScreen(
   val filteredDecks = remember { mutableStateOf(decks.value) }
   filteredDecks.value = decks.value.filter { textMatchesSearch(it.name, searchWords.value) }
 
-  val context = LocalContext.current
-
   // Refresh the list of notes, users, and folders periodically.
   RefreshPeriodically(searchQuery, noteViewModel, userViewModel, folderViewModel, deckViewModel)
   // Refresh the list of notes, users, and folders when the search query is empty,
@@ -101,6 +100,16 @@ fun SearchScreen(
     userViewModel.getAllUsers()
     folderViewModel.getPublicFolders()
     deckViewModel.getPublicDecks()
+  }
+
+  // Handle back press
+  BackHandler {
+    // Going back to edit note is not allowed since the note is not selected anymore
+    if (navigationActions.getPreviousScreen() == Screen.EDIT_NOTE) {
+      navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
+    } else {
+      navigationActions.goBack()
+    }
   }
 
   Scaffold(
@@ -241,7 +250,6 @@ fun SearchScreen(
                               .first { it.uid == filteredNotes.value[index].userId }
                               .userHandle(),
                       currentUser = userViewModel.currentUser.collectAsState(),
-                      context = context,
                       noteViewModel = noteViewModel,
                       folderViewModel = folderViewModel,
                       showDialog = false,
@@ -281,7 +289,6 @@ fun SearchScreen(
               folderViewModel = folderViewModel,
               noteViewModel = noteViewModel,
               userViewModel = userViewModel,
-              context = context,
               navigationActions = navigationActions,
               paddingValues = padding,
               columnContent = {})

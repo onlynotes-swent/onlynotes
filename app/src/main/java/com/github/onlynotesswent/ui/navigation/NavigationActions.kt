@@ -11,6 +11,8 @@ import androidx.compose.material.icons.outlined.Search
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
+import com.github.onlynotesswent.model.folder.Folder
+import com.github.onlynotesswent.model.user.UserViewModel
 
 object Route {
   const val OVERVIEW = "Overview"
@@ -123,13 +125,17 @@ open class NavigationActions(
   }
 
   /**
-   * Navigate back to the folder contents screen.
+   * Handle navigation when inside a folder.
    *
-   * @param folderId The ID of the folder to navigate back to
+   * @param folder The current folder to navigate back from
+   * @param userViewModel The UserViewModel to access the current user
    */
-  open fun goBackFolderContents(folderId: String?) {
-    if (folderId != null) {
-      navigateTo(Screen.FOLDER_CONTENTS.replace(oldValue = "{folderId}", newValue = folderId))
+  open fun goBackFolderContents(folder: Folder, userViewModel: UserViewModel) {
+    if (!folder.isOwner(userViewModel.currentUser.value!!.uid)) {
+      navigateTo(TopLevelDestinations.SEARCH)
+    } else if (folder.parentFolderId != null) {
+      navigateTo(
+          Screen.FOLDER_CONTENTS.replace(oldValue = "{folderId}", newValue = folder.parentFolderId))
     } else {
       navigateTo(TopLevelDestinations.OVERVIEW)
     }
@@ -142,5 +148,25 @@ open class NavigationActions(
    */
   open fun currentRoute(): String {
     return navController.currentDestination?.route ?: ""
+  }
+
+  /**
+   * Get the previous screen from the navigation controller.
+   *
+   * @return The previous screen
+   */
+  open fun getPreviousScreen(): String? {
+    return navController.previousBackStackEntry?.destination?.route
+  }
+
+  /**
+   * Navigate to the specified screen and immediately clears it from the back stack.
+   *
+   * @param screen The screen to navigate to
+   */
+  open fun navigateToAndPop(screen: String) {
+    navController.navigate(screen) {
+      popUpTo(navController.currentBackStackEntry?.destination?.route!!) { inclusive = true }
+    }
   }
 }

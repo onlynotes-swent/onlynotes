@@ -1,8 +1,6 @@
 package com.github.onlynotesswent.ui.common
 
 import android.content.ClipData
-import android.content.Context
-import android.widget.Toast
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.draganddrop.dragAndDropSource
@@ -58,7 +56,6 @@ import java.util.Locale
  * @param note The note data that will be displayed in this card.
  * @param author The author of the note.
  * @param currentUser The current user.
- * @param context The context used to display the dialog.
  * @param noteViewModel The ViewModel that provides the list of notes to display.
  * @param folderViewModel The ViewModel that provides the list of folders to display.
  * @param showDialog A boolean indicating whether the move out dialog should be displayed.
@@ -71,7 +68,6 @@ fun NoteItem(
     note: Note,
     author: String? = null,
     currentUser: State<User?>,
-    context: Context,
     noteViewModel: NoteViewModel,
     folderViewModel: FolderViewModel,
     showDialog: Boolean,
@@ -85,21 +81,14 @@ fun NoteItem(
         title = stringResource(R.string.move_note_out_of_folder),
         text = stringResource(R.string.move_note_out_of_folder_confirmation),
         onConfirm = {
-          if (currentUser.value!!.uid == note.userId) {
-            val parentFolderId = folderViewModel.parentFolderId.value
-            if (parentFolderId != null) {
-              noteViewModel.updateNote(note.copy(folderId = parentFolderId))
-              navigationActions.navigateTo(
-                  Screen.FOLDER_CONTENTS.replace(
-                      oldValue = "{folderId}", newValue = parentFolderId))
-            } else {
-              noteViewModel.updateNote(note.copy(folderId = null))
-              navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
-            }
+          val parentFolderId = folderViewModel.parentFolderId.value
+          if (parentFolderId != null) {
+            noteViewModel.updateNote(note.copy(folderId = parentFolderId))
+            navigationActions.navigateTo(
+                Screen.FOLDER_CONTENTS.replace(oldValue = "{folderId}", newValue = parentFolderId))
           } else {
-            Toast.makeText(
-                    context, "You can't move out a note that you didn't create", Toast.LENGTH_SHORT)
-                .show()
+            noteViewModel.updateNote(note.copy(folderId = null))
+            navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
           }
           showMoveOutDialog = false
         },
@@ -113,7 +102,7 @@ fun NoteItem(
               .padding(4.dp)
               .semantics(mergeDescendants = true, properties = {})
               .fillMaxWidth()
-              // Enable drag and drop for the note card (as a source)
+              // Enable drag and drop for the note card as a source
               .dragAndDropSource {
                 detectTapGestures(
                     onTap = { onClick() },
@@ -137,19 +126,19 @@ fun NoteItem(
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onPrimaryContainer)
 
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                  Icon(
-                      // Show move out menu when clicking on the Icon
-                      modifier =
-                          Modifier.testTag("MoveOutButton").size(24.dp).clickable(
-                              enabled =
-                                  note.folderId != null &&
-                                      navigationActions.currentRoute() == Screen.FOLDER_CONTENTS) {
-                                showMoveOutDialog = true
-                              },
-                      imageVector = Icons.Filled.MoreVert,
-                      contentDescription = null,
-                      tint = MaterialTheme.colorScheme.onPrimaryContainer)
+                if (note.isOwner(currentUser.value!!.uid) &&
+                    navigationActions.currentRoute() != Screen.SEARCH) {
+                  Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        // Show move out menu when clicking on the Icon
+                        modifier =
+                            Modifier.testTag("MoveOutButton").size(24.dp).clickable {
+                              showMoveOutDialog = true
+                            },
+                        imageVector = Icons.Filled.MoreVert,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer)
+                  }
                 }
               }
 
@@ -209,6 +198,7 @@ fun NoteDialog(
  * @param placeholder The placeholder to be displayed when the text field is in focus and the input
  *   text is empty.
  * @param modifier The modifier to be applied to the `OutlinedTextField`.
+ * @param enabled A boolean indicating whether the text field is enabled.
  * @param trailingIcon An optional trailing icon displayed at the end of the text field container.
  */
 @Composable
@@ -218,6 +208,7 @@ fun NoteDataTextField(
     label: String,
     placeholder: String,
     modifier: Modifier = Modifier,
+    enabled: Boolean,
     trailingIcon: @Composable (() -> Unit)? = null
 ) {
   OutlinedTextField(
@@ -226,11 +217,17 @@ fun NoteDataTextField(
       label = { Text(label) },
       placeholder = { Text(placeholder) },
       modifier = modifier,
+      enabled = enabled,
       trailingIcon = trailingIcon,
       colors =
           TextFieldDefaults.colors(
               focusedIndicatorColor = MaterialTheme.colorScheme.primary,
               unfocusedIndicatorColor = MaterialTheme.colorScheme.onBackground,
               focusedContainerColor = MaterialTheme.colorScheme.background,
-              unfocusedContainerColor = MaterialTheme.colorScheme.background))
+              unfocusedContainerColor = MaterialTheme.colorScheme.background,
+              // Set disabled text field colors to be less prominent
+              disabledTextColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+              disabledLabelColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+              disabledPlaceholderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+              disabledIndicatorColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)))
 }

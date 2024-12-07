@@ -333,10 +333,10 @@ class NoteRepositoryFirestore(private val db: FirebaseFirestore) : NoteRepositor
       val date = document.getTimestamp("date")!!
       val visibility = Visibility.fromString(document.getString("visibility")!!)
       val userId = document.getString("userId")!!
-      val courseCode = document.getString("courseCode")!!
-      val courseName = document.getString("courseName")!!
+      val courseCode = document.getString("courseCode") ?: ""
+      val courseName = document.getString("courseName") ?: ""
       val courseYear = document.getLong("courseYear")?.toInt()
-      val publicPath = document.getString("publicPath")!!
+      val publicPath = document.getString("publicPath") ?: ""
       val folderId = document.getString("folderId")
       val comments = commentStringToCommentClass(document.get("commentsList") as List<String>)
 
