@@ -60,7 +60,6 @@ import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.model.user.UserViewModel
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
-import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
 import com.mohamedrejeb.richeditor.model.RichTextState
 import com.mohamedrejeb.richeditor.model.rememberRichTextState
 import com.mohamedrejeb.richeditor.ui.material3.RichTextEditor
@@ -133,13 +132,7 @@ fun EditMarkdownScreen(
             title = stringResource(R.string.content),
             titleTestTag = "contentTitle",
             noteViewModel = noteViewModel,
-            userViewModel = userViewModel,
-            navigationActions = navigationActions,
-            onClick = {
-              if (!selectedNote!!.isOwner(currentUser!!.uid)) {
-                navigationActions.navigateTo(TopLevelDestinations.SEARCH)
-              }
-            })
+            navigationActions = navigationActions)
       },
       bottomBar = {
         EditNoteNavigationMenu(navigationActions, selectedItem = Screen.EDIT_NOTE_MARKDOWN)

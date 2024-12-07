@@ -1,5 +1,6 @@
 package com.github.onlynotesswent.ui.navigation
 
+import android.util.Log
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Comment
 import androidx.compose.material.icons.filled.EditNote
@@ -11,7 +12,7 @@ import androidx.compose.material.icons.outlined.Search
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
-import com.github.onlynotesswent.model.folder.Folder
+  import com.github.onlynotesswent.model.folder.Folder
 import com.github.onlynotesswent.model.user.UserViewModel
 
 object Route {
@@ -93,7 +94,7 @@ open class NavigationActions(
       navController.navigate(it) {
         // Pop up to the start destination of the graph to
         // avoid building up a large stack of destinations
-        popUpTo(navController.graph.findStartDestination().id) {
+        popUpTo(navController.graph.findStartDestination().id) { // TODO try calling route.OVERVIEW and removing some backhandlers
           saveState = true
           inclusive = true
         }
@@ -157,5 +158,23 @@ open class NavigationActions(
    */
   open fun getPreviousScreen(): String? {
     return navController.previousBackStackEntry?.destination?.route
+  }
+
+  /**
+   * Navigate to the specified screen and immediately clears it from the back stack.
+   *
+   * @param screen The screen to navigate to
+   */
+  open fun navigateToAndPop(screen: String) {
+      navController.navigate(screen) {
+          Log.e("NavigationActions", "current back stack entry is ${navController.currentBackStackEntry?.destination?.route}")
+          popUpTo(navController.currentBackStackEntry?.destination?.route!!) {
+              inclusive = true
+          }
+      }
+      Log.e(
+          "NavigationActions",
+          "previous screen is ${navController.previousBackStackEntry?.destination?.route}"
+      )
   }
 }

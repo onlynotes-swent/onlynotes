@@ -36,7 +36,6 @@ import com.github.onlynotesswent.ui.common.ConfirmationPopup
 import com.github.onlynotesswent.ui.common.LoadingIndicator
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
-import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
 import com.github.onlynotesswent.utils.Scanner
 import com.rajat.pdfviewer.compose.PdfRendererViewCompose
 import java.io.File
@@ -190,13 +189,7 @@ fun PdfViewerScreen(
             title = stringResource(R.string.pdf),
             titleTestTag = "pdfTitle",
             noteViewModel = noteViewModel,
-            userViewModel = userViewModel,
-            navigationActions = navigationActions,
-            onClick = {
-              if (!note!!.isOwner(currentUser!!.uid)) {
-                navigationActions.navigateTo(TopLevelDestinations.SEARCH)
-              }
-            })
+            navigationActions = navigationActions)
       },
       bottomBar = {
         // Navigation menu at the bottom
