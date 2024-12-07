@@ -106,7 +106,7 @@ class DeckViewModelTest {
     var wasCalled = false
     deckViewModel.getDecksByFolder(
         testDeck.folderId!!, { wasCalled = true }, { fail("Should not fail") })
-    verify(mockDeckRepository).getDecksByFolder(eq(testDeck.folderId), any(), any())
+    verify(mockDeckRepository).getDecksByFolder(eq(testDeck.folderId!!), any(), any())
     assert(wasCalled)
   }
 
@@ -120,7 +120,7 @@ class DeckViewModelTest {
     }
     deckViewModel.getDecksByFolder(
         testDeck.folderId!!, { fail("Should not succeed") }, { exceptionThrown = it })
-    verify(mockDeckRepository).getDecksByFolder(eq(testDeck.folderId), any(), any())
+    verify(mockDeckRepository).getDecksByFolder(eq(testDeck.folderId!!), any(), any())
     assertEquals(testException, exceptionThrown)
   }
 

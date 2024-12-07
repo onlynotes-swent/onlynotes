@@ -18,17 +18,21 @@ import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
 import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
 import com.google.firebase.Timestamp
+import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.junit.runner.RunWith
 import org.mockito.Mock
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
+import org.mockito.junit.MockitoJUnitRunner
 import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.never
 
+@RunWith(MockitoJUnitRunner::class)
 class EditNoteTest {
   @Mock private lateinit var userRepository: UserRepository
   @Mock private lateinit var noteRepository: NoteRepository
@@ -38,7 +42,7 @@ class EditNoteTest {
   @get:Rule val composeTestRule = createComposeRule()
 
   @Before
-  fun setUp() {
+  fun setUp() = runTest {
     MockitoAnnotations.openMocks(this)
     // Mock is a way to create a fake object that can be used in place of a real object
     userViewModel = UserViewModel(userRepository)
@@ -60,6 +64,7 @@ class EditNoteTest {
             id = "1",
             title = "Sample Title",
             date = Timestamp.now(), // Use current timestamp
+            lastModified = Timestamp.now(),
             visibility = Visibility.DEFAULT,
             userId = "1",
             noteCourse = Course("CS-100", "Sample Class", 2024, "path"),
@@ -70,24 +75,25 @@ class EditNoteTest {
             id = "2",
             title = "Sample Title2",
             date = Timestamp.now(), // Use current timestamp
+            lastModified = Timestamp.now(),
             visibility = Visibility.DEFAULT,
             userId = "1",
             folderId = "1",
             noteCourse = Course("CS-100", "Sample Class", 2024, "path"),
         )
 
-    `when`(noteRepository.getNoteById(eq("1"), any(), any())).thenAnswer { invocation ->
+    `when`(noteRepository.getNoteById(eq("1"), any(), any(), any())).thenAnswer { invocation ->
       val onSuccess = invocation.getArgument<(Note) -> Unit>(1)
       onSuccess(mockNote1)
     }
 
-    `when`(noteRepository.getNoteById(eq("2"), any(), any())).thenAnswer { invocation ->
+    `when`(noteRepository.getNoteById(eq("2"), any(), any(), any())).thenAnswer { invocation ->
       val onSuccess = invocation.getArgument<(Note) -> Unit>(1)
       onSuccess(mockNote2)
     }
   }
 
-  private fun init(noteId: String) {
+  private fun init(noteId: String) = runTest {
     noteViewModel.getNoteById(noteId)
     composeTestRule.setContent { EditNoteScreen(navigationActions, noteViewModel, userViewModel) }
   }
@@ -135,16 +141,16 @@ class EditNoteTest {
   }
 
   @Test
-  fun clickSaveButton() {
+  fun clickSaveButton() = runTest {
     init("1")
 
     composeTestRule.onNodeWithTag("saveNoteButton").performClick()
 
-    verify(noteRepository).updateNote(any(), any(), any())
+    verify(noteRepository).updateNote(any(), any(), any(), any())
   }
 
   @Test
-  fun clickDeleteButton() {
+  fun clickDeleteButton() = runTest {
     init("1")
 
     composeTestRule.onNodeWithTag("deleteNoteButton").performClick()
@@ -152,11 +158,11 @@ class EditNoteTest {
     composeTestRule.onNodeWithTag("popup").assertIsDisplayed()
     composeTestRule.onNodeWithTag("confirmButton").performClick()
     verify(navigationActions).navigateTo(TopLevelDestinations.OVERVIEW)
-    verify(noteRepository).deleteNoteById(any(), any(), any())
+    verify(noteRepository).deleteNoteById(any(), any(), any(), any())
   }
 
   @Test
-  fun clickDeleteButtonAndCancel() {
+  fun clickDeleteButtonAndCancel() = runTest {
     init("1")
 
     composeTestRule.onNodeWithTag("deleteNoteButton").performClick()
@@ -164,7 +170,7 @@ class EditNoteTest {
     composeTestRule.onNodeWithTag("popup").assertIsDisplayed()
     composeTestRule.onNodeWithTag("cancelButton").performClick()
     composeTestRule.onNodeWithTag("popup").assertIsNotDisplayed()
-    verify(noteRepository, never()).deleteNoteById(any(), any(), any())
+    verify(noteRepository, never()).deleteNoteById(any(), any(), any(), any())
     verify(navigationActions, never()).navigateTo(TopLevelDestinations.OVERVIEW)
   }
 
@@ -205,7 +211,7 @@ class EditNoteTest {
   }
 
   @Test
-  fun modifyTitleAndExitingShowsPopup() {
+  fun modifyTitleAndExitingShowsPopup() = runTest {
     init("1")
 
     val newTitle = "New Title"
@@ -219,7 +225,7 @@ class EditNoteTest {
     composeTestRule.onNodeWithTag("confirmButton").performClick()
 
     verify(navigationActions).navigateTo(TopLevelDestinations.OVERVIEW)
-    verify(noteRepository, never()).updateNote(any(), any(), any())
+    verify(noteRepository, never()).updateNote(any(), any(), any(), any())
   }
 
   @Test
@@ -239,7 +245,7 @@ class EditNoteTest {
   }
 
   @Test
-  fun modifyTitleAndGoingToCommentsShowsPopup() {
+  fun modifyTitleAndGoingToCommentsShowsPopup() = runTest {
     init("1")
 
     val newTitle = "New Title"
@@ -253,7 +259,7 @@ class EditNoteTest {
     composeTestRule.onNodeWithTag("confirmButton").performClick()
 
     verify(navigationActions).navigateTo(Screen.EDIT_NOTE_COMMENT)
-    verify(noteRepository, never()).updateNote(any(), any(), any())
+    verify(noteRepository, never()).updateNote(any(), any(), any(), any())
   }
 
   @Test

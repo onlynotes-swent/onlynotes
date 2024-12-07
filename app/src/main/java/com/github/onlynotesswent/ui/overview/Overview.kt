@@ -72,7 +72,9 @@ fun OverviewScreen(
     folderViewModel: FolderViewModel
 ) {
   val userRootNotes = noteViewModel.userRootNotes.collectAsState()
-  userViewModel.currentUser.collectAsState().value?.let { noteViewModel.getRootNotesFrom(it.uid) }
+  userViewModel.currentUser.collectAsState().value?.let {
+    noteViewModel.getRootNotesFromUid(it.uid)
+  }
 
   val userRootFolders = folderViewModel.userRootFolders.collectAsState()
   userViewModel.currentUser.collectAsState().value?.let {
@@ -132,6 +134,7 @@ fun OverviewScreen(
             userViewModel = userViewModel,
             context = context,
             navigationActions = navigationActions)
+
         if (showCreateNoteDialog) {
           NoteDialog(
               onDismiss = { showCreateNoteDialog = false },
@@ -141,6 +144,7 @@ fun OverviewScreen(
                         id = noteViewModel.getNewUid(),
                         title = newName,
                         date = Timestamp.now(),
+                        lastModified = Timestamp.now(),
                         visibility = visibility,
                         userId = userViewModel.currentUser.value!!.uid,
                         folderId = parentFolderId.value)
@@ -155,27 +159,29 @@ fun OverviewScreen(
         if (showFilePopup) {
           FileSystemPopup(onDismiss = { showFilePopup = false }, folderViewModel = folderViewModel)
         }
-      }
 
-  // Logic to show the dialog to create a folder
-  if (showCreateFolderDialog) {
-    FolderDialog(
-        onDismiss = { showCreateFolderDialog = false },
-        onConfirm = { newName, visibility ->
-          val folderId = folderViewModel.getNewFolderId()
-          folderViewModel.addFolder(
-              Folder(
-                  id = folderId,
-                  name = newName,
-                  userId = userViewModel.currentUser.value!!.uid,
-                  parentFolderId = parentFolderId.value,
-                  visibility = visibility))
-          showCreateFolderDialog = false
-          navigationActions.navigateTo(
-              Screen.FOLDER_CONTENTS.replace(oldValue = "{folderId}", newValue = folderId))
-        },
-        action = stringResource(R.string.create))
-  }
+        // Logic to show the dialog to create a folder
+        if (showCreateFolderDialog) {
+          FolderDialog(
+              onDismiss = { showCreateFolderDialog = false },
+              onConfirm = { newName, visibility ->
+                val folderId = folderViewModel.getNewFolderId()
+                folderViewModel.addFolder(
+                    Folder(
+                        id = folderId,
+                        name = newName,
+                        userId = userViewModel.currentUser.value!!.uid,
+                        parentFolderId = parentFolderId.value,
+                        visibility = visibility,
+                        lastModified = Timestamp.now()))
+
+                showCreateFolderDialog = false
+                navigationActions.navigateTo(
+                    Screen.FOLDER_CONTENTS.replace(oldValue = "{folderId}", newValue = folderId))
+              },
+              action = stringResource(R.string.create))
+        }
+      }
 }
 
 /**
@@ -280,7 +286,7 @@ fun OverviewScreenGrid(
             color = MaterialTheme.colorScheme.onBackground)
         Spacer(modifier = Modifier.height(50.dp))
         RefreshButton {
-          userViewModel.currentUser.value?.let { noteViewModel.getRootNotesFrom(it.uid) }
+          userViewModel.currentUser.value?.let { noteViewModel.getRootNotesFromUid(it.uid) }
           userViewModel.currentUser.value?.let { folderViewModel.getRootFoldersFromUid(it.uid) }
         }
         Spacer(modifier = Modifier.height(20.dp))

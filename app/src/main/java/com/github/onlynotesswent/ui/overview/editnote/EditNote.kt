@@ -418,7 +418,8 @@ fun SaveButton(
             Note(
                 id = note.id,
                 title = noteTitle,
-                date = Timestamp.now(), // Use current timestamp
+                date = note.date, // Use current timestamp
+                lastModified = Timestamp.now(),
                 visibility = visibility ?: Visibility.DEFAULT,
                 noteCourse = if (course == Course.EMPTY) null else course,
                 userId = note.userId,

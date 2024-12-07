@@ -165,7 +165,8 @@ fun FolderContentScreen(
                             name = name,
                             userId = folder.value!!.userId,
                             parentFolderId = folder.value!!.parentFolderId,
-                            visibility = vis))
+                            visibility = vis,
+                            lastModified = Timestamp.now()))
                     updatedName = name
                   } else {
                     Toast.makeText(
@@ -188,6 +189,7 @@ fun FolderContentScreen(
                           id = noteViewModel.getNewUid(),
                           title = newName,
                           date = Timestamp.now(),
+                          lastModified = Timestamp.now(),
                           visibility = visibility,
                           noteCourse = Course.EMPTY,
                           userId = userViewModel.currentUser.value!!.uid,
@@ -212,7 +214,8 @@ fun FolderContentScreen(
                             name = name,
                             userId = currentUser.value!!.uid,
                             parentFolderId = parentFolderId.value,
-                            visibility = visibility))
+                            visibility = visibility,
+                            lastModified = Timestamp.now()))
                     if (parentFolderId.value != null) {
                       navigationActions.navigateTo(
                           Screen.FOLDER_CONTENTS.replace(
