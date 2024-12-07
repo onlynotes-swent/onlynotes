@@ -124,4 +124,10 @@ class NavigationActionsTest {
     navigationActions.goBackFolderContents(folder, userViewModel)
     verify(mockNavHostController).navigate(eq(Route.OVERVIEW), any<NavOptionsBuilder.() -> Unit>())
   }
+
+  @Test
+  fun navigateToAndPopCallsController() {
+    navigationActions.navigateToAndPop(Screen.SEARCH)
+    verify(mockNavHostController).navigate(eq(Screen.SEARCH), any<NavOptionsBuilder.() -> Unit>())
+  }
 }

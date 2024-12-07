@@ -1,6 +1,5 @@
 package com.github.onlynotesswent.ui.navigation
 
-import android.util.Log
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Comment
 import androidx.compose.material.icons.filled.EditNote
@@ -167,13 +166,7 @@ open class NavigationActions(
    */
   open fun navigateToAndPop(screen: String) {
     navController.navigate(screen) {
-      Log.e(
-          "NavigationActions",
-          "current back stack entry is ${navController.currentBackStackEntry?.destination?.route}")
       popUpTo(navController.currentBackStackEntry?.destination?.route!!) { inclusive = true }
     }
-    Log.e(
-        "NavigationActions",
-        "previous screen is ${navController.previousBackStackEntry?.destination?.route}")
   }
 }
