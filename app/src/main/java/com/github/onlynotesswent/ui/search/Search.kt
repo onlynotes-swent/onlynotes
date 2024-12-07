@@ -104,12 +104,8 @@ fun SearchScreen(
 
   // Handle back press
   BackHandler {
-    // Going back to edit note is not allowed since the note is not selected anymore
-    if (navigationActions.getPreviousScreen() == Screen.EDIT_NOTE) {
-      navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
-    } else {
-      navigationActions.goBack()
-    }
+    // As a convention we navigate to overview screen when back is pressed
+    navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
   }
 
   Scaffold(
