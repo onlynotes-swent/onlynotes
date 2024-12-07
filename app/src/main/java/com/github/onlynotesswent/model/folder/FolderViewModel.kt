@@ -73,6 +73,15 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
   fun selectedFolder(folder: Folder) {
     _selectedFolder.value = folder
   }
+  /**
+   * Clears the currently selected folder.
+   *
+   * This function resets the `_selectedFolder` state to `null`, effectively deselecting any folder
+   * that was previously selected.
+   */
+  fun clearSelectedFolder() {
+    _selectedFolder.value = null
+  }
 
   /**
    * Sets the dragged folder.
@@ -311,6 +320,22 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
           onFailure = onFailure,
           useCache = useCache)
     }
+  }
+  /**
+   * Retrieves the subfolders of a given parent folder without updating the state of the ViewModel.
+   *
+   * @param parentFolderId The unique ID of the parent folder whose subfolders are to be retrieved.
+   * @param onSuccess A callback that receives a list of `Folder` objects on successful retrieval.
+   * @param onFailure A callback that receives an `Exception` in case of a failure. Defaults to an
+   *   empty lambda if not provided.
+   */
+  fun getSubFoldersOfNoStateUpdate(
+      parentFolderId: String,
+      onSuccess: (List<Folder>) -> Unit,
+      onFailure: (Exception) -> Unit = {}
+  ) {
+    repository.getSubFoldersOf(
+        parentFolderId = parentFolderId, onSuccess = { onSuccess(it) }, onFailure = onFailure)
   }
 
   /**
