@@ -44,7 +44,7 @@ data class Destination(
 )
 
 object TopLevelDestinations {
-  val OVERVIEW = Destination(route = Route.OVERVIEW, icon = Icons.Outlined.Home, textId = "Notes")
+  val OVERVIEW = Destination(route = Route.OVERVIEW, icon = Icons.Outlined.Home, textId = "Home")
   val SEARCH = Destination(route = Route.SEARCH, icon = Icons.Outlined.Search, textId = "Search")
   val PROFILE = Destination(route = Route.PROFILE, icon = Icons.Outlined.Person, textId = "Profile")
 }

@@ -39,6 +39,7 @@
     <string name="not_found_search">No %1$s found matching your search.</string>
     <string name="create">Create</string>
     <string name="create_note">Create note</string>
+    <string name="create_deck">Create deck</string>
     <string name="create_folder">Create folder</string>
     <string name="you_have_no_notes_or_folders_yet">You have no notes or folders yet.</string>
     <string name="refresh">Refresh</string>
