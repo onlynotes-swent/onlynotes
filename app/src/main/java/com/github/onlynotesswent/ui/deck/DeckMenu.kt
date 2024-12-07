@@ -1,5 +1,6 @@
 package com.github.onlynotesswent.ui.deck
 
+import android.widget.Button
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
@@ -7,6 +8,8 @@ import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,33 +23,38 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.lazy.staggeredgrid.LazyHorizontalStaggeredGrid
-import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Sort
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.ArrowDropUp
+import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.HideImage
 import androidx.compose.material.icons.filled.ImageSearch
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.SaveAlt
+import androidx.compose.material.icons.filled.Sort
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
@@ -56,6 +64,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -115,6 +124,15 @@ fun DeckScreen(
 
   val publicFabDropdownMenuShown = remember { mutableStateOf(false) }
   // TODO: add mutable states for save to favourites and create local copy
+
+  val sortOptionsShown = remember { mutableStateOf(false) }
+  val sortMode = remember { mutableStateOf(SortMode.ALPHABETICAL) }
+  val sortStatus = remember { mutableStateOf(SortStatus.HIGH_LOW) }
+  val sortedFlashcards = remember {
+    derivedStateOf { sortMode.value.sort(deckFlashcards.value, sortStatus.value) }
+  }
+
+  val playModesShown = remember { mutableStateOf(false) }
 
   selectedDeck.value?.let { flashcardViewModel.fetchFlashcardsFromDeck(it) }
   selectedDeck.value?.userId?.let { userId ->
@@ -188,6 +206,10 @@ fun DeckScreen(
                   EditDeckDialog(deckViewModel, userViewModel, { editDialogExpanded.value = false })
                 }
 
+                // Play modes bottom sheet:
+                if (playModesShown.value)
+                    PlayModesBottomSheet(playModesShown, deckViewModel, navigationActions)
+
                 // Card count and author name
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -225,33 +247,55 @@ fun DeckScreen(
                     modifier = Modifier.padding(10.dp))
 
                 // Deck play mode buttons
-                LazyHorizontalStaggeredGrid(
-                    modifier =
-                        Modifier.heightIn(max = 100.dp)
-                            .padding(5.dp)
-                            .align(Alignment.CenterHorizontally),
-                    rows = StaggeredGridCells.Adaptive(minSize = 35.dp)) {
-                      items(Deck.PlayMode.entries.size) { index ->
-                        PlayButton(
-                            Deck.PlayMode.entries[index],
-                            selectedDeck,
-                            deckViewModel,
-                            navigationActions)
-                      }
-                    }
+                FilledTonalButton(onClick = { playModesShown.value = !playModesShown.value }) {
+                  Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text("Play")
+                    Icon(Icons.Default.PlayArrow, contentDescription = "play")
+                  }
+                }
 
                 // Deck cards
+                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                  IconButton(onClick = { sortOptionsShown.value = !sortOptionsShown.value }) {
+                    Icon(Icons.AutoMirrored.Filled.Sort, contentDescription = null)
+                  }
+                  AnimatedVisibility(visible = sortOptionsShown.value) {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                        modifier =
+                            Modifier.scrollable(rememberScrollState(), Orientation.Horizontal)) {
+                          SortMode.entries.forEach {
+                            FilterChip(
+                                selected = sortMode.value == it,
+                                onClick = {
+                                  sortMode.value = it
+                                  sortStatus.value = sortStatus.value.next()
+                                },
+                                label = { Text(it.toReadableString()) },
+                                leadingIcon = {
+                                  if (sortMode.value == it &&
+                                      sortStatus.value == SortStatus.HIGH_LOW)
+                                      Icon(Icons.Default.ArrowUpward, contentDescription = null)
+                                  else if (sortMode.value == it &&
+                                      sortStatus.value == SortStatus.LOW_HIGH)
+                                      Icon(Icons.Default.ArrowDownward, contentDescription = null)
+                                })
+                          }
+                        }
+                  }
+                }
+
                 LazyColumn(
                     reverseLayout = true,
                     modifier =
                         Modifier.fillMaxWidth(0.9f)
                             .heightIn(max = 600.dp)
-                            .padding(top = 15.dp, start = 10.dp, end = 10.dp),
+                            .padding(horizontal = 10.dp),
                     verticalArrangement = Arrangement.spacedBy(10.dp),
                     horizontalAlignment = Alignment.CenterHorizontally) {
-                      items(deckFlashcards.value.size) { index ->
+                      items(sortedFlashcards.value.size) { index ->
                         FlashcardViewItem(
-                            flashcard = deckFlashcards.value[index],
+                            flashcard = sortedFlashcards.value[index],
                             deckViewModel = deckViewModel,
                             flashcardViewModel = flashcardViewModel,
                             fileViewModel = fileViewModel,
@@ -264,31 +308,78 @@ fun DeckScreen(
       }
 }
 
+enum class SortMode {
+  ALPHABETICAL,
+  REVIEW,
+  LEVEL;
+
+  fun toReadableString(): String {
+    return when (this) {
+      ALPHABETICAL -> "Alphabetical"
+      REVIEW -> "Last Review"
+      LEVEL -> "Level"
+    }
+  }
+
+  fun sort(flashcards: List<Flashcard>, sortStatus: SortStatus): List<Flashcard> {
+    return when (this) {
+      ALPHABETICAL -> flashcards.sortedBy { card -> card.front.lowercase().trim() }
+      REVIEW -> flashcards.sortedBy { card -> card.lastReviewed }
+      LEVEL -> flashcards // TODO once level is implemented, for now does nothing
+    }.let { if (sortStatus == SortStatus.HIGH_LOW) it.reversed() else it }
+  }
+}
+
+enum class SortStatus {
+  HIGH_LOW,
+  LOW_HIGH;
+
+  fun next(): SortStatus {
+    return when (this) {
+      HIGH_LOW -> LOW_HIGH
+      LOW_HIGH -> HIGH_LOW
+    }
+  }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PlayButton(
-    playMode: Deck.PlayMode,
-    selectedDeck: State<Deck?>,
+fun PlayModesBottomSheet(
+    playModesShown: MutableState<Boolean>,
     deckViewModel: DeckViewModel,
     navigationActions: NavigationActions,
 ) {
-  val label: String =
-      when (playMode) {
-        Deck.PlayMode.FLASHCARD -> stringResource(R.string.play_mode_flashcards)
-        Deck.PlayMode.MATCH -> stringResource(R.string.play_mode_match_cards)
-        Deck.PlayMode.MCQ -> stringResource(R.string.play_mode_mcq)
-        Deck.PlayMode.ALL -> stringResource(R.string.play_mode_all_combined)
-      }
-  Button(
-      shape = RoundedCornerShape(25),
-      modifier = Modifier.padding(1.dp),
-      onClick = {
-        deckViewModel.selectDeck(selectedDeck.value!!)
-        navigationActions.navigateTo(
-            Screen.DECK_PLAY.replace("{deckId}", selectedDeck.value!!.id)
-                .replace("{mode}", playMode.toString()))
-      }) {
-        Text(label, maxLines = 2)
-      }
+  ModalBottomSheet(onDismissRequest = { playModesShown.value = false }) {
+    Column(
+        modifier = Modifier.fillMaxWidth().padding(20.dp),
+        horizontalAlignment = Alignment.CenterHorizontally) {
+          Text("Choose your play mode:", style = MaterialTheme.typography.headlineMedium)
+          Spacer(modifier = Modifier.height(15.dp))
+          Column(verticalArrangement = Arrangement.spacedBy(20.dp)) {
+            Deck.PlayMode.entries.forEach {
+              Row(
+                  modifier =
+                      Modifier.clickable {
+                        navigationActions.navigateTo(
+                            Screen.DECK_PLAY.replace(
+                                    "{deckId}", deckViewModel.selectedDeck.value!!.id)
+                                .replace("{mode}", it.toString()))
+                      }) {
+                    // TODO define icons for each play mode later
+                    Icon(Icons.Default.PlayArrow, contentDescription = null)
+                    Text(
+                        when (it) {
+                          Deck.PlayMode.FLASHCARD -> stringResource(R.string.play_mode_flashcards)
+                          Deck.PlayMode.MATCH -> stringResource(R.string.play_mode_match_cards)
+                          Deck.PlayMode.MCQ -> stringResource(R.string.play_mode_mcq)
+                          Deck.PlayMode.ALL -> stringResource(R.string.play_mode_all_combined)
+                        },
+                        style = MaterialTheme.typography.headlineSmall)
+                  }
+            }
+          }
+        }
+  }
 }
 
 @Composable
