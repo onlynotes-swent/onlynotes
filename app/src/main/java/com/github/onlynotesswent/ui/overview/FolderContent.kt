@@ -53,7 +53,6 @@ import com.github.onlynotesswent.ui.common.ConfirmationPopup
 import com.github.onlynotesswent.ui.common.CustomDropDownMenu
 import com.github.onlynotesswent.ui.common.CustomDropDownMenuItem
 import com.github.onlynotesswent.ui.common.CustomSeparatedLazyGrid
-import com.github.onlynotesswent.ui.common.FileSystemPopup
 import com.github.onlynotesswent.ui.common.FolderDialog
 import com.github.onlynotesswent.ui.common.NoteDialog
 import com.github.onlynotesswent.ui.navigation.NavigationActions
@@ -95,7 +94,9 @@ fun FolderContentScreen(
 
   var updatedName by remember { mutableStateOf(folder.value!!.name) }
   var expandedFolder by remember { mutableStateOf(false) }
-    var showFileSystemPopup by remember { mutableStateOf(true) } // State to control the popup visibility
+  var showFileSystemPopup by remember {
+    mutableStateOf(true)
+  } // State to control the popup visibility
   // Custom back handler to manage back navigation
   BackHandler {
     if (folder.value!!.parentFolderId != null) {
@@ -103,7 +104,7 @@ fun FolderContentScreen(
           Screen.FOLDER_CONTENTS.replace(
               oldValue = "{folderId}", newValue = folder.value!!.parentFolderId!!))
     } else {
-        folderViewModel.clearSelectedFolder()
+      folderViewModel.clearSelectedFolder()
       navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
     }
   }
@@ -141,16 +142,10 @@ fun FolderContentScreen(
               context = context,
               folder = folder.value)
         }) { paddingValues ->
-
-            Button(onClick = { showFileSystemPopup = true }) {
-                Text("FileSystem Overview")
-            }
-            Text(
-                text = "Selected Folder: ${folderViewModel.selectedFolder.value?.name ?: "None"}",
-                style = MaterialTheme.typography.bodySmall
-            )
-
-
+          Button(onClick = { showFileSystemPopup = true }) { Text("FileSystem Overview") }
+          Text(
+              text = "Selected Folder: ${folderViewModel.selectedFolder.value?.name ?: "None"}",
+              style = MaterialTheme.typography.bodySmall)
 
           FolderContentScreenGrid(
               paddingValues = paddingValues,
@@ -162,7 +157,6 @@ fun FolderContentScreen(
               context = context,
               navigationActions = navigationActions)
           // Logic to show the dialog to update a folder
-
 
           if (showUpdateDialog) {
             FolderDialog(
@@ -228,7 +222,7 @@ fun FolderContentScreen(
                           Screen.FOLDER_CONTENTS.replace(
                               oldValue = "{folderId}", newValue = folderId))
                     } else {
-                        folderViewModel.clearSelectedFolder()
+                      folderViewModel.clearSelectedFolder()
                       navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
                     }
                   } else {
@@ -316,10 +310,11 @@ fun FolderContentTopBar(
       navigationIcon = {
         IconButton(
             onClick = {
-                if (folder?.parentFolderId == null){
-                    folderViewModel.clearSelectedFolder()
-                }
-                navigationActions.goBackFolderContents(folder?.parentFolderId) },
+              if (folder?.parentFolderId == null) {
+                folderViewModel.clearSelectedFolder()
+              }
+              navigationActions.goBackFolderContents(folder?.parentFolderId)
+            },
             modifier = Modifier.testTag("goBackButton")) {
               Icon(imageVector = Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "Back")
             }
@@ -387,7 +382,7 @@ fun FolderContentTopBar(
                         Screen.FOLDER_CONTENTS.replace(
                             oldValue = "{folderId}", newValue = parentFolderId))
                   } else {
-                      folderViewModel.clearSelectedFolder()
+                    folderViewModel.clearSelectedFolder()
                     navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
                   }
 

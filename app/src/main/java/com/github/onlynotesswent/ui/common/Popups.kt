@@ -30,7 +30,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -153,125 +152,102 @@ fun CreationDialog(
 /**
  * Displays a popup dialog to browse and navigate the file system.
  *
- * This popup allows users to view folders in a hierarchical structure. Users can navigate
- * into subfolders, view folder contents, and return to the root folder.
+ * This popup allows users to view folders in a hierarchical structure. Users can navigate into
+ * subfolders, view folder contents, and return to the root folder.
  *
  * @param onDismiss Callback invoked when the popup is dismissed.
  * @param folderViewModel The ViewModel that provides the folder data.
  */
 @Composable
-fun FileSystemPopup(
-    onDismiss: () -> Unit,
-    folderViewModel: FolderViewModel
-) {
-    var selectedFolder by remember { mutableStateOf<Folder?>(folderViewModel.selectedFolder.value) }
-    var folderSubFolders by remember { mutableStateOf<List<Folder>>(emptyList()) }
-    val userRootFolders = folderViewModel.userRootFolders.collectAsState()
+fun FileSystemPopup(onDismiss: () -> Unit, folderViewModel: FolderViewModel) {
+  var selectedFolder by remember { mutableStateOf<Folder?>(folderViewModel.selectedFolder.value) }
+  var folderSubFolders by remember { mutableStateOf<List<Folder>>(emptyList()) }
+  val userRootFolders = folderViewModel.userRootFolders.collectAsState()
 
-    Dialog(onDismissRequest = { onDismiss() }) {
-        Box(
-            modifier = Modifier.testTag("FileSystemPopup")
+  Dialog(onDismissRequest = { onDismiss() }) {
+    Box(
+        modifier =
+            Modifier.testTag("FileSystemPopup")
                 .fillMaxWidth(0.9f) // Adjust the popup width
                 .fillMaxHeight(0.5f)
                 .padding(16.dp)
                 .background(
                     color = MaterialTheme.colorScheme.background,
-                    shape = RoundedCornerShape(12.dp)
-                )
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .fillMaxHeight()
-            ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
+                    shape = RoundedCornerShape(12.dp))) {
+          Column(modifier = Modifier.fillMaxWidth().fillMaxHeight()) {
+            Box(
+                modifier =
+                    Modifier.fillMaxWidth()
                         .background(MaterialTheme.colorScheme.primary)
-                        .padding(vertical = 12.dp, horizontal = 16.dp)
-                ) {
-                    Text(
-                        text = if (selectedFolder == null) "Folders in: root" else "Folders in: ${selectedFolder!!.name}",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onPrimary
-                    )
+                        .padding(vertical = 12.dp, horizontal = 16.dp)) {
+                  Text(
+                      text =
+                          if (selectedFolder == null) "Folders in: root"
+                          else "Folders in: ${selectedFolder!!.name}",
+                      style = MaterialTheme.typography.bodyMedium,
+                      color = MaterialTheme.colorScheme.onPrimary)
                 }
 
-                Column(
-                    modifier = Modifier
-                        .weight(1f)
+            Column(
+                modifier =
+                    Modifier.weight(1f)
                         .padding(start = 16.dp, end = 16.dp, top = 8.dp)
                         .verticalScroll(rememberScrollState()),
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    if (selectedFolder == null) {
-                        userRootFolders.value.forEach { folder ->
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .background(
-                                        color = MaterialTheme.colorScheme.surface,
-                                        shape = RoundedCornerShape(8.dp)
-                                    )
-                                    .clickable {
-                                        folderViewModel.getSubFoldersOfNoStateUpdate(folder.id, onSuccess = { subFolders ->
-                                            folderSubFolders = subFolders
-                                        })
-                                        selectedFolder = folder
-                                    }
-                                    .padding(12.dp)
-                            ) {
-                                Text(
-                                    text = folder.name,
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
-                            }
-                        }
-                    } else {
-                        folderSubFolders.forEach { subFolder ->
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .background(
-                                        color = MaterialTheme.colorScheme.surface,
-                                        shape = RoundedCornerShape(8.dp)
-                                    )
-                                    .clickable {
-                                        folderViewModel.getSubFoldersOfNoStateUpdate(subFolder.id, onSuccess = { subFolders ->
-                                            folderSubFolders = subFolders
-                                        })
-                                        selectedFolder = subFolder
-                                    }
-                                    .padding(12.dp)
-                            ) {
-                                Text(
-                                    text = subFolder.name,
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
-                            }
-                        }
+                verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                  if (selectedFolder == null) {
+                    userRootFolders.value.forEach { folder ->
+                      Box(
+                          modifier =
+                              Modifier.fillMaxWidth()
+                                  .background(
+                                      color = MaterialTheme.colorScheme.surface,
+                                      shape = RoundedCornerShape(8.dp))
+                                  .clickable {
+                                    folderViewModel.getSubFoldersOfNoStateUpdate(
+                                        folder.id,
+                                        onSuccess = { subFolders -> folderSubFolders = subFolders })
+                                    selectedFolder = folder
+                                  }
+                                  .padding(12.dp)) {
+                            Text(
+                                text = folder.name,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurface)
+                          }
                     }
+                  } else {
+                    folderSubFolders.forEach { subFolder ->
+                      Box(
+                          modifier =
+                              Modifier.fillMaxWidth()
+                                  .background(
+                                      color = MaterialTheme.colorScheme.surface,
+                                      shape = RoundedCornerShape(8.dp))
+                                  .clickable {
+                                    folderViewModel.getSubFoldersOfNoStateUpdate(
+                                        subFolder.id,
+                                        onSuccess = { subFolders -> folderSubFolders = subFolders })
+                                    selectedFolder = subFolder
+                                  }
+                                  .padding(12.dp)) {
+                            Text(
+                                text = subFolder.name,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurface)
+                          }
+                    }
+                  }
                 }
 
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp)
-                ) {
-                    ElevatedButton(
-                        onClick = {
-                            selectedFolder = null
-                        },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text("Back to Root Folder")
-                    }
-                }
+            Box(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
+              ElevatedButton(
+                  onClick = { selectedFolder = null }, modifier = Modifier.fillMaxWidth()) {
+                    Text("Back to Root Folder")
+                  }
             }
+          }
         }
-    }
+  }
 }
 
 /**

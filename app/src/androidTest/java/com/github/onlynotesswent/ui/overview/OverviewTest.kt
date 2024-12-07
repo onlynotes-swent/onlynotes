@@ -227,8 +227,6 @@ class OverviewTest {
     composeTestRule.onNodeWithTag("createFolder").performClick()
     composeTestRule.onNodeWithTag("FolderDialog").assertIsDisplayed()
     composeTestRule.onNodeWithTag("createNote").performClick()
-
-
   }
 
   @Test
@@ -253,7 +251,7 @@ class OverviewTest {
   }
 
   @Test
-  fun openFileSystem(){
+  fun openFileSystem() {
     composeTestRule.onNodeWithTag("FileSystemPopup").assertIsNotDisplayed()
     composeTestRule.onNodeWithTag("showFileSystemButton").assertIsDisplayed()
     composeTestRule.onNodeWithTag("showFileSystemButton").performClick()
