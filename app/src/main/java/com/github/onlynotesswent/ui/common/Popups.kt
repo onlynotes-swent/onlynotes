@@ -150,8 +150,15 @@ fun CreationDialog(
             }
       })
 }
-
-
+/**
+ * Displays a popup dialog to browse and navigate the file system.
+ *
+ * This popup allows users to view folders in a hierarchical structure. Users can navigate
+ * into subfolders, view folder contents, and return to the root folder.
+ *
+ * @param onDismiss Callback invoked when the popup is dismissed.
+ * @param folderViewModel The ViewModel that provides the folder data.
+ */
 @Composable
 fun FileSystemPopup(
     onDismiss: () -> Unit,
@@ -161,82 +168,108 @@ fun FileSystemPopup(
     var folderSubFolders by remember { mutableStateOf<List<Folder>>(emptyList()) }
     val userRootFolders = folderViewModel.userRootFolders.collectAsState()
 
-
-        Dialog(onDismissRequest = {
-            onDismiss()}) {
-            Box(
+    Dialog(onDismissRequest = { onDismiss() }) {
+        Box(
+            modifier = Modifier.testTag("FileSystemPopup")
+                .fillMaxWidth(0.9f) // Adjust the popup width
+                .fillMaxHeight(0.5f)
+                .padding(16.dp)
+                .background(
+                    color = MaterialTheme.colorScheme.background,
+                    shape = RoundedCornerShape(12.dp)
+                )
+        ) {
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth(0.9f) // Adjust the popup width
-                    .fillMaxHeight(0.5f)
-                    .padding(16.dp)
-                    .background(Color.White, shape = RoundedCornerShape(12.dp))
+                    .fillMaxWidth()
+                    .fillMaxHeight()
             ) {
-                Column(
+                Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .fillMaxHeight()
-                        .padding(16.dp)
+                        .background(MaterialTheme.colorScheme.primary)
+                        .padding(vertical = 12.dp, horizontal = 16.dp)
+                ) {
+                    Text(
+                        text = if (selectedFolder == null) "Folders in: root" else "Folders in: ${selectedFolder!!.name}",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+                }
+
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(start = 16.dp, end = 16.dp, top = 8.dp)
                         .verticalScroll(rememberScrollState()),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     if (selectedFolder == null) {
-                        Text(
-                            text = "Contents of root folder",
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                        userRootFolders.value.forEach() { folder ->
-                            Text(
-                                text = folder.name,
+                        userRootFolders.value.forEach { folder ->
+                            Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(8.dp)
+                                    .background(
+                                        color = MaterialTheme.colorScheme.surface,
+                                        shape = RoundedCornerShape(8.dp)
+                                    )
                                     .clickable {
-                                        // Set the clicked folder as the selected folder
                                         folderViewModel.getSubFoldersOfNoStateUpdate(folder.id, onSuccess = { subFolders ->
-                                            folderSubFolders = subFolders // Update the list
+                                            folderSubFolders = subFolders
                                         })
                                         selectedFolder = folder
                                     }
-                            )
+                                    .padding(12.dp)
+                            ) {
+                                Text(
+                                    text = folder.name,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                            }
                         }
                     } else {
-                        // Display all folders in the selected folder
-                        Text(
-                            text = "Move selected item into: ${selectedFolder!!.name}",
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-
                         folderSubFolders.forEach { subFolder ->
-                            Text(
-                                text = subFolder.name,
+                            Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(8.dp)
+                                    .background(
+                                        color = MaterialTheme.colorScheme.surface,
+                                        shape = RoundedCornerShape(8.dp)
+                                    )
                                     .clickable {
-                                        // Navigate into the sub-folder
-
                                         folderViewModel.getSubFoldersOfNoStateUpdate(subFolder.id, onSuccess = { subFolders ->
-                                            folderSubFolders = subFolders // Update the list
+                                            folderSubFolders = subFolders
                                         })
                                         selectedFolder = subFolder
                                     }
-                            )
-                        }
-
-                        // Add a button to go back to the parent folder or root
-                        Spacer(modifier = Modifier.height(16.dp))
-                        ElevatedButton(
-                            onClick = {
-                                // Reset to the root folder list
-                                selectedFolder = null
+                                    .padding(12.dp)
+                            ) {
+                                Text(
+                                    text = subFolder.name,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
                             }
-                        ) {
-                            Text("Back to Root Folders")
                         }
+                    }
+                }
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp)
+                ) {
+                    ElevatedButton(
+                        onClick = {
+                            selectedFolder = null
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Back to Root Folder")
                     }
                 }
             }
         }
-
     }
+}

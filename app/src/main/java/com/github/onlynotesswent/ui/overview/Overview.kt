@@ -24,6 +24,7 @@ import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ElevatedButton
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -35,6 +36,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -94,6 +96,7 @@ fun OverviewScreen(
     var expanded by remember { mutableStateOf(false) }
     var showCreateFolderDialog by remember { mutableStateOf(false) }
     var showCreateNoteDialog by remember { mutableStateOf(false) }
+    var showFilePopup by remember { mutableStateOf(false) } // State to control the popup visibility
 
     // Handle back press
     BackHandler {
@@ -104,15 +107,32 @@ fun OverviewScreen(
     Scaffold(
         modifier = Modifier.testTag("overviewScreen"),
         floatingActionButton = {
-            CreateItemFab(
-                expandedFab = expanded,
-                onExpandedFabChange = { expanded = it },
-                showCreateFolderDialog = { showCreateFolderDialog = it },
-                showCreateNoteDialog = { showCreateNoteDialog = it },
-                noteViewModel = noteViewModel,
-                folderViewModel = folderViewModel
-            )
+            Column(
+                verticalArrangement = Arrangement.spacedBy(16.dp), // Space between FABs
+                horizontalAlignment = Alignment.End
+            ) {
+                CreateItemFab(
+                    expandedFab = expanded,
+                    onExpandedFabChange = { expanded = it },
+                    showCreateFolderDialog = { showCreateFolderDialog = it },
+                    showCreateNoteDialog = { showCreateNoteDialog = it },
+                    noteViewModel = noteViewModel,
+                    folderViewModel = folderViewModel
+                )
+                FloatingActionButton(
+                    modifier = Modifier.testTag("showFileSystemButton"),
+                    onClick = { showFilePopup = true },
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.open_folder_icon),
+                        contentDescription = "Open File Manager"
+                    )
+                }
+            }
         },
+
         bottomBar = {
             BottomNavigationMenu(
                 onTabSelect = { route -> navigationActions.navigateTo(route) },
@@ -151,19 +171,11 @@ fun OverviewScreen(
                 action = stringResource(R.string.create)
             )
         }
-        var showPopup by remember { mutableStateOf(false) } // State to control the popup visibility
-        Button(onClick = { showPopup = true }) {
-            Text("FileSystem Overview")
-        }
-        Text(
-            text = "Selected Folder: ${folderViewModel.selectedFolder.value?.name ?: "None"}",
-            style = MaterialTheme.typography.bodySmall
-        )
 
 
-    if (showPopup){
+    if (showFilePopup){
         FileSystemPopup(
-            onDismiss = { showPopup = false },
+            onDismiss = { showFilePopup = false },
             folderViewModel = folderViewModel
         )
     }
@@ -172,33 +184,31 @@ fun OverviewScreen(
     }
 
 
-        // Logic to show the dialog to create a folder
-        if (showCreateFolderDialog) {
-            FolderDialog(
-                onDismiss = { showCreateFolderDialog = false },
-                onConfirm = { newName, visibility ->
-                    val folderId = folderViewModel.getNewFolderId()
-                    folderViewModel.addFolder(
-                        Folder(
-                            id = folderId,
-                            name = newName,
-                            userId = userViewModel.currentUser.value!!.uid,
-                            parentFolderId = parentFolderId.value,
-                            visibility = visibility
-                        )
+    // Logic to show the dialog to create a folder
+    if (showCreateFolderDialog) {
+        FolderDialog(
+            onDismiss = { showCreateFolderDialog = false },
+            onConfirm = { newName, visibility ->
+                val folderId = folderViewModel.getNewFolderId()
+                folderViewModel.addFolder(
+                    Folder(
+                        id = folderId,
+                        name = newName,
+                        userId = userViewModel.currentUser.value!!.uid,
+                        parentFolderId = parentFolderId.value,
+                        visibility = visibility
                     )
-                    showCreateFolderDialog = false
-                    navigationActions.navigateTo(
-                        Screen.FOLDER_CONTENTS.replace(oldValue = "{folderId}", newValue = folderId)
-                    )
-                },
-                action = stringResource(R.string.create)
-            )
-        }
+                )
+                showCreateFolderDialog = false
+                navigationActions.navigateTo(
+                    Screen.FOLDER_CONTENTS.replace(oldValue = "{folderId}", newValue = folderId)
+                )
+            },
+            action = stringResource(R.string.create)
+        )
     }
 
-
-
+}
 
 /**
  * Displays a floating action button that expands to show options to create a note or a folder.
@@ -223,6 +233,7 @@ fun CreateItemFab(
       modifier = Modifier.testTag("createNoteOrFolder"),
       menuItems =
           listOf(
+
               CustomDropDownMenuItem(
                   text = { Text(stringResource(R.string.create_note)) },
                   icon = {

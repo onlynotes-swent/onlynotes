@@ -149,12 +149,7 @@ fun FolderContentScreen(
                 text = "Selected Folder: ${folderViewModel.selectedFolder.value?.name ?: "None"}",
                 style = MaterialTheme.typography.bodySmall
             )
-        if (showFileSystemPopup){
-            FileSystemPopup(
-                onDismiss = { showFileSystemPopup = false },
-                folderViewModel = folderViewModel
-            )
-        }
+
 
 
           FolderContentScreenGrid(

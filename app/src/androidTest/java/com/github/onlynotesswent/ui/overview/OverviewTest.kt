@@ -3,6 +3,7 @@ package com.github.onlynotesswent.ui.overview
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
+import androidx.compose.ui.test.assertIsNotDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.filter
 import androidx.compose.ui.test.hasText
@@ -225,6 +226,9 @@ class OverviewTest {
     composeTestRule.onNodeWithTag("createFolder").assertIsDisplayed()
     composeTestRule.onNodeWithTag("createFolder").performClick()
     composeTestRule.onNodeWithTag("FolderDialog").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("createNote").performClick()
+
+
   }
 
   @Test
@@ -246,6 +250,14 @@ class OverviewTest {
 
     verify(noteRepository).addNote(any(), any(), any())
     verify(navigationActions).navigateTo(screen = Screen.EDIT_NOTE)
+  }
+
+  @Test
+  fun openFileSystem(){
+    composeTestRule.onNodeWithTag("FileSystemPopup").assertIsNotDisplayed()
+    composeTestRule.onNodeWithTag("showFileSystemButton").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("showFileSystemButton").performClick()
+    composeTestRule.onNodeWithTag("FileSystemPopup").assertIsDisplayed()
   }
 
   @Test
