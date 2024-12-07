@@ -226,7 +226,6 @@ class OverviewTest {
     composeTestRule.onNodeWithTag("createFolder").assertIsDisplayed()
     composeTestRule.onNodeWithTag("createFolder").performClick()
     composeTestRule.onNodeWithTag("FolderDialog").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("createNote").performClick()
   }
 
   @Test
