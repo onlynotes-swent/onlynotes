@@ -144,7 +144,7 @@ class PdfViewerTest {
   fun clickGoBackButton() {
     composeTestRule.onNodeWithTag("closeButton").performClick()
 
-    verify(navigationActions).navigateTo(Screen.FOLDER_CONTENTS.replace("{folderId}", "1"))
+    verify(navigationActions).goBack()
   }
 
   @Test

@@ -18,7 +18,6 @@ import com.github.onlynotesswent.model.user.UserRepository
 import com.github.onlynotesswent.model.user.UserViewModel
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
-import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
 import com.google.firebase.Timestamp
 import org.junit.Before
 import org.junit.Rule
@@ -140,7 +139,7 @@ class CommentsTest {
     init("1")
     composeTestRule.onNodeWithTag("closeButton").performClick()
 
-    verify(navigationActions).navigateTo(TopLevelDestinations.OVERVIEW)
+    verify(navigationActions).goBack()
     verify(noteRepository).updateNote(any(), any(), any())
   }
 
@@ -150,8 +149,7 @@ class CommentsTest {
     folderViewModel.getFolderById(testFolder.id)
     composeTestRule.onNodeWithTag("closeButton").performClick()
 
-    verify(navigationActions)
-        .navigateTo(Screen.FOLDER_CONTENTS.replace("{folderId}", testFolder.id))
+    verify(navigationActions).goBack()
     verify(noteRepository).updateNote(any(), any(), any())
   }
 
@@ -159,7 +157,7 @@ class CommentsTest {
   fun clickNavigationDetailButton() {
     init("1")
     composeTestRule.onNodeWithTag("Detail").performClick()
-    verify(navigationActions).navigateTo(Screen.EDIT_NOTE)
+    verify(navigationActions).navigateToAndPop(Screen.EDIT_NOTE)
     verify(noteRepository).updateNote(any(), any(), any())
     verify(noteRepository, times(2)).getNoteById(any(), any(), any())
   }
@@ -168,7 +166,7 @@ class CommentsTest {
   fun clickNavigationPDFButton() {
     init("1")
     composeTestRule.onNodeWithTag("PDF").performClick()
-    verify(navigationActions).navigateTo(Screen.EDIT_NOTE_PDF)
+    verify(navigationActions).navigateToAndPop(Screen.EDIT_NOTE_PDF)
     verify(noteRepository).updateNote(any(), any(), any())
     verify(noteRepository, times(2)).getNoteById(any(), any(), any())
   }
@@ -177,7 +175,7 @@ class CommentsTest {
   fun clickNavigationContentButton() {
     init("1")
     composeTestRule.onNodeWithTag("Content").performClick()
-    verify(navigationActions).navigateTo(Screen.EDIT_NOTE_MARKDOWN)
+    verify(navigationActions).navigateToAndPop(Screen.EDIT_NOTE_MARKDOWN)
     verify(noteRepository).updateNote(any(), any(), any())
     verify(noteRepository, times(2)).getNoteById(any(), any(), any())
   }

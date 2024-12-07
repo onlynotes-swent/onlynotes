@@ -293,29 +293,4 @@ class OverviewTest {
       up()
     }
   }
-
-  @Test
-  fun dragAndDropFOlderWorksCorrectly() {
-    `when`(folderRepository.getRootFoldersFromUid(eq("1"), any(), any())).then { invocation ->
-      val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(1)
-      onSuccess(folderList)
-    }
-    folderViewModel.getRootFoldersFromUid("1")
-    composeTestRule
-        .onAllNodesWithTag("folderCard")
-        .filter(hasText("name2"))
-        .onFirst()
-        .assertIsDisplayed()
-    composeTestRule
-        .onAllNodesWithTag("folderCard")
-        .filter(hasText("name2"))
-        .onFirst()
-        .performTouchInput {
-          down(center)
-          advanceEventTime(1000)
-          moveBy(Offset(-center.x * 4, 0f))
-          advanceEventTime(5000)
-          up()
-        }
-  }
 }

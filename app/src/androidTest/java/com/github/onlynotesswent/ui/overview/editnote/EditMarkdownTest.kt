@@ -112,7 +112,7 @@ class EditMarkdownTest {
   @Test
   fun clickGoBackButton() {
     composeTestRule.onNodeWithTag("closeButton").performClick()
-    Mockito.verify(navigationActions).navigateTo(Screen.FOLDER_CONTENTS.replace("{folderId}", "1"))
+    Mockito.verify(navigationActions).goBack()
   }
 
   @Test

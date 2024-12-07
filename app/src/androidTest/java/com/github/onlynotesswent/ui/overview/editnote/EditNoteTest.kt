@@ -122,7 +122,7 @@ class EditNoteTest {
 
     composeTestRule.onNodeWithTag("closeButton").performClick()
 
-    verify(navigationActions).navigateTo(TopLevelDestinations.OVERVIEW)
+    verify(navigationActions).goBack()
   }
 
   @Test
@@ -131,7 +131,7 @@ class EditNoteTest {
 
     composeTestRule.onNodeWithTag("closeButton").performClick()
 
-    verify(navigationActions).navigateTo(Screen.FOLDER_CONTENTS.replace("{folderId}", "1"))
+    verify(navigationActions).goBack()
   }
 
   @Test
@@ -174,7 +174,7 @@ class EditNoteTest {
 
     composeTestRule.onNodeWithTag("Detail").performClick()
 
-    verify(navigationActions).navigateTo(Screen.EDIT_NOTE)
+    verify(navigationActions).navigateToAndPop(Screen.EDIT_NOTE)
   }
 
   @Test
@@ -183,7 +183,7 @@ class EditNoteTest {
 
     composeTestRule.onNodeWithTag("Comments").performClick()
 
-    verify(navigationActions).navigateTo(Screen.EDIT_NOTE_COMMENT)
+    verify(navigationActions).navigateToAndPop(Screen.EDIT_NOTE_COMMENT)
   }
 
   @Test
@@ -192,7 +192,7 @@ class EditNoteTest {
 
     composeTestRule.onNodeWithTag("PDF").performClick()
 
-    verify(navigationActions).navigateTo(Screen.EDIT_NOTE_PDF)
+    verify(navigationActions).navigateToAndPop(Screen.EDIT_NOTE_PDF)
   }
 
   @Test
@@ -201,7 +201,7 @@ class EditNoteTest {
 
     composeTestRule.onNodeWithTag("Content").performClick()
 
-    verify(navigationActions).navigateTo(Screen.EDIT_NOTE_MARKDOWN)
+    verify(navigationActions).navigateToAndPop(Screen.EDIT_NOTE_MARKDOWN)
   }
 
   @Test
@@ -252,7 +252,7 @@ class EditNoteTest {
 
     composeTestRule.onNodeWithTag("confirmButton").performClick()
 
-    verify(navigationActions).navigateTo(Screen.EDIT_NOTE_COMMENT)
+    verify(navigationActions).navigateToAndPop(Screen.EDIT_NOTE_COMMENT)
     verify(noteRepository, never()).updateNote(any(), any(), any())
   }
 
