@@ -78,10 +78,7 @@ fun FolderContentScreen(
   val currentUser = userViewModel.currentUser.collectAsState()
 
   val userFolderNotes = noteViewModel.folderNotes.collectAsState()
-  currentUser.let { noteViewModel.getNotesFromFolder(folder.value?.id ?: "") }
-
   val userFolderSubFolders = folderViewModel.folderSubFolders.collectAsState()
-  currentUser.let { folderViewModel.getSubFoldersOf(folder.value?.id ?: "") }
 
   val parentFolderId = folderViewModel.parentFolderId.collectAsState()
   val context = LocalContext.current

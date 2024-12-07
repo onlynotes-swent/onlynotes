@@ -129,6 +129,8 @@ fun OnlyNotesApp(
             LaunchedEffect(folderId) {
               if (folderId != null && folderId != "{folderId}") {
                 folderViewModel.getFolderById(folderId)
+                noteViewModel.getNotesFromFolder(folderId)
+                folderViewModel.getSubFoldersOf(folderId)
               }
             }
             // Wait until selected folder is updated to display the screen
