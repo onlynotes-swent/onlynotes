@@ -2,6 +2,8 @@ package com.github.onlynotesswent.ui.overview
 
 import android.content.Context
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -13,6 +15,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ElevatedButton
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -24,6 +27,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
@@ -40,6 +44,7 @@ import com.github.onlynotesswent.model.user.UserViewModel
 import com.github.onlynotesswent.ui.common.CustomDropDownMenu
 import com.github.onlynotesswent.ui.common.CustomDropDownMenuItem
 import com.github.onlynotesswent.ui.common.CustomSeparatedLazyGrid
+import com.github.onlynotesswent.ui.common.FileSystemPopup
 import com.github.onlynotesswent.ui.common.FolderDialog
 import com.github.onlynotesswent.ui.common.NoteDialog
 import com.github.onlynotesswent.ui.navigation.BottomNavigationMenu
@@ -67,7 +72,9 @@ fun OverviewScreen(
     folderViewModel: FolderViewModel
 ) {
   val userRootNotes = noteViewModel.userRootNotes.collectAsState()
-  userViewModel.currentUser.collectAsState().value?.let { noteViewModel.getRootNotesFrom(it.uid) }
+  userViewModel.currentUser.collectAsState().value?.let {
+    noteViewModel.getRootNotesFromUid(it.uid)
+  }
 
   val userRootFolders = folderViewModel.userRootFolders.collectAsState()
   userViewModel.currentUser.collectAsState().value?.let {
@@ -80,6 +87,7 @@ fun OverviewScreen(
   var expanded by remember { mutableStateOf(false) }
   var showCreateFolderDialog by remember { mutableStateOf(false) }
   var showCreateNoteDialog by remember { mutableStateOf(false) }
+  var showFilePopup by remember { mutableStateOf(false) } // State to control the popup visibility
 
   // Handle back press
   BackHandler {
@@ -90,13 +98,26 @@ fun OverviewScreen(
   Scaffold(
       modifier = Modifier.testTag("overviewScreen"),
       floatingActionButton = {
-        CreateItemFab(
-            expandedFab = expanded,
-            onExpandedFabChange = { expanded = it },
-            showCreateFolderDialog = { showCreateFolderDialog = it },
-            showCreateNoteDialog = { showCreateNoteDialog = it },
-            noteViewModel = noteViewModel,
-            folderViewModel = folderViewModel)
+        Column(
+            verticalArrangement = Arrangement.spacedBy(16.dp), // Space between FABs
+            horizontalAlignment = Alignment.End) {
+              CreateItemFab(
+                  expandedFab = expanded,
+                  onExpandedFabChange = { expanded = it },
+                  showCreateFolderDialog = { showCreateFolderDialog = it },
+                  showCreateNoteDialog = { showCreateNoteDialog = it },
+                  noteViewModel = noteViewModel,
+                  folderViewModel = folderViewModel)
+              FloatingActionButton(
+                  modifier = Modifier.testTag("showFileSystemButton"),
+                  onClick = { showFilePopup = true },
+                  containerColor = MaterialTheme.colorScheme.primary,
+                  contentColor = MaterialTheme.colorScheme.onPrimary) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.open_folder_icon),
+                        contentDescription = "Open File Manager")
+                  }
+            }
       },
       bottomBar = {
         BottomNavigationMenu(
@@ -113,6 +134,7 @@ fun OverviewScreen(
             userViewModel = userViewModel,
             context = context,
             navigationActions = navigationActions)
+
         if (showCreateNoteDialog) {
           NoteDialog(
               onDismiss = { showCreateNoteDialog = false },
@@ -122,6 +144,7 @@ fun OverviewScreen(
                         id = noteViewModel.getNewUid(),
                         title = newName,
                         date = Timestamp.now(),
+                        lastModified = Timestamp.now(),
                         visibility = visibility,
                         userId = userViewModel.currentUser.value!!.uid,
                         folderId = parentFolderId.value)
@@ -131,6 +154,10 @@ fun OverviewScreen(
                 navigationActions.navigateTo(Screen.EDIT_NOTE)
               },
               action = stringResource(R.string.create))
+        }
+
+        if (showFilePopup) {
+          FileSystemPopup(onDismiss = { showFilePopup = false }, folderViewModel = folderViewModel)
         }
 
         // Logic to show the dialog to create a folder
@@ -145,7 +172,9 @@ fun OverviewScreen(
                         name = newName,
                         userId = userViewModel.currentUser.value!!.uid,
                         parentFolderId = parentFolderId.value,
-                        visibility = visibility))
+                        visibility = visibility,
+                        lastModified = Timestamp.now()))
+
                 showCreateFolderDialog = false
                 navigationActions.navigateTo(
                     Screen.FOLDER_CONTENTS.replace(oldValue = "{folderId}", newValue = folderId))
@@ -257,7 +286,7 @@ fun OverviewScreenGrid(
             color = MaterialTheme.colorScheme.onBackground)
         Spacer(modifier = Modifier.height(50.dp))
         RefreshButton {
-          userViewModel.currentUser.value?.let { noteViewModel.getRootNotesFrom(it.uid) }
+          userViewModel.currentUser.value?.let { noteViewModel.getRootNotesFromUid(it.uid) }
           userViewModel.currentUser.value?.let { folderViewModel.getRootFoldersFromUid(it.uid) }
         }
         Spacer(modifier = Modifier.height(20.dp))

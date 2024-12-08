@@ -6,10 +6,12 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.filled.DeleteForever
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -25,6 +27,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.testTag
@@ -61,7 +64,16 @@ fun NotificationScreen(
             title = { Text(stringResource(R.string.your_notifications)) },
             navigationIcon = {
               IconButton(
-                  onClick = { navigationActions.goBack() }, Modifier.testTag("goBackButton")) {
+                  onClick = {
+                    navigationActions.goBack()
+                    userNotifications.value.forEach { notification ->
+                      if (!notification.read &&
+                          notification.type != Notification.NotificationType.FOLLOW_REQUEST) {
+                        notificationViewModel.updateNotification(notification.copy(read = true))
+                      }
+                    }
+                  },
+                  Modifier.testTag("goBackButton")) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
                         contentDescription = "Back")
@@ -71,65 +83,90 @@ fun NotificationScreen(
         LazyColumn(
             contentPadding = innerPadding, modifier = Modifier.testTag("notificationsList")) {
               val sortedNotification = userNotifications.value.sortedByDescending { it.timestamp }
-              items(userNotifications.value.size) { index ->
-                // Display each notification
-                val notification = sortedNotification[index]
-                val senderUser: MutableState<User?> = remember { mutableStateOf(null) }
+              if (userNotifications.value.isEmpty()) {
+                item {
+                  Box(modifier = Modifier.fillMaxWidth()) {
+                    Text(
+                        modifier = Modifier.align(Alignment.Center),
+                        text = stringResource(R.string.no_notifications),
+                        style = Typography.titleLarge)
+                  }
+                }
+              } else {
+                items(userNotifications.value.size) { index ->
+                  // Display each notification
+                  val notification = sortedNotification[index]
+                  val senderUser: MutableState<User?> = remember { mutableStateOf(null) }
 
-                if (notification.senderId != null) {
-                  userViewModel.getUserById(
-                      notification.senderId, { user -> senderUser.value = user }, {}, {})
+                  if (notification.senderId != null) {
+                    userViewModel.getUserById(
+                        notification.senderId, { user -> senderUser.value = user }, {}, {})
+                  }
+                  // for each notifcationType do something:
+                  when (notification.type) {
+                    Notification.NotificationType.FOLLOW_REQUEST ->
+                        NotificationTypeFollowRequest(
+                            stringResource(R.string.new_follow_request),
+                            stringResource(
+                                R.string.want_to_follow_you, senderUser.value?.userHandle() ?: ""),
+                            notification,
+                            senderUser,
+                            navigationActions,
+                            fileViewModel,
+                            userViewModel,
+                            notificationViewModel)
+                    Notification.NotificationType.FOLLOW_REQUEST_ACCEPTED ->
+                        NotificationTypeDefault(
+                            stringResource(R.string.follow_request_accepted),
+                            stringResource(
+                                R.string.is_now_following_you,
+                                senderUser.value?.userHandle() ?: ""),
+                            notification,
+                            senderUser,
+                            navigationActions,
+                            fileViewModel,
+                            userViewModel,
+                            notificationViewModel)
+                    Notification.NotificationType.FOLLOW_REQUEST_REJECTED ->
+                        NotificationTypeDefault(
+                            stringResource(R.string.follow_request_rejected),
+                            stringResource(
+                                R.string.you_have_rejected_the_follow_request_from,
+                                senderUser.value?.userHandle() ?: ""),
+                            notification,
+                            senderUser,
+                            navigationActions,
+                            fileViewModel,
+                            userViewModel,
+                            notificationViewModel)
+                    Notification.NotificationType.FOLLOW ->
+                        NotificationTypeDefault(
+                            stringResource(R.string.new_follower),
+                            stringResource(
+                                R.string.is_now_following_you,
+                                senderUser.value?.userHandle() ?: ""),
+                            notification,
+                            senderUser,
+                            navigationActions,
+                            fileViewModel,
+                            userViewModel,
+                            notificationViewModel)
+                    Notification.NotificationType.CHAT_MESSAGE ->
+                        NotificationTypeDefault(
+                            stringResource(
+                                R.string.new_message_from, senderUser.value?.userHandle() ?: ""),
+                            // content will never be null for this type of notification
+                            notification.content!!,
+                            notification,
+                            senderUser,
+                            navigationActions,
+                            fileViewModel,
+                            userViewModel,
+                            notificationViewModel)
+                    else -> Text(stringResource(R.string.not_an_implemented_notification_type))
+                  }
+                  HorizontalDivider()
                 }
-                // for each notifcationType do something:
-                when (notification.type) {
-                  Notification.NotificationType.FOLLOW_REQUEST ->
-                      NotificationTypeFollowRequest(
-                          stringResource(R.string.new_follow_request),
-                          stringResource(
-                              R.string.want_to_follow_you, senderUser.value?.userHandle() ?: ""),
-                          notification,
-                          senderUser,
-                          navigationActions,
-                          fileViewModel,
-                          userViewModel,
-                          notificationViewModel)
-                  Notification.NotificationType.FOLLOW_REQUEST_ACCEPTED ->
-                      NotificationTypeDefault(
-                          stringResource(R.string.follow_request_accepted),
-                          stringResource(
-                              R.string.is_now_following_you, senderUser.value?.userHandle() ?: ""),
-                          notification,
-                          senderUser,
-                          navigationActions,
-                          fileViewModel,
-                          userViewModel,
-                          notificationViewModel)
-                  Notification.NotificationType.FOLLOW_REQUEST_REJECTED ->
-                      NotificationTypeDefault(
-                          stringResource(R.string.follow_request_rejected),
-                          stringResource(
-                              R.string.you_have_rejected_the_follow_request_from,
-                              senderUser.value?.userHandle() ?: ""),
-                          notification,
-                          senderUser,
-                          navigationActions,
-                          fileViewModel,
-                          userViewModel,
-                          notificationViewModel)
-                  Notification.NotificationType.FOLLOW ->
-                      NotificationTypeDefault(
-                          stringResource(R.string.new_follower),
-                          stringResource(
-                              R.string.is_now_following_you, senderUser.value?.userHandle() ?: ""),
-                          notification,
-                          senderUser,
-                          navigationActions,
-                          fileViewModel,
-                          userViewModel,
-                          notificationViewModel)
-                  else -> Text(stringResource(R.string.not_an_implemented_notification_type))
-                }
-                HorizontalDivider()
               }
             }
       }
@@ -163,10 +200,8 @@ fun NotificationTypeDefault(
             Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.Center) {
               Text(body, style = Typography.bodyLarge)
             }
+            DeleteNotificationIcon(notification, notificationViewModel, userViewModel)
           }
-        }
-        if (!notification.read) {
-          notificationViewModel.updateNotification(notification.copy(read = true))
         }
       }
 }
@@ -210,7 +245,6 @@ fun NotificationTypeFollowRequest(
                   userViewModel.acceptFollowerRequest(notification.senderId!!)
                   notificationViewModel.updateNotification(
                       notification.copy(
-                          read = true,
                           type = Notification.NotificationType.FOLLOW_REQUEST_ACCEPTED))
                   notificationViewModel.getNotificationByReceiverId(
                       userViewModel.currentUser.value?.uid!!)
@@ -228,7 +262,6 @@ fun NotificationTypeFollowRequest(
                   userViewModel.declineFollowerRequest(notification.senderId!!)
                   notificationViewModel.updateNotification(
                       notification.copy(
-                          read = true,
                           type = Notification.NotificationType.FOLLOW_REQUEST_REJECTED))
                   notificationViewModel.getNotificationByReceiverId(
                       userViewModel.currentUser.value?.uid!!)
@@ -237,5 +270,20 @@ fun NotificationTypeFollowRequest(
                 }
           }
         }
+      }
+}
+
+@Composable
+fun DeleteNotificationIcon(
+    notification: Notification,
+    notificationViewModel: NotificationViewModel,
+    userViewModel: UserViewModel
+) {
+  IconButton(
+      onClick = {
+        notificationViewModel.deleteNotification(notification.id)
+        notificationViewModel.getNotificationByReceiverId(userViewModel.currentUser.value?.uid!!)
+      }) {
+        Icon(imageVector = Icons.Default.DeleteForever, contentDescription = "delete notification")
       }
 }
