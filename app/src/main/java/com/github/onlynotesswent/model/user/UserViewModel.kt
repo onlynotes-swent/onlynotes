@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import com.github.onlynotesswent.model.flashcard.UserFlashcard
 import com.github.onlynotesswent.model.notification.Notification
 import com.github.onlynotesswent.model.notification.NotificationRepository
 import com.github.onlynotesswent.model.notification.NotificationRepositoryFirestore
@@ -508,4 +509,32 @@ class UserViewModel(
         onUserNotFound = { onSuccess(emptyList()) },
         onFailure = onFailure)
   }
+
+
+   fun getUserFlashcard(
+       userID: String,
+       flashcardId: String,
+       onSuccess: (UserFlashcard) -> Unit,
+       onFlashcardNotFound: () -> Unit,
+       onFailure: (Exception) -> Unit
+   ) {
+     repository.getUserFlashcard(userID, flashcardId, onSuccess, onFlashcardNotFound, onFailure)
+   }
+
+    fun getAllUserFlashcards(
+         userID: String,
+         onSuccess: (List<UserFlashcard>) -> Unit,
+         onFailure: (Exception) -> Unit
+    ) {
+      repository.getAllUserFlashcards(userID, onSuccess, onFailure)
+    }
+
+    fun getUserFlashcardsFromDeck(
+         userID: String,
+         deckID: String,
+         onSuccess: (List<UserFlashcard>) -> Unit,
+         onFailure: (Exception) -> Unit
+    ) {
+    //TODO
+    } 
 }

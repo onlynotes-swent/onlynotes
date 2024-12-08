@@ -1,7 +1,5 @@
 package com.github.onlynotesswent.model.flashcard
 
-import com.google.firebase.Timestamp
-
 /**
  * Represents a flashcard.
  *
@@ -23,7 +21,6 @@ data class Flashcard(
     val latexFormula: String = "", // The latex formula for the flashcard, if any.
     val hasImage: Boolean = false, // A flag indicating if the flashcard has an image.
     val fakeBacks: List<String> = emptyList(), // The fake backs of the flashcard for MCQs, if any.
-    val lastReviewed: Timestamp?,
     val userId: String,
     val folderId: String?,
     val noteId: String?
