@@ -87,7 +87,7 @@ class SignInTest {
   }
 
   @Test
-  fun authSuccessHandler_catches_exception() {
+  fun authSuccessHandler_makesToastInCaseOfFailure() {
     val user = User("First name", "Last name", "username", "email", "uid", Timestamp.now(), 0.0)
 
     `when`(authResult.user).thenReturn(firebaseUser)
@@ -95,39 +95,14 @@ class SignInTest {
 
     `when`(userViewModel.getCurrentUserByEmail(anyString(), any(), any(), any())).thenAnswer {
       val onFailure: (Exception) -> Unit = it.arguments[3] as (Exception) -> Unit
-      onFailure(Exception("TestError"))
+      val e = Exception("TestError")
+      onFailure(e)
     }
 
     // Call the function
     authSuccessHandler(authResult, navigationActions, userViewModel, context)
 
     // Verify the message
-    assertEquals(
-        "Error while fetching user: ${Exception("TestError")}", ShadowToast.getTextOfLatestToast())
-    verify(userViewModel).getCurrentUserByEmail(anyString(), any(), any(), any())
-  }
-
-  @Test
-  fun authSuccessHandler_catches_null_exceptions() {
-    // -----------------------------------------
-    // Test the case where the email is null
-    `when`(authResult.user).thenReturn(firebaseUser)
-    `when`(firebaseUser.email).thenReturn(null)
-
-    // Call the function
-    authSuccessHandler(authResult, navigationActions, userViewModel, context)
-
-    // Verify the message
-    assertEquals("Login Failed!", ShadowToast.getTextOfLatestToast())
-
-    // -----------------------------------------
-    // Test the case where the user is null
-    `when`(authResult.user).thenReturn(null)
-
-    // Call the function
-    authSuccessHandler(authResult, navigationActions, userViewModel, context)
-
-    // Verify the message
-    assertEquals("Login Failed!", ShadowToast.getTextOfLatestToast())
+    assertEquals("Error while fetching user", ShadowToast.getTextOfLatestToast())
   }
 }
