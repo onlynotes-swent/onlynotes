@@ -110,6 +110,7 @@ fun EditMarkdownScreen(
             file.writeText("")
 
             markdownContent = file
+            state.setMarkdown("")
         },
         onFailure = { exception ->
           Toast.makeText(context, "Error downloading file: ${exception.message}", Toast.LENGTH_LONG)
