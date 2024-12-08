@@ -2,8 +2,18 @@ package com.github.onlynotesswent.model.note
 
 interface NoteRepository {
 
+  /**
+   * Generates a new note ID.
+   *
+   * @return The new note ID.
+   */
   fun getNewUid(): String
 
+  /**
+   * Initializes the repository.
+   *
+   * @param onSuccess Callback to be invoked when initialization is successful.
+   */
   fun init(onSuccess: () -> Unit)
 
   /**
@@ -20,8 +30,15 @@ interface NoteRepository {
    * @param userId The ID of the user to retrieve notes for.
    * @param onSuccess Callback to be invoked with the retrieved notes.
    * @param onFailure Callback to be invoked if an error occurs.
+   * @param useCache Whether to update data from cache. Should be true only if [userId] is the
+   *   current user.
    */
-  fun getNotesFrom(userId: String, onSuccess: (List<Note>) -> Unit, onFailure: (Exception) -> Unit)
+  suspend fun getNotesFromUid(
+      userId: String,
+      onSuccess: (List<Note>) -> Unit,
+      onFailure: (Exception) -> Unit,
+      useCache: Boolean
+  )
 
   /**
    * Retrieves all root notes from a user (folderId == null).
@@ -29,11 +46,14 @@ interface NoteRepository {
    * @param userId The ID of the user to retrieve root notes for.
    * @param onSuccess Callback to be invoked with the retrieved root notes.
    * @param onFailure Callback to be invoked if an error occurs.
+   * @param useCache Whether to update data from cache. Should be true only if [userId] is the
+   *   current user.
    */
-  fun getRootNotesFrom(
+  suspend fun getRootNotesFromUid(
       userId: String,
       onSuccess: (List<Note>) -> Unit,
-      onFailure: (Exception) -> Unit
+      onFailure: (Exception) -> Unit,
+      useCache: Boolean
   )
 
   /**
@@ -42,8 +62,15 @@ interface NoteRepository {
    * @param id The ID of the note to retrieve.
    * @param onSuccess Callback to be invoked with the retrieved note.
    * @param onFailure Callback to be invoked if an error occurs.
+   * @param useCache Whether to update data from cache. Should be true only if userId of the note is
+   *   the current user.
    */
-  fun getNoteById(id: String, onSuccess: (Note) -> Unit, onFailure: (Exception) -> Unit)
+  suspend fun getNoteById(
+      id: String,
+      onSuccess: (Note) -> Unit,
+      onFailure: (Exception) -> Unit,
+      useCache: Boolean
+  )
 
   /**
    * Adds a note.
@@ -51,8 +78,31 @@ interface NoteRepository {
    * @param note The note to add.
    * @param onSuccess Callback to be invoked if the note is added successfully.
    * @param onFailure Callback to be invoked if an error occurs.
+   * @param useCache Whether to update data from cache. Should be true only if userId of the note is
+   *   the current user.
    */
-  fun addNote(note: Note, onSuccess: () -> Unit, onFailure: (Exception) -> Unit)
+  suspend fun addNote(
+      note: Note,
+      onSuccess: () -> Unit,
+      onFailure: (Exception) -> Unit,
+      useCache: Boolean
+  )
+
+  /**
+   * Adds a list of notes.
+   *
+   * @param notes The notes to add.
+   * @param onSuccess Callback to be invoked if the notes are added successfully.
+   * @param onFailure Callback to be invoked if an error occurs.
+   * @param useCache Whether to update data from cache. Should be true only if userId of the notes
+   *   is the current user.
+   */
+  suspend fun addNotes(
+      notes: List<Note>,
+      onSuccess: () -> Unit,
+      onFailure: (Exception) -> Unit,
+      useCache: Boolean
+  )
 
   /**
    * Updates a note.
@@ -60,8 +110,15 @@ interface NoteRepository {
    * @param note The note to update.
    * @param onSuccess Callback to be invoked if the note is updated successfully.
    * @param onFailure Callback to be invoked if an error occurs.
+   * @param useCache Whether to update data from cache. Should be true only if userId of the note is
+   *   the current user.
    */
-  fun updateNote(note: Note, onSuccess: () -> Unit, onFailure: (Exception) -> Unit)
+  suspend fun updateNote(
+      note: Note,
+      onSuccess: () -> Unit,
+      onFailure: (Exception) -> Unit,
+      useCache: Boolean
+  )
 
   /**
    * Deletes a note by its ID.
@@ -69,8 +126,15 @@ interface NoteRepository {
    * @param id The ID of the note to delete.
    * @param onSuccess Callback to be invoked if the note is deleted successfully.
    * @param onFailure Callback to be invoked if an error occurs.
+   * @param useCache Whether to update data from cache. Should be true only if userId of the note is
+   *   the current user.
    */
-  fun deleteNoteById(id: String, onSuccess: () -> Unit, onFailure: (Exception) -> Unit)
+  suspend fun deleteNoteById(
+      id: String,
+      onSuccess: () -> Unit,
+      onFailure: (Exception) -> Unit,
+      useCache: Boolean
+  )
 
   /**
    * Deletes all notes from a user.
@@ -78,8 +142,15 @@ interface NoteRepository {
    * @param userId The ID of the user to delete notes for.
    * @param onSuccess Callback to be invoked if the notes are deleted successfully.
    * @param onFailure Callback to be invoked if an error occurs.
+   * @param useCache Whether to update data from cache. Should be true only if [userId] is the
+   *   current user.
    */
-  fun deleteNotesByUserId(userId: String, onSuccess: () -> Unit, onFailure: (Exception) -> Unit)
+  suspend fun deleteNotesFromUid(
+      userId: String,
+      onSuccess: () -> Unit,
+      onFailure: (Exception) -> Unit,
+      useCache: Boolean
+  )
 
   /**
    * Retrieves all notes from a folder.
@@ -87,11 +158,14 @@ interface NoteRepository {
    * @param folderId The ID of the folder to retrieve notes for.
    * @param onSuccess Callback to be invoked with the retrieved notes.
    * @param onFailure Callback to be invoked if an error occurs.
+   * @param useCache Whether to update data from cache. Should be true only if userId of the folder
+   *   is the current user.
    */
-  fun getNotesFromFolder(
+  suspend fun getNotesFromFolder(
       folderId: String,
       onSuccess: (List<Note>) -> Unit,
-      onFailure: (Exception) -> Unit
+      onFailure: (Exception) -> Unit,
+      useCache: Boolean
   )
 
   /**
@@ -100,6 +174,13 @@ interface NoteRepository {
    * @param folderId The ID of the folder to delete notes from.
    * @param onSuccess Callback to be invoked if the notes are deleted successfully.
    * @param onFailure Callback to be invoked if an error occurs.
+   * @param useCache Whether to update data from cache. Should be true only if userId of the folder
+   *   is the current user.
    */
-  fun deleteNotesFromFolder(folderId: String, onSuccess: () -> Unit, onFailure: (Exception) -> Unit)
+  suspend fun deleteNotesFromFolder(
+      folderId: String,
+      onSuccess: () -> Unit,
+      onFailure: (Exception) -> Unit,
+      useCache: Boolean
+  )
 }

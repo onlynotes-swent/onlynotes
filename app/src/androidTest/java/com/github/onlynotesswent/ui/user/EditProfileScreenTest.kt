@@ -34,6 +34,7 @@ import com.github.onlynotesswent.ui.navigation.Screen
 import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
 import com.github.onlynotesswent.utils.ProfilePictureTaker
 import com.google.firebase.Timestamp
+import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -53,7 +54,6 @@ class EditProfileScreenTest {
   @Mock private lateinit var mockFileRepository: FileRepository
   @Mock private lateinit var mockFolderRepository: FolderRepository
   @Mock private lateinit var mockNotificationRepository: NotificationRepository
-  @Mock private lateinit var mockAuthenticator: Authenticator
   private lateinit var noteViewModel: NoteViewModel
   private lateinit var userViewModel: UserViewModel
   private lateinit var fileViewModel: FileViewModel
@@ -124,8 +124,7 @@ class EditProfileScreenTest {
           profilePictureTaker,
           fileViewModel,
           noteViewModel,
-          folderViewModel,
-          mockAuthenticator)
+          folderViewModel)
     }
 
     composeTestRule.onNodeWithTag("ProfileScreen").assertExists()
@@ -155,8 +154,7 @@ class EditProfileScreenTest {
           profilePictureTaker,
           fileViewModel,
           noteViewModel,
-          folderViewModel,
-          mockAuthenticator)
+          folderViewModel)
     }
 
     composeTestRule.onNodeWithTag("saveButton").performClick()
@@ -172,8 +170,7 @@ class EditProfileScreenTest {
           profilePictureTaker,
           fileViewModel,
           noteViewModel,
-          folderViewModel,
-          mockAuthenticator)
+          folderViewModel)
     }
 
     composeTestRule.onNodeWithTag("inputUserName").performTextClearance()
@@ -209,8 +206,7 @@ class EditProfileScreenTest {
           profilePictureTaker,
           fileViewModel,
           noteViewModel,
-          folderViewModel,
-          mockAuthenticator)
+          folderViewModel)
     }
 
     composeTestRule.onNodeWithTag("inputFirstName").performTextClearance()
@@ -235,8 +231,7 @@ class EditProfileScreenTest {
           profilePictureTaker,
           fileViewModel,
           noteViewModel,
-          folderViewModel,
-          mockAuthenticator)
+          folderViewModel)
     }
 
     composeTestRule.onNodeWithTag("saveButton").assertIsEnabled()
@@ -255,8 +250,7 @@ class EditProfileScreenTest {
           profilePictureTaker,
           fileViewModel,
           noteViewModel,
-          folderViewModel,
-          mockAuthenticator)
+          folderViewModel)
     }
 
     composeTestRule.onNodeWithTag("goBackButton").performClick()
@@ -273,8 +267,7 @@ class EditProfileScreenTest {
           profilePictureTaker,
           fileViewModel,
           noteViewModel,
-          folderViewModel,
-          mockAuthenticator)
+          folderViewModel)
     }
     composeTestRule.onNodeWithTag("displayBottomSheet").assertIsEnabled()
     composeTestRule.onNodeWithTag("displayBottomSheet").performClick()
@@ -306,8 +299,7 @@ class EditProfileScreenTest {
           profilePictureTaker,
           fileViewModel,
           noteViewModel,
-          folderViewModel,
-          mockAuthenticator)
+          folderViewModel)
     }
     composeTestRule.onNodeWithTag("profilePicture").assertIsDisplayed()
     verify(mockFileRepository).downloadFile(any(), any(), any(), any(), any(), any())
@@ -328,8 +320,7 @@ class EditProfileScreenTest {
           profilePictureTaker,
           fileViewModel,
           noteViewModel,
-          folderViewModel,
-          mockAuthenticator)
+          folderViewModel)
     }
 
     composeTestRule.onNodeWithTag("displayBottomSheet").assertIsEnabled()
@@ -353,8 +344,7 @@ class EditProfileScreenTest {
           profilePictureTaker,
           fileViewModel,
           noteViewModel,
-          folderViewModel,
-          mockAuthenticator)
+          folderViewModel)
     }
 
     composeTestRule.onNodeWithTag("displayBottomSheet").assertIsEnabled()
@@ -392,8 +382,7 @@ class EditProfileScreenTest {
           profilePictureTaker,
           fileViewModel,
           noteViewModel,
-          folderViewModel,
-          mockAuthenticator)
+          folderViewModel)
     }
 
     composeTestRule.onNodeWithTag("deleteAccountButton").assertIsEnabled()
@@ -416,8 +405,7 @@ class EditProfileScreenTest {
           profilePictureTaker,
           fileViewModel,
           noteViewModel,
-          folderViewModel,
-          mockAuthenticator)
+          folderViewModel)
     }
 
     composeTestRule.onNodeWithTag("inputUserName").performTextInput("testForGoBack")
@@ -430,7 +418,7 @@ class EditProfileScreenTest {
   }
 
   @Test
-  fun testDeletAccount() {
+  fun testDeleteAccount() = runTest {
     composeTestRule.setContent {
       EditProfileScreen(
           mockNavigationActions,
@@ -438,8 +426,7 @@ class EditProfileScreenTest {
           profilePictureTaker,
           fileViewModel,
           noteViewModel,
-          folderViewModel,
-          mockAuthenticator)
+          folderViewModel)
     }
 
     composeTestRule.onNodeWithTag("deleteAccountButton").assertIsEnabled()
@@ -448,8 +435,8 @@ class EditProfileScreenTest {
     composeTestRule.onNodeWithTag("confirmDeleteButton").performClick()
 
     verify(mockUserRepository).deleteUserById(eq(testUid), any(), any(), any())
-    verify(mockNoteRepository).deleteNotesByUserId(eq(testUid), any(), any())
-    verify(mockFolderRepository).deleteFoldersByUserId(eq(testUid), any(), any())
+    verify(mockNoteRepository).deleteNotesFromUid(eq(testUid), any(), any(), any())
+    verify(mockFolderRepository).deleteFoldersFromUid(eq(testUid), any(), any(), any())
     verify(mockFileRepository).deleteFile(eq(testUid), any(), any(), any(), any())
     verify(mockNavigationActions).navigateTo(Route.AUTH)
   }

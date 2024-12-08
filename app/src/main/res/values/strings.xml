@@ -1,4 +1,7 @@
 <resources>
+    <string name="file_system_folders_in_root">Folders in: root</string>
+    <string name="file_system_back_to_root">Back to Root Folder</string>
+    <string name="show_file_manager">File Manager</string>
     <string name="app_name">OnlyNotes</string>
     <string name="title_activity_main">MainActivity</string>
     <string name="title_activity_second">SecondActivity</string>
@@ -90,4 +93,8 @@
     <string name="private_account">Private</string>
     <string name="public_account">Public</string>
     <string name="biography">Biography</string>
+    <string name="send">Send</string>
+    <string name="message">message</string>
+    <string name="new_message_from">New Message from %1$s</string>
+    <string name="no_notifications">You don\'t have notifications</string>
 </resources>

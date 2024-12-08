@@ -71,13 +71,16 @@ fun OnlyNotesApp(
     scanner: Scanner,
     profilePictureTaker: ProfilePictureTaker,
 ) {
+  val context = LocalContext.current
+
   val navController = rememberNavController()
   val navigationActions = NavigationActions(navController)
   val authenticator = Authenticator(LocalContext.current)
+
   val userViewModel: UserViewModel = viewModel(factory = UserViewModel.Factory)
-  val noteViewModel: NoteViewModel = viewModel(factory = NoteViewModel.Factory)
+  val noteViewModel: NoteViewModel = viewModel(factory = NoteViewModel.factory(context))
   val fileViewModel: FileViewModel = viewModel(factory = FileViewModel.Factory)
-  val folderViewModel: FolderViewModel = viewModel(factory = FolderViewModel.Factory)
+  val folderViewModel: FolderViewModel = viewModel(factory = FolderViewModel.factory(context))
   val notificationViewModel: NotificationViewModel =
       viewModel(factory = NotificationViewModel.Factory)
   val deckViewModel: DeckViewModel = viewModel(factory = DeckViewModel.Factory)
@@ -183,7 +186,6 @@ fun OnlyNotesApp(
             fileViewModel,
             noteViewModel,
             folderViewModel,
-            authenticator,
         )
       }
       composable(Screen.NOTIFICATIONS) {

@@ -1,5 +1,6 @@
 package com.github.onlynotesswent.ui.user
 
+import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -17,6 +18,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.ExitToApp
+import androidx.compose.material.icons.automirrored.outlined.Send
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.filled.DateRange
@@ -49,6 +51,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
@@ -62,9 +65,11 @@ import androidx.compose.ui.unit.sp
 import com.github.onlynotesswent.R
 import com.github.onlynotesswent.model.authentication.Authenticator
 import com.github.onlynotesswent.model.file.FileViewModel
+import com.github.onlynotesswent.model.notification.Notification
 import com.github.onlynotesswent.model.notification.NotificationViewModel
 import com.github.onlynotesswent.model.user.User
 import com.github.onlynotesswent.model.user.UserViewModel
+import com.github.onlynotesswent.ui.common.EnterTextPopup
 import com.github.onlynotesswent.ui.common.NonModifiableProfilePicture
 import com.github.onlynotesswent.ui.common.ThumbnailPic
 import com.github.onlynotesswent.ui.navigation.BottomNavigationMenu
@@ -73,6 +78,7 @@ import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
 import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
 import com.github.onlynotesswent.ui.theme.Typography
+import com.google.firebase.Timestamp
 import kotlinx.coroutines.launch
 
 // User Profile Home screen:
@@ -137,16 +143,53 @@ fun PublicProfileScreen(
 ) {
   val currentUser = userViewModel.currentUser.collectAsState()
   val profileUser = userViewModel.profileUser.collectAsState()
+  val isMessagePopupShown = remember { mutableStateOf(false) }
   currentUser.value?.let { userViewModel.refreshCurrentUser() }
   profileUser.value?.let { userViewModel.refreshProfileUser(it.uid) }
-
+  val context = LocalContext.current
   // Display the user's profile information
-  ProfileScaffold(navigationActions, userViewModel, notificationViewModel, authenticator) {
-    ProfileContent(profileUser, navigationActions, userViewModel, fileViewModel)
-    if (profileUser.value != null && currentUser.value != null) {
-      FollowUnfollowButton(userViewModel, profileUser.value!!.uid)
-    }
-  }
+  ProfileScaffold(
+      navigationActions,
+      userViewModel,
+      notificationViewModel,
+      authenticator,
+      onSendMessageClick = {
+        if (profileUser.value!!.isAccountPublic ||
+            currentUser.value!!.friends.following.contains(profileUser.value!!.uid)) {
+          isMessagePopupShown.value = true
+        } else {
+          Toast.makeText(
+                  context,
+                  "You need to follow ${profileUser.value!!.userHandle()}!",
+                  Toast.LENGTH_SHORT)
+              .show()
+        }
+      }) {
+        ProfileContent(profileUser, navigationActions, userViewModel, fileViewModel)
+        if (profileUser.value != null && currentUser.value != null) {
+          FollowUnfollowButton(userViewModel, profileUser.value!!.uid)
+        }
+        if (isMessagePopupShown.value) {
+          EnterTextPopup(
+              onDismiss = { isMessagePopupShown.value = false },
+              onConfirm = { message ->
+                notificationViewModel.addNotification(
+                    Notification(
+                        notificationViewModel.getNewUid(),
+                        senderId = currentUser.value!!.uid,
+                        receiverId = profileUser.value!!.uid,
+                        timestamp = Timestamp.now(),
+                        type = Notification.NotificationType.CHAT_MESSAGE,
+                        read = false,
+                        content = message),
+                    onSuccess = { isMessagePopupShown.value = false },
+                    onFailure = {})
+              },
+              formatter = { s -> Notification.formatChatMessage(s) },
+              action = stringResource(R.string.send),
+              type = stringResource(R.string.message))
+        }
+      }
 }
 
 /**
@@ -170,6 +213,7 @@ private fun ProfileScaffold(
     includeBackButton: Boolean = true,
     topBarTitle: String = stringResource(R.string.public_profile),
     floatingActionButton: @Composable () -> Unit = {},
+    onSendMessageClick: () -> Unit = {},
     content: @Composable () -> Unit,
 ) {
   Scaffold(
@@ -188,7 +232,8 @@ private fun ProfileScaffold(
             userViewModel = userViewModel,
             notificationViewModel = notificationViewModel,
             authenticator = authenticator,
-            includeBackButton = includeBackButton)
+            includeBackButton = includeBackButton,
+            onSendMessageClick = onSendMessageClick)
       },
       content = { paddingValues ->
         Column(
@@ -224,7 +269,8 @@ fun TopProfileBar(
     notificationViewModel: NotificationViewModel,
     authenticator: Authenticator,
     includeBackButton: Boolean = true,
-    onBackButtonClick: () -> Unit = { navigationActions.goBack() }
+    onBackButtonClick: () -> Unit = { navigationActions.goBack() },
+    onSendMessageClick: () -> Unit = {}
 ) {
   val scope = rememberCoroutineScope()
   TopAppBar(
@@ -245,6 +291,8 @@ fun TopProfileBar(
             } // Authenticator should be non-null if coded correctly
             navigationActions.navigateTo(Screen.AUTH)
           }
+        } else {
+          SendMessageButton(userViewModel, notificationViewModel, onSendMessageClick)
         }
       })
 }
@@ -676,4 +724,22 @@ fun NotificationButton(
             if (unreadNotificationsCount > 0) MaterialTheme.colorScheme.primary
             else Color.Unspecified)
   }
+}
+
+@Composable
+fun SendMessageButton(
+    userViewModel: UserViewModel,
+    notificationViewModel: NotificationViewModel,
+    onSendMessageClick: () -> Unit
+) {
+  Button(
+      onClick = onSendMessageClick,
+      modifier = Modifier.testTag("sendMessageButton"),
+      colors =
+          ButtonDefaults.buttonColors(
+              containerColor = Color.Transparent,
+              contentColor = MaterialTheme.colorScheme.tertiary),
+      content = {
+        Icon(imageVector = Icons.AutoMirrored.Outlined.Send, contentDescription = "Logout")
+      })
 }

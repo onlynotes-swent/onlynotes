@@ -2,20 +2,25 @@ package com.github.onlynotesswent.ui.user
 
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotDisplayed
+import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.filter
 import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.isNotDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTextReplacement
 import com.github.onlynotesswent.model.authentication.Authenticator
 import com.github.onlynotesswent.model.file.FileRepository
 import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.note.NoteRepository
 import com.github.onlynotesswent.model.note.NoteViewModel
+import com.github.onlynotesswent.model.notification.Notification
 import com.github.onlynotesswent.model.notification.NotificationRepository
 import com.github.onlynotesswent.model.notification.NotificationViewModel
 import com.github.onlynotesswent.model.user.Friends
@@ -27,15 +32,20 @@ import com.github.onlynotesswent.ui.navigation.Screen
 import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
 import com.google.firebase.Timestamp
 import junit.framework.TestCase.assertEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.junit.runner.RunWith
 import org.mockito.Mock
 import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
+import org.mockito.junit.MockitoJUnitRunner
 import org.mockito.kotlin.any
+import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.verify
 
+@RunWith(MockitoJUnitRunner::class)
 class ProfileScreenTest {
   @Mock private lateinit var mockUserRepository: UserRepository
   @Mock private lateinit var mockNavigationActions: NavigationActions
@@ -51,7 +61,7 @@ class ProfileScreenTest {
   private val testUid = "testUid"
   private val testUid2 = "testUid2"
   private val testUid3 = "testUid3"
-
+  private val testUidNotification = "testUidNotification"
   // Following user
   private val initialTestUser2 =
       User(
@@ -213,7 +223,7 @@ class ProfileScreenTest {
           val onSuccess = it.getArgument<() -> Unit>(1)
           onSuccess()
         }
-    `when`(mockNotificationRepository.getNewUid()).thenReturn(testUid)
+    `when`(mockNotificationRepository.getNewUid()).thenReturn(testUidNotification)
 
     `when`(mockNotificationRepository.addNotification(any(), any(), any())).thenAnswer {
       val onSuccess = it.getArgument<() -> Unit>(1)
@@ -381,5 +391,49 @@ class ProfileScreenTest {
     }
 
     composeTestRule.onNodeWithTag("logoutButton").assertIsDisplayed()
+  }
+
+  @Test
+  fun sendMessagesButtonWorksCorrectly() {
+
+    val userThatWantToSendAMessage =
+        User(
+            firstName = "testFirstName4",
+            lastName = "testLastName4",
+            userName = "testUserName4",
+            email = "testEmail4",
+            uid = testUid2,
+            dateOfJoining = Timestamp.now(),
+            rating = 0.0,
+            friends = Friends(listOf(testUid3), listOf()),
+            bio = "testBio4")
+    userViewModel.addUser(userThatWantToSendAMessage)
+    userViewModel.setProfileUser(testUser3)
+    composeTestRule.setContent {
+      PublicProfileScreen(
+          mockNavigationActions, userViewModel, fileViewModel, notificationViewModel, authenticator)
+    }
+    composeTestRule.onNodeWithTag("sendMessageButton").assertIsDisplayed().performClick()
+    composeTestRule.onNodeWithTag("messageDialog").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("inputmessage").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("confirmmessageAction").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("dismissmessageAction").assertIsDisplayed().performClick()
+    composeTestRule.onNodeWithTag("messageDialog").isNotDisplayed()
+    composeTestRule.onNodeWithTag("sendMessageButton").assertIsDisplayed().performClick()
+    composeTestRule.onNodeWithTag("confirmmessageAction").assertIsNotEnabled()
+    composeTestRule.onNodeWithTag("inputmessage").performTextReplacement("Hello")
+    composeTestRule.onNodeWithTag("confirmmessageAction").assertIsEnabled().performClick()
+    composeTestRule.onNodeWithTag("messageDialog").isNotDisplayed()
+    // I used captor instead of  verify equals because the timestamp is not the same
+    val captor = argumentCaptor<Notification>()
+    verify(mockNotificationRepository).addNotification(captor.capture(), any(), any())
+    val capturedNotification = captor.firstValue
+    assertEquals(testUidNotification, capturedNotification.id)
+    assertEquals(testUid2, capturedNotification.senderId)
+    assertEquals(testUid3, capturedNotification.receiverId)
+    assertEquals(false, capturedNotification.read)
+    assertEquals(Notification.NotificationType.CHAT_MESSAGE, capturedNotification.type)
+    assertEquals("Hello", capturedNotification.content)
+    assertNotNull(capturedNotification.timestamp)
   }
 }

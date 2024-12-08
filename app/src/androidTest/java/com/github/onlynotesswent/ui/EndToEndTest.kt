@@ -55,6 +55,7 @@ import com.github.onlynotesswent.ui.user.PublicProfileScreen
 import com.github.onlynotesswent.ui.user.UserProfileScreen
 import com.github.onlynotesswent.utils.ProfilePictureTaker
 import com.google.firebase.Timestamp
+import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
@@ -120,7 +121,13 @@ class EndToEndTest {
     }
   }
 
-  private var testNote = Note(id = "1", title = "title", date = Timestamp.now(), userId = testUid)
+  private var testNote =
+      Note(
+          id = "1",
+          title = "title",
+          date = Timestamp.now(),
+          userId = testUid,
+          lastModified = Timestamp.now())
 
   private val newTitle = "New Title"
 
@@ -221,8 +228,7 @@ class EndToEndTest {
                         profilePictureTaker,
                         fileViewModel,
                         noteViewModel,
-                        folderViewModel,
-                        authenticator)
+                        folderViewModel)
                   }
                 }
               }
@@ -239,7 +245,7 @@ class EndToEndTest {
 
   // Creates the mock behavior needed for the end-to-end flow of creating a user, adding a note, and
   // editing the note
-  private fun testEndToEndFlow1_init() {
+  private fun testEndToEndFlow1_init() = runTest {
     // Set up mock behavior for user and note repository methods
     `when`(userViewModel.getNewUid()).thenReturn(testUid)
 
@@ -251,7 +257,7 @@ class EndToEndTest {
     `when`(noteRepository.getNewUid()).thenReturn(testNote.id)
 
     // Mock the note repository update
-    `when`(noteRepository.updateNote(any(), any(), any())).thenAnswer {
+    `when`(noteRepository.updateNote(any(), any(), any(), any())).thenAnswer {
       testNote = it.arguments[0] as Note
       noteViewModel.selectedNote(testNote)
       val onSuccess = it.getArgument<() -> Unit>(1)
@@ -259,14 +265,14 @@ class EndToEndTest {
     }
 
     // Mock get note by id
-    `when`(noteRepository.getNoteById(any(), any(), any())).thenAnswer {
+    `when`(noteRepository.getNoteById(any(), any(), any(), any())).thenAnswer {
       val onSuccess = it.getArgument<(Note) -> Unit>(1)
       onSuccess(testNote)
     }
 
     // Mock retrieval of notes
-    `when`(noteRepository.getRootNotesFrom(eq(testUser1.uid), any(), any())).thenAnswer { invocation
-      ->
+    `when`(noteRepository.getRootNotesFromUid(eq(testUser1.uid), any(), any(), any())).thenAnswer {
+        invocation ->
       val onSuccess = invocation.getArgument<(List<Note>) -> Unit>(1)
       onSuccess(listOf(testNote))
     }
