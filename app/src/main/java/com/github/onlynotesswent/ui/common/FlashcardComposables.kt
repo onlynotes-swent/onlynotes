@@ -63,7 +63,6 @@ import com.github.onlynotesswent.model.flashcard.deck.DeckViewModel
 import com.github.onlynotesswent.ui.theme.Typography
 import com.github.onlynotesswent.utils.PictureTaker
 
-
 /**
  * Composable function that displays a flashcard item. The flashcard item includes the front and
  * back of the flashcard, and optionally an image. It also provides options to edit or delete the
@@ -85,96 +84,95 @@ fun FlashcardViewItem(
     pictureTaker: PictureTaker,
     belongsToUser: Boolean = false
 ) {
-    val dropdownMenuExpanded = remember { mutableStateOf(false) }
-    val editDialogExpanded = remember { mutableStateOf(false) }
+  val dropdownMenuExpanded = remember { mutableStateOf(false) }
+  val editDialogExpanded = remember { mutableStateOf(false) }
 
-    if (editDialogExpanded.value) {
-        FlashcardDialog(
-            deckViewModel,
-            flashcardViewModel,
-            pictureTaker,
-            fileViewModel,
-            {
-                editDialogExpanded.value = false
-                flashcardViewModel.deselectFlashcard()
-            },
-            mode = "Edit")
-    }
+  if (editDialogExpanded.value) {
+    FlashcardDialog(
+        deckViewModel,
+        flashcardViewModel,
+        pictureTaker,
+        fileViewModel,
+        {
+          editDialogExpanded.value = false
+          flashcardViewModel.deselectFlashcard()
+        },
+        mode = "Edit")
+  }
 
-    Card(modifier = Modifier.testTag("flashcardItem--${flashcard.id}").fillMaxWidth()) {
-        Box(contentAlignment = Alignment.CenterStart, modifier = Modifier.padding(10.dp)) {
-            if (flashcard.isMCQ()) {
-                Text(
-                    "MCQ",
-                    style = Typography.bodyLarge,
-                    fontStyle = FontStyle.Italic,
-                    modifier = Modifier.align(Alignment.TopStart).testTag("flashcardMCQ--${flashcard.id}"))
-            }
-            // Show front and options icon
-            Box(modifier = Modifier.align(Alignment.TopEnd)) {
-                Icon(
-                    modifier =
-                    Modifier.testTag("flashcardOptions--${flashcard.id}").clickable(
-                        enabled = belongsToUser) {
-                        dropdownMenuExpanded.value = true
+  Card(modifier = Modifier.testTag("flashcardItem--${flashcard.id}").fillMaxWidth()) {
+    Box(contentAlignment = Alignment.CenterStart, modifier = Modifier.padding(10.dp)) {
+      if (flashcard.isMCQ()) {
+        Text(
+            "MCQ",
+            style = Typography.bodyLarge,
+            fontStyle = FontStyle.Italic,
+            modifier = Modifier.align(Alignment.TopStart).testTag("flashcardMCQ--${flashcard.id}"))
+      }
+      // Show front and options icon
+      Box(modifier = Modifier.align(Alignment.TopEnd)) {
+        Icon(
+            modifier =
+                Modifier.testTag("flashcardOptions--${flashcard.id}").clickable(
+                    enabled = belongsToUser) {
+                      dropdownMenuExpanded.value = true
                     },
-                    imageVector = Icons.Filled.MoreVert,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onPrimaryContainer)
-                if (dropdownMenuExpanded.value) {
-                    FlashcardItemDropdownMenu(
-                        flashcard,
-                        deckViewModel,
-                        flashcardViewModel,
-                        dropdownMenuExpanded,
-                        editDialogExpanded)
-                }
-            }
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(10.dp),
-                modifier =
-                Modifier.testTag("flashcardItemColumn")
-                    .semantics(mergeDescendants = true, properties = {})) {
-                Text(
-                    flashcard.front,
-                    style = Typography.bodyMedium,
-                    modifier = Modifier.testTag("flashcardFront--${flashcard.id}"))
-                if (flashcard.hasImage) {
-                    // Show image
-                    val imageUri: MutableState<String?> = remember { mutableStateOf(null) }
-                    if (imageUri.value == null) {
-                        LoadingIndicator(
-                            "Image is being downloaded...",
-                            modifier =
-                            Modifier.fillMaxWidth().testTag("flashcardImageLoading--${flashcard.id}"),
-                            loadingIndicatorSize = 24.dp,
-                            spacerHeight = 5.dp,
-                            style = MaterialTheme.typography.bodySmall)
-                        fileViewModel.downloadFile(
-                            flashcard.id,
-                            FileType.FLASHCARD_IMAGE,
-                            context = LocalContext.current,
-                            onSuccess = { file -> imageUri.value = file.absolutePath })
-                    }
-                    imageUri.value?.let {
-                        Image(
-                            painter = rememberAsyncImagePainter(it),
-                            contentDescription = "Flashcard image",
-                            modifier = Modifier.height(100.dp).testTag("flashcardImage--${flashcard.id}"))
-                    }
-                }
-                HorizontalDivider(modifier = Modifier.height(5.dp).padding(5.dp))
-                // Show back
-                Text(
-                    flashcard.back,
-                    style = Typography.bodyMedium,
-                    modifier = Modifier.testTag("flashcardBack--${flashcard.id}"))
-            }
+            imageVector = Icons.Filled.MoreVert,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onPrimaryContainer)
+        if (dropdownMenuExpanded.value) {
+          FlashcardItemDropdownMenu(
+              flashcard,
+              deckViewModel,
+              flashcardViewModel,
+              dropdownMenuExpanded,
+              editDialogExpanded)
         }
+      }
+      Column(
+          horizontalAlignment = Alignment.CenterHorizontally,
+          verticalArrangement = Arrangement.spacedBy(10.dp),
+          modifier =
+              Modifier.testTag("flashcardItemColumn")
+                  .semantics(mergeDescendants = true, properties = {})) {
+            Text(
+                flashcard.front,
+                style = Typography.bodyMedium,
+                modifier = Modifier.testTag("flashcardFront--${flashcard.id}"))
+            if (flashcard.hasImage) {
+              // Show image
+              val imageUri: MutableState<String?> = remember { mutableStateOf(null) }
+              if (imageUri.value == null) {
+                LoadingIndicator(
+                    "Image is being downloaded...",
+                    modifier =
+                        Modifier.fillMaxWidth().testTag("flashcardImageLoading--${flashcard.id}"),
+                    loadingIndicatorSize = 24.dp,
+                    spacerHeight = 5.dp,
+                    style = MaterialTheme.typography.bodySmall)
+                fileViewModel.downloadFile(
+                    flashcard.id,
+                    FileType.FLASHCARD_IMAGE,
+                    context = LocalContext.current,
+                    onSuccess = { file -> imageUri.value = file.absolutePath })
+              }
+              imageUri.value?.let {
+                Image(
+                    painter = rememberAsyncImagePainter(it),
+                    contentDescription = "Flashcard image",
+                    modifier = Modifier.height(100.dp).testTag("flashcardImage--${flashcard.id}"))
+              }
+            }
+            HorizontalDivider(modifier = Modifier.height(5.dp).padding(5.dp))
+            // Show back
+            Text(
+                flashcard.back,
+                style = Typography.bodyMedium,
+                modifier = Modifier.testTag("flashcardBack--${flashcard.id}"))
+          }
     }
+  }
 }
-
 
 /**
  * Composable function that displays a dialog for creating or editing a flashcard. The dialog
@@ -197,282 +195,281 @@ fun FlashcardDialog(
     onDismissRequest: () -> Unit,
     mode: String = "Create"
 ) {
-    val flashcard = flashcardViewModel.selectedFlashcard.collectAsState()
-    val front = remember { mutableStateOf(flashcard.value?.front ?: "") }
-    val back = remember { mutableStateOf(flashcard.value?.back ?: "") }
-    val fakeBacks = remember { mutableStateOf(flashcard.value?.fakeBacks ?: listOf()) }
-    var showFakeBacksDetails = remember { mutableStateOf(false) }
+  val flashcard = flashcardViewModel.selectedFlashcard.collectAsState()
+  val front = remember { mutableStateOf(flashcard.value?.front ?: "") }
+  val back = remember { mutableStateOf(flashcard.value?.back ?: "") }
+  val fakeBacks = remember { mutableStateOf(flashcard.value?.fakeBacks ?: listOf()) }
+  var showFakeBacksDetails = remember { mutableStateOf(false) }
 
-    Dialog(onDismissRequest = onDismissRequest) {
-        Card(modifier = Modifier.testTag("flashcardDialog--$mode").padding(5.dp)) {
-            if (flashcard.value == null && mode == "Edit") {
-                LoadingIndicator("Loading flashcard...")
-            } else {
-                Column(
-                    modifier = Modifier.padding(20.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    Text("$mode Flashcard", style = Typography.headlineSmall)
-                    // Front
-                    OutlinedTextField(
-                        modifier = Modifier.fillMaxWidth().testTag("frontTextField"),
-                        value = front.value,
-                        onValueChange = { front.value = it },
-                        label = { Text("Front") })
+  Dialog(onDismissRequest = onDismissRequest) {
+    Card(modifier = Modifier.testTag("flashcardDialog--$mode").padding(5.dp)) {
+      if (flashcard.value == null && mode == "Edit") {
+        LoadingIndicator("Loading flashcard...")
+      } else {
+        Column(
+            modifier = Modifier.padding(20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(10.dp)) {
+              Text("$mode Flashcard", style = Typography.headlineSmall)
+              // Front
+              OutlinedTextField(
+                  modifier = Modifier.fillMaxWidth().testTag("frontTextField"),
+                  value = front.value,
+                  onValueChange = { front.value = it },
+                  label = { Text("Front") })
 
-                    // Image block:
-                    val imageUri: MutableState<String?> = remember { mutableStateOf(null) }
-                    val hasImageBeenChanged = remember { mutableStateOf(false) }
+              // Image block:
+              val imageUri: MutableState<String?> = remember { mutableStateOf(null) }
+              val hasImageBeenChanged = remember { mutableStateOf(false) }
 
-                    // Remove image block when fake backs drop down is open to save space on screen
-                    AnimatedVisibility(
-                        visible = !showFakeBacksDetails.value,
-                        enter = expandVertically(),
-                        exit = shrinkVertically()) {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(10.dp),
-                            modifier = Modifier.fillMaxWidth()) {
-                            // Image control buttons (delete and add)
-                            Row(
-                                horizontalArrangement = Arrangement.spacedBy(10.dp),
-                                verticalAlignment = Alignment.CenterVertically) {
+              // Remove image block when fake backs drop down is open to save space on screen
+              AnimatedVisibility(
+                  visible = !showFakeBacksDetails.value,
+                  enter = expandVertically(),
+                  exit = shrinkVertically()) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(10.dp),
+                        modifier = Modifier.fillMaxWidth()) {
+                          // Image control buttons (delete and add)
+                          Row(
+                              horizontalArrangement = Arrangement.spacedBy(10.dp),
+                              verticalAlignment = Alignment.CenterVertically) {
                                 // Add image button
                                 IconButton(
                                     modifier = Modifier.testTag("addImageIconButton"),
                                     onClick = {
-                                        pictureTaker.setOnImageSelected { uri ->
-                                            if (uri != null) {
-                                                imageUri.value = uri.toString()
-                                                hasImageBeenChanged.value = true
-                                            }
+                                      pictureTaker.setOnImageSelected { uri ->
+                                        if (uri != null) {
+                                          imageUri.value = uri.toString()
+                                          hasImageBeenChanged.value = true
                                         }
-                                        pictureTaker.pickImage()
+                                      }
+                                      pictureTaker.pickImage()
                                     }) {
-                                    Icon(
-                                        imageVector = Icons.Default.ImageSearch,
-                                        contentDescription = "Add image")
-                                }
+                                      Icon(
+                                          imageVector = Icons.Default.ImageSearch,
+                                          contentDescription = "Add image")
+                                    }
                                 // Remove image button
                                 if (imageUri.value != null) {
-                                    Spacer(modifier = Modifier.width(0.dp))
-                                    IconButton(
-                                        modifier = Modifier.testTag("removeImageIconButton"),
-                                        onClick = {
-                                            imageUri.value = null
-                                            hasImageBeenChanged.value = true
-                                        }) {
+                                  Spacer(modifier = Modifier.width(0.dp))
+                                  IconButton(
+                                      modifier = Modifier.testTag("removeImageIconButton"),
+                                      onClick = {
+                                        imageUri.value = null
+                                        hasImageBeenChanged.value = true
+                                      }) {
                                         Icon(
                                             imageVector = Icons.Default.HideImage,
                                             contentDescription = "Remove image")
-                                    }
+                                      }
                                 }
-                            }
-                            // Image loading indicator
-                            if (flashcard.value?.hasImage == true &&
-                                imageUri.value == null &&
-                                !hasImageBeenChanged.value) {
-                                fileViewModel.downloadFile(
-                                    flashcard.value!!.id,
-                                    FileType.FLASHCARD_IMAGE,
-                                    context = LocalContext.current,
-                                    onSuccess = { file -> imageUri.value = file.absolutePath })
-                                LoadingIndicator(
-                                    "Image is being downloaded...",
-                                    Modifier.fillMaxWidth().testTag("imageLoadingIndicator"),
-                                    loadingIndicatorSize = 24.dp,
-                                    spacerHeight = 5.dp)
-                            }
-                            // Image placeholder
-                            if (flashcard.value?.hasImage != true &&
-                                imageUri.value == null &&
-                                !hasImageBeenChanged.value) {
-                                Text("Add an image", style = Typography.bodyMedium)
-                            }
-                            // Image
-                            imageUri.value?.let {
-                                Image(
-                                    painter = rememberAsyncImagePainter(it),
-                                    contentDescription = "Flashcard image",
-                                    modifier = Modifier.height(100.dp))
-                            }
+                              }
+                          // Image loading indicator
+                          if (flashcard.value?.hasImage == true &&
+                              imageUri.value == null &&
+                              !hasImageBeenChanged.value) {
+                            fileViewModel.downloadFile(
+                                flashcard.value!!.id,
+                                FileType.FLASHCARD_IMAGE,
+                                context = LocalContext.current,
+                                onSuccess = { file -> imageUri.value = file.absolutePath })
+                            LoadingIndicator(
+                                "Image is being downloaded...",
+                                Modifier.fillMaxWidth().testTag("imageLoadingIndicator"),
+                                loadingIndicatorSize = 24.dp,
+                                spacerHeight = 5.dp)
+                          }
+                          // Image placeholder
+                          if (flashcard.value?.hasImage != true &&
+                              imageUri.value == null &&
+                              !hasImageBeenChanged.value) {
+                            Text("Add an image", style = Typography.bodyMedium)
+                          }
+                          // Image
+                          imageUri.value?.let {
+                            Image(
+                                painter = rememberAsyncImagePainter(it),
+                                contentDescription = "Flashcard image",
+                                modifier = Modifier.height(100.dp))
+                          }
                         }
-                    }
+                  }
 
-                    HorizontalDivider(modifier = Modifier.height(5.dp).padding(top = 10.dp))
+              HorizontalDivider(modifier = Modifier.height(5.dp).padding(top = 10.dp))
 
-                    // Back
-                    OutlinedTextField(
-                        modifier = Modifier.fillMaxWidth().testTag("backTextField"),
-                        value = back.value,
-                        onValueChange = { back.value = it },
-                        label = { Text("Back") })
+              // Back
+              OutlinedTextField(
+                  modifier = Modifier.fillMaxWidth().testTag("backTextField"),
+                  value = back.value,
+                  onValueChange = { back.value = it },
+                  label = { Text("Back") })
 
-                    // Fake backs
-                    Box(
-                        modifier =
-                        Modifier.fillMaxWidth()
-                            .testTag("FakeBacksBox")
-                            .clickable { showFakeBacksDetails.value = !showFakeBacksDetails.value }
-                            .border(
-                                1.dp,
-                                OutlinedTextFieldDefaults.colors().unfocusedPlaceholderColor,
-                                OutlinedTextFieldDefaults.shape)) {
-                        val fakeBacksText =
-                            if (fakeBacks.value.isEmpty()) "Add fake backs for MCQ"
-                            else "Fake backs for MCQ"
-                        Text(
-                            text = fakeBacksText,
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.onSurface,
-                            modifier = Modifier.padding(16.dp))
-                        Icon(
-                            imageVector =
+              // Fake backs
+              Box(
+                  modifier =
+                      Modifier.fillMaxWidth()
+                          .testTag("FakeBacksBox")
+                          .clickable { showFakeBacksDetails.value = !showFakeBacksDetails.value }
+                          .border(
+                              1.dp,
+                              OutlinedTextFieldDefaults.colors().unfocusedPlaceholderColor,
+                              OutlinedTextFieldDefaults.shape)) {
+                    val fakeBacksText =
+                        if (fakeBacks.value.isEmpty()) "Add fake backs for MCQ"
+                        else "Fake backs for MCQ"
+                    Text(
+                        text = fakeBacksText,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.padding(16.dp))
+                    Icon(
+                        imageVector =
                             if (showFakeBacksDetails.value) Icons.Default.ArrowDropUp
                             else Icons.Default.ArrowDropDown,
-                            contentDescription = "Show fake backs",
-                            tint = MaterialTheme.colorScheme.onSurface,
-                            modifier = Modifier.align(Alignment.CenterEnd))
-                    }
-                    // Fake backs list (only shown when the box is clicked)
-                    AnimatedVisibility(
-                        modifier = Modifier.fillMaxWidth(),
-                        visible = showFakeBacksDetails.value,
-                        enter = expandVertically(),
-                        exit = shrinkVertically()) {
-                        LazyColumn(
-                            state =
+                        contentDescription = "Show fake backs",
+                        tint = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.align(Alignment.CenterEnd))
+                  }
+              // Fake backs list (only shown when the box is clicked)
+              AnimatedVisibility(
+                  modifier = Modifier.fillMaxWidth(),
+                  visible = showFakeBacksDetails.value,
+                  enter = expandVertically(),
+                  exit = shrinkVertically()) {
+                    LazyColumn(
+                        state =
                             rememberLazyListState(
                                 initialFirstVisibleItemIndex = fakeBacks.value.size),
-                            modifier = Modifier.fillMaxWidth().heightIn(max = 250.dp),
-                            contentPadding = PaddingValues(horizontal = 10.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally) {
-                            items(fakeBacks.value.size) { index ->
-                                Row(
-                                    modifier = Modifier.fillMaxWidth().animateItem(),
-                                    verticalAlignment = Alignment.CenterVertically) {
-                                    OutlinedTextField(
-                                        value = fakeBacks.value[index],
-                                        onValueChange = { newValue ->
-                                            fakeBacks.value =
-                                                fakeBacks.value.toMutableList().apply {
-                                                    set(index, newValue)
-                                                }
-                                        },
-                                        label = { Text("Fake Back ${index + 1}") },
-                                        placeholder = { Text("Enter fake back text") },
-                                        modifier =
-                                        Modifier.weight(1f).testTag("fakeBackTextField--$index"))
-                                    IconButton(
-                                        modifier = Modifier.testTag("removeFakeBack--$index"),
-                                        onClick = {
-                                            fakeBacks.value =
-                                                fakeBacks.value.toMutableList().apply {
-                                                    removeAt(index)
-                                                }
-                                        }) {
+                        modifier = Modifier.fillMaxWidth().heightIn(max = 250.dp),
+                        contentPadding = PaddingValues(horizontal = 10.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally) {
+                          items(fakeBacks.value.size) { index ->
+                            Row(
+                                modifier = Modifier.fillMaxWidth().animateItem(),
+                                verticalAlignment = Alignment.CenterVertically) {
+                                  OutlinedTextField(
+                                      value = fakeBacks.value[index],
+                                      onValueChange = { newValue ->
+                                        fakeBacks.value =
+                                            fakeBacks.value.toMutableList().apply {
+                                              set(index, newValue)
+                                            }
+                                      },
+                                      label = { Text("Fake Back ${index + 1}") },
+                                      placeholder = { Text("Enter fake back text") },
+                                      modifier =
+                                          Modifier.weight(1f).testTag("fakeBackTextField--$index"))
+                                  IconButton(
+                                      modifier = Modifier.testTag("removeFakeBack--$index"),
+                                      onClick = {
+                                        fakeBacks.value =
+                                            fakeBacks.value.toMutableList().apply {
+                                              removeAt(index)
+                                            }
+                                      }) {
                                         Icon(
                                             imageVector = Icons.Default.Delete,
                                             tint = Color.Red,
                                             contentDescription = "Remove fake back")
-                                    }
+                                      }
                                 }
-                            }
-                            item {
-                                Row(
-                                    horizontalArrangement = Arrangement.spacedBy(10.dp),
-                                    verticalAlignment = Alignment.CenterVertically) {
-                                    IconButton(
-                                        modifier = Modifier.testTag("addFakeBackButton"),
-                                        onClick = { fakeBacks.value = fakeBacks.value + "" }) {
+                          }
+                          item {
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                                verticalAlignment = Alignment.CenterVertically) {
+                                  IconButton(
+                                      modifier = Modifier.testTag("addFakeBackButton"),
+                                      onClick = { fakeBacks.value = fakeBacks.value + "" }) {
                                         Icon(
                                             imageVector = Icons.Default.Add,
                                             contentDescription = "Add fake back")
-                                    }
-                                    Text(
-                                        "Add fake back",
-                                        style = Typography.bodyLarge,
-                                        fontStyle = FontStyle.Italic)
+                                      }
+                                  Text(
+                                      "Add fake back",
+                                      style = Typography.bodyLarge,
+                                      fontStyle = FontStyle.Italic)
                                 }
-                            }
+                          }
                         }
+                  }
+              // Save button
+              Button(
+                  modifier = Modifier.testTag("saveFlashcardButton"),
+                  enabled = front.value.isNotBlank() && back.value.isNotBlank(),
+                  onClick = {
+                    val newHasImage: Boolean =
+                        if (hasImageBeenChanged.value) imageUri.value != null
+                        else flashcard.value?.hasImage == true
+
+                    val newFlashcard: Flashcard =
+                        flashcard.value?.copy(
+                            front = front.value,
+                            back = back.value,
+                            hasImage = newHasImage,
+                            fakeBacks = fakeBacks.value)
+                            ?: Flashcard(
+                                id = flashcardViewModel.getNewUid(),
+                                front = front.value,
+                                back = back.value,
+                                hasImage = newHasImage,
+                                fakeBacks = fakeBacks.value,
+                                lastReviewed = null,
+                                userId = deckViewModel.selectedDeck.value!!.userId,
+                                folderId = null,
+                                noteId = null)
+
+                    // Update elements asynchronously but in the correct order:
+                    //   flashcard -> deck -> fetch flashcards -> image (if needed)
+                    flashcardViewModel.updateFlashcard(
+                        newFlashcard,
+                        onSuccess = {
+                          val newDeck: Deck =
+                              deckViewModel.selectedDeck.value!!.let { deck ->
+                                if (mode == "Create") {
+                                  deck
+                                      .copy(
+                                          flashcardIds = // prepend new flashcard
+                                          listOf(newFlashcard.id) + deck.flashcardIds)
+                                      .let {
+                                        deckViewModel.updateDeck(
+                                            it, onSuccess = { deckViewModel.selectDeck(it) })
+                                        it
+                                      }
+                                } else deck
+                              }
+                          flashcardViewModel.fetchFlashcardsFromDeck(newDeck)
+                          onDismissRequest()
+                        })
+
+                    if (hasImageBeenChanged.value && imageUri.value != null) {
+                      fileViewModel.uploadFile(
+                          newFlashcard.id,
+                          imageUri.value!!.toUri(),
+                          FileType.FLASHCARD_IMAGE,
+                          onSuccess = { hasImageBeenChanged.value = false },
+                          onFailure = {})
+                    } else if (flashcard.value != null &&
+                        hasImageBeenChanged.value &&
+                        imageUri.value == null) {
+                      // No need to delete the image if it's a new flashcard, it will not find it
+                      fileViewModel.deleteFile(
+                          flashcard.value!!.id,
+                          FileType.FLASHCARD_IMAGE,
+                          onSuccess = { hasImageBeenChanged.value = false },
+                          onFileNotFound = {},
+                          onFailure = {})
                     }
-                    // Save button
-                    Button(
-                        modifier = Modifier.testTag("saveFlashcardButton"),
-                        enabled = front.value.isNotBlank() && back.value.isNotBlank(),
-                        onClick = {
-                            val newHasImage: Boolean =
-                                if (hasImageBeenChanged.value) imageUri.value != null
-                                else flashcard.value?.hasImage == true
-
-                            val newFlashcard: Flashcard =
-                                flashcard.value?.copy(
-                                    front = front.value,
-                                    back = back.value,
-                                    hasImage = newHasImage,
-                                    fakeBacks = fakeBacks.value)
-                                    ?: Flashcard(
-                                        id = flashcardViewModel.getNewUid(),
-                                        front = front.value,
-                                        back = back.value,
-                                        hasImage = newHasImage,
-                                        fakeBacks = fakeBacks.value,
-                                        lastReviewed = null,
-                                        userId = deckViewModel.selectedDeck.value!!.userId,
-                                        folderId = null,
-                                        noteId = null)
-
-                            // Update elements asynchronously but in the correct order:
-                            //   flashcard -> deck -> fetch flashcards -> image (if needed)
-                            flashcardViewModel.updateFlashcard(
-                                newFlashcard,
-                                onSuccess = {
-                                    val newDeck: Deck =
-                                        deckViewModel.selectedDeck.value!!.let { deck ->
-                                            if (mode == "Create") {
-                                                deck
-                                                    .copy(
-                                                        flashcardIds = // prepend new flashcard
-                                                        listOf(newFlashcard.id) + deck.flashcardIds)
-                                                    .let {
-                                                        deckViewModel.updateDeck(
-                                                            it, onSuccess = { deckViewModel.selectDeck(it) })
-                                                        it
-                                                    }
-                                            } else deck
-                                        }
-                                    flashcardViewModel.fetchFlashcardsFromDeck(newDeck)
-                                    onDismissRequest()
-                                })
-
-                            if (hasImageBeenChanged.value && imageUri.value != null) {
-                                fileViewModel.uploadFile(
-                                    newFlashcard.id,
-                                    imageUri.value!!.toUri(),
-                                    FileType.FLASHCARD_IMAGE,
-                                    onSuccess = { hasImageBeenChanged.value = false },
-                                    onFailure = {})
-                            } else if (flashcard.value != null &&
-                                hasImageBeenChanged.value &&
-                                imageUri.value == null) {
-                                // No need to delete the image if it's a new flashcard, it will not find it
-                                fileViewModel.deleteFile(
-                                    flashcard.value!!.id,
-                                    FileType.FLASHCARD_IMAGE,
-                                    onSuccess = { hasImageBeenChanged.value = false },
-                                    onFileNotFound = {},
-                                    onFailure = {})
-                            }
-                        }) {
-                        Text("Save")
-                    }
-                }
+                  }) {
+                    Text("Save")
+                  }
             }
-        }
+      }
     }
+  }
 }
-
 
 /**
  * Composable function that displays a dropdown menu of actions for a flashcard item. The menu
@@ -492,34 +489,34 @@ fun FlashcardItemDropdownMenu(
     dropdownMenuExpanded: MutableState<Boolean>,
     editDialogExpanded: MutableState<Boolean>
 ) {
-    DropdownMenu(
-        modifier = Modifier.testTag("flashcardOptionsMenu"),
-        expanded = dropdownMenuExpanded.value,
-        onDismissRequest = { dropdownMenuExpanded.value = false }) {
+  DropdownMenu(
+      modifier = Modifier.testTag("flashcardOptionsMenu"),
+      expanded = dropdownMenuExpanded.value,
+      onDismissRequest = { dropdownMenuExpanded.value = false }) {
         DropdownMenuItem(
             text = @Composable { Text("Edit") },
             onClick = {
-                flashcardViewModel.selectFlashcard(flashcard)
-                editDialogExpanded.value = true
-                dropdownMenuExpanded.value = false
+              flashcardViewModel.selectFlashcard(flashcard)
+              editDialogExpanded.value = true
+              dropdownMenuExpanded.value = false
             },
             modifier = Modifier.testTag("editFlashcardMenuItem"))
         DropdownMenuItem(
             text = @Composable { Text("Delete") },
             modifier = Modifier.testTag("deleteFlashcardMenuItem"),
             onClick = {
-                val newDeck =
-                    deckViewModel.selectedDeck.value?.copy(
-                        flashcardIds =
-                        deckViewModel.selectedDeck.value!!.flashcardIds.filter {
+              val newDeck =
+                  deckViewModel.selectedDeck.value?.copy(
+                      flashcardIds =
+                          deckViewModel.selectedDeck.value!!.flashcardIds.filter {
                             it != flashcard.id
-                        })
-                newDeck?.let {
-                    deckViewModel.updateDeck(it)
-                    deckViewModel.selectDeck(it)
-                }
-                flashcardViewModel.deleteFlashcard(flashcard)
-                dropdownMenuExpanded.value = false
+                          })
+              newDeck?.let {
+                deckViewModel.updateDeck(it)
+                deckViewModel.selectDeck(it)
+              }
+              flashcardViewModel.deleteFlashcard(flashcard)
+              dropdownMenuExpanded.value = false
             })
-    }
+      }
 }

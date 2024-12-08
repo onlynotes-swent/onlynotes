@@ -52,12 +52,12 @@ class DeckViewModel(private val repository: DeckRepository) : ViewModel() {
     _selectedDeck.value = deck
   }
 
-    /**
-     * Selects a deck and a play mode.
-     *
-     * @param deck The deck to be selected.
-     * @param playMode The play mode to be selected.
-     */
+  /**
+   * Selects a deck and a play mode.
+   *
+   * @param deck The deck to be selected.
+   * @param playMode The play mode to be selected.
+   */
   fun playDeckWithMode(deck: Deck, playMode: Deck.PlayMode) {
     _selectedDeck.value = deck
     _selectedPlayMode.value = playMode

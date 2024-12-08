@@ -269,29 +269,29 @@ private fun PublicDeckFab(
     onSaveClick: () -> Unit,
     onSaveCopyClick: () -> Unit
 ) {
-    CustomDropDownMenu(
-        modifier = Modifier.testTag("publicDeckFab"),
-        menuItems =
-        listOf(
-            CustomDropDownMenuItem(
-                text = { Text("Save to favorites") },
-                icon = {
+  CustomDropDownMenu(
+      modifier = Modifier.testTag("publicDeckFab"),
+      menuItems =
+          listOf(
+              CustomDropDownMenuItem(
+                  text = { Text("Save to favorites") },
+                  icon = {
                     Icon(imageVector = Icons.Default.Star, contentDescription = "Save deck")
-                },
-                onClick = onSaveClick,
-                modifier = Modifier.testTag("saveToFavoritesMenuItem")),
-            CustomDropDownMenuItem(
-                text = { Text("Create local copy") },
-                icon = {
+                  },
+                  onClick = onSaveClick,
+                  modifier = Modifier.testTag("saveToFavoritesMenuItem")),
+              CustomDropDownMenuItem(
+                  text = { Text("Create local copy") },
+                  icon = {
                     Icon(imageVector = Icons.Default.SaveAlt, contentDescription = "Save copy")
-                },
-                onClick = onSaveCopyClick,
-                modifier = Modifier.testTag("createLocalCopyMenuItem")),
-        ),
-        expanded = expandedDropdownMenu.value,
-        onFabClick = { expandedDropdownMenu.value = !expandedDropdownMenu.value },
-        onDismissRequest = { expandedDropdownMenu.value = false },
-        fabIcon = { Icon(imageVector = Icons.Default.Download, contentDescription = "Save Deck") })
+                  },
+                  onClick = onSaveCopyClick,
+                  modifier = Modifier.testTag("createLocalCopyMenuItem")),
+          ),
+      expanded = expandedDropdownMenu.value,
+      onFabClick = { expandedDropdownMenu.value = !expandedDropdownMenu.value },
+      onDismissRequest = { expandedDropdownMenu.value = false },
+      fabIcon = { Icon(imageVector = Icons.Default.Download, contentDescription = "Save Deck") })
 }
 
 /**
@@ -311,33 +311,33 @@ private fun DeckFab(
     onImportDeckClick: () -> Unit,
     onEditClick: () -> Unit
 ) {
-    CustomDropDownMenu(
-        modifier = Modifier.testTag("deckFab"),
-        menuItems =
-        listOf(
-            CustomDropDownMenuItem(
-                text = { Text("Add new card") },
-                icon = { Icon(imageVector = Icons.Default.Add, contentDescription = "Add card") },
-                onClick = onAddCardClick,
-                modifier = Modifier.testTag("addCardMenuItem")),
-            CustomDropDownMenuItem(
-                text = { Text("Import deck") },
-                icon = {
+  CustomDropDownMenu(
+      modifier = Modifier.testTag("deckFab"),
+      menuItems =
+          listOf(
+              CustomDropDownMenuItem(
+                  text = { Text("Add new card") },
+                  icon = { Icon(imageVector = Icons.Default.Add, contentDescription = "Add card") },
+                  onClick = onAddCardClick,
+                  modifier = Modifier.testTag("addCardMenuItem")),
+              CustomDropDownMenuItem(
+                  text = { Text("Import deck") },
+                  icon = {
                     Icon(imageVector = Icons.Default.Download, contentDescription = "Import deck")
-                },
-                onClick = onImportDeckClick,
-                modifier = Modifier.testTag("importDeckMenuItem")),
-            CustomDropDownMenuItem(
-                text = { Text("Edit Deck") },
-                icon = {
+                  },
+                  onClick = onImportDeckClick,
+                  modifier = Modifier.testTag("importDeckMenuItem")),
+              CustomDropDownMenuItem(
+                  text = { Text("Edit Deck") },
+                  icon = {
                     Icon(imageVector = Icons.Default.Edit, contentDescription = "Edit deck")
-                },
-                onClick = onEditClick,
-                modifier = Modifier.testTag("editDeckMenuItem"))),
-        expanded = expandedDropdownMenu.value,
-        onFabClick = { expandedDropdownMenu.value = !expandedDropdownMenu.value },
-        onDismissRequest = { expandedDropdownMenu.value = false },
-        fabIcon = { Icon(imageVector = Icons.Default.Edit, contentDescription = "Edit Deck") })
+                  },
+                  onClick = onEditClick,
+                  modifier = Modifier.testTag("editDeckMenuItem"))),
+      expanded = expandedDropdownMenu.value,
+      onFabClick = { expandedDropdownMenu.value = !expandedDropdownMenu.value },
+      onDismissRequest = { expandedDropdownMenu.value = false },
+      fabIcon = { Icon(imageVector = Icons.Default.Edit, contentDescription = "Edit Deck") })
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -351,14 +351,14 @@ private fun DeckFab(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun DeckMenuTopAppBar(onBackButtonClick: () -> Unit) {
-    ScreenTopBar(
-        title = "Deck",
-        titleTestTag = "deckTopBarTitle",
-        onBackClick = onBackButtonClick,
-        icon = {
-            Icon(imageVector = Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "Back")
-        },
-        iconTestTag = "backButton")
+  ScreenTopBar(
+      title = "Deck",
+      titleTestTag = "deckTopBarTitle",
+      onBackClick = onBackButtonClick,
+      icon = {
+        Icon(imageVector = Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "Back")
+      },
+      iconTestTag = "backButton")
 }
 
 /**
@@ -466,56 +466,56 @@ private fun PlayModesBottomSheet(
     deckViewModel: DeckViewModel,
     navigationActions: NavigationActions,
 ) {
-    ModalBottomSheet(onDismissRequest = { playModesShown.value = false }) {
-        Column(
-            modifier = Modifier.fillMaxWidth().padding(20.dp).testTag("playModesBottomSheet"),
-            horizontalAlignment = Alignment.CenterHorizontally) {
-            Text("Choose your play mode:", style = MaterialTheme.typography.headlineMedium)
-            Spacer(modifier = Modifier.height(15.dp))
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(20.dp),
-                horizontalAlignment = Alignment.CenterHorizontally // Center-align items horizontally
-            ) {
+  ModalBottomSheet(onDismissRequest = { playModesShown.value = false }) {
+    Column(
+        modifier = Modifier.fillMaxWidth().padding(20.dp).testTag("playModesBottomSheet"),
+        horizontalAlignment = Alignment.CenterHorizontally) {
+          Text("Choose your play mode:", style = MaterialTheme.typography.headlineMedium)
+          Spacer(modifier = Modifier.height(15.dp))
+          Column(
+              modifier = Modifier.fillMaxWidth(),
+              verticalArrangement = Arrangement.spacedBy(20.dp),
+              horizontalAlignment = Alignment.CenterHorizontally // Center-align items horizontally
+              ) {
                 Deck.PlayMode.entries.forEach { playMode ->
-                    Card(
-                        shape = RoundedCornerShape(16.dp), // Rounded corners
-                        colors =
-                        CardColors(
-                            containerColor = MaterialTheme.colorScheme.surface,
-                            contentColor = MaterialTheme.colorScheme.onSurface,
-                            disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                            disabledContentColor =
-                            MaterialTheme.colorScheme.onSurfaceVariant), // Custom colors
-                        modifier =
-                        Modifier.fillMaxWidth(0.8f).testTag("playMode--$playMode").clickable {
+                  Card(
+                      shape = RoundedCornerShape(16.dp), // Rounded corners
+                      colors =
+                          CardColors(
+                              containerColor = MaterialTheme.colorScheme.surface,
+                              contentColor = MaterialTheme.colorScheme.onSurface,
+                              disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                              disabledContentColor =
+                                  MaterialTheme.colorScheme.onSurfaceVariant), // Custom colors
+                      modifier =
+                          Modifier.fillMaxWidth(0.8f).testTag("playMode--$playMode").clickable {
                             playModesShown.value = false
                             navigationActions.navigateTo(
                                 Screen.DECK_PLAY.replace(
-                                    "{deckId}", deckViewModel.selectedDeck.value!!.id)
+                                        "{deckId}", deckViewModel.selectedDeck.value!!.id)
                                     .replace("{mode}", playMode.name))
-                        }) {
+                          }) {
                         ListItem(
                             modifier = Modifier.padding(1.dp),
                             headlineContent = {
-                                Text(
-                                    when (playMode) {
-                                        Deck.PlayMode.FLASHCARD ->
-                                            stringResource(R.string.play_mode_flashcards)
-                                        Deck.PlayMode.MATCH ->
-                                            stringResource(R.string.play_mode_match_cards)
-                                        Deck.PlayMode.MCQ -> stringResource(R.string.play_mode_mcq)
-                                        Deck.PlayMode.ALL ->
-                                            stringResource(R.string.play_mode_all_combined)
-                                    },
-                                    style = MaterialTheme.typography.bodyLarge)
+                              Text(
+                                  when (playMode) {
+                                    Deck.PlayMode.FLASHCARD ->
+                                        stringResource(R.string.play_mode_flashcards)
+                                    Deck.PlayMode.MATCH ->
+                                        stringResource(R.string.play_mode_match_cards)
+                                    Deck.PlayMode.MCQ -> stringResource(R.string.play_mode_mcq)
+                                    Deck.PlayMode.ALL ->
+                                        stringResource(R.string.play_mode_all_combined)
+                                  },
+                                  style = MaterialTheme.typography.bodyLarge)
                             },
                             trailingContent = {
-                                Icon(Icons.Default.PlayArrow, contentDescription = null)
+                              Icon(Icons.Default.PlayArrow, contentDescription = null)
                             })
-                    }
+                      }
                 }
-            }
+              }
         }
-    }
+  }
 }

@@ -97,55 +97,55 @@ fun EditDeckDialog(
     onDismissRequest: () -> Unit,
     mode: String = "Edit",
 ) {
-    val deck: State<Deck?> = deckViewModel.selectedDeck.collectAsState()
-    val deckTitle = remember { mutableStateOf(deck.value?.name ?: "") }
-    val deckDescription = remember { mutableStateOf(deck.value?.description ?: "") }
-    val deckVisibility = remember { mutableStateOf(deck.value?.visibility ?: Visibility.DEFAULT) }
+  val deck: State<Deck?> = deckViewModel.selectedDeck.collectAsState()
+  val deckTitle = remember { mutableStateOf(deck.value?.name ?: "") }
+  val deckDescription = remember { mutableStateOf(deck.value?.description ?: "") }
+  val deckVisibility = remember { mutableStateOf(deck.value?.visibility ?: Visibility.DEFAULT) }
 
-    Dialog(onDismissRequest = onDismissRequest) {
-        Card(modifier = Modifier.testTag("editDeckDialog").padding(5.dp)) {
-            Column(
-                modifier = Modifier.padding(10.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                Text("$mode Deck", style = Typography.headlineSmall)
-                OutlinedTextField(
-                    value = deckTitle.value,
-                    onValueChange = { deckTitle.value = Deck.formatTitle(it) },
-                    maxLines = 1,
-                    modifier = Modifier.testTag("deckTitleTextField"),
-                )
-                SelectVisibility(deckVisibility.value, { deckVisibility.value = it })
-                OutlinedTextField(
-                    value = deckDescription.value,
-                    onValueChange = { deckDescription.value = Deck.formatDescription(it) },
-                    minLines = 2,
-                    maxLines = 5,
-                    modifier = Modifier.testTag("deckDescriptionTextField"))
-                // Save button
-                Button(
-                    modifier = Modifier.testTag("saveDeckButton"),
-                    onClick = {
-                        val newDeck =
-                            deck.value?.copy(
-                                name = deckTitle.value,
-                                description = deckDescription.value,
-                                visibility = deckVisibility.value,
-                                lastModified = Timestamp.now())
-                                ?: Deck(
-                                    id = deckViewModel.getNewUid(),
-                                    name = deckTitle.value,
-                                    userId = userViewModel.currentUser.value!!.uid,
-                                    folderId = null,
-                                    visibility = deckVisibility.value,
-                                    description = deckDescription.value,
-                                    lastModified = Timestamp.now())
-                        deckViewModel.updateDeck(newDeck, { deckViewModel.selectDeck(newDeck) })
-                        onDismissRequest()
-                    }) {
-                    Text("Save")
+  Dialog(onDismissRequest = onDismissRequest) {
+    Card(modifier = Modifier.testTag("editDeckDialog").padding(5.dp)) {
+      Column(
+          modifier = Modifier.padding(10.dp),
+          horizontalAlignment = Alignment.CenterHorizontally,
+          verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Text("$mode Deck", style = Typography.headlineSmall)
+            OutlinedTextField(
+                value = deckTitle.value,
+                onValueChange = { deckTitle.value = Deck.formatTitle(it) },
+                maxLines = 1,
+                modifier = Modifier.testTag("deckTitleTextField"),
+            )
+            SelectVisibility(deckVisibility.value, { deckVisibility.value = it })
+            OutlinedTextField(
+                value = deckDescription.value,
+                onValueChange = { deckDescription.value = Deck.formatDescription(it) },
+                minLines = 2,
+                maxLines = 5,
+                modifier = Modifier.testTag("deckDescriptionTextField"))
+            // Save button
+            Button(
+                modifier = Modifier.testTag("saveDeckButton"),
+                onClick = {
+                  val newDeck =
+                      deck.value?.copy(
+                          name = deckTitle.value,
+                          description = deckDescription.value,
+                          visibility = deckVisibility.value,
+                          lastModified = Timestamp.now())
+                          ?: Deck(
+                              id = deckViewModel.getNewUid(),
+                              name = deckTitle.value,
+                              userId = userViewModel.currentUser.value!!.uid,
+                              folderId = null,
+                              visibility = deckVisibility.value,
+                              description = deckDescription.value,
+                              lastModified = Timestamp.now())
+                  deckViewModel.updateDeck(newDeck, { deckViewModel.selectDeck(newDeck) })
+                  onDismissRequest()
+                }) {
+                  Text("Save")
                 }
-            }
-        }
+          }
     }
+  }
 }

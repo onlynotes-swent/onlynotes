@@ -26,9 +26,7 @@ data class Deck(
     val description: String = "",
     val flashcardIds: List<String> = emptyList()
 ) {
-  /**
-   * Represents the play mode of a deck.
-   */
+  /** Represents the play mode of a deck. */
   enum class PlayMode {
     FLASHCARD,
     MATCH,
@@ -48,26 +46,22 @@ data class Deck(
     }
   }
 
-    /**
-     * Represents the sort mode of a deck.
-     */
+  /** Represents the sort mode of a deck. */
   enum class SortMode {
     ALPHABETICAL,
     REVIEW,
     LEVEL;
 
-    /**
-     * Represents the order of sorting.
-     */
+    /** Represents the order of sorting. */
     enum class Order {
       HIGH_LOW,
       LOW_HIGH;
 
-        /**
-         * Returns the next order.
-         *
-         * @return The next order.
-         */
+      /**
+       * Returns the next order.
+       *
+       * @return The next order.
+       */
       fun next(): Order {
         return when (this) {
           HIGH_LOW -> LOW_HIGH
@@ -106,9 +100,9 @@ data class Deck(
   }
 
   companion object {
-      // The maximum length of the description
+    // The maximum length of the description
     private const val DESCRIPTION_MAX_LEN = 200
-        // The maximum length of the title
+    // The maximum length of the title
     private const val TITLE_MAX_LEN = 75
 
     /**
