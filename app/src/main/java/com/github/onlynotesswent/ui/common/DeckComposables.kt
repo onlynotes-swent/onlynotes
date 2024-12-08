@@ -1,23 +1,37 @@
 package com.github.onlynotesswent.ui.common
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import com.github.onlynotesswent.model.common.Visibility
 import com.github.onlynotesswent.model.flashcard.deck.Deck
+import com.github.onlynotesswent.model.flashcard.deck.DeckViewModel
+import com.github.onlynotesswent.model.user.UserViewModel
+import com.github.onlynotesswent.ui.theme.Typography
+import com.google.firebase.Timestamp
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -65,4 +79,73 @@ fun DeckSearchItem(deck: Deck, author: String, onClick: () -> Unit) {
               modifier = Modifier.padding(0.dp))
         }
       }
+}
+
+/**
+ * Composable function that displays a dialog for editing the selected deck, or creating a new one.
+ * The dialog contains fields for the deck title, description, and visibility.
+ *
+ * @param deckViewModel The ViewModel for deck-related data.
+ * @param userViewModel The ViewModel for user-related data.
+ * @param onDismissRequest The callback to be invoked when the dialog is dismissed.
+ * @param mode The mode of the dialog, default is "Edit".
+ */
+@Composable
+fun EditDeckDialog(
+    deckViewModel: DeckViewModel,
+    userViewModel: UserViewModel,
+    onDismissRequest: () -> Unit,
+    mode: String = "Edit",
+) {
+    val deck: State<Deck?> = deckViewModel.selectedDeck.collectAsState()
+    val deckTitle = remember { mutableStateOf(deck.value?.name ?: "") }
+    val deckDescription = remember { mutableStateOf(deck.value?.description ?: "") }
+    val deckVisibility = remember { mutableStateOf(deck.value?.visibility ?: Visibility.DEFAULT) }
+
+    Dialog(onDismissRequest = onDismissRequest) {
+        Card(modifier = Modifier.testTag("editDeckDialog").padding(5.dp)) {
+            Column(
+                modifier = Modifier.padding(10.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Text("$mode Deck", style = Typography.headlineSmall)
+                OutlinedTextField(
+                    value = deckTitle.value,
+                    onValueChange = { deckTitle.value = Deck.formatTitle(it) },
+                    maxLines = 1,
+                    modifier = Modifier.testTag("deckTitleTextField"),
+                )
+                SelectVisibility(deckVisibility.value, { deckVisibility.value = it })
+                OutlinedTextField(
+                    value = deckDescription.value,
+                    onValueChange = { deckDescription.value = Deck.formatDescription(it) },
+                    minLines = 2,
+                    maxLines = 5,
+                    modifier = Modifier.testTag("deckDescriptionTextField"))
+                // Save button
+                Button(
+                    modifier = Modifier.testTag("saveDeckButton"),
+                    onClick = {
+                        val newDeck =
+                            deck.value?.copy(
+                                name = deckTitle.value,
+                                description = deckDescription.value,
+                                visibility = deckVisibility.value,
+                                lastModified = Timestamp.now())
+                                ?: Deck(
+                                    id = deckViewModel.getNewUid(),
+                                    name = deckTitle.value,
+                                    userId = userViewModel.currentUser.value!!.uid,
+                                    folderId = null,
+                                    visibility = deckVisibility.value,
+                                    description = deckDescription.value,
+                                    lastModified = Timestamp.now())
+                        deckViewModel.updateDeck(newDeck, { deckViewModel.selectDeck(newDeck) })
+                        onDismissRequest()
+                    }) {
+                    Text("Save")
+                }
+            }
+        }
+    }
 }
