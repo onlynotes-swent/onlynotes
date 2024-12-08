@@ -98,17 +98,9 @@ internal fun authSuccessHandler(
 ) {
   userViewModel.getCurrentUserByEmail(
       email = result.user!!.email!!,
-      onSuccess = { user ->
-        Toast.makeText(context, "Welcome ${user.userName}!", Toast.LENGTH_LONG).show()
-        navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
-      },
-      onUserNotFound = {
-        Toast.makeText(context, "Welcome to OnlyNotes!", Toast.LENGTH_LONG).show()
-        navigationActions.navigateTo(Screen.CREATE_USER)
-      },
-      onFailure = {
-        Toast.makeText(context, "Error while fetching user", Toast.LENGTH_LONG).show()
-      })
+      onSuccess = { navigationActions.navigateTo(TopLevelDestinations.OVERVIEW) },
+      onUserNotFound = { navigationActions.navigateTo(Screen.CREATE_USER) },
+      onFailure = { Toast.makeText(context, "Error fetching user", Toast.LENGTH_LONG).show() })
 }
 
 // UI:

@@ -10,6 +10,7 @@ import androidx.credentials.CredentialManager
 import androidx.credentials.CustomCredential
 import androidx.credentials.GetCredentialRequest
 import androidx.credentials.GetCredentialResponse
+import androidx.credentials.exceptions.GetCredentialCancellationException
 import androidx.credentials.exceptions.GetCredentialException
 import androidx.credentials.exceptions.NoCredentialException
 import com.github.onlynotesswent.R
@@ -70,6 +71,8 @@ open class Authenticator(
       val intent = Intent(ACTION_ADD_ACCOUNT)
       intent.putExtra(EXTRA_ACCOUNT_TYPES, arrayOf("com.google"))
       ctx.startActivity(intent)
+    } catch (e: GetCredentialCancellationException) {
+      Log.e(TAG, "Credential flow cancelled by user", e)
     } catch (e: GetCredentialException) {
       Log.e(TAG, "Error getting credential", e)
       onFailure(e)

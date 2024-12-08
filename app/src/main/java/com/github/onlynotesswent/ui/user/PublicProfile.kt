@@ -82,6 +82,8 @@ import kotlinx.coroutines.launch
  * @param navigationActions An instance of NavigationActions to handle navigation events.
  * @param userViewModel An instance of UserViewModel to manage user data.
  * @param fileViewModel An instance of FileViewModel to manage file data.
+ * @param notificationViewModel An instance of NotificationViewModel to manage notifications.
+ * @param authenticator An instance of Authenticator to handle authentication.
  */
 @Composable
 fun UserProfileScreen(
@@ -152,6 +154,8 @@ fun PublicProfileScreen(
  *
  * @param navigationActions The navigation actions.
  * @param userViewModel The ViewModel for the user.
+ * @param notificationViewModel The ViewModel for the notifications.
+ * @param authenticator The Authenticator used for the app.
  * @param includeBackButton Whether to include the back button in the app bar.
  * @param topBarTitle The title to be displayed on the app bar.
  * @param floatingActionButton The floating action button to be displayed on the screen.
