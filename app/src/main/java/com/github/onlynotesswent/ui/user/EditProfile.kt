@@ -326,15 +326,15 @@ fun EditProfileScreen(
                               modifier = Modifier.testTag("confirmDeleteButton"),
                               onClick = {
                                 showDeleteAccountAlert.value = false
-                                noteViewModel.deleteNotesByUserId(user.value!!.uid)
-                                folderViewModel.deleteFoldersByUserId(user.value!!.uid)
+
+                                noteViewModel.deleteNotesFromUid(user.value!!.uid)
+                                folderViewModel.deleteFoldersFromUid(user.value!!.uid)
                                 noteViewModel.getNoteById(user.value!!.uid)
                                 noteViewModel.userRootNotes.value.forEach {
                                   fileViewModel.deleteFile(it.id, FileType.NOTE_PDF)
                                 }
                                 fileViewModel.deleteFile(
                                     user.value!!.uid, FileType.PROFILE_PIC_JPEG)
-
                                 userViewModel.deleteUserById(
                                     user.value!!.uid,
                                     onSuccess = { navigationActions.navigateTo(Route.AUTH) })

@@ -17,6 +17,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -74,12 +75,15 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun OnlyNotesApp(scanner: Scanner, pictureTaker: PictureTaker, serverClientId: String) {
+  val context = LocalContext.current
+
   val navController = rememberNavController()
   val navigationActions = NavigationActions(navController)
+
   val userViewModel: UserViewModel = viewModel(factory = UserViewModel.Factory)
-  val noteViewModel: NoteViewModel = viewModel(factory = NoteViewModel.Factory)
+  val noteViewModel: NoteViewModel = viewModel(factory = NoteViewModel.factory(context))
   val fileViewModel: FileViewModel = viewModel(factory = FileViewModel.Factory)
-  val folderViewModel: FolderViewModel = viewModel(factory = FolderViewModel.Factory)
+  val folderViewModel: FolderViewModel = viewModel(factory = FolderViewModel.factory(context))
   val notificationViewModel: NotificationViewModel =
       viewModel(factory = NotificationViewModel.Factory)
   val deckViewModel: DeckViewModel = viewModel(factory = DeckViewModel.Factory)

@@ -33,6 +33,7 @@ import com.github.onlynotesswent.ui.navigation.Screen
 import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
 import com.github.onlynotesswent.utils.PictureTaker
 import com.google.firebase.Timestamp
+import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -417,7 +418,7 @@ class EditProfileScreenTest {
   }
 
   @Test
-  fun testDeletAccount() {
+  fun testDeleteAccount() = runTest {
     composeTestRule.setContent {
       EditProfileScreen(
           mockNavigationActions,
@@ -434,8 +435,8 @@ class EditProfileScreenTest {
     composeTestRule.onNodeWithTag("confirmDeleteButton").performClick()
 
     verify(mockUserRepository).deleteUserById(eq(testUid), any(), any(), any())
-    verify(mockNoteRepository).deleteNotesByUserId(eq(testUid), any(), any())
-    verify(mockFolderRepository).deleteFoldersByUserId(eq(testUid), any(), any())
+    verify(mockNoteRepository).deleteNotesFromUid(eq(testUid), any(), any(), any())
+    verify(mockFolderRepository).deleteFoldersFromUid(eq(testUid), any(), any(), any())
     verify(mockFileRepository).deleteFile(eq(testUid), any(), any(), any(), any())
     verify(mockNavigationActions).navigateTo(Route.AUTH)
   }
