@@ -1,6 +1,5 @@
 package com.github.onlynotesswent.ui.deck
 
-import android.widget.Button
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
@@ -40,7 +39,6 @@ import androidx.compose.material.icons.filled.ImageSearch
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.SaveAlt
-import androidx.compose.material.icons.filled.Sort
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -72,6 +70,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -84,6 +83,7 @@ import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.flashcard.Flashcard
 import com.github.onlynotesswent.model.flashcard.FlashcardViewModel
 import com.github.onlynotesswent.model.flashcard.deck.Deck
+import com.github.onlynotesswent.model.flashcard.deck.Deck.SortMode
 import com.github.onlynotesswent.model.flashcard.deck.DeckViewModel
 import com.github.onlynotesswent.model.user.User
 import com.github.onlynotesswent.model.user.UserViewModel
@@ -126,9 +126,9 @@ fun DeckScreen(
 
   val sortOptionsShown = remember { mutableStateOf(false) }
   val sortMode = remember { mutableStateOf(SortMode.ALPHABETICAL) }
-  val sortStatus = remember { mutableStateOf(SortStatus.HIGH_LOW) }
+  val sortOrder = remember { mutableStateOf(SortMode.Order.HIGH_LOW) }
   val sortedFlashcards = remember {
-    derivedStateOf { sortMode.value.sort(deckFlashcards.value, sortStatus.value) }
+    derivedStateOf { sortMode.value.sort(deckFlashcards.value, sortOrder.value) }
   }
 
   val playModesShown = remember { mutableStateOf(false) }
@@ -188,16 +188,18 @@ fun DeckScreen(
                   Dialog(onDismissRequest = { importDialogExpanded.value = false }) {
                     Card {
                       Column(
-                          modifier = Modifier.padding(10.dp),
+                          modifier = Modifier.padding(10.dp).testTag("importDeckDialog"),
                           horizontalAlignment = Alignment.CenterHorizontally,
                           verticalArrangement = Arrangement.spacedBy(10.dp)) {
                             Text("Import Deck", style = Typography.headlineSmall)
                             // TODO: Import deck functionality
                             Text("Not Implemented yet", style = Typography.bodyMedium)
                             // Import button
-                            Button(onClick = { importDialogExpanded.value = false }) {
-                              Text("Import")
-                            }
+                            Button(
+                                modifier = Modifier.testTag("importButton"),
+                                onClick = { importDialogExpanded.value = false }) {
+                                  Text("Import")
+                                }
                           }
                     }
                   }
@@ -274,21 +276,22 @@ fun DeckScreen(
                         LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                           items(SortMode.entries.size) { index ->
                             FilterChip(
-                                modifier = Modifier.testTag("sortOptionChip"),
+                                modifier =
+                                    Modifier.testTag("sortOptionChip--${SortMode.entries[index]}"),
                                 selected = sortMode.value == SortMode.entries[index],
                                 onClick = {
                                   sortMode.value = SortMode.entries[index]
-                                  sortStatus.value = sortStatus.value.next()
+                                  sortOrder.value = sortOrder.value.next()
                                 },
                                 label = {
                                   Text(SortMode.entries[index].toReadableString(), maxLines = 1)
                                 },
                                 leadingIcon = {
                                   if (sortMode.value == SortMode.entries[index] &&
-                                      sortStatus.value == SortStatus.HIGH_LOW)
+                                      sortOrder.value == SortMode.Order.HIGH_LOW)
                                       Icon(Icons.Default.ArrowUpward, contentDescription = null)
                                   else if (sortMode.value == SortMode.entries[index] &&
-                                      sortStatus.value == SortStatus.LOW_HIGH)
+                                      sortOrder.value == SortMode.Order.LOW_HIGH)
                                       Icon(Icons.Default.ArrowDownward, contentDescription = null)
                                 })
                           }
@@ -319,40 +322,6 @@ fun DeckScreen(
       }
 }
 
-enum class SortMode {
-  ALPHABETICAL,
-  REVIEW,
-  LEVEL;
-
-  fun toReadableString(): String {
-    return when (this) {
-      ALPHABETICAL -> "Alphabetical"
-      REVIEW -> "Last Review"
-      LEVEL -> "Level"
-    }
-  }
-
-  fun sort(flashcards: List<Flashcard>, sortStatus: SortStatus): List<Flashcard> {
-    return when (this) {
-      ALPHABETICAL -> flashcards.sortedBy { card -> card.front.lowercase().trim() }
-      REVIEW -> flashcards.sortedBy { card -> card.lastReviewed }
-      LEVEL -> flashcards // TODO once level is implemented, for now does nothing
-    }.let { if (sortStatus == SortStatus.HIGH_LOW) it.reversed() else it }
-  }
-}
-
-enum class SortStatus {
-  HIGH_LOW,
-  LOW_HIGH;
-
-  fun next(): SortStatus {
-    return when (this) {
-      HIGH_LOW -> LOW_HIGH
-      LOW_HIGH -> HIGH_LOW
-    }
-  }
-}
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PlayModesBottomSheet(
@@ -362,7 +331,7 @@ fun PlayModesBottomSheet(
 ) {
   ModalBottomSheet(onDismissRequest = { playModesShown.value = false }) {
     Column(
-        modifier = Modifier.fillMaxWidth().padding(20.dp),
+        modifier = Modifier.fillMaxWidth().padding(20.dp).testTag("playModesBottomSheet"),
         horizontalAlignment = Alignment.CenterHorizontally) {
           Text("Choose your play mode:", style = MaterialTheme.typography.headlineMedium)
           Spacer(modifier = Modifier.height(15.dp))
@@ -371,11 +340,12 @@ fun PlayModesBottomSheet(
               Row(
                   verticalAlignment = Alignment.CenterVertically,
                   modifier =
-                      Modifier.clickable {
+                      Modifier.testTag("playMode--${it.name}").clickable {
+                        playModesShown.value = false
                         navigationActions.navigateTo(
                             Screen.DECK_PLAY.replace(
                                     "{deckId}", deckViewModel.selectedDeck.value!!.id)
-                                .replace("{mode}", it.toString()))
+                                .replace("{mode}", it.name))
                       }) {
                     // TODO define icons for each play mode later
                     Icon(Icons.Default.PlayArrow, contentDescription = null)
@@ -451,42 +421,44 @@ fun FlashcardViewItem(
       Column(
           horizontalAlignment = Alignment.CenterHorizontally,
           verticalArrangement = Arrangement.spacedBy(10.dp),
-      ) {
-        Text(
-            flashcard.front,
-            style = Typography.bodyMedium,
-            modifier = Modifier.testTag("flashcardFront--${flashcard.id}"))
-        if (flashcard.hasImage) {
-          // Show image
-          val imageUri: MutableState<String?> = remember { mutableStateOf(null) }
-          if (imageUri.value == null) {
-            LoadingIndicator(
-                "Image is being downloaded...",
-                modifier =
-                    Modifier.fillMaxWidth().testTag("flashcardImageLoading--${flashcard.id}"),
-                loadingIndicatorSize = 24.dp,
-                spacerHeight = 5.dp,
-                style = MaterialTheme.typography.bodySmall)
-            fileViewModel.downloadFile(
-                flashcard.id,
-                FileType.FLASHCARD_IMAGE,
-                context = LocalContext.current,
-                onSuccess = { file -> imageUri.value = file.absolutePath })
+          modifier =
+              Modifier.testTag("flashcardItemColumn")
+                  .semantics(mergeDescendants = true, properties = {})) {
+            Text(
+                flashcard.front,
+                style = Typography.bodyMedium,
+                modifier = Modifier.testTag("flashcardFront--${flashcard.id}"))
+            if (flashcard.hasImage) {
+              // Show image
+              val imageUri: MutableState<String?> = remember { mutableStateOf(null) }
+              if (imageUri.value == null) {
+                LoadingIndicator(
+                    "Image is being downloaded...",
+                    modifier =
+                        Modifier.fillMaxWidth().testTag("flashcardImageLoading--${flashcard.id}"),
+                    loadingIndicatorSize = 24.dp,
+                    spacerHeight = 5.dp,
+                    style = MaterialTheme.typography.bodySmall)
+                fileViewModel.downloadFile(
+                    flashcard.id,
+                    FileType.FLASHCARD_IMAGE,
+                    context = LocalContext.current,
+                    onSuccess = { file -> imageUri.value = file.absolutePath })
+              }
+              imageUri.value?.let {
+                Image(
+                    painter = rememberAsyncImagePainter(it),
+                    contentDescription = "Flashcard image",
+                    modifier = Modifier.height(100.dp).testTag("flashcardImage--${flashcard.id}"))
+              }
+            }
+            HorizontalDivider(modifier = Modifier.height(5.dp).padding(5.dp))
+            // Show back
+            Text(
+                flashcard.back,
+                style = Typography.bodyMedium,
+                modifier = Modifier.testTag("flashcardBack--${flashcard.id}"))
           }
-          imageUri.value?.let {
-            Image(
-                painter = rememberAsyncImagePainter(it),
-                contentDescription = "Flashcard image",
-                modifier = Modifier.height(100.dp).testTag("flashcardImage--${flashcard.id}"))
-          }
-        }
-        HorizontalDivider(modifier = Modifier.height(5.dp).padding(5.dp))
-        // Show back
-        Text(
-            flashcard.back,
-            style = Typography.bodyMedium,
-            modifier = Modifier.testTag("flashcardBack--${flashcard.id}"))
-      }
     }
   }
 }
@@ -519,13 +491,15 @@ private fun PublicDeckFab(
                   icon = {
                     Icon(imageVector = Icons.Default.Star, contentDescription = "Save deck")
                   },
-                  onClick = onSaveClick),
+                  onClick = onSaveClick,
+                  modifier = Modifier.testTag("saveToFavoritesMenuItem")),
               CustomDropDownMenuItem(
                   text = { Text("Create local copy") },
                   icon = {
                     Icon(imageVector = Icons.Default.SaveAlt, contentDescription = "Save copy")
                   },
-                  onClick = onSaveCopyClick),
+                  onClick = onSaveCopyClick,
+                  modifier = Modifier.testTag("createLocalCopyMenuItem")),
           ),
       expanded = expandedDropdownMenu.value,
       onFabClick = { expandedDropdownMenu.value = !expandedDropdownMenu.value },
@@ -547,19 +521,22 @@ private fun DeckFab(
               CustomDropDownMenuItem(
                   text = { Text("Add new card") },
                   icon = { Icon(imageVector = Icons.Default.Add, contentDescription = "Add card") },
-                  onClick = onAddCardClick),
+                  onClick = onAddCardClick,
+                  modifier = Modifier.testTag("addCardMenuItem")),
               CustomDropDownMenuItem(
                   text = { Text("Import deck") },
                   icon = {
                     Icon(imageVector = Icons.Default.Download, contentDescription = "Import deck")
                   },
-                  onClick = onImportDeckClick),
+                  onClick = onImportDeckClick,
+                  modifier = Modifier.testTag("importDeckMenuItem")),
               CustomDropDownMenuItem(
                   text = { Text("Edit Deck") },
                   icon = {
                     Icon(imageVector = Icons.Default.Edit, contentDescription = "Edit deck")
                   },
-                  onClick = onEditClick)),
+                  onClick = onEditClick,
+                  modifier = Modifier.testTag("editDeckMenuItem"))),
       expanded = expandedDropdownMenu.value,
       onFabClick = { expandedDropdownMenu.value = !expandedDropdownMenu.value },
       onDismissRequest = { expandedDropdownMenu.value = false },
@@ -737,10 +714,9 @@ fun FlashcardDialog(
                                       label = { Text("Fake Back ${index + 1}") },
                                       placeholder = { Text("Enter fake back text") },
                                       modifier =
-                                          Modifier.weight(1f)
-                                              .testTag("EditFakeBack${index + 1} textField"))
+                                          Modifier.weight(1f).testTag("fakeBackTextField--$index"))
                                   IconButton(
-                                      modifier = Modifier.testTag("removeFakeBack$index"),
+                                      modifier = Modifier.testTag("removeFakeBack--$index"),
                                       onClick = {
                                         fakeBacks.value =
                                             fakeBacks.value.toMutableList().apply {
@@ -758,11 +734,13 @@ fun FlashcardDialog(
                             Row(
                                 horizontalArrangement = Arrangement.spacedBy(10.dp),
                                 verticalAlignment = Alignment.CenterVertically) {
-                                  IconButton(onClick = { fakeBacks.value = fakeBacks.value + "" }) {
-                                    Icon(
-                                        imageVector = Icons.Default.Add,
-                                        contentDescription = "Add fake back")
-                                  }
+                                  IconButton(
+                                      modifier = Modifier.testTag("addFakeBackButton"),
+                                      onClick = { fakeBacks.value = fakeBacks.value + "" }) {
+                                        Icon(
+                                            imageVector = Icons.Default.Add,
+                                            contentDescription = "Add fake back")
+                                      }
                                   Text(
                                       "Add fake back",
                                       style = Typography.bodyLarge,
@@ -900,7 +878,7 @@ fun EditDeckDialog(
   val deckVisibility = remember { mutableStateOf(deck.value?.visibility ?: Visibility.DEFAULT) }
 
   Dialog(onDismissRequest = onDismissRequest) {
-    Card {
+    Card(modifier = Modifier.testTag("editDeckDialog").padding(5.dp)) {
       Column(
           modifier = Modifier.padding(10.dp),
           horizontalAlignment = Alignment.CenterHorizontally,
@@ -921,7 +899,7 @@ fun EditDeckDialog(
                 modifier = Modifier.testTag("deckDescriptionTextField"))
             // Save button
             Button(
-                modifier = Modifier.testTag("deckSaveButton"),
+                modifier = Modifier.testTag("saveDeckButton"),
                 onClick = {
                   val newDeck =
                       deck.value?.copy(

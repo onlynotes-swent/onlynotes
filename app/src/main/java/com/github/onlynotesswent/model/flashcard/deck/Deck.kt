@@ -1,6 +1,7 @@
 package com.github.onlynotesswent.model.flashcard.deck
 
 import com.github.onlynotesswent.model.common.Visibility
+import com.github.onlynotesswent.model.flashcard.Flashcard
 import com.google.firebase.Timestamp
 
 /**
@@ -35,6 +36,40 @@ data class Deck(
       fun fromString(s: String?): PlayMode {
         return entries.find { it.toString() == s } ?: FLASHCARD
       }
+    }
+  }
+
+  enum class SortMode {
+    ALPHABETICAL,
+    REVIEW,
+    LEVEL;
+
+    enum class Order {
+      HIGH_LOW,
+      LOW_HIGH;
+
+      fun next(): Order {
+        return when (this) {
+          HIGH_LOW -> LOW_HIGH
+          LOW_HIGH -> HIGH_LOW
+        }
+      }
+    }
+
+    fun toReadableString(): String {
+      return when (this) {
+        ALPHABETICAL -> "Alphabetical"
+        REVIEW -> "Last Review"
+        LEVEL -> "Level"
+      }
+    }
+
+    fun sort(flashcards: List<Flashcard>, sortOrder: Order): List<Flashcard> {
+      return when (this) {
+        ALPHABETICAL -> flashcards.sortedBy { card -> card.front.lowercase().trim() }
+        REVIEW -> flashcards.sortedBy { card -> card.lastReviewed }
+        LEVEL -> flashcards // TODO once level is implemented, for now does nothing
+      }.let { if (sortOrder == Order.HIGH_LOW) it.reversed() else it }
     }
   }
 
