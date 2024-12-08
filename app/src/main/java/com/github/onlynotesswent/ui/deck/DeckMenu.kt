@@ -22,6 +22,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Sort
@@ -42,6 +43,7 @@ import androidx.compose.material.icons.filled.SaveAlt
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardColors
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -50,6 +52,7 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
@@ -335,31 +338,50 @@ fun PlayModesBottomSheet(
         horizontalAlignment = Alignment.CenterHorizontally) {
           Text("Choose your play mode:", style = MaterialTheme.typography.headlineMedium)
           Spacer(modifier = Modifier.height(15.dp))
-          Column(verticalArrangement = Arrangement.spacedBy(20.dp)) {
-            Deck.PlayMode.entries.forEach {
-              Row(
-                  verticalAlignment = Alignment.CenterVertically,
-                  modifier =
-                      Modifier.testTag("playMode--${it.name}").clickable {
-                        playModesShown.value = false
-                        navigationActions.navigateTo(
-                            Screen.DECK_PLAY.replace(
-                                    "{deckId}", deckViewModel.selectedDeck.value!!.id)
-                                .replace("{mode}", it.name))
-                      }) {
-                    // TODO define icons for each play mode later
-                    Icon(Icons.Default.PlayArrow, contentDescription = null)
-                    Text(
-                        when (it) {
-                          Deck.PlayMode.FLASHCARD -> stringResource(R.string.play_mode_flashcards)
-                          Deck.PlayMode.MATCH -> stringResource(R.string.play_mode_match_cards)
-                          Deck.PlayMode.MCQ -> stringResource(R.string.play_mode_mcq)
-                          Deck.PlayMode.ALL -> stringResource(R.string.play_mode_all_combined)
-                        },
-                        style = MaterialTheme.typography.headlineSmall)
-                  }
-            }
-          }
+          Column(
+              modifier = Modifier.fillMaxWidth(),
+              verticalArrangement = Arrangement.spacedBy(20.dp),
+              horizontalAlignment = Alignment.CenterHorizontally // Center-align items horizontally
+              ) {
+                Deck.PlayMode.entries.forEach { playMode ->
+                  Card(
+                      shape = RoundedCornerShape(16.dp), // Rounded corners
+                      colors =
+                          CardColors(
+                              containerColor = MaterialTheme.colorScheme.surface,
+                              contentColor = MaterialTheme.colorScheme.onSurface,
+                              disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                              disabledContentColor =
+                                  MaterialTheme.colorScheme.onSurfaceVariant), // Custom colors
+                      modifier =
+                          Modifier.fillMaxWidth(0.8f).testTag("playMode--$playMode").clickable {
+                            playModesShown.value = false
+                            navigationActions.navigateTo(
+                                Screen.DECK_PLAY.replace(
+                                        "{deckId}", deckViewModel.selectedDeck.value!!.id)
+                                    .replace("{mode}", playMode.name))
+                          }) {
+                        ListItem(
+                            modifier = Modifier.padding(1.dp),
+                            headlineContent = {
+                              Text(
+                                  when (playMode) {
+                                    Deck.PlayMode.FLASHCARD ->
+                                        stringResource(R.string.play_mode_flashcards)
+                                    Deck.PlayMode.MATCH ->
+                                        stringResource(R.string.play_mode_match_cards)
+                                    Deck.PlayMode.MCQ -> stringResource(R.string.play_mode_mcq)
+                                    Deck.PlayMode.ALL ->
+                                        stringResource(R.string.play_mode_all_combined)
+                                  },
+                                  style = MaterialTheme.typography.bodyLarge)
+                            },
+                            trailingContent = {
+                              Icon(Icons.Default.PlayArrow, contentDescription = null)
+                            })
+                      }
+                }
+              }
         }
   }
 }
