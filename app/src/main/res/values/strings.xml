@@ -97,4 +97,8 @@
     <string name="message">message</string>
     <string name="new_message_from">New Message from %1$s</string>
     <string name="no_notifications">You don\'t have notifications</string>
+    <string name="play_mode_flashcards">Flip Through Flashcards</string>
+    <string name="play_mode_match_cards">Match Cards</string>
+    <string name="play_mode_mcq">Multiple Choice Questions</string>
+    <string name="play_mode_all_combined">All Combined</string>
 </resources>

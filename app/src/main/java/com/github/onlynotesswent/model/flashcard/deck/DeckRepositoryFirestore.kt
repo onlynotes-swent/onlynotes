@@ -30,13 +30,15 @@ class DeckRepositoryFirestore(private val db: FirebaseFirestore) : DeckRepositor
           name = document.getString("name") ?: throw Exception("Invalid deck name"),
           userId = document.getString("userId") ?: throw Exception("Invalid user ID"),
           folderId = document.getString("folderId"),
+          flashcardIds = document.get("flashcardIds") as List<String>? ?: emptyList(),
           visibility =
               Visibility.fromString(
                   document.getString("visibility") ?: throw Exception("Invalid deck visibility")),
           lastModified =
               document.getTimestamp("lastModified")
                   ?: throw Exception("Invalid last modified timestamp"),
-          flashcardIds = document.get("flashcardIds") as List<String>? ?: emptyList())
+          description =
+              document.getString("description") ?: throw Exception("Invalid deck description"))
     } catch (e: Exception) {
       Log.e(TAG, "Error converting document to Deck", e)
       null

@@ -12,7 +12,6 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -25,12 +24,16 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import com.github.onlynotesswent.model.file.FileViewModel
+import com.github.onlynotesswent.model.flashcard.FlashcardViewModel
+import com.github.onlynotesswent.model.flashcard.deck.Deck
 import com.github.onlynotesswent.model.flashcard.deck.DeckViewModel
 import com.github.onlynotesswent.model.folder.FolderViewModel
 import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.model.notification.NotificationViewModel
 import com.github.onlynotesswent.model.user.UserViewModel
 import com.github.onlynotesswent.ui.authentication.SignInScreen
+import com.github.onlynotesswent.ui.deck.DeckPlayScreen
+import com.github.onlynotesswent.ui.deck.DeckScreen
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Route
 import com.github.onlynotesswent.ui.navigation.Screen
@@ -47,7 +50,7 @@ import com.github.onlynotesswent.ui.user.EditProfileScreen
 import com.github.onlynotesswent.ui.user.NotificationScreen
 import com.github.onlynotesswent.ui.user.PublicProfileScreen
 import com.github.onlynotesswent.ui.user.UserProfileScreen
-import com.github.onlynotesswent.utils.ProfilePictureTaker
+import com.github.onlynotesswent.utils.PictureTaker
 import com.github.onlynotesswent.utils.Scanner
 
 class MainActivity : ComponentActivity() {
@@ -58,12 +61,12 @@ class MainActivity : ComponentActivity() {
     val serverClientId = getString(R.string.default_web_client_id)
 
     val scanner = Scanner(this).apply { init() }
-    val profilePictureTaker = ProfilePictureTaker(this).apply { init() }
+    val pictureTaker = PictureTaker(this).apply { init() }
 
     setContent {
       AppTheme {
         Surface(modifier = Modifier.fillMaxSize()) {
-          OnlyNotesApp(scanner, profilePictureTaker, serverClientId)
+          OnlyNotesApp(scanner, pictureTaker, serverClientId)
         }
       }
     }
@@ -71,11 +74,7 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun OnlyNotesApp(
-    scanner: Scanner,
-    profilePictureTaker: ProfilePictureTaker,
-    serverClientId: String
-) {
+fun OnlyNotesApp(scanner: Scanner, pictureTaker: PictureTaker, serverClientId: String) {
   val context = LocalContext.current
 
   val navController = rememberNavController()
@@ -88,6 +87,7 @@ fun OnlyNotesApp(
   val notificationViewModel: NotificationViewModel =
       viewModel(factory = NotificationViewModel.Factory)
   val deckViewModel: DeckViewModel = viewModel(factory = DeckViewModel.Factory)
+  val flashcardViewModel: FlashcardViewModel = viewModel(factory = FlashcardViewModel.Factory)
 
   NavHost(navController = navController, startDestination = Route.AUTH) {
     navigation(
@@ -155,7 +155,29 @@ fun OnlyNotesApp(
             deckViewModel,
             fileViewModel)
       }
-      composable(Screen.DECK_MENU) { Text("Deck Menu Screen - not implemented yet") }
+      composable(Screen.DECK_MENU) { navBackStackEntry ->
+        val deckId = navBackStackEntry.arguments?.getString("deckId")
+        deckId?.let { deckViewModel.getDeckById(it) }
+        DeckScreen(
+            userViewModel,
+            deckViewModel,
+            flashcardViewModel,
+            fileViewModel,
+            pictureTaker,
+            navigationActions)
+      }
+      composable(Screen.DECK_PLAY) { navBackStackEntry ->
+        val deckId = navBackStackEntry.arguments?.getString("deckId")
+        val mode = navBackStackEntry.arguments?.getString("mode")
+
+        // Refresh deck if it is not null
+        LaunchedEffect(deckId) {
+          if (deckId != null && deckId != "{deckId}")
+              deckViewModel.getDeckById(
+                  deckId, { deckViewModel.playDeckWithMode(it, Deck.PlayMode.fromString(mode)) })
+        }
+        DeckPlayScreen()
+      }
     }
 
     navigation(
@@ -184,7 +206,7 @@ fun OnlyNotesApp(
         EditProfileScreen(
             navigationActions,
             userViewModel,
-            profilePictureTaker,
+            pictureTaker,
             fileViewModel,
             noteViewModel,
             folderViewModel)

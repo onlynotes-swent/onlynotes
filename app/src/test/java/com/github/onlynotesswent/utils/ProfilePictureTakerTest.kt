@@ -18,7 +18,7 @@ class ProfilePictureTakerTest {
   @Mock private lateinit var mockActivity: ComponentActivity
   @Mock private lateinit var mockOnImageSelected: (Uri?) -> Unit
   @Mock private lateinit var mockActivityResultLauncher: ActivityResultLauncher<Intent>
-  private lateinit var profilePictureTaker: ProfilePictureTaker
+  private lateinit var pictureTaker: PictureTaker
 
   private fun <T> nullableAny(type: Class<T>): T = any(type)
 
@@ -36,8 +36,8 @@ class ProfilePictureTakerTest {
         .thenReturn(mockActivityResultLauncher)
 
     // Initialize ProfilePictureTaker with mocked components
-    profilePictureTaker = ProfilePictureTaker(mockActivity).apply { init() }
-    profilePictureTaker.setOnImageSelected { mockOnImageSelected }
+    pictureTaker = PictureTaker(mockActivity).apply { init() }
+    pictureTaker.setOnImageSelected { mockOnImageSelected }
   }
 
   @Test
@@ -52,7 +52,7 @@ class ProfilePictureTakerTest {
   @Test
   fun `pickImage should launch image picker intent`() {
     // Call pickImage to test if ImagePicker intent is created and launched
-    profilePictureTaker.pickImage()
+    pictureTaker.pickImage()
 
     // Verify that ImagePicker intent is launched
     verify(mockActivityResultLauncher).launch(nullableAny(Intent::class.java))

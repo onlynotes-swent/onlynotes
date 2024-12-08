@@ -20,6 +20,10 @@ class DeckViewModel(private val repository: DeckRepository) : ViewModel() {
   private val _selectedDeck = MutableStateFlow<Deck?>(null)
   val selectedDeck: StateFlow<Deck?> = _selectedDeck.asStateFlow()
 
+  // The selected play mode
+  private val _selectedPlayMode = MutableStateFlow<Deck.PlayMode?>(null)
+  val selectedPlayMode: StateFlow<Deck.PlayMode?> = _selectedPlayMode.asStateFlow()
+
   // The decks in the selected folder
   private val _folderDecks = MutableStateFlow<List<Deck>>(emptyList())
   val folderDecks: StateFlow<List<Deck>> = _folderDecks.asStateFlow()
@@ -46,6 +50,17 @@ class DeckViewModel(private val repository: DeckRepository) : ViewModel() {
    */
   fun selectDeck(deck: Deck) {
     _selectedDeck.value = deck
+  }
+
+  /**
+   * Selects a deck and a play mode.
+   *
+   * @param deck The deck to be selected.
+   * @param playMode The play mode to be selected.
+   */
+  fun playDeckWithMode(deck: Deck, playMode: Deck.PlayMode) {
+    _selectedDeck.value = deck
+    _selectedPlayMode.value = playMode
   }
 
   /**
