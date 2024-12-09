@@ -5,7 +5,6 @@ import android.util.Log
 import com.google.android.gms.tasks.OnSuccessListener
 import com.google.android.gms.tasks.Task
 import com.google.android.gms.tasks.Tasks
-import com.google.firebase.Timestamp
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.DocumentSnapshot
@@ -52,7 +51,6 @@ class FlashcardRepositoryFirestoreTest {
           back = "back",
           hasImage = false,
           fakeBacks = listOf("fake1", "fake2", "fake3"),
-          lastReviewed = Timestamp.now(),
           userId = "2",
           folderId = "3",
           noteId = "4")
@@ -108,7 +106,6 @@ class FlashcardRepositoryFirestoreTest {
     `when`(mockDocumentSnapshot.getString("latexFormula")).thenReturn(flashcard.latexFormula)
     `when`(mockDocumentSnapshot.getBoolean("hasImage")).thenReturn(flashcard.hasImage)
     `when`(mockDocumentSnapshot.get("fakeBacks")).thenReturn(flashcard.fakeBacks)
-    `when`(mockDocumentSnapshot.getTimestamp("lastReviewed")).thenReturn(flashcard.lastReviewed)
     `when`(mockDocumentSnapshot.getString("userId")).thenReturn(flashcard.userId)
     `when`(mockDocumentSnapshot.getString("folderId")).thenReturn(flashcard.folderId)
     `when`(mockDocumentSnapshot.getString("noteId")).thenReturn(flashcard.noteId)

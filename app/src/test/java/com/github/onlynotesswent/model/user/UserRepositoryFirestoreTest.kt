@@ -1,6 +1,9 @@
 package com.github.onlynotesswent.model.user
 
 import android.util.Log
+import com.github.onlynotesswent.model.common.Visibility
+import com.github.onlynotesswent.model.flashcard.UserFlashcard
+import com.github.onlynotesswent.model.flashcard.deck.Deck
 import com.google.android.gms.tasks.Task
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
@@ -57,6 +60,9 @@ class UserRepositoryFirestoreTest {
           rating = 0.0,
           friends = Friends(following = listOf("2"), followers = listOf("3")))
 
+  private val userFlashcard =
+      UserFlashcard(id = "flashcard_1", level = 1, lastReviewed = defaultTimestamp)
+
   @Before
   fun setUp() {
     MockitoAnnotations.openMocks(this)
@@ -69,6 +75,8 @@ class UserRepositoryFirestoreTest {
     `when`(mockCollectionReference.whereEqualTo("userName", user.userName)).thenReturn(mockQuery)
     `when`(mockCollectionReference.whereEqualTo("email", user.email)).thenReturn(mockQuery)
     `when`(mockCollectionReference.get()).thenReturn(mockQueryTask)
+
+    `when`(mockDocumentReference.collection(any())).thenReturn(mockCollectionReference)
 
     // Mock the behavior of the QuerySnapshot task
     `when`(mockQuery.get()).thenReturn(mockQueryTask)
@@ -119,6 +127,10 @@ class UserRepositoryFirestoreTest {
         .thenReturn(user.pendingFriends.following)
     `when`(mockDocumentSnapshot.get("pendingFriends.followers"))
         .thenReturn(user.pendingFriends.followers)
+
+    `when`(mockDocumentSnapshot.getString("id")).thenReturn(userFlashcard.id)
+    `when`(mockDocumentSnapshot.getLong("level")).thenReturn(userFlashcard.level.toLong())
+    `when`(mockDocumentSnapshot.getTimestamp("lastReviewed")).thenReturn(userFlashcard.lastReviewed)
   }
 
   @Test
@@ -604,6 +616,85 @@ class UserRepositoryFirestoreTest {
 
     assert(onFailureCalled)
     verifyErrorLog("Error getting users by id")
+  }
+
+  @Test
+  fun `addUserFlashCard() should call Firestore collection`() {
+
+    // Call addUserFlashcard method
+    var onSuccessCalled = false
+    userRepositoryFirestore.addUserFlashcard(
+        user.uid, userFlashcard, { onSuccessCalled = true }, { assert(false) })
+
+    // Verify if Firestore collection was called
+    verify(mockCollectionReference, timeout(1000)).document(user.uid)
+    assert(onSuccessCalled)
+  }
+
+  @Test
+  fun `updateUserFlashCard should call Firestore collection`() {
+
+    // Call updateUserFlashcard method
+    var onSuccessCalled = false
+    userRepositoryFirestore.updateUserFlashcard(
+        user.uid, userFlashcard, { onSuccessCalled = true }, { assert(false) })
+
+    // Verify if Firestore collection was called
+    verify(mockCollectionReference, timeout(1000)).document(user.uid)
+    assert(onSuccessCalled)
+  }
+
+  @Test
+  fun `deleteUserFlashCard should call Firestore collection`() {
+
+    `when`(mockDocumentReference.delete()).thenReturn(mockResolveTask)
+
+    // Call deleteUserFlashcard method
+    var onSuccessCalled = false
+    userRepositoryFirestore.deleteUserFlashcardById(
+        user.uid, userFlashcard.id, { onSuccessCalled = true }, { assert(false) })
+
+    // Verify if Firestore collection was called
+    verify(mockCollectionReference, timeout(1000)).document(user.uid)
+    assert(onSuccessCalled)
+  }
+
+  @Test
+  fun `getUserFlashcardFromDeck should call Firestore collection`() {
+    // Mock the behavior of the QuerySnapshot task
+    val deckList = listOf("flashcard_1", "2", "3")
+    `when`(mockCollectionReference.whereIn("uid", deckList)).thenReturn(mockQuery)
+
+    `when`(mockQuerySnapshot.documents).thenReturn(listOf(mockDocumentSnapshot))
+    `when`(mockQueryTask.addOnSuccessListener(any())).thenAnswer { invocation ->
+      val listener =
+          invocation.arguments[0] as com.google.android.gms.tasks.OnSuccessListener<QuerySnapshot>
+      // Simulate a result being passed to the listener
+      listener.onSuccess(mockQuerySnapshot)
+      mockQueryTask
+    }
+
+    val deck =
+        Deck(
+            "deckId",
+            "deckName",
+            "1",
+            "deckCategory",
+            Visibility.PRIVATE,
+            lastModified = defaultTimestamp,
+            deckList)
+
+    val mapFlashCard = mapOf(userFlashcard.id to userFlashcard)
+
+    // Call getUserFlashcardFromDeck method
+    var userFlashcardTest: Map<String, UserFlashcard>? = null
+    userRepositoryFirestore.getUserFlashcardFromDeck(
+        user.uid, deck, { userFlashcardTest = it }, { assert(false) })
+
+    // Verify if Firestore collection was called
+    verify(mockCollectionReference, timeout(1000)).document(user.uid)
+    assertNotNull(userFlashcardTest)
+    assertEquals(mapFlashCard, userFlashcardTest!!)
   }
 }
 
