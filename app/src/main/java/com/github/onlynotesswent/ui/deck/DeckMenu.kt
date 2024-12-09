@@ -154,11 +154,12 @@ fun DeckScreen(
         } else {
           Column(
               modifier =
-                  Modifier.fillMaxWidth()
-                      .testTag("deckScreenColumn")
-                      .padding(innerPadding)
-                      .padding(start = 15.dp, top = 10.dp, end = 10.dp)
-                      .verticalScroll(rememberScrollState()),
+              Modifier
+                  .fillMaxWidth()
+                  .testTag("deckScreenColumn")
+                  .padding(innerPadding)
+                  .padding(start = 15.dp, top = 10.dp, end = 10.dp)
+                  .verticalScroll(rememberScrollState()),
               horizontalAlignment = Alignment.CenterHorizontally) {
                 // Dialogs:
                 if (addCardDialogExpanded.value) {
@@ -176,17 +177,19 @@ fun DeckScreen(
                   Dialog(onDismissRequest = { importDialogExpanded.value = false }) {
                     Card {
                       Column(
-                          modifier = Modifier.padding(10.dp).testTag("importDeckDialog"),
+                          modifier = Modifier
+                              .padding(10.dp)
+                              .testTag("importDeckDialog"),
                           horizontalAlignment = Alignment.CenterHorizontally,
                           verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                            Text("Import Deck", style = Typography.headlineSmall)
+                            Text(stringResource(R.string.import_deck), style = Typography.headlineSmall)
                             // TODO: Import deck functionality
                             Text("Not Implemented yet", style = Typography.bodyMedium)
                             // Import button
                             Button(
                                 modifier = Modifier.testTag("importButton"),
                                 onClick = { importDialogExpanded.value = false }) {
-                                  Text("Import")
+                                  Text(stringResource(R.string.import_button_text))
                                 }
                           }
                     }
@@ -207,19 +210,25 @@ fun DeckScreen(
                 Text(
                     selectedDeck.value!!.name,
                     style = Typography.displayMedium,
-                    modifier = Modifier.padding(vertical = 10.dp).testTag("deckTitle"))
+                    modifier = Modifier
+                        .padding(vertical = 10.dp)
+                        .testTag("deckTitle"))
                 // Deck description
                 Text(
                     selectedDeck.value!!.description,
                     style = Typography.bodyMedium,
-                    modifier = Modifier.padding(10.dp).testTag("deckDescription"))
+                    modifier = Modifier
+                        .padding(10.dp)
+                        .testTag("deckDescription"))
 
                 // Deck play mode buttons
                 FilledTonalButton(
                     onClick = { playModesShown.value = !playModesShown.value },
-                    modifier = Modifier.padding(vertical = 15.dp).testTag("deckPlayButton")) {
+                    modifier = Modifier
+                        .padding(vertical = 15.dp)
+                        .testTag("deckPlayButton")) {
                       Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text("Play", style = MaterialTheme.typography.headlineMedium)
+                        Text(stringResource(R.string.play_button_text), style = MaterialTheme.typography.headlineMedium)
                         Icon(Icons.Default.PlayArrow, contentDescription = "play")
                       }
                     }
@@ -230,10 +239,11 @@ fun DeckScreen(
                 // Deck cards lazy column
                 LazyColumn(
                     modifier =
-                        Modifier.fillMaxWidth(0.9f)
-                            .testTag("deckFlashcardsList")
-                            .heightIn(max = 600.dp)
-                            .padding(horizontal = 10.dp),
+                    Modifier
+                        .fillMaxWidth(0.9f)
+                        .testTag("deckFlashcardsList")
+                        .heightIn(max = 600.dp)
+                        .padding(horizontal = 10.dp),
                     verticalArrangement = Arrangement.spacedBy(10.dp),
                     horizontalAlignment = Alignment.CenterHorizontally) {
                       items(sortedFlashcards.value.size) { index ->
@@ -274,14 +284,14 @@ private fun PublicDeckFab(
       menuItems =
           listOf(
               CustomDropDownMenuItem(
-                  text = { Text("Save to favorites") },
+                  text = { Text(stringResource(R.string.save_to_favorites)) },
                   icon = {
                     Icon(imageVector = Icons.Default.Star, contentDescription = "Save deck")
                   },
                   onClick = onSaveClick,
                   modifier = Modifier.testTag("saveToFavoritesMenuItem")),
               CustomDropDownMenuItem(
-                  text = { Text("Create local copy") },
+                  text = { Text(stringResource(R.string.create_local_copy)) },
                   icon = {
                     Icon(imageVector = Icons.Default.SaveAlt, contentDescription = "Save copy")
                   },
@@ -316,19 +326,19 @@ private fun DeckFab(
       menuItems =
           listOf(
               CustomDropDownMenuItem(
-                  text = { Text("Add new card") },
+                  text = { Text(stringResource(R.string.add_new_card)) },
                   icon = { Icon(imageVector = Icons.Default.Add, contentDescription = "Add card") },
                   onClick = onAddCardClick,
                   modifier = Modifier.testTag("addCardMenuItem")),
               CustomDropDownMenuItem(
-                  text = { Text("Import deck") },
+                  text = { Text(stringResource(R.string.import_deck)) },
                   icon = {
                     Icon(imageVector = Icons.Default.Download, contentDescription = "Import deck")
                   },
                   onClick = onImportDeckClick,
                   modifier = Modifier.testTag("importDeckMenuItem")),
               CustomDropDownMenuItem(
-                  text = { Text("Edit Deck") },
+                  text = { Text(stringResource(R.string.edit_deck)) },
                   icon = {
                     Icon(imageVector = Icons.Default.Edit, contentDescription = "Edit deck")
                   },
@@ -352,7 +362,7 @@ private fun DeckFab(
 @Composable
 private fun DeckMenuTopAppBar(onBackButtonClick: () -> Unit) {
   ScreenTopBar(
-      title = "Deck",
+      title = stringResource(R.string.deck_maj),
       titleTestTag = "deckTopBarTitle",
       onBackClick = onBackButtonClick,
       icon = {
@@ -385,7 +395,7 @@ private fun CardCountAndAuthor(
           Text(
               text =
                   it.flashcardIds.size.let { count ->
-                    if (count == 1) "1 card" else "$count cards"
+                    if (count == 1) "1 "+stringResource(R.string.card_min) else "$count "+ stringResource(R.string.cards_min)
                   },
               modifier = Modifier.testTag("deckCardCount"),
               style = Typography.bodyLarge,
@@ -468,9 +478,12 @@ private fun PlayModesBottomSheet(
 ) {
   ModalBottomSheet(onDismissRequest = { playModesShown.value = false }) {
     Column(
-        modifier = Modifier.fillMaxWidth().padding(20.dp).testTag("playModesBottomSheet"),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(20.dp)
+            .testTag("playModesBottomSheet"),
         horizontalAlignment = Alignment.CenterHorizontally) {
-          Text("Choose your play mode:", style = MaterialTheme.typography.headlineMedium)
+          Text(stringResource(R.string.choose_your_play_mode), style = MaterialTheme.typography.headlineMedium)
           Spacer(modifier = Modifier.height(15.dp))
           Column(
               modifier = Modifier.fillMaxWidth(),
@@ -488,12 +501,18 @@ private fun PlayModesBottomSheet(
                               disabledContentColor =
                                   MaterialTheme.colorScheme.onSurfaceVariant), // Custom colors
                       modifier =
-                          Modifier.fillMaxWidth(0.8f).testTag("playMode--$playMode").clickable {
-                            playModesShown.value = false
-                            navigationActions.navigateTo(
-                                Screen.DECK_PLAY.replace(
-                                        "{deckId}", deckViewModel.selectedDeck.value!!.id)
-                                    .replace("{mode}", playMode.name))
+                      Modifier
+                          .fillMaxWidth(0.8f)
+                          .testTag("playMode--$playMode")
+                          .clickable {
+                              playModesShown.value = false
+                              navigationActions.navigateTo(
+                                  Screen.DECK_PLAY
+                                      .replace(
+                                          "{deckId}", deckViewModel.selectedDeck.value!!.id
+                                      )
+                                      .replace("{mode}", playMode.name)
+                              )
                           }) {
                         ListItem(
                             modifier = Modifier.padding(1.dp),

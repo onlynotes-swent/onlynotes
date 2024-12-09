@@ -21,11 +21,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import com.github.onlynotesswent.R
 import com.github.onlynotesswent.model.common.Visibility
 import com.github.onlynotesswent.model.flashcard.deck.Deck
 import com.github.onlynotesswent.model.flashcard.deck.DeckViewModel
@@ -108,7 +110,7 @@ fun EditDeckDialog(
           modifier = Modifier.padding(10.dp),
           horizontalAlignment = Alignment.CenterHorizontally,
           verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            Text("$mode Deck", style = Typography.headlineSmall)
+            Text("$mode "+stringResource(R.string.deck_maj), style = Typography.headlineSmall)
             OutlinedTextField(
                 value = deckTitle.value,
                 onValueChange = { deckTitle.value = Deck.formatTitle(it) },
@@ -143,7 +145,7 @@ fun EditDeckDialog(
                   deckViewModel.updateDeck(newDeck, { deckViewModel.selectDeck(newDeck) })
                   onDismissRequest()
                 }) {
-                  Text("Save")
+                  Text(stringResource(R.string.save))
                 }
           }
     }
