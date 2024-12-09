@@ -125,4 +125,5 @@
     <string name="add_fake_option">Add fake option</string>
     <string name="edit_maj">Edit\n</string>
     <string name="delete">Delete</string>
+    <string name="mcq">MCQ</string>
 </resources>

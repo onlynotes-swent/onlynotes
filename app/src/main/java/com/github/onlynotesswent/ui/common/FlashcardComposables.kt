@@ -108,7 +108,7 @@ fun FlashcardViewItem(
     Box(contentAlignment = Alignment.CenterStart, modifier = Modifier.padding(10.dp)) {
       if (flashcard.isMCQ()) {
         Text(
-            "MCQ",
+            stringResource(R.string.mcq),
             style = Typography.bodyLarge,
             fontStyle = FontStyle.Italic,
             modifier = Modifier
@@ -209,7 +209,7 @@ fun FlashcardDialog(
     pictureTaker: PictureTaker,
     fileViewModel: FileViewModel,
     onDismissRequest: () -> Unit,
-    mode: String = "Create"
+    mode: String = stringResource(R.string.create)
 ) {
   val flashcard = flashcardViewModel.selectedFlashcard.collectAsState()
   val front = remember { mutableStateOf(flashcard.value?.front ?: "") }
@@ -221,7 +221,7 @@ fun FlashcardDialog(
     Card(modifier = Modifier
         .testTag("flashcardDialog--$mode")
         .padding(5.dp)) {
-      if (flashcard.value == null && mode == "Edit") {
+      if (flashcard.value == null && mode == stringResource(R.string.edit_maj)) {
         LoadingIndicator(stringResource(R.string.loading_flashcard))
       } else {
         Column(

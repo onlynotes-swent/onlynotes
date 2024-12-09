@@ -64,7 +64,7 @@ fun DeckSearchItem(deck: Deck, author: String, onClick: () -> Unit) {
                 modifier = Modifier.padding(end = 10.dp))
             Spacer(modifier = Modifier.weight(1f))
             Text(
-                text = "${deck.flashcardIds.size} cards",
+                text = "${deck.flashcardIds.size} "+stringResource(R.string.cards_min),
                 style = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier.padding(start = 10.dp))
           }
@@ -97,7 +97,7 @@ fun EditDeckDialog(
     deckViewModel: DeckViewModel,
     userViewModel: UserViewModel,
     onDismissRequest: () -> Unit,
-    mode: String = "Edit",
+    mode: String = stringResource(R.string.edit_maj),
 ) {
   val deck: State<Deck?> = deckViewModel.selectedDeck.collectAsState()
   val deckTitle = remember { mutableStateOf(deck.value?.name ?: "") }

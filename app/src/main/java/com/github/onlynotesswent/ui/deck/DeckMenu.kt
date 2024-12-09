@@ -172,7 +172,7 @@ fun DeckScreen(
                         addCardDialogExpanded.value = false
                         flashcardViewModel.deselectFlashcard()
                       },
-                      mode = "Create")
+                      mode = stringResource(R.string.create))
                 } else if (importDialogExpanded.value) {
                   Dialog(onDismissRequest = { importDialogExpanded.value = false }) {
                     Card {
