@@ -145,7 +145,7 @@ class OverviewTest {
     // Verify that the repositories were called twice, once during the initial load and once during
     // the
     // refresh click
-    verify(noteRepository, times(2)).getRootNotesFromUserId(eq("1"), any(), any(), any())
+    verify(noteRepository, times(2)).getRootNotesFromUid(eq("1"), any(), any(), any())
     verify(folderRepository, times(2)).getRootNoteFoldersFromUserId(eq("1"), any(), any(), any())
     composeTestRule.onNodeWithTag("noteAndFolderList").assertIsDisplayed()
   }
@@ -363,12 +363,12 @@ class OverviewTest {
                 parentFolderId = "1",
                 lastModified = Timestamp.now()))
 
-    `when`(folderRepository.getRootFoldersFromUid(eq("1"), any(), any(), any())).then { invocation
-      ->
+    `when`(folderRepository.getRootNoteFoldersFromUserId(eq("1"), any(), any(), any())).then {
+        invocation ->
       val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(1)
       onSuccess(userRootFoldersFlow)
     }
-    folderViewModel.getRootFoldersFromUid("1")
+    folderViewModel.getRootNoteFoldersFromUserId("1")
 
     val subFolderList =
         listOf(
