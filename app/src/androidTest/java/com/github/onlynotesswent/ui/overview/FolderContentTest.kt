@@ -26,16 +26,20 @@ import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
 import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
 import com.google.firebase.Timestamp
+import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.junit.runner.RunWith
 import org.mockito.Mock
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
+import org.mockito.junit.MockitoJUnitRunner
 import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
 
+@RunWith(MockitoJUnitRunner::class)
 class FolderContentTest {
 
   @Mock private lateinit var mockUserRepository: UserRepository
@@ -52,6 +56,7 @@ class FolderContentTest {
               id = "4",
               title = "Sample Title",
               date = Timestamp.now(),
+              lastModified = Timestamp.now(),
               visibility = Visibility.DEFAULT,
               userId = "1",
               noteCourse = Course("CS-100", "Sample Course", 2024, "path"),
@@ -63,6 +68,7 @@ class FolderContentTest {
               id = "6",
               title = "Sample Sub Note3",
               date = Timestamp.now(),
+              lastModified = Timestamp.now(),
               visibility = Visibility.DEFAULT,
               userId = "1",
               folderId = "1",
@@ -75,6 +81,7 @@ class FolderContentTest {
               id = "7",
               title = "Sample Sub Note4",
               date = Timestamp.now(),
+              lastModified = Timestamp.now(),
               visibility = Visibility.DEFAULT,
               userId = "1",
               folderId = "4",
@@ -82,13 +89,25 @@ class FolderContentTest {
           ))
 
   private val folderList =
-      listOf(Folder(id = "1", name = "name", userId = "1", parentFolderId = null))
+      listOf(
+          Folder(
+              id = "1",
+              name = "name",
+              userId = "1",
+              parentFolderId = null,
+              lastModified = Timestamp.now()))
 
   private val subFolderListSameUser =
-      listOf(Folder(id = "4", name = "name", userId = "1", parentFolderId = "1"))
+      listOf(
+          Folder(
+              id = "4",
+              name = "name",
+              userId = "1",
+              parentFolderId = "1",
+              lastModified = Timestamp.now()))
 
-  private val subfolder = Folder("3", "sub name", "1", "1")
-  private val folder = Folder("1", "1", "1")
+  private val subfolder = Folder("3", "sub name", "1", "1", lastModified = Timestamp.now())
+  private val folder = Folder("1", "1", "1", lastModified = Timestamp.now())
 
   private val testUser =
       User(
@@ -103,7 +122,7 @@ class FolderContentTest {
   @get:Rule val composeTestRule = createComposeRule()
 
   @Before
-  fun setUp() {
+  fun setUp() = runTest {
     MockitoAnnotations.openMocks(this)
     userViewModel = UserViewModel(mockUserRepository)
     noteViewModel = NoteViewModel(mockNoteRepository)
@@ -111,19 +130,20 @@ class FolderContentTest {
 
     // Mock the current route to be the user create screen
     `when`(mockNavigationActions.currentRoute()).thenReturn(Screen.FOLDER_CONTENTS)
-    `when`(mockNoteRepository.getRootNotesFrom(eq("1"), any(), any())).then { invocation ->
+    `when`(mockNoteRepository.getRootNotesFromUid(eq("1"), any(), any(), any())).then { invocation
+      ->
       val onSuccess = invocation.getArgument<(List<Note>) -> Unit>(1)
       onSuccess(noteList)
     }
-    `when`(mockFolderRepository.getRootFoldersFromUid(eq("1"), any(), any())).then { invocation ->
+    `when`(mockFolderRepository.getRootFoldersFromUid(eq("1"), any(), any(), any())).then {
+        invocation ->
       val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(1)
       onSuccess(folderList)
     }
     `when`(mockFolderRepository.getNewFolderId()).thenAnswer { _ -> "mockFolderId" }
   }
 
-  private fun init(selectedFolder: Folder) {
-
+  private fun init(selectedFolder: Folder) = runTest {
     // Mock the addUser method to call the onSuccess callback
     `when`(mockUserRepository.addUser(any(), any(), any())).thenAnswer { invocation ->
       val onSuccess = invocation.getArgument<() -> Unit>(1)
@@ -131,7 +151,7 @@ class FolderContentTest {
     }
     userViewModel.addUser(testUser, {}, {})
 
-    noteViewModel.getRootNotesFrom("1")
+    noteViewModel.getRootNotesFromUid("1")
     folderViewModel.getRootFoldersFromUid("1")
 
     folderViewModel.selectedFolder(selectedFolder)
@@ -174,10 +194,10 @@ class FolderContentTest {
   }
 
   @Test
-  fun createFolder() {
+  fun createFolder() = runTest {
     init(folder)
 
-    `when`(mockFolderRepository.addFolder(any(), any(), any())).thenAnswer { invocation ->
+    `when`(mockFolderRepository.addFolder(any(), any(), any(), any())).thenAnswer { invocation ->
       val onSuccess = invocation.getArgument<() -> Unit>(1)
       onSuccess()
     }
@@ -200,7 +220,7 @@ class FolderContentTest {
     composeTestRule.onNodeWithTag("confirmFolderAction").assertIsEnabled().assertIsDisplayed()
     composeTestRule.onNodeWithTag("confirmFolderAction").performClick()
 
-    verify(mockFolderRepository).addFolder(any(), any(), any())
+    verify(mockFolderRepository).addFolder(any(), any(), any(), any())
     verify(mockNavigationActions).navigateTo(Screen.FOLDER_CONTENTS.replace("{folderId}", "3"))
   }
 
@@ -247,10 +267,10 @@ class FolderContentTest {
   }
 
   @Test
-  fun deleteSubFolder() {
+  fun deleteSubFolder() = runTest {
     init(subfolder)
 
-    `when`(mockFolderRepository.getSubFoldersOf(eq("3"), any(), any())).then { invocation ->
+    `when`(mockFolderRepository.getSubFoldersOf(eq("3"), any(), any(), any())).then { invocation ->
       val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(1)
       onSuccess(emptyList())
     }
@@ -268,10 +288,10 @@ class FolderContentTest {
   }
 
   @Test
-  fun moveOutSameUserDoesMoveNote() {
+  fun moveOutSameUserDoesMoveNote() = runTest {
     init(folder)
 
-    `when`(mockNoteRepository.getNotesFromFolder(eq("1"), any(), any())).then { invocation ->
+    `when`(mockNoteRepository.getNotesFromFolder(eq("1"), any(), any(), any())).then { invocation ->
       val onSuccess = invocation.getArgument<(List<Note>) -> Unit>(1)
       onSuccess(subNoteList2)
     }
@@ -293,10 +313,10 @@ class FolderContentTest {
   }
 
   @Test
-  fun moveOutMovesNoteToParentFolder() {
+  fun moveOutMovesNoteToParentFolder() = runTest {
     init(folder)
 
-    `when`(mockFolderRepository.getSubFoldersOf(eq("1"), any(), any())).then { invocation ->
+    `when`(mockFolderRepository.getSubFoldersOf(eq("1"), any(), any(), any())).then { invocation ->
       val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(1)
       onSuccess(subFolderListSameUser)
     }
@@ -306,7 +326,7 @@ class FolderContentTest {
     composeTestRule.onNodeWithTag("folderCard").assertIsDisplayed()
     composeTestRule.onNodeWithTag("folderCard").performClick()
 
-    `when`(mockNoteRepository.getNotesFromFolder(eq("4"), any(), any())).then { invocation ->
+    `when`(mockNoteRepository.getNotesFromFolder(eq("4"), any(), any(), any())).then { invocation ->
       val onSuccess = invocation.getArgument<(List<Note>) -> Unit>(1)
       onSuccess(subNoteList3)
     }
@@ -327,10 +347,10 @@ class FolderContentTest {
   }
 
   @Test
-  fun noteDialogDisplaysCorrectly() {
+  fun noteDialogDisplaysCorrectly() = runTest {
     init(folder)
 
-    `when`(mockNoteRepository.addNote(any(), any(), any())).thenAnswer { invocation ->
+    `when`(mockNoteRepository.addNote(any(), any(), any(), any())).thenAnswer { invocation ->
       val onSuccess = invocation.getArgument<() -> Unit>(1)
       onSuccess()
     }
@@ -346,7 +366,7 @@ class FolderContentTest {
     composeTestRule.onNodeWithTag("confirmNoteAction").assertIsEnabled().assertIsDisplayed()
     composeTestRule.onNodeWithTag("confirmNoteAction").performClick()
 
-    verify(mockNoteRepository).addNote(any(), any(), any())
+    verify(mockNoteRepository).addNote(any(), any(), any(), any())
     verify(mockNavigationActions).navigateTo(Screen.EDIT_NOTE)
   }
 

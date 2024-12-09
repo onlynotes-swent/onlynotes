@@ -1,23 +1,25 @@
 package com.github.onlynotesswent.model.folder
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import com.github.onlynotesswent.model.cache.CacheDatabase
 import com.github.onlynotesswent.model.note.NoteViewModel
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.firestore
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 
 class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
 
-  // TODO Left here for possible future use cases
   private val _publicFolders = MutableStateFlow<List<Folder>>(emptyList())
   val publicFolders: StateFlow<List<Folder>> = _publicFolders.asStateFlow()
 
-  // TODO Left here for possible future use cases
   private val _userFolders = MutableStateFlow<List<Folder>>(emptyList())
   val userFolders: StateFlow<List<Folder>> = _userFolders.asStateFlow()
 
@@ -41,8 +43,12 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
   }
 
   companion object {
-    val Factory: ViewModelProvider.Factory = viewModelFactory {
-      initializer { FolderViewModel(FolderRepositoryFirestore(Firebase.firestore)) }
+    fun factory(context: Context): ViewModelProvider.Factory = viewModelFactory {
+      initializer {
+        FolderViewModel(
+            FolderRepositoryFirestore(
+                Firebase.firestore, CacheDatabase.getDatabase(context), context))
+      }
     }
   }
 
@@ -63,6 +69,15 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
   fun selectedFolder(folder: Folder) {
     _selectedFolder.value = folder
   }
+  /**
+   * Clears the currently selected folder.
+   *
+   * This function resets the `_selectedFolder` state to `null`, effectively deselecting any folder
+   * that was previously selected.
+   */
+  fun clearSelectedFolder() {
+    _selectedFolder.value = null
+  }
 
   /**
    * Generates a new folder ID.
@@ -79,15 +94,25 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
    * @param folder The folder to add.
    * @param onSuccess The function to call when the folder is added successfully.
    * @param onFailure The function to call when the folder fails to be added.
+   * @param useCache Whether to update data from cache. Should be true only if userId of the folder
+   *   is the current user.
    */
-  fun addFolder(folder: Folder, onSuccess: () -> Unit = {}, onFailure: (Exception) -> Unit = {}) {
-    repository.addFolder(
-        folder = folder,
-        onSuccess = {
-          onSuccess()
-          getRootFoldersFromUid(folder.userId)
-        },
-        onFailure = onFailure)
+  fun addFolder(
+      folder: Folder,
+      onSuccess: () -> Unit = {},
+      onFailure: (Exception) -> Unit = {},
+      useCache: Boolean = false
+  ) {
+    viewModelScope.launch {
+      repository.addFolder(
+          folder = folder,
+          onSuccess = {
+            getRootFoldersFromUid(folder.userId)
+            onSuccess()
+          },
+          onFailure = onFailure,
+          useCache = useCache)
+    }
   }
 
   /**
@@ -97,20 +122,26 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
    * @param userId The ID of the user that owns the folder.
    * @param onSuccess The function to call when the folder is deleted successfully.
    * @param onFailure The function to call when the folder fails to be deleted.
+   * @param useCache Whether to update data from cache. Should be true only if [userId] is the
+   *   current user.
    */
   fun deleteFolderById(
       folderId: String,
       userId: String,
       onSuccess: () -> Unit = {},
-      onFailure: (Exception) -> Unit = {}
+      onFailure: (Exception) -> Unit = {},
+      useCache: Boolean = false
   ) {
-    repository.deleteFolderById(
-        folderId = folderId,
-        onSuccess = {
-          onSuccess()
-          getRootFoldersFromUid(userId)
-        },
-        onFailure = onFailure)
+    viewModelScope.launch {
+      repository.deleteFolderById(
+          folderId = folderId,
+          onSuccess = {
+            getRootFoldersFromUid(userId)
+            onSuccess()
+          },
+          onFailure = onFailure,
+          useCache = useCache)
+    }
   }
 
   /**
@@ -119,19 +150,25 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
    * @param userId The ID of the user to delete folders notes for.
    * @param onSuccess The function to call when the folders are deleted successfully.
    * @param onFailure The function to call when the folders fail to be deleted.
+   * @param useCache Whether to update data from cache. Should be true only if [userId] is the
+   *   current user.
    */
-  fun deleteFoldersByUserId(
+  fun deleteFoldersFromUid(
       userId: String,
       onSuccess: () -> Unit = {},
-      onFailure: (Exception) -> Unit = {}
+      onFailure: (Exception) -> Unit = {},
+      useCache: Boolean = false
   ) {
-    repository.deleteFoldersByUserId(
-        userId = userId,
-        onSuccess = {
-          onSuccess()
-          getRootFoldersFromUid(userId)
-        },
-        onFailure = onFailure)
+    viewModelScope.launch {
+      repository.deleteFoldersFromUid(
+          userId = userId,
+          onSuccess = {
+            getRootFoldersFromUid(userId)
+            onSuccess()
+          },
+          onFailure = onFailure,
+          useCache = useCache)
+    }
   }
 
   /**
@@ -140,19 +177,25 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
    * @param userId The ID of the user to retrieve folders for.
    * @param onSuccess The function to call when the folders are retrieved successfully.
    * @param onFailure The function to call when the folders fail to be retrieved.
+   * @param useCache Whether to update data from cache. Should be true only if [userId] is the
+   *   current user.
    */
   fun getFoldersFromUid(
       userId: String,
       onSuccess: (List<Folder>) -> Unit = {},
-      onFailure: (Exception) -> Unit = {}
+      onFailure: (Exception) -> Unit = {},
+      useCache: Boolean = false
   ) {
-    repository.getFoldersFromUid(
-        userId = userId,
-        onSuccess = {
-          onSuccess(it)
-          _userFolders.value = it
-        },
-        onFailure = onFailure)
+    viewModelScope.launch {
+      repository.getFoldersFromUid(
+          userId = userId,
+          onSuccess = {
+            _userFolders.value = it
+            onSuccess(it)
+          },
+          onFailure = onFailure,
+          useCache = useCache)
+    }
   }
 
   /**
@@ -161,19 +204,25 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
    * @param userId The ID of the user to retrieve root folders for.
    * @param onSuccess The function to call when the root folders are retrieved successfully.
    * @param onFailure The function to call when the root folders fail to be retrieved.
+   * @param useCache Whether to update data from cache. Should be true only if [userId] is the
+   *   current user.
    */
   fun getRootFoldersFromUid(
       userId: String,
       onSuccess: (List<Folder>) -> Unit = {},
-      onFailure: (Exception) -> Unit = {}
+      onFailure: (Exception) -> Unit = {},
+      useCache: Boolean = false
   ) {
-    repository.getRootFoldersFromUid(
-        userId = userId,
-        onSuccess = {
-          onSuccess(it)
-          _userRootFolders.value = it
-        },
-        onFailure = onFailure)
+    viewModelScope.launch {
+      repository.getRootFoldersFromUid(
+          userId = userId,
+          onSuccess = {
+            _userRootFolders.value = it
+            onSuccess(it)
+          },
+          onFailure = onFailure,
+          useCache = useCache)
+    }
   }
 
   /**
@@ -182,19 +231,25 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
    * @param folderId The ID of the folder to retrieve.
    * @param onSuccess The function to call when the folder is retrieved successfully.
    * @param onFailure The function to call when the folder fails to be retrieved.
+   * @param useCache Whether to update data from cache. Should be true only if userId of the folder
+   *   is the current user.
    */
   fun getFolderById(
       folderId: String,
       onSuccess: (Folder) -> Unit = {},
-      onFailure: (Exception) -> Unit = {}
+      onFailure: (Exception) -> Unit = {},
+      useCache: Boolean = false
   ) {
-    repository.getFolderById(
-        folderId = folderId,
-        onSuccess = {
-          onSuccess(it)
-          _selectedFolder.value = it
-        },
-        onFailure = onFailure)
+    viewModelScope.launch {
+      repository.getFolderById(
+          folderId = folderId,
+          onSuccess = {
+            _selectedFolder.value = it
+            onSuccess(it)
+          },
+          onFailure = onFailure,
+          useCache = useCache)
+    }
   }
 
   /**
@@ -203,22 +258,28 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
    * @param folder The folder with updated information.
    * @param onSuccess The function to call when the folder is updated successfully.
    * @param onFailure The function to call when the folder fails to be updated.
+   * @param useCache Whether to update data from cache. Should be true only if userId of the folder
+   *   is the current user.
    */
   fun updateFolder(
       folder: Folder,
       onSuccess: () -> Unit = {},
-      onFailure: (Exception) -> Unit = {}
+      onFailure: (Exception) -> Unit = {},
+      useCache: Boolean = false
   ) {
-    repository.updateFolder(
-        folder = folder,
-        onSuccess = {
-          onSuccess()
-          getRootFoldersFromUid(folder.userId)
-          if (folder.parentFolderId != null) {
-            getSubFoldersOf(folder.parentFolderId)
-          }
-        },
-        onFailure = onFailure)
+    viewModelScope.launch {
+      repository.updateFolder(
+          folder = folder,
+          onSuccess = {
+            getRootFoldersFromUid(folder.userId)
+            if (folder.parentFolderId != null) {
+              getSubFoldersOf(folder.parentFolderId)
+            }
+            onSuccess()
+          },
+          onFailure = onFailure,
+          useCache = useCache)
+    }
   }
 
   /**
@@ -227,19 +288,47 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
    * @param parentFolderId The ID of the parent folder.
    * @param onSuccess The function to call when the children folders are retrieved successfully.
    * @param onFailure The function to call when the children folders fail to be retrieved.
+   * @param useCache Whether to update data from cache. Should be true only if userId of the folder
+   *   is the current user.
    */
   fun getSubFoldersOf(
       parentFolderId: String,
       onSuccess: (List<Folder>) -> Unit = {},
-      onFailure: (Exception) -> Unit = {}
+      onFailure: (Exception) -> Unit = {},
+      useCache: Boolean = false
   ) {
-    repository.getSubFoldersOf(
-        parentFolderId = parentFolderId,
-        onSuccess = {
-          onSuccess(it)
-          _folderSubFolders.value = it
-        },
-        onFailure = onFailure)
+    viewModelScope.launch {
+      repository.getSubFoldersOf(
+          parentFolderId = parentFolderId,
+          onSuccess = {
+            _folderSubFolders.value = it
+            onSuccess(it)
+          },
+          onFailure = onFailure,
+          useCache = useCache)
+    }
+  }
+  /**
+   * Retrieves the subfolders of a given parent folder without updating the state of the ViewModel.
+   *
+   * @param parentFolderId The unique ID of the parent folder whose subfolders are to be retrieved.
+   * @param onSuccess A callback that receives a list of `Folder` objects on successful retrieval.
+   * @param onFailure A callback that receives an `Exception` in case of a failure. Defaults to an
+   *   empty lambda if not provided.
+   */
+  fun getSubFoldersOfNoStateUpdate(
+      parentFolderId: String,
+      onSuccess: (List<Folder>) -> Unit,
+      onFailure: (Exception) -> Unit = {},
+      useCache: Boolean = false
+  ) {
+    viewModelScope.launch {
+      repository.getSubFoldersOf(
+          parentFolderId = parentFolderId,
+          onSuccess = { onSuccess(it) },
+          onFailure = onFailure,
+          useCache = useCache)
+    }
   }
 
   /**
@@ -251,8 +340,8 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
   fun getPublicFolders(onSuccess: () -> Unit = {}, onFailure: (Exception) -> Unit = {}) {
     repository.getPublicFolders(
         onSuccess = {
-          onSuccess()
           _publicFolders.value = it
+          onSuccess()
         },
         onFailure = onFailure)
   }
@@ -264,20 +353,26 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
    * @param noteViewModel The Note view model used to delete the folder notes.
    * @param onSuccess The function to call when the folder contents are deleted successfully.
    * @param onFailure The function to call when the folder contents fail to be deleted.
+   * @param useCache Whether to update data from cache. Should be true only if userId of the folder
+   *   is the current user.
    */
   fun deleteFolderContents(
       folder: Folder,
       noteViewModel: NoteViewModel,
       onSuccess: () -> Unit = {},
-      onFailure: (Exception) -> Unit = {}
+      onFailure: (Exception) -> Unit = {},
+      useCache: Boolean = false
   ) {
-    repository.deleteFolderContents(
-        folder = folder,
-        noteViewModel = noteViewModel,
-        onSuccess = {
-          onSuccess()
-          getSubFoldersOf(folder.id)
-        },
-        onFailure = onFailure)
+    viewModelScope.launch {
+      repository.deleteFolderContents(
+          folder = folder,
+          noteViewModel = noteViewModel,
+          onSuccess = {
+            getSubFoldersOf(folder.id)
+            onSuccess()
+          },
+          onFailure = onFailure,
+          useCache = useCache)
+    }
   }
 }

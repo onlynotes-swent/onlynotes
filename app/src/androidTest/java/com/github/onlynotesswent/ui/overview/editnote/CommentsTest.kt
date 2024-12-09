@@ -19,17 +19,21 @@ import com.github.onlynotesswent.model.user.UserViewModel
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
 import com.google.firebase.Timestamp
+import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.junit.runner.RunWith
 import org.mockito.Mock
 import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
+import org.mockito.junit.MockitoJUnitRunner
 import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
 
+@RunWith(MockitoJUnitRunner::class)
 class CommentsTest {
   @Mock private lateinit var userRepository: UserRepository
   @Mock private lateinit var noteRepository: NoteRepository
@@ -43,7 +47,7 @@ class CommentsTest {
   private val testFolder = Folder("1", "Test Folder", "1")
 
   @Before
-  fun setUp() {
+  fun setUp() = runTest {
     MockitoAnnotations.openMocks(this)
     // Mock is a way to create a fake object that can be used in place of a real object
     userViewModel = UserViewModel(userRepository)
@@ -66,6 +70,7 @@ class CommentsTest {
             id = "1",
             title = "Sample Title",
             date = Timestamp.now(), // Use current timestamp
+            lastModified = Timestamp.now(), // Use current timestamp
             visibility = Visibility.DEFAULT,
             userId = "1",
             noteCourse = Course("CS-100", "Sample Class", 2024, "path"),
@@ -76,18 +81,19 @@ class CommentsTest {
             id = "2",
             title = "Sample Title2",
             date = Timestamp.now(), // Use current timestamp
+            lastModified = Timestamp.now(),
             visibility = Visibility.DEFAULT,
             userId = "1",
             folderId = "1",
             noteCourse = Course("CS-100", "Sample Class", 2024, "path"),
         )
 
-    `when`(noteRepository.getNoteById(eq("1"), any(), any())).thenAnswer { invocation ->
+    `when`(noteRepository.getNoteById(eq("1"), any(), any(), any())).thenAnswer { invocation ->
       val onSuccess = invocation.getArgument<(Note) -> Unit>(1)
       onSuccess(mockNote1)
     }
 
-    `when`(noteRepository.getNoteById(eq("2"), any(), any())).thenAnswer { invocation ->
+    `when`(noteRepository.getNoteById(eq("2"), any(), any(), any())).thenAnswer { invocation ->
       val onSuccess = invocation.getArgument<(Note) -> Unit>(1)
       onSuccess(mockNote2)
     }
@@ -98,7 +104,7 @@ class CommentsTest {
     }
   }
 
-  private fun init(noteId: String) {
+  private fun init(noteId: String) = runTest {
     noteViewModel.getNoteById(noteId)
     composeTestRule.setContent { CommentsScreen(navigationActions, noteViewModel, userViewModel) }
   }
@@ -135,48 +141,48 @@ class CommentsTest {
   }
 
   @Test
-  fun clickGoBackButton() {
+  fun clickGoBackButton() = runTest {
     init("1")
     composeTestRule.onNodeWithTag("closeButton").performClick()
 
     verify(navigationActions).goBack()
-    verify(noteRepository).updateNote(any(), any(), any())
+    verify(noteRepository).updateNote(any(), any(), any(), any())
   }
 
   @Test
-  fun clickGoBackButtonInsideFolder() {
+  fun clickGoBackButtonInsideFolder() = runTest {
     init("2")
     folderViewModel.getFolderById(testFolder.id)
     composeTestRule.onNodeWithTag("closeButton").performClick()
 
     verify(navigationActions).goBack()
-    verify(noteRepository).updateNote(any(), any(), any())
+    verify(noteRepository).updateNote(any(), any(), any(), any())
   }
 
   @Test
-  fun clickNavigationDetailButton() {
+  fun clickNavigationDetailButton() = runTest {
     init("1")
     composeTestRule.onNodeWithTag("Detail").performClick()
     verify(navigationActions).navigateToAndPop(Screen.EDIT_NOTE)
-    verify(noteRepository).updateNote(any(), any(), any())
-    verify(noteRepository, times(2)).getNoteById(any(), any(), any())
+    verify(noteRepository).updateNote(any(), any(), any(), any())
+    verify(noteRepository, times(2)).getNoteById(any(), any(), any(), any())
   }
 
   @Test
-  fun clickNavigationPDFButton() {
+  fun clickNavigationPDFButton() = runTest {
     init("1")
     composeTestRule.onNodeWithTag("PDF").performClick()
     verify(navigationActions).navigateToAndPop(Screen.EDIT_NOTE_PDF)
-    verify(noteRepository).updateNote(any(), any(), any())
-    verify(noteRepository, times(2)).getNoteById(any(), any(), any())
+    verify(noteRepository).updateNote(any(), any(), any(), any())
+    verify(noteRepository, times(2)).getNoteById(any(), any(), any(), any())
   }
 
   @Test
-  fun clickNavigationContentButton() {
+  fun clickNavigationContentButton() = runTest {
     init("1")
     composeTestRule.onNodeWithTag("Content").performClick()
     verify(navigationActions).navigateToAndPop(Screen.EDIT_NOTE_MARKDOWN)
-    verify(noteRepository).updateNote(any(), any(), any())
-    verify(noteRepository, times(2)).getNoteById(any(), any(), any())
+    verify(noteRepository).updateNote(any(), any(), any(), any())
+    verify(noteRepository, times(2)).getNoteById(any(), any(), any(), any())
   }
 }

@@ -1,7 +1,11 @@
 package com.github.onlynotesswent.model.note
 
+import android.content.Context
 import android.os.Looper
+import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
+import com.github.onlynotesswent.model.cache.CacheDatabase
+import com.github.onlynotesswent.model.cache.NoteDao
 import com.github.onlynotesswent.model.common.Course
 import com.github.onlynotesswent.model.common.Visibility
 import com.google.android.gms.tasks.OnCompleteListener
@@ -15,6 +19,7 @@ import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.QuerySnapshot
 import junit.framework.TestCase.assertNotNull
+import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
@@ -33,6 +38,8 @@ import org.robolectric.Shadows.shadowOf
 class NoteRepositoryFirestoreTest {
 
   @Mock private lateinit var mockFirestore: FirebaseFirestore
+  @Mock private lateinit var mockNoteDao: NoteDao
+  @Mock private lateinit var mockCacheDatabase: CacheDatabase
   @Mock private lateinit var mockDocumentReference: DocumentReference
   @Mock private lateinit var mockCollectionReference: CollectionReference
   @Mock private lateinit var mockDocumentSnapshot: DocumentSnapshot
@@ -49,6 +56,7 @@ class NoteRepositoryFirestoreTest {
           id = "1",
           title = "title",
           date = Timestamp.now(),
+          lastModified = Timestamp.now(),
           visibility = Visibility.PUBLIC,
           userId = "1",
           noteCourse = Course("CS-100", "Sample Course", 2024, "path"),
@@ -60,6 +68,7 @@ class NoteRepositoryFirestoreTest {
           id = "2",
           title = "title",
           date = Timestamp.now(),
+          lastModified = Timestamp.now(),
           visibility = Visibility.PRIVATE,
           userId = "1",
           noteCourse = Course("CS-100", "Sample Course", 2024, "path"),
@@ -72,6 +81,7 @@ class NoteRepositoryFirestoreTest {
           id = "1",
           title = "title",
           date = Timestamp.now(),
+          lastModified = Timestamp.now(),
           visibility = Visibility.PUBLIC,
           userId = "1",
           folderId = "1",
@@ -83,6 +93,7 @@ class NoteRepositoryFirestoreTest {
           id = "1",
           title = "title",
           date = Timestamp.now(),
+          lastModified = Timestamp.now(),
           visibility = Visibility.PRIVATE,
           userId = "1",
           folderId = "1",
@@ -99,7 +110,11 @@ class NoteRepositoryFirestoreTest {
       FirebaseApp.initializeApp(ApplicationProvider.getApplicationContext())
     }
 
-    noteRepositoryFirestore = NoteRepositoryFirestore(mockFirestore)
+    val context = ApplicationProvider.getApplicationContext<Context>()
+    mockCacheDatabase = Room.inMemoryDatabaseBuilder(context, CacheDatabase::class.java).build()
+    mockNoteDao = mockCacheDatabase.noteDao()
+
+    noteRepositoryFirestore = NoteRepositoryFirestore(mockFirestore, mockCacheDatabase, context)
 
     `when`(mockFirestore.collection(any())).thenReturn(mockCollectionReference)
     `when`(mockCollectionReference.document(any())).thenReturn(mockDocumentReference)
@@ -127,6 +142,8 @@ class NoteRepositoryFirestoreTest {
     `when`(mockDocumentSnapshot.id).thenReturn(testNotePublic.id)
     `when`(mockDocumentSnapshot.getString("title")).thenReturn(testNotePublic.title)
     `when`(mockDocumentSnapshot.getTimestamp("date")).thenReturn(testNotePublic.date)
+    `when`(mockDocumentSnapshot.getTimestamp("lastModified"))
+        .thenReturn(testNotePublic.lastModified)
     `when`(mockDocumentSnapshot.getString("visibility"))
         .thenReturn(testNotePublic.visibility.toString())
     `when`(mockDocumentSnapshot.getString("courseCode"))
@@ -146,6 +163,8 @@ class NoteRepositoryFirestoreTest {
     `when`(mockDocumentSnapshot2.id).thenReturn(testNotePrivate.id)
     `when`(mockDocumentSnapshot2.getString("title")).thenReturn(testNotePrivate.title)
     `when`(mockDocumentSnapshot2.getTimestamp("date")).thenReturn(testNotePrivate.date)
+    `when`(mockDocumentSnapshot2.getTimestamp("lastModified"))
+        .thenReturn(testNotePrivate.lastModified)
     `when`(mockDocumentSnapshot2.getString("visibility"))
         .thenReturn(testNotePrivate.visibility.toString())
     `when`(mockDocumentSnapshot.getString("courseCode"))
@@ -164,6 +183,8 @@ class NoteRepositoryFirestoreTest {
     `when`(mockDocumentSnapshot3.id).thenReturn(testSubNotePublic.id)
     `when`(mockDocumentSnapshot3.getString("title")).thenReturn(testSubNotePublic.title)
     `when`(mockDocumentSnapshot3.getTimestamp("date")).thenReturn(testSubNotePublic.date)
+    `when`(mockDocumentSnapshot3.getTimestamp("lastModified"))
+        .thenReturn(testNotePrivate.lastModified)
     `when`(mockDocumentSnapshot3.getString("visibility"))
         .thenReturn(testSubNotePublic.visibility.toString())
     `when`(mockDocumentSnapshot3.getString("courseCode"))
@@ -183,6 +204,8 @@ class NoteRepositoryFirestoreTest {
     `when`(mockDocumentSnapshot4.id).thenReturn(testSubNotePrivate.id)
     `when`(mockDocumentSnapshot4.getString("title")).thenReturn(testSubNotePrivate.title)
     `when`(mockDocumentSnapshot4.getTimestamp("date")).thenReturn(testSubNotePrivate.date)
+    `when`(mockDocumentSnapshot4.getTimestamp("lastModified"))
+        .thenReturn(testNotePrivate.lastModified)
     `when`(mockDocumentSnapshot4.getString("visibility"))
         .thenReturn(testSubNotePrivate.visibility.toString())
     `when`(mockDocumentSnapshot4.getString("courseCode"))
@@ -204,6 +227,7 @@ class NoteRepositoryFirestoreTest {
     assert(testNote?.id == expectedNote.id)
     assert(testNote?.title == expectedNote.title)
     assert(testNote?.date == expectedNote.date)
+    assert(testNote?.lastModified == expectedNote.lastModified)
     assert(testNote?.visibility == expectedNote.visibility)
     assert(testNote?.userId == expectedNote.userId)
     assert(testNote?.folderId == expectedNote.folderId)
@@ -245,14 +269,14 @@ class NoteRepositoryFirestoreTest {
   }
 
   @Test
-  fun getNotesFrom_callsDocuments() {
+  fun getNotesFromUid_callsDocuments() = runTest {
     // Ensure the QuerySnapshot returns a list of mock DocumentSnapshots
     `when`(mockQuerySnapshot.documents)
         .thenReturn(listOf(mockDocumentSnapshot, mockDocumentSnapshot2))
 
     var receivedNotes: List<Note>? = null
-    noteRepositoryFirestore.getNotesFrom(
-        testNotePublic.userId, { receivedNotes = it }, { assert(false) })
+    noteRepositoryFirestore.getNotesFromUid(
+        testNotePublic.userId, { receivedNotes = it }, { assert(false) }, false)
     assertNotNull(receivedNotes)
 
     // Verify that the 'documents' field was accessed
@@ -260,24 +284,23 @@ class NoteRepositoryFirestoreTest {
   }
 
   @Test
-  fun getRootNotesFrom_callsDocuments() {
-
+  fun getRootNotesFromUid_callsDocuments() = runTest {
     `when`(mockQuerySnapshot.documents)
         .thenReturn(listOf(mockDocumentSnapshot, mockDocumentSnapshot2))
 
     var receivedNotes: List<Note>? = null
-    noteRepositoryFirestore.getRootNotesFrom(
-        testNotePublic.userId, { receivedNotes = it }, { assert(false) })
+    noteRepositoryFirestore.getRootNotesFromUid(
+        testNotePublic.userId, { receivedNotes = it }, { assert(false) }, false)
     assertNotNull(receivedNotes)
 
     verify(timeout(100)) { (mockQuerySnapshot).documents }
   }
 
   @Test
-  fun getNoteById_callsDocument() {
+  fun getNoteById_callsDocument() = runTest {
     `when`(mockDocumentReference.get()).thenReturn(Tasks.forResult(mockDocumentSnapshot))
 
-    noteRepositoryFirestore.getNoteById("1", {}, {})
+    noteRepositoryFirestore.getNoteById("1", {}, {}, false)
 
     shadowOf(Looper.getMainLooper()).idle()
 
@@ -285,12 +308,12 @@ class NoteRepositoryFirestoreTest {
   }
 
   @Test
-  fun addNote_callsCollection() {
+  fun addNote_callsCollection() = runTest {
     `when`(mockDocumentReference.set(any())).thenReturn(Tasks.forResult(null))
 
     // This test verifies that when we add a new note, the Firestore `collection()` method is
     // called.
-    noteRepositoryFirestore.addNote(testNotePublic, onSuccess = {}, onFailure = {})
+    noteRepositoryFirestore.addNote(testNotePublic, onSuccess = {}, onFailure = {}, false)
 
     shadowOf(Looper.getMainLooper()).idle() // Ensure all asynchronous operations complete
 
@@ -299,10 +322,10 @@ class NoteRepositoryFirestoreTest {
   }
 
   @Test
-  fun deleteNoteById_callsDocument() {
+  fun deleteNoteById_callsDocument() = runTest {
     `when`(mockDocumentReference.delete()).thenReturn(Tasks.forResult(null))
 
-    noteRepositoryFirestore.deleteNoteById("1", onSuccess = {}, onFailure = {})
+    noteRepositoryFirestore.deleteNoteById("1", onSuccess = {}, onFailure = {}, false)
 
     shadowOf(Looper.getMainLooper()).idle()
 
@@ -310,17 +333,17 @@ class NoteRepositoryFirestoreTest {
   }
 
   @Test
-  fun deleteNotesByUserId_callsDocuments() {
+  fun deleteNotesFromUid_callsDocuments() = runTest {
     `when`(mockQuerySnapshot.documents)
         .thenReturn(listOf(mockDocumentSnapshot3, mockDocumentSnapshot4))
 
-    noteRepositoryFirestore.deleteNotesByUserId("1", onSuccess = {}, onFailure = {})
+    noteRepositoryFirestore.deleteNotesFromUid("1", onSuccess = {}, onFailure = {}, false)
 
     verify(timeout(100)) { (mockQuerySnapshot).documents }
   }
 
   @Test
-  fun deleteNotesByUserId_fail() {
+  fun deleteNotesFromUid_fail() = runTest {
     val errorMessage = "TestError"
     `when`(mockQuerySnapshotTask.isSuccessful).thenReturn(false)
     `when`(mockQuerySnapshotTask.exception).thenReturn(Exception(errorMessage))
@@ -333,17 +356,17 @@ class NoteRepositoryFirestoreTest {
     `when`(mockQuerySnapshot.documents)
         .thenReturn(listOf(mockDocumentSnapshot3, mockDocumentSnapshot4))
     var exceptionThrown: Exception? = null
-    noteRepositoryFirestore.deleteNotesByUserId(
-        "1", onSuccess = {}, onFailure = { e -> exceptionThrown = e })
+    noteRepositoryFirestore.deleteNotesFromUid(
+        "1", onSuccess = {}, onFailure = { e -> exceptionThrown = e }, false)
     assertNotNull(exceptionThrown)
     assertEquals(errorMessage, exceptionThrown?.message)
   }
 
   @Test
-  fun updateNote_callsCollection() {
+  fun updateNote_callsCollection() = runTest {
     `when`(mockDocumentReference.set(any())).thenReturn(Tasks.forResult(null))
 
-    noteRepositoryFirestore.updateNote(testNotePublic, onSuccess = {}, onFailure = {})
+    noteRepositoryFirestore.updateNote(testNotePublic, onSuccess = {}, onFailure = {}, false)
 
     shadowOf(Looper.getMainLooper()).idle()
 
@@ -351,23 +374,23 @@ class NoteRepositoryFirestoreTest {
   }
 
   @Test
-  fun getNotesFromFolder_callsDocuments() {
+  fun getNotesFromFolder_callsDocuments() = runTest {
     `when`(mockQuerySnapshot.documents)
         .thenReturn(listOf(mockDocumentSnapshot3, mockDocumentSnapshot4))
 
     var receivedNotes: List<Note>? = null
     noteRepositoryFirestore.getNotesFromFolder(
-        testSubNotePublic.folderId!!, { receivedNotes = it }, { assert(false) })
+        testSubNotePublic.folderId!!, { receivedNotes = it }, { assert(false) }, false)
     assertNotNull(receivedNotes)
 
     verify(timeout(100)) { (mockQuerySnapshot).documents }
   }
 
   @Test
-  fun deleteNotesFromFolder_callsDocuments() {
+  fun deleteNotesFromFolder_callsDocuments() = runTest {
     `when`(mockDocumentReference.delete()).thenReturn(Tasks.forResult(null))
 
-    noteRepositoryFirestore.deleteNotesFromFolder("1", onSuccess = {}, onFailure = {})
+    noteRepositoryFirestore.deleteNotesFromFolder("1", onSuccess = {}, onFailure = {}, false)
 
     shadowOf(Looper.getMainLooper()).idle()
 
@@ -376,7 +399,7 @@ class NoteRepositoryFirestoreTest {
   }
 
   @Test
-  fun deleteNotesFromFolder_fails() {
+  fun deleteNotesFromFolder_fails() = runTest {
     val errorMessage = "TestError"
     `when`(mockQuerySnapshotTask.isSuccessful).thenReturn(false)
     `when`(mockQuerySnapshotTask.exception).thenReturn(Exception(errorMessage))
@@ -390,7 +413,7 @@ class NoteRepositoryFirestoreTest {
         .thenReturn(listOf(mockDocumentSnapshot3, mockDocumentSnapshot4))
     var exceptionThrown: Exception? = null
     noteRepositoryFirestore.deleteNotesFromFolder(
-        "1", onSuccess = {}, onFailure = { e -> exceptionThrown = e })
+        "1", onSuccess = {}, onFailure = { e -> exceptionThrown = e }, false)
     assertNotNull(exceptionThrown)
     assertEquals(errorMessage, exceptionThrown?.message)
   }
