@@ -46,7 +46,9 @@ fun SelectVisibility(
     noteUserId: String,
     onVisibilityChange: (Visibility) -> Unit
 ) {
-  var selectedIndex by remember { mutableIntStateOf(Visibility.entries.indexOf(visibility)) }
+  var selectedIndex by remember {
+    mutableIntStateOf(Visibility.entries.indexOf(visibility ?: Visibility.DEFAULT))
+  }
 
   // Track the current visibility based on index
   val currentVisibility = Visibility.entries[selectedIndex]
