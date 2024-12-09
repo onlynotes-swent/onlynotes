@@ -64,7 +64,7 @@ fun DeckSearchItem(deck: Deck, author: String, onClick: () -> Unit) {
                 modifier = Modifier.padding(end = 10.dp))
             Spacer(modifier = Modifier.weight(1f))
             Text(
-                text = "${deck.flashcardIds.size} "+stringResource(R.string.cards_min),
+                text = "${deck.flashcardIds.size} " + stringResource(R.string.cards_min),
                 style = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier.padding(start = 10.dp))
           }
@@ -110,7 +110,7 @@ fun EditDeckDialog(
           modifier = Modifier.padding(10.dp),
           horizontalAlignment = Alignment.CenterHorizontally,
           verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            Text("$mode "+stringResource(R.string.deck_maj), style = Typography.headlineSmall)
+            Text("$mode " + stringResource(R.string.deck_maj), style = Typography.headlineSmall)
             OutlinedTextField(
                 value = deckTitle.value,
                 onValueChange = { deckTitle.value = Deck.formatTitle(it) },

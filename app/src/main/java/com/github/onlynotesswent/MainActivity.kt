@@ -23,6 +23,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
+import com.github.onlynotesswent.model.authentication.Authenticator
 import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.flashcard.FlashcardViewModel
 import com.github.onlynotesswent.model.flashcard.deck.Deck
@@ -57,28 +58,27 @@ class MainActivity : ComponentActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
 
-    // Retrieve the server client ID from resources
-    val serverClientId = getString(R.string.default_web_client_id)
-
     val scanner = Scanner(this).apply { init() }
     val pictureTaker = PictureTaker(this).apply { init() }
 
     setContent {
       AppTheme {
-        Surface(modifier = Modifier.fillMaxSize()) {
-          OnlyNotesApp(scanner, pictureTaker, serverClientId)
-        }
+        Surface(modifier = Modifier.fillMaxSize()) { OnlyNotesApp(scanner, pictureTaker) }
       }
     }
   }
 }
 
 @Composable
-fun OnlyNotesApp(scanner: Scanner, pictureTaker: PictureTaker, serverClientId: String) {
+fun OnlyNotesApp(
+    scanner: Scanner,
+    pictureTaker: PictureTaker,
+) {
   val context = LocalContext.current
 
   val navController = rememberNavController()
   val navigationActions = NavigationActions(navController)
+  val authenticator = Authenticator(LocalContext.current)
 
   val userViewModel: UserViewModel = viewModel(factory = UserViewModel.Factory)
   val noteViewModel: NoteViewModel = viewModel(factory = NoteViewModel.factory(context))
@@ -94,7 +94,7 @@ fun OnlyNotesApp(scanner: Scanner, pictureTaker: PictureTaker, serverClientId: S
         startDestination = Screen.AUTH,
         route = Route.AUTH,
     ) {
-      composable(Screen.AUTH) { SignInScreen(navigationActions, userViewModel, serverClientId) }
+      composable(Screen.AUTH) { SignInScreen(navigationActions, userViewModel, authenticator) }
       composable(Screen.CREATE_USER) { CreateUserScreen(navigationActions, userViewModel) }
     }
 
@@ -185,10 +185,12 @@ fun OnlyNotesApp(scanner: Scanner, pictureTaker: PictureTaker, serverClientId: S
         route = Route.PROFILE,
     ) {
       composable(Screen.USER_PROFILE) {
-        UserProfileScreen(navigationActions, userViewModel, fileViewModel, notificationViewModel)
+        UserProfileScreen(
+            navigationActions, userViewModel, fileViewModel, notificationViewModel, authenticator)
       }
       composable(Screen.PUBLIC_PROFILE) {
-        PublicProfileScreen(navigationActions, userViewModel, fileViewModel, notificationViewModel)
+        PublicProfileScreen(
+            navigationActions, userViewModel, fileViewModel, notificationViewModel, authenticator)
         composable(Screen.PUBLIC_PROFILE) { navBackStackEntry ->
           val userId = navBackStackEntry.arguments?.getString("userId")
 
@@ -199,7 +201,7 @@ fun OnlyNotesApp(scanner: Scanner, pictureTaker: PictureTaker, serverClientId: S
             }
           }
           PublicProfileScreen(
-              navigationActions, userViewModel, fileViewModel, notificationViewModel)
+              navigationActions, userViewModel, fileViewModel, notificationViewModel, authenticator)
         }
       }
       composable(Screen.EDIT_PROFILE) {
@@ -209,7 +211,8 @@ fun OnlyNotesApp(scanner: Scanner, pictureTaker: PictureTaker, serverClientId: S
             pictureTaker,
             fileViewModel,
             noteViewModel,
-            folderViewModel)
+            folderViewModel,
+        )
       }
       composable(Screen.NOTIFICATIONS) {
         NotificationScreen(userViewModel, navigationActions, fileViewModel, notificationViewModel)

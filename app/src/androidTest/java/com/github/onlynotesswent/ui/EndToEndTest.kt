@@ -24,6 +24,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navigation
 import androidx.test.espresso.intent.Intents
+import com.github.onlynotesswent.model.authentication.Authenticator
 import com.github.onlynotesswent.model.file.FileRepository
 import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.flashcard.deck.DeckRepository
@@ -82,6 +83,8 @@ class EndToEndTest {
   private lateinit var fileViewModel: FileViewModel
   @Mock private lateinit var mockNotificationRepository: NotificationRepository
   private lateinit var notificationViewModel: NotificationViewModel
+
+  @Mock private lateinit var authenticator: Authenticator
 
   private lateinit var navController: NavHostController
   private lateinit var navigationActions: NavigationActions
@@ -204,11 +207,19 @@ class EndToEndTest {
                 ) {
                   composable(Screen.USER_PROFILE) {
                     UserProfileScreen(
-                        navigationActions, userViewModel, fileViewModel, notificationViewModel)
+                        navigationActions,
+                        userViewModel,
+                        fileViewModel,
+                        notificationViewModel,
+                        authenticator)
                   }
                   composable(Screen.PUBLIC_PROFILE) {
                     PublicProfileScreen(
-                        navigationActions, userViewModel, fileViewModel, notificationViewModel)
+                        navigationActions,
+                        userViewModel,
+                        fileViewModel,
+                        notificationViewModel,
+                        authenticator)
                   }
                   composable(Screen.EDIT_PROFILE) {
                     EditProfileScreen(

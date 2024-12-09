@@ -97,7 +97,7 @@ fun EditProfileScreen(
     pictureTaker: PictureTaker,
     fileViewModel: FileViewModel,
     noteViewModel: NoteViewModel,
-    folderViewModel: FolderViewModel
+    folderViewModel: FolderViewModel,
 ) {
   val user = userViewModel.currentUser.collectAsState()
 

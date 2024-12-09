@@ -102,30 +102,23 @@ fun FlashcardViewItem(
         mode = "Edit")
   }
 
-  Card(modifier = Modifier
-      .testTag("flashcardItem--${flashcard.id}")
-      .fillMaxWidth()) {
+  Card(modifier = Modifier.testTag("flashcardItem--${flashcard.id}").fillMaxWidth()) {
     Box(contentAlignment = Alignment.CenterStart, modifier = Modifier.padding(10.dp)) {
       if (flashcard.isMCQ()) {
         Text(
             stringResource(R.string.mcq),
             style = Typography.bodyLarge,
             fontStyle = FontStyle.Italic,
-            modifier = Modifier
-                .align(Alignment.TopStart)
-                .testTag("flashcardMCQ--${flashcard.id}"))
+            modifier = Modifier.align(Alignment.TopStart).testTag("flashcardMCQ--${flashcard.id}"))
       }
       // Show front and options icon
       Box(modifier = Modifier.align(Alignment.TopEnd)) {
         Icon(
             modifier =
-            Modifier
-                .testTag("flashcardOptions--${flashcard.id}")
-                .clickable(
-                    enabled = belongsToUser
-                ) {
-                    dropdownMenuExpanded.value = true
-                },
+                Modifier.testTag("flashcardOptions--${flashcard.id}").clickable(
+                    enabled = belongsToUser) {
+                      dropdownMenuExpanded.value = true
+                    },
             imageVector = Icons.Filled.MoreVert,
             contentDescription = null,
             tint = MaterialTheme.colorScheme.onPrimaryContainer)
@@ -142,9 +135,8 @@ fun FlashcardViewItem(
           horizontalAlignment = Alignment.CenterHorizontally,
           verticalArrangement = Arrangement.spacedBy(10.dp),
           modifier =
-          Modifier
-              .testTag("flashcardItemColumn")
-              .semantics(mergeDescendants = true, properties = {})) {
+              Modifier.testTag("flashcardItemColumn")
+                  .semantics(mergeDescendants = true, properties = {})) {
             Text(
                 flashcard.front,
                 style = Typography.bodyMedium,
@@ -156,9 +148,7 @@ fun FlashcardViewItem(
                 LoadingIndicator(
                     stringResource(R.string.image_is_being_downloaded),
                     modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .testTag("flashcardImageLoading--${flashcard.id}"),
+                        Modifier.fillMaxWidth().testTag("flashcardImageLoading--${flashcard.id}"),
                     loadingIndicatorSize = 24.dp,
                     spacerHeight = 5.dp,
                     style = MaterialTheme.typography.bodySmall)
@@ -172,14 +162,10 @@ fun FlashcardViewItem(
                 Image(
                     painter = rememberAsyncImagePainter(it),
                     contentDescription = "Flashcard image",
-                    modifier = Modifier
-                        .height(100.dp)
-                        .testTag("flashcardImage--${flashcard.id}"))
+                    modifier = Modifier.height(100.dp).testTag("flashcardImage--${flashcard.id}"))
               }
             }
-            HorizontalDivider(modifier = Modifier
-                .height(5.dp)
-                .padding(5.dp))
+            HorizontalDivider(modifier = Modifier.height(5.dp).padding(5.dp))
             // Show back
             Text(
                 flashcard.back,
@@ -218,9 +204,7 @@ fun FlashcardDialog(
   var showFakeBacksDetails = remember { mutableStateOf(false) }
 
   Dialog(onDismissRequest = onDismissRequest) {
-    Card(modifier = Modifier
-        .testTag("flashcardDialog--$mode")
-        .padding(5.dp)) {
+    Card(modifier = Modifier.testTag("flashcardDialog--$mode").padding(5.dp)) {
       if (flashcard.value == null && mode == stringResource(R.string.edit_maj)) {
         LoadingIndicator(stringResource(R.string.loading_flashcard))
       } else {
@@ -228,12 +212,12 @@ fun FlashcardDialog(
             modifier = Modifier.padding(20.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(10.dp)) {
-              Text("$mode "+stringResource(R.string.flashcard_maj), style = Typography.headlineSmall)
+              Text(
+                  "$mode " + stringResource(R.string.flashcard_maj),
+                  style = Typography.headlineSmall)
               // Front
               OutlinedTextField(
-                  modifier = Modifier
-                      .fillMaxWidth()
-                      .testTag("frontTextField"),
+                  modifier = Modifier.fillMaxWidth().testTag("frontTextField"),
                   value = front.value,
                   onValueChange = { front.value = it },
                   label = { Text(stringResource(R.string.front)) })
@@ -297,9 +281,7 @@ fun FlashcardDialog(
                                 onSuccess = { file -> imageUri.value = file.absolutePath })
                             LoadingIndicator(
                                 stringResource(R.string.image_is_being_downloaded),
-                                Modifier
-                                    .fillMaxWidth()
-                                    .testTag("imageLoadingIndicator"),
+                                Modifier.fillMaxWidth().testTag("imageLoadingIndicator"),
                                 loadingIndicatorSize = 24.dp,
                                 spacerHeight = 5.dp)
                           }
@@ -307,7 +289,9 @@ fun FlashcardDialog(
                           if (flashcard.value?.hasImage != true &&
                               imageUri.value == null &&
                               !hasImageBeenChanged.value) {
-                            Text(stringResource(R.string.add_an_image), style = Typography.bodyMedium)
+                            Text(
+                                stringResource(R.string.add_an_image),
+                                style = Typography.bodyMedium)
                           }
                           // Image
                           imageUri.value?.let {
@@ -319,15 +303,11 @@ fun FlashcardDialog(
                         }
                   }
 
-              HorizontalDivider(modifier = Modifier
-                  .height(5.dp)
-                  .padding(top = 10.dp))
+              HorizontalDivider(modifier = Modifier.height(5.dp).padding(top = 10.dp))
 
               // Back
               OutlinedTextField(
-                  modifier = Modifier
-                      .fillMaxWidth()
-                      .testTag("backTextField"),
+                  modifier = Modifier.fillMaxWidth().testTag("backTextField"),
                   value = back.value,
                   onValueChange = { back.value = it },
                   label = { Text(stringResource(R.string.back)) })
@@ -335,17 +315,16 @@ fun FlashcardDialog(
               // Fake backs
               Box(
                   modifier =
-                  Modifier
-                      .fillMaxWidth()
-                      .testTag("FakeBacksBox")
-                      .clickable { showFakeBacksDetails.value = !showFakeBacksDetails.value }
-                      .border(
-                          1.dp,
-                          OutlinedTextFieldDefaults.colors().unfocusedPlaceholderColor,
-                          OutlinedTextFieldDefaults.shape
-                      )) {
+                      Modifier.fillMaxWidth()
+                          .testTag("FakeBacksBox")
+                          .clickable { showFakeBacksDetails.value = !showFakeBacksDetails.value }
+                          .border(
+                              1.dp,
+                              OutlinedTextFieldDefaults.colors().unfocusedPlaceholderColor,
+                              OutlinedTextFieldDefaults.shape)) {
                     val fakeBacksText =
-                        if (fakeBacks.value.isEmpty()) stringResource(R.string.add_fake_options_for_mcq)
+                        if (fakeBacks.value.isEmpty())
+                            stringResource(R.string.add_fake_options_for_mcq)
                         else stringResource(R.string.fake_options_for_mcq)
                     Text(
                         text = fakeBacksText,
@@ -370,16 +349,12 @@ fun FlashcardDialog(
                         state =
                             rememberLazyListState(
                                 initialFirstVisibleItemIndex = fakeBacks.value.size),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .heightIn(max = 250.dp),
+                        modifier = Modifier.fillMaxWidth().heightIn(max = 250.dp),
                         contentPadding = PaddingValues(horizontal = 10.dp),
                         horizontalAlignment = Alignment.CenterHorizontally) {
                           items(fakeBacks.value.size) { index ->
                             Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .animateItem(),
+                                modifier = Modifier.fillMaxWidth().animateItem(),
                                 verticalAlignment = Alignment.CenterVertically) {
                                   OutlinedTextField(
                                       value = fakeBacks.value[index],
@@ -389,16 +364,14 @@ fun FlashcardDialog(
                                               set(index, newValue)
                                             }
                                       },
-                                      label = { Text(
-                                          stringResource(
-                                              R.string.fake_option_i,
-                                              index + 1
-                                          )) },
-                                      placeholder = { Text(stringResource(R.string.enter_fake_option_text)) },
+                                      label = {
+                                        Text(stringResource(R.string.fake_option_i, index + 1))
+                                      },
+                                      placeholder = {
+                                        Text(stringResource(R.string.enter_fake_option_text))
+                                      },
                                       modifier =
-                                      Modifier
-                                          .weight(1f)
-                                          .testTag("fakeBackTextField--$index"))
+                                          Modifier.weight(1f).testTag("fakeBackTextField--$index"))
                                   IconButton(
                                       modifier = Modifier.testTag("removeFakeBack--$index"),
                                       onClick = {
