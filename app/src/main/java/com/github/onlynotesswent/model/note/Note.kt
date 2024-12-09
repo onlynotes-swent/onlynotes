@@ -175,10 +175,10 @@ data class Note(
     }
 
     /**
-     * Checks if the note is owned by the user with the given Id.
+     * Checks if the comment is owned by the user with the given Id.
      *
      * @param uid The Id of the user to check.
-     * @return `true` if the note is owned by the user; `false` otherwise.
+     * @return `true` if the comment is owned by the user; `false` otherwise.
      */
     fun isOwner(uid: String): Boolean {
       return userId == uid
