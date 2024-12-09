@@ -53,7 +53,6 @@ class EditProfileScreenTest {
   @Mock private lateinit var mockFileRepository: FileRepository
   @Mock private lateinit var mockFolderRepository: FolderRepository
   @Mock private lateinit var mockNotificationRepository: NotificationRepository
-
   private lateinit var noteViewModel: NoteViewModel
   private lateinit var userViewModel: UserViewModel
   private lateinit var fileViewModel: FileViewModel
