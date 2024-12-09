@@ -101,6 +101,7 @@ fun FolderContentScreen(
           Screen.FOLDER_CONTENTS.replace(
               oldValue = "{folderId}", newValue = folder.value!!.parentFolderId!!))
     } else {
+      folderViewModel.clearSelectedFolder()
       navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
     }
   }
@@ -138,6 +139,10 @@ fun FolderContentScreen(
               context = context,
               folder = folder.value)
         }) { paddingValues ->
+          Text(
+              text = "Selected Folder: ${folderViewModel.selectedFolder.value?.name ?: "None"}",
+              style = MaterialTheme.typography.bodySmall)
+
           FolderContentScreenGrid(
               paddingValues = paddingValues,
               userFolderNotes = userFolderNotes,
@@ -148,6 +153,7 @@ fun FolderContentScreen(
               context = context,
               navigationActions = navigationActions)
           // Logic to show the dialog to update a folder
+
           if (showUpdateDialog) {
             FolderDialog(
                 onDismiss = { showUpdateDialog = false },
@@ -159,7 +165,8 @@ fun FolderContentScreen(
                             name = name,
                             userId = folder.value!!.userId,
                             parentFolderId = folder.value!!.parentFolderId,
-                            visibility = vis))
+                            visibility = vis,
+                            lastModified = Timestamp.now()))
                     updatedName = name
                   } else {
                     Toast.makeText(
@@ -172,6 +179,7 @@ fun FolderContentScreen(
                 oldName = updatedName,
                 oldVisibility = folder.value!!.visibility)
           }
+
           if (showCreateNoteDialog) {
             NoteDialog(
                 onDismiss = { showCreateNoteDialog = false },
@@ -181,6 +189,7 @@ fun FolderContentScreen(
                           id = noteViewModel.getNewUid(),
                           title = newName,
                           date = Timestamp.now(),
+                          lastModified = Timestamp.now(),
                           visibility = visibility,
                           noteCourse = Course.EMPTY,
                           userId = userViewModel.currentUser.value!!.uid,
@@ -205,12 +214,14 @@ fun FolderContentScreen(
                             name = name,
                             userId = currentUser.value!!.uid,
                             parentFolderId = parentFolderId.value,
-                            visibility = visibility))
+                            visibility = visibility,
+                            lastModified = Timestamp.now()))
                     if (parentFolderId.value != null) {
                       navigationActions.navigateTo(
                           Screen.FOLDER_CONTENTS.replace(
                               oldValue = "{folderId}", newValue = folderId))
                     } else {
+                      folderViewModel.clearSelectedFolder()
                       navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
                     }
                   } else {
@@ -297,7 +308,12 @@ fun FolderContentTopBar(
       },
       navigationIcon = {
         IconButton(
-            onClick = { navigationActions.goBackFolderContents(folder?.parentFolderId) },
+            onClick = {
+              if (folder?.parentFolderId == null) {
+                folderViewModel.clearSelectedFolder()
+              }
+              navigationActions.goBackFolderContents(folder?.parentFolderId)
+            },
             modifier = Modifier.testTag("goBackButton")) {
               Icon(imageVector = Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "Back")
             }
@@ -365,6 +381,7 @@ fun FolderContentTopBar(
                         Screen.FOLDER_CONTENTS.replace(
                             oldValue = "{folderId}", newValue = parentFolderId))
                   } else {
+                    folderViewModel.clearSelectedFolder()
                     navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
                   }
 

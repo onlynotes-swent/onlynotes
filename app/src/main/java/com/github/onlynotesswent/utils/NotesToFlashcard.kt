@@ -292,7 +292,8 @@ class NotesToFlashcard(
                   userId = subfolder.userId,
                   visibility = subfolder.visibility,
                   parentFolderId = parentDeckFolder?.id,
-                  isDeckFolder = true)
+                  isDeckFolder = true,
+                  lastModified = Timestamp.now())
 
           folderViewModel.addFolder(
               newDeckFolder, onSuccess = { onSuccess(newDeckFolder) }, onFailure = onFailure)
@@ -315,7 +316,8 @@ class NotesToFlashcard(
                       userId = subfolder.userId,
                       visibility = subfolder.visibility,
                       parentFolderId = parentDeckFolder.id,
-                      isDeckFolder = true)
+                      isDeckFolder = true,
+                      lastModified = Timestamp.now())
               folderViewModel.addFolder(
                   newDeckFolder, onSuccess = { onSuccess(newDeckFolder) }, onFailure = onFailure)
             }

@@ -24,8 +24,31 @@ interface FolderRepository {
    * @param folder The folder to create.
    * @param onSuccess Callback to be invoked when the folder is created successfully.
    * @param onFailure Callback to be invoked if an error occurs.
+   * @param useCache Whether to update data from cache. Should be true only if userId of the folder
+   *   is the current user.
    */
-  fun addFolder(folder: Folder, onSuccess: () -> Unit, onFailure: (Exception) -> Unit)
+  suspend fun addFolder(
+      folder: Folder,
+      onSuccess: () -> Unit,
+      onFailure: (Exception) -> Unit,
+      useCache: Boolean
+  )
+
+  /**
+   * Adds a list of folders.
+   *
+   * @param folders The list of folders to add.
+   * @param onSuccess Callback to be invoked when the folders are added successfully.
+   * @param onFailure Callback to be invoked if an error occurs.
+   * @param useCache Whether to update data from cache. Should be true only if userId of the folders
+   *   is the current user.
+   */
+  suspend fun addFolders(
+      folders: List<Folder>,
+      onSuccess: () -> Unit,
+      onFailure: (Exception) -> Unit,
+      useCache: Boolean
+  )
 
   /**
    * Deletes a folder by its ID.
@@ -33,8 +56,15 @@ interface FolderRepository {
    * @param folderId The ID of the folder to delete.
    * @param onSuccess Callback to be invoked when the folder is deleted successfully.
    * @param onFailure Callback to be invoked if an error occurs.
+   * @param useCache Whether to update data from cache. Should be true only if userId of the folder
+   *   is the current user.
    */
-  fun deleteFolderById(folderId: String, onSuccess: () -> Unit, onFailure: (Exception) -> Unit)
+  suspend fun deleteFolderById(
+      folderId: String,
+      onSuccess: () -> Unit,
+      onFailure: (Exception) -> Unit,
+      useCache: Boolean
+  )
 
   /**
    * Deletes all folders belonging to a user.
@@ -42,18 +72,31 @@ interface FolderRepository {
    * @param userId The ID of the user that owns the folders.
    * @param onSuccess Callback to be invoked if the folders are deleted successfully.
    * @param onFailure Callback to be invoked if an error occurs.
+   * @param useCache Whether to update data from cache. Should be true only if [userId] is the
+   *   current user.
    */
-  fun deleteFoldersByUserId(userId: String, onSuccess: () -> Unit, onFailure: (Exception) -> Unit)
+  suspend fun deleteFoldersFromUid(
+      userId: String,
+      onSuccess: () -> Unit,
+      onFailure: (Exception) -> Unit,
+      useCache: Boolean
+  )
 
-  // TODO not sure if this is needed
   /**
    * Retrieves a folder by its ID.
    *
    * @param folderId The ID of the folder to retrieve.
    * @param onSuccess Callback to be invoked with the retrieved folder.
    * @param onFailure Callback to be invoked if an error occurs.
+   * @param useCache Whether to update data from cache. Should be true only if userId of the folder
+   *   is the current user.
    */
-  fun getFolderById(folderId: String, onSuccess: (Folder) -> Unit, onFailure: (Exception) -> Unit)
+  suspend fun getFolderById(
+      folderId: String,
+      onSuccess: (Folder) -> Unit,
+      onFailure: (Exception) -> Unit,
+      useCache: Boolean
+  )
 
   /**
    * Retrieves all folders owned by a user.
@@ -61,11 +104,14 @@ interface FolderRepository {
    * @param userId The ID of the user to retrieve folders for.
    * @param onSuccess Callback to be invoked with the retrieved folders.
    * @param onFailure Callback to be invoked if an error occurs.
+   * @param useCache Whether to update data from cache. Should be true only if [userId] is the
+   *   current user.
    */
-  fun getFoldersFromUserId(
+  suspend fun getFoldersFromUserId(
       userId: String,
       onSuccess: (List<Folder>) -> Unit,
-      onFailure: (Exception) -> Unit
+      onFailure: (Exception) -> Unit,
+      useCache: Boolean
   )
 
   /**
@@ -74,11 +120,14 @@ interface FolderRepository {
    * @param userId The ID of the user to retrieve folders for.
    * @param onSuccess Callback to be invoked with the retrieved folders.
    * @param onFailure Callback to be invoked if an error occurs.
+   * @param useCache Whether to update data from cache. Should be true only if [userId] is the
+   *   current user.
    */
-  fun getRootNoteFoldersFromUserId(
+  suspend fun getRootNoteFoldersFromUserId(
       userId: String,
       onSuccess: (List<Folder>) -> Unit,
-      onFailure: (Exception) -> Unit
+      onFailure: (Exception) -> Unit,
+      useCache: Boolean
   )
 
   /**
@@ -87,11 +136,14 @@ interface FolderRepository {
    * @param userId The ID of the user to retrieve decks for.
    * @param onSuccess Callback to be invoked with the retrieved decks.
    * @param onFailure Callback to be invoked if an error occurs.
+   * @param useCache Whether to update data from cache. Should be true only if [userId] is the
+   *   current user.
    */
-  fun getRootDeckFoldersFromUserId(
+  suspend fun getRootDeckFoldersFromUserId(
       userId: String,
       onSuccess: (List<Folder>) -> Unit,
-      onFailure: (Exception) -> Unit
+      onFailure: (Exception) -> Unit,
+      useCache: Boolean
   )
 
   /**
@@ -102,13 +154,16 @@ interface FolderRepository {
    * @param onFolderNotFound Callback to be invoked if the folder is not found.
    * @param onSuccess Callback to be invoked with the retrieved folders.
    * @param onFailure Callback to be invoked if an error occurs.
+   * @param useCache Whether to update data from cache. Should be true only if userId of the folder
+   *   is the current user.
    */
-  fun getDeckFoldersByName(
+  suspend fun getDeckFoldersByName(
       name: String,
       userId: String,
       onFolderNotFound: () -> Unit,
       onSuccess: (List<Folder>) -> Unit,
-      onFailure: (Exception) -> Unit
+      onFailure: (Exception) -> Unit,
+      useCache: Boolean
   )
 
   /**
@@ -117,8 +172,15 @@ interface FolderRepository {
    * @param folder The folder with updated information.
    * @param onSuccess Callback to be invoked when the update is successful.
    * @param onFailure Callback to be invoked if an error occurs.
+   * @param useCache Whether to update data from cache. Should be true only if userId of the folder
+   *   is the current user.
    */
-  fun updateFolder(folder: Folder, onSuccess: () -> Unit, onFailure: (Exception) -> Unit)
+  suspend fun updateFolder(
+      folder: Folder,
+      onSuccess: () -> Unit,
+      onFailure: (Exception) -> Unit,
+      useCache: Boolean
+  )
 
   /**
    * Retrieves all folders that are children of a parent folder.
@@ -126,11 +188,14 @@ interface FolderRepository {
    * @param parentFolderId The ID of the parent folder.
    * @param onSuccess Callback to be invoked with the retrieved folders.
    * @param onFailure Callback to be invoked if an error occurs.
+   * @param useCache Whether to update data from cache. Should be true only if userId of the folder
+   *   is the current user.
    */
-  fun getSubFoldersOf(
+  suspend fun getSubFoldersOf(
       parentFolderId: String,
       onSuccess: (List<Folder>) -> Unit,
-      onFailure: (Exception) -> Unit
+      onFailure: (Exception) -> Unit,
+      useCache: Boolean
   )
 
   /**
@@ -148,11 +213,14 @@ interface FolderRepository {
    * @param noteViewModel The ViewModel that provides the list of notes to delete.
    * @param onSuccess Callback to be invoked when the subfolders are deleted successfully.
    * @param onFailure Callback to be invoked if an error occurs.
+   * @param useCache Whether to update data from cache. Should be true only if userId of the folder
+   *   is the current user.
    */
-  fun deleteFolderContents(
+  suspend fun deleteFolderContents(
       folder: Folder,
       noteViewModel: NoteViewModel,
       onSuccess: () -> Unit,
-      onFailure: (Exception) -> Unit
+      onFailure: (Exception) -> Unit,
+      useCache: Boolean
   )
 }

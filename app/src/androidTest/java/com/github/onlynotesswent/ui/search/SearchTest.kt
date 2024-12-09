@@ -50,6 +50,7 @@ class SearchScreenTest {
           id = "",
           title = "Note 1",
           date = Timestamp.now(),
+          lastModified = Timestamp.now(),
           visibility = Visibility.PUBLIC,
           userId = "1",
           noteCourse = Course("CS-100", "Sample Course 1", 2024, "path"),
@@ -59,6 +60,7 @@ class SearchScreenTest {
           id = "1",
           title = "Note 2",
           date = Timestamp.now(),
+          lastModified = Timestamp.now(),
           visibility = Visibility.PUBLIC,
           userId = "2",
           noteCourse = Course("CS-200", "Sample Course 2", 2024, "path"),
@@ -90,6 +92,7 @@ class SearchScreenTest {
           name = "Folder 1",
           parentFolderId = null,
           userId = "1",
+          lastModified = Timestamp.now(),
       )
 
   private val testFolder2 =
@@ -98,6 +101,7 @@ class SearchScreenTest {
           name = "Folder 2",
           parentFolderId = null,
           userId = "2",
+          lastModified = Timestamp.now(),
       )
 
   private val testFolders = listOf(testFolder1, testFolder2)

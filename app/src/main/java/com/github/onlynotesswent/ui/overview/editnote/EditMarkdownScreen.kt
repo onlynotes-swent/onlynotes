@@ -101,7 +101,15 @@ fun EditMarkdownScreen(
           markdownContent = downloadedFile
           state.setMarkdown(markdownContent?.readText() ?: "")
         },
-        onFileNotFound = {},
+        onFileNotFound = {
+          val file =
+              File(context.cacheDir, "${selectedNote!!.id}.md").apply {
+                if (!exists()) createNewFile()
+              }
+          file.writeText("") // Write empty content to the file
+          markdownContent = file
+          state.setMarkdown("")
+        },
         onFailure = { exception ->
           Toast.makeText(context, "Error downloading file: ${exception.message}", Toast.LENGTH_LONG)
               .show()

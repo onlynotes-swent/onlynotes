@@ -23,6 +23,7 @@ import com.google.gson.JsonSyntaxException
 import java.io.File
 import java.io.IOException
 import java.util.concurrent.atomic.AtomicInteger
+import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
@@ -78,6 +79,7 @@ class NotesToFlashcardTest {
           name = "folder1",
           userId = "1",
           visibility = Visibility.DEFAULT,
+          lastModified = Timestamp.now(),
       )
 
   private val testSubfolder =
@@ -87,6 +89,7 @@ class NotesToFlashcardTest {
           userId = "1",
           parentFolderId = "1",
           visibility = Visibility.DEFAULT,
+          lastModified = Timestamp.now(),
       )
 
   private val testNote1 =
@@ -94,6 +97,7 @@ class NotesToFlashcardTest {
           id = "1",
           title = "title",
           date = Timestamp.now(),
+          lastModified = Timestamp.now(),
           visibility = Visibility.DEFAULT,
           userId = "1",
           folderId = testFolder.id,
@@ -109,7 +113,7 @@ class NotesToFlashcardTest {
           userId = "1",
           folderId = testFolder.id,
           noteCourse = Course("CS-100", "Sample Course", 2024, "path"),
-      )
+          lastModified = Timestamp.now())
 
   private val testNote3 =
       Note(
@@ -120,7 +124,7 @@ class NotesToFlashcardTest {
           userId = "1",
           folderId = testSubfolder.id,
           noteCourse = Course("CS-100", "Sample Course", 2024, "path"),
-      )
+          lastModified = Timestamp.now())
 
   private lateinit var notesToFlashcard: NotesToFlashcard
 
@@ -209,13 +213,14 @@ class NotesToFlashcardTest {
   }
 
   @Test
-  fun convertFolderToDecks() {
+  fun convertFolderToDecks() = runTest {
     // Initialize the view models, repositories and saved objects
     savedFlashcards.clear()
     savedDecks.clear()
     folderViewModel.selectedFolder(testFolder)
 
-    `when`(mockFolderRepository.getSubFoldersOf(any(), any(), any())).thenAnswer { invocation ->
+    `when`(mockFolderRepository.getSubFoldersOf(any(), any(), any(), any())).thenAnswer { invocation
+      ->
       val parentFolderId = invocation.getArgument<String>(0)
       val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(1)
       if (parentFolderId == testFolder.id) {
@@ -226,7 +231,8 @@ class NotesToFlashcardTest {
     }
     folderViewModel.getSubFoldersOf(testFolder.id)
 
-    `when`(mockNoteRepository.getNotesFromFolder(any(), any(), any())).thenAnswer { invocation ->
+    `when`(mockNoteRepository.getNotesFromFolder(any(), any(), any(), any())).thenAnswer {
+        invocation ->
       val folderId = invocation.getArgument<String>(0)
       val onSuccess = invocation.getArgument<(List<Note>) -> Unit>(1)
       when (folderId) {
@@ -248,13 +254,13 @@ class NotesToFlashcardTest {
     }
 
     val savedFolders = mutableListOf<Folder>()
-    `when`(mockFolderRepository.addFolder(any(), any(), any())).thenAnswer { invocation ->
+    `when`(mockFolderRepository.addFolder(any(), any(), any(), any())).thenAnswer { invocation ->
       savedFolders.add(invocation.getArgument(0))
       val onSuccess = invocation.getArgument<() -> Unit>(1)
       onSuccess()
     }
 
-    `when`(mockFolderRepository.getDeckFoldersByName(any(), any(), any(), any(), any()))
+    `when`(mockFolderRepository.getDeckFoldersByName(any(), any(), any(), any(), any(), any()))
         .thenAnswer { invocation ->
           val onFolderNotFound = invocation.getArgument<() -> Unit>(2)
           onFolderNotFound()

@@ -88,4 +88,13 @@ class NotificationViewModel(private val repository: NotificationRepository) : Vi
     repository.updateNotification(
         notification = notification, onSuccess = { onSuccess() }, onFailure = { onFailure(it) })
   }
+
+  /**
+   * get a new notification id
+   *
+   * @return new uid
+   */
+  fun getNewUid(): String {
+    return repository.getNewUid()
+  }
 }

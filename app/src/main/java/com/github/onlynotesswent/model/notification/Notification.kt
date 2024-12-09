@@ -8,8 +8,10 @@ data class Notification(
     val receiverId: String,
     val timestamp: Timestamp,
     val read: Boolean,
-    val type: NotificationType = NotificationType.DEFAULT
+    val type: NotificationType = NotificationType.DEFAULT,
+    val content: String? = null
 ) {
+
   enum class NotificationType {
     FOLLOW_REQUEST,
     FOLLOW_REQUEST_ACCEPTED,
@@ -22,5 +24,13 @@ data class Notification(
     MENTION,
     SYSTEM,
     DEFAULT
+  }
+
+  companion object {
+    private const val CHAT_MESSAGE_MAX_LENGTH = 140
+
+    fun formatChatMessage(text: String): String {
+      return text.trimStart().take(CHAT_MESSAGE_MAX_LENGTH)
+    }
   }
 }
