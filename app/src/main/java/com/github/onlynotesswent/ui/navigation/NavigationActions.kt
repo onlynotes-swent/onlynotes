@@ -34,6 +34,7 @@ object Screen {
   const val NOTIFICATIONS = "Notifications Screen"
   const val FOLDER_CONTENTS = "Folder Contents Screen/{folderId}"
   const val DECK_MENU = "Deck Menu Screen/{deckId}"
+  const val DECK_PLAY = "Deck Play Screen/{deckId}/{mode}"
 }
 
 data class Destination(

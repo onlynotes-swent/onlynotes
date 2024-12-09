@@ -39,7 +39,9 @@ import com.github.onlynotesswent.model.common.Visibility
  */
 @Composable
 fun SelectVisibility(visibility: Visibility?, onVisibilityChange: (Visibility) -> Unit) {
-  var selectedIndex by remember { mutableIntStateOf(Visibility.entries.indexOf(visibility)) }
+  var selectedIndex by remember {
+    mutableIntStateOf(Visibility.entries.indexOf(visibility ?: Visibility.DEFAULT))
+  }
 
   // Track the current visibility based on index
   val currentVisibility = Visibility.entries[selectedIndex]
