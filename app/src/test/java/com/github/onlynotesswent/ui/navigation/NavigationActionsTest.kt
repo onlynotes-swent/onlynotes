@@ -39,8 +39,15 @@ class NavigationActionsTest {
   @Mock private lateinit var mockNavHostController: NavHostController
   private lateinit var navigationActions: NavigationActions
 
-  private val folder = Folder("1", "folderName", "1")
-  private val subfolder = Folder("2", "subfolderName", "1", "1")
+  private val folder =
+      Folder(id = "1", name = "folderName", userId = "1", lastModified = Timestamp.now())
+  private val subfolder =
+      Folder(
+          id = "2",
+          name = "subfolderName",
+          userId = "1",
+          parentFolderId = "1",
+          lastModified = Timestamp.now())
 
   private val user =
       User(
