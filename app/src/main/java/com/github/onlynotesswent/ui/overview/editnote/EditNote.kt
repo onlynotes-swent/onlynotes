@@ -197,15 +197,19 @@ fun EditNoteGeneralTopBar(
   TopAppBar(
       title = {
         Row(
-            modifier =
-                Modifier.fillMaxWidth()
-                    .padding(end = if (currentUser?.uid != note?.userId) 50.dp else 0.dp),
+            modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center) {
+              if (currentUser?.uid != note?.userId) {
+                Spacer(modifier = Modifier.weight(1.5f))
+              }
               Text(
                   if (currentUser?.uid == note?.userId) "Edit Note" else "View Note",
                   color = MaterialTheme.colorScheme.onSurface,
                   modifier = Modifier.testTag("editNoteTitle"))
+              if (currentUser?.uid != note?.userId) {
+                Spacer(modifier = Modifier.weight(2f))
+              }
             }
       },
       navigationIcon = {
@@ -283,6 +287,8 @@ fun NoteSection(
 ) {
   var showCourseDetails by remember { mutableStateOf(false) }
 
+  val isEnabled = note.isOwner(currentUserId)
+
   Column(modifier = Modifier.fillMaxWidth()) {
     Text(text = "Title", style = MaterialTheme.typography.titleMedium)
     NoteDataTextField(
@@ -293,7 +299,7 @@ fun NoteSection(
         modifier = Modifier.fillMaxWidth().testTag("EditTitle textField"),
         enabled = note.isOwner(currentUserId),
         trailingIcon = {
-          IconButton(onClick = { onNoteTitleChange("") }, enabled = note.isOwner(currentUserId)) {
+          IconButton(onClick = { onNoteTitleChange("") }, enabled = isEnabled) {
             Icon(Icons.Outlined.Clear, contentDescription = "Clear Title")
           }
         })
@@ -359,7 +365,7 @@ fun NoteSection(
                 label = "Course Code",
                 placeholder = "Set the course code for the note",
                 modifier = Modifier.fillMaxWidth().testTag("EditCourseCode textField"),
-                enabled = note.isOwner(currentUserId))
+                enabled = isEnabled)
 
             // Course Name
             NoteDataTextField(
@@ -368,7 +374,7 @@ fun NoteSection(
                 label = "Course Name",
                 placeholder = "Set the course name for the note",
                 modifier = Modifier.fillMaxWidth().testTag("EditCourseName textField"),
-                enabled = note.isOwner(currentUserId))
+                enabled = isEnabled)
 
             // Course Year
             NoteDataTextField(
@@ -377,7 +383,7 @@ fun NoteSection(
                 label = "Course Year",
                 placeholder = "Set the course year for the note",
                 modifier = Modifier.fillMaxWidth().testTag("EditCourseYear textField"),
-                enabled = note.isOwner(currentUserId))
+                enabled = isEnabled)
           }
         }
   }
@@ -412,7 +418,6 @@ fun ErrorScreen(errorText: String) {
  * @param courseYear The updated course year of the note.
  * @param noteViewModel The ViewModel that provides the current note to be edited and handles note
  *   updates.
- *     @param currentUserId The Id of the current user.
  */
 @Composable
 fun SaveButton(

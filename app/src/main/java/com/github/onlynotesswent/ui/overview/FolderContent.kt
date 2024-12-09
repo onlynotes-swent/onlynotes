@@ -280,17 +280,18 @@ fun FolderContentTopBar(
           TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface),
       title = {
         Row(
-            modifier =
-                Modifier.fillMaxWidth()
-                    .padding(end = if (currentUser.value?.uid != folder?.userId) 50.dp else 0.dp)
-                    .testTag("folderContentTitle"),
+            modifier = Modifier.fillMaxWidth().testTag("folderContentTitle"),
             verticalAlignment = Alignment.CenterVertically) {
               // Update the updatedName state whenever the folder state changes to display it in the
               // title
               LaunchedEffect(folder?.name) {
                 onUpdateName(folder?.name ?: context.getString(R.string.folder_name_not_found))
               }
-              Spacer(modifier = Modifier.weight(2f))
+              if (currentUser.value?.uid != folder?.userId) {
+                Spacer(modifier = Modifier.weight(1.5f))
+              } else {
+                Spacer(modifier = Modifier.weight(2f))
+              }
               Icon(
                   painter = painterResource(id = R.drawable.open_folder_icon),
                   contentDescription = "Folder icon")
@@ -302,7 +303,7 @@ fun FolderContentTopBar(
       navigationIcon = {
         IconButton(
             onClick = {
-              navigationActions.goBackFolderContents(folder!!, userViewModel)
+              navigationActions.goBackFolderContents(folder!!, userViewModel.currentUser.value!!)
               if (folder.parentFolderId == null) {
                 folderViewModel.clearSelectedFolder()
               }

@@ -1,5 +1,6 @@
 package com.github.onlynotesswent.ui.navigation
 
+import android.util.Log
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Comment
 import androidx.compose.material.icons.filled.EditNote
@@ -12,7 +13,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import com.github.onlynotesswent.model.folder.Folder
-import com.github.onlynotesswent.model.user.UserViewModel
+import com.github.onlynotesswent.model.user.User
 
 object Route {
   const val OVERVIEW = "Overview"
@@ -80,6 +81,10 @@ open class NavigationActions(
     private val navController: NavHostController,
 ) {
 
+  companion object {
+    const val TAG = "NavigationActions"
+  }
+
   /**
    * Navigate to the specified [Destination] and clear the navigation stack.
    *
@@ -128,10 +133,10 @@ open class NavigationActions(
    * Handle navigation when inside a folder.
    *
    * @param folder The current folder to navigate back from
-   * @param userViewModel The UserViewModel to access the current user
+   * @param currentUser The current user
    */
-  open fun goBackFolderContents(folder: Folder, userViewModel: UserViewModel) {
-    if (!folder.isOwner(userViewModel.currentUser.value!!.uid)) {
+  open fun goBackFolderContents(folder: Folder, currentUser: User) {
+    if (!folder.isOwner(currentUser.uid)) {
       navigateTo(TopLevelDestinations.SEARCH)
     } else if (folder.parentFolderId != null) {
       navigateTo(
@@ -166,7 +171,12 @@ open class NavigationActions(
    */
   open fun navigateToAndPop(screen: String) {
     navController.navigate(screen) {
-      popUpTo(navController.currentBackStackEntry?.destination?.route!!) { inclusive = true }
+      val currentRoute = navController.currentBackStackEntry?.destination?.route
+      if (currentRoute != null) {
+        popUpTo(currentRoute) { inclusive = true }
+      } else {
+        Log.e(TAG, "Current route is null")
+      }
     }
   }
 }

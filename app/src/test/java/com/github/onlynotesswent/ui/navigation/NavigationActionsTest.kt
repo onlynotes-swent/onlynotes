@@ -122,13 +122,13 @@ class NavigationActionsTest {
       onSuccess()
     }
     userViewModel.addUser(user, {}, {})
-    navigationActions.goBackFolderContents(subfolder, userViewModel)
+    navigationActions.goBackFolderContents(subfolder, user)
     verify(mockNavHostController)
         .navigate(
             Screen.FOLDER_CONTENTS.replace(
                 oldValue = "{folderId}", newValue = subfolder.parentFolderId!!))
 
-    navigationActions.goBackFolderContents(folder, userViewModel)
+    navigationActions.goBackFolderContents(folder, user)
     verify(mockNavHostController).navigate(eq(Route.OVERVIEW), any<NavOptionsBuilder.() -> Unit>())
   }
 

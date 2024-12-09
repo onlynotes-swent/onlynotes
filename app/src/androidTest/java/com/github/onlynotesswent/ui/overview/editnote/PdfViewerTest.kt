@@ -70,7 +70,7 @@ class PdfViewerTest {
       onSuccess(mockNote)
     }
 
-    noteViewModel.getNoteById("mockNoteId")
+    noteViewModel.getNoteById("1")
 
     // Mock the addUser method to call the onSuccess callback
     `when`(userRepository.addUser(any(), any(), any())).thenAnswer { invocation ->
