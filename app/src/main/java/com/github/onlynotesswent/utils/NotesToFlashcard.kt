@@ -14,6 +14,11 @@ import com.github.onlynotesswent.model.note.Note
 import com.github.onlynotesswent.model.note.NoteViewModel
 import com.google.firebase.Timestamp
 import com.google.gson.JsonParser
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.launch
 
 /**
  * A utility class that converts notes into flashcards using the OpenAI API.
@@ -201,19 +206,58 @@ class NotesToFlashcard(
       onSuccess: (Deck) -> Unit,
       onFailure: (Exception) -> Unit
   ) {
+    val scope = CoroutineScope(Dispatchers.IO)
+
     noteViewModel.getNotesFromFolder(
         folder.id,
         onSuccess = { notes ->
           val folderFlashcardIds = mutableListOf<String>()
 
-          // Convert notes to flashcards
-          notes.forEach { note ->
-            convertNoteToDeck(
-                note,
-                folderId = deckFolder.id,
-                onSuccess = { deck -> folderFlashcardIds.addAll(deck.flashcardIds) },
-                onFileNotFoundException = { Log.e(TAG, "File not found for note ${note.id}") },
-                onFailure = { Log.e(TAG, "Failed to convert note ${note.id} to deck", it) })
+          // Convert notes to flashcards and track with Deferred
+          val deferreds =
+              notes.map { note ->
+                CompletableDeferred<Unit>().also { deferred ->
+                  convertNoteToDeck(
+                      note,
+                      folderId = deckFolder.id,
+                      onSuccess = { deck ->
+                        folderFlashcardIds.addAll(deck.flashcardIds)
+                        deferred.complete(Unit) // Complete on success
+                      },
+                      onFileNotFoundException = {
+                        Log.e(TAG, "File not found for note ${note.id}")
+                        deferred.complete(Unit) // Complete even if there's an error
+                      },
+                      onFailure = {
+                        Log.e(TAG, "Failed to convert note ${note.id} to deck", it)
+                        deferred.complete(Unit) // Complete even if there's an error
+                      })
+                }
+              }
+
+          // Create a combined deck if the folder contains multiple notes and flashcards are
+          // generated
+          scope.launch {
+            try {
+              // Wait for all deferred to complete
+              deferreds.awaitAll()
+              if (folderFlashcardIds.isNotEmpty() && notes.size > 1) {
+                val combinedDeck =
+                    Deck(
+                        id = deckViewModel.getNewUid(),
+                        name = folder.name,
+                        userId = folder.userId,
+                        folderId = deckFolder.id,
+                        visibility = folder.visibility,
+                        lastModified = Timestamp.now(),
+                        flashcardIds = folderFlashcardIds)
+                deckViewModel.updateDeck(combinedDeck)
+                onSuccess(combinedDeck)
+              }
+            } catch (e: Exception) {
+              Log.e(TAG, "Error while waiting for all flashcard conversions", e)
+              onFailure(e)
+            }
           }
 
           // Process subfolders recursively
@@ -234,22 +278,6 @@ class NotesToFlashcard(
                             error)
                         onFailure(error)
                       })
-                }
-
-                // Create a combined deck if the folder contains multiple notes and flashcards are
-                // generated
-                if (folderFlashcardIds.isNotEmpty() && notes.size > 1) {
-                  val combinedDeck =
-                      Deck(
-                          id = deckViewModel.getNewUid(),
-                          name = folder.name,
-                          userId = folder.userId,
-                          folderId = deckFolder.id,
-                          visibility = folder.visibility,
-                          lastModified = Timestamp.now(),
-                          flashcardIds = folderFlashcardIds)
-                  deckViewModel.updateDeck(combinedDeck)
-                  onSuccess(combinedDeck)
                 }
               },
               onFailure = {
