@@ -44,7 +44,8 @@ class CommentsTest {
   private lateinit var folderViewModel: FolderViewModel
   @get:Rule val composeTestRule = createComposeRule()
 
-  private val testFolder = Folder("1", "Test Folder", "1")
+  private val testFolder =
+      Folder(id = "1", name = "Test Folder", userId = "1", lastModified = Timestamp.now())
 
   @Before
   fun setUp() = runTest {
@@ -98,7 +99,7 @@ class CommentsTest {
       onSuccess(mockNote2)
     }
 
-    `when`(folderRepository.getFolderById(eq("1"), any(), any())).thenAnswer { invocation ->
+    `when`(folderRepository.getFolderById(eq("1"), any(), any(), any())).thenAnswer { invocation ->
       val onSuccess = invocation.getArgument<(Folder) -> Unit>(1)
       onSuccess(testFolder)
     }
