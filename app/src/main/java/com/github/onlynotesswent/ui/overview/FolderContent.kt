@@ -302,10 +302,10 @@ fun FolderContentTopBar(
       navigationIcon = {
         IconButton(
             onClick = {
-              if (folder?.parentFolderId == null) {
+              navigationActions.goBackFolderContents(folder!!, userViewModel)
+              if (folder.parentFolderId == null) {
                 folderViewModel.clearSelectedFolder()
               }
-              navigationActions.goBackFolderContents(folder!!, userViewModel)
             },
             modifier = Modifier.testTag("goBackButton")) {
               Icon(imageVector = Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "Back")

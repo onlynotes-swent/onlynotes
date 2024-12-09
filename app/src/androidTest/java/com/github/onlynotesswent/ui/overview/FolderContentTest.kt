@@ -304,7 +304,6 @@ class FolderContentTest {
     composeTestRule.onNodeWithTag("popup").assertIsDisplayed()
     composeTestRule.onNodeWithTag("confirmButton").assertIsDisplayed()
     composeTestRule.onNodeWithTag("confirmButton").performClick()
-    composeTestRule.onNodeWithTag("goBackButton").performClick()
     composeTestRule
         .onAllNodesWithTag("noteCard")
         .filter(hasText("Sample Sub Note3"))
