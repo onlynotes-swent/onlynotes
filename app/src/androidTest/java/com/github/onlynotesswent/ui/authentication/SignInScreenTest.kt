@@ -10,6 +10,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.github.onlynotesswent.MainActivity
 import com.github.onlynotesswent.R
+import com.github.onlynotesswent.model.authentication.Authenticator
 import com.github.onlynotesswent.model.user.UserRepository
 import com.github.onlynotesswent.model.user.UserViewModel
 import com.github.onlynotesswent.ui.navigation.NavigationActions
@@ -29,6 +30,8 @@ class SignInScreenTest {
   private lateinit var userViewModel: UserViewModel
   private lateinit var mockResources: Resources
 
+  private lateinit var mockAuthenticator: Authenticator
+
   @Before
   fun setUp() {
     // Mock NavigationActions and UserViewModel
@@ -39,14 +42,14 @@ class SignInScreenTest {
     mockResources = mock(Resources::class.java)
     `when`(mockResources.getString(R.string.default_web_client_id)).thenReturn("test-client-id")
 
+    mockAuthenticator = mock(Authenticator::class.java)
+
     // Mock the current route to ensure it's on the AUTH route
     `when`(navigationActions.currentRoute()).thenReturn(Route.AUTH)
 
-    val testClientId = "test-client-id" // Mocked client ID for testing
-
     // Set the SignInScreen content in the MainActivity
     activityRule.activity.setContent {
-      SignInScreen(navigationActions, userViewModel, testClientId)
+      SignInScreen(navigationActions, userViewModel, mockAuthenticator)
     }
   }
 
