@@ -7,6 +7,9 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
 import com.github.onlynotesswent.model.common.Course
 import com.github.onlynotesswent.model.common.Visibility
+import com.github.onlynotesswent.model.folder.Folder
+import com.github.onlynotesswent.model.folder.FolderRepository
+import com.github.onlynotesswent.model.folder.FolderViewModel
 import com.github.onlynotesswent.model.note.Note
 import com.github.onlynotesswent.model.note.NoteRepository
 import com.github.onlynotesswent.model.note.NoteViewModel
@@ -15,7 +18,6 @@ import com.github.onlynotesswent.model.user.UserRepository
 import com.github.onlynotesswent.model.user.UserViewModel
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
-import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
 import com.google.firebase.Timestamp
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
@@ -35,10 +37,15 @@ import org.mockito.kotlin.eq
 class CommentsTest {
   @Mock private lateinit var userRepository: UserRepository
   @Mock private lateinit var noteRepository: NoteRepository
+  @Mock private lateinit var folderRepository: FolderRepository
   @Mock private lateinit var navigationActions: NavigationActions
   private lateinit var userViewModel: UserViewModel
   private lateinit var noteViewModel: NoteViewModel
+  private lateinit var folderViewModel: FolderViewModel
   @get:Rule val composeTestRule = createComposeRule()
+
+  private val testFolder =
+      Folder(id = "1", name = "Test Folder", userId = "1", lastModified = Timestamp.now())
 
   @Before
   fun setUp() = runTest {
@@ -46,6 +53,7 @@ class CommentsTest {
     // Mock is a way to create a fake object that can be used in place of a real object
     userViewModel = UserViewModel(userRepository)
     noteViewModel = NoteViewModel(noteRepository)
+    folderViewModel = FolderViewModel(folderRepository)
 
     // Mock the addUser method to call the onSuccess callback
     `when`(userRepository.addUser(any(), any(), any())).thenAnswer { invocation ->
@@ -53,7 +61,7 @@ class CommentsTest {
       onSuccess()
     }
 
-    val testUser = User("", "", "testUserName", "", "testUID", Timestamp.now(), 0.0)
+    val testUser = User("", "", "testUserName", "", "1", Timestamp.now(), 0.0)
     userViewModel.addUser(testUser, {}, {})
 
     // Mock the current route to be the note edit screen
@@ -89,6 +97,11 @@ class CommentsTest {
     `when`(noteRepository.getNoteById(eq("2"), any(), any(), any())).thenAnswer { invocation ->
       val onSuccess = invocation.getArgument<(Note) -> Unit>(1)
       onSuccess(mockNote2)
+    }
+
+    `when`(folderRepository.getFolderById(eq("1"), any(), any(), any())).thenAnswer { invocation ->
+      val onSuccess = invocation.getArgument<(Folder) -> Unit>(1)
+      onSuccess(testFolder)
     }
   }
 
@@ -133,16 +146,17 @@ class CommentsTest {
     init("1")
     composeTestRule.onNodeWithTag("closeButton").performClick()
 
-    verify(navigationActions).navigateTo(TopLevelDestinations.OVERVIEW)
+    verify(navigationActions).goBack()
     verify(noteRepository).updateNote(any(), any(), any(), any())
   }
 
   @Test
   fun clickGoBackButtonInsideFolder() = runTest {
     init("2")
+    folderViewModel.getFolderById(testFolder.id)
     composeTestRule.onNodeWithTag("closeButton").performClick()
 
-    verify(navigationActions).navigateTo(Screen.FOLDER_CONTENTS.replace("{folderId}", "1"))
+    verify(navigationActions).goBack()
     verify(noteRepository).updateNote(any(), any(), any(), any())
   }
 
@@ -150,7 +164,7 @@ class CommentsTest {
   fun clickNavigationDetailButton() = runTest {
     init("1")
     composeTestRule.onNodeWithTag("Detail").performClick()
-    verify(navigationActions).navigateTo(Screen.EDIT_NOTE)
+    verify(navigationActions).navigateToAndPop(Screen.EDIT_NOTE)
     verify(noteRepository).updateNote(any(), any(), any(), any())
     verify(noteRepository, times(2)).getNoteById(any(), any(), any(), any())
   }
@@ -159,7 +173,7 @@ class CommentsTest {
   fun clickNavigationPDFButton() = runTest {
     init("1")
     composeTestRule.onNodeWithTag("PDF").performClick()
-    verify(navigationActions).navigateTo(Screen.EDIT_NOTE_PDF)
+    verify(navigationActions).navigateToAndPop(Screen.EDIT_NOTE_PDF)
     verify(noteRepository).updateNote(any(), any(), any(), any())
     verify(noteRepository, times(2)).getNoteById(any(), any(), any(), any())
   }
@@ -168,7 +182,7 @@ class CommentsTest {
   fun clickNavigationContentButton() = runTest {
     init("1")
     composeTestRule.onNodeWithTag("Content").performClick()
-    verify(navigationActions).navigateTo(Screen.EDIT_NOTE_MARKDOWN)
+    verify(navigationActions).navigateToAndPop(Screen.EDIT_NOTE_MARKDOWN)
     verify(noteRepository).updateNote(any(), any(), any(), any())
     verify(noteRepository, times(2)).getNoteById(any(), any(), any(), any())
   }

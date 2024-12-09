@@ -31,6 +31,7 @@ import com.github.onlynotesswent.R
 import com.github.onlynotesswent.model.file.FileType
 import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.note.NoteViewModel
+import com.github.onlynotesswent.model.user.UserViewModel
 import com.github.onlynotesswent.ui.common.ConfirmationPopup
 import com.github.onlynotesswent.ui.common.LoadingIndicator
 import com.github.onlynotesswent.ui.navigation.NavigationActions
@@ -45,6 +46,7 @@ import kotlinx.coroutines.delay
  *
  * @param noteViewModel The NoteViewModel to access the selected note.
  * @param fileViewModel The FileViewModel to download and delete the PDF file.
+ * @param userViewModel The UserViewModel to access the current user.
  * @param scanner The Scanner object to scan the PDF file.
  * @param navigationActions The NavigationActions object to navigate between screens.
  */
@@ -52,12 +54,14 @@ import kotlinx.coroutines.delay
 fun PdfViewerScreen(
     noteViewModel: NoteViewModel,
     fileViewModel: FileViewModel,
+    userViewModel: UserViewModel,
     scanner: Scanner,
     navigationActions: NavigationActions
 ) {
 
   // State to track the currently selected note
   val note by noteViewModel.selectedNote.collectAsState()
+  val currentUser by userViewModel.currentUser.collectAsState()
   val context = LocalContext.current
 
   // States to manage the PDF existence, file reference, retry logic, and attempts
@@ -124,58 +128,60 @@ fun PdfViewerScreen(
 
   Scaffold(
       floatingActionButton = {
-        // Show a delete button if a PDF exists
-        if (pdfExists) {
-          var showDeleteConfirmation by remember { mutableStateOf(false) }
-          FloatingActionButton(
-              modifier = Modifier.testTag("deletePdfButton"),
-              onClick = {
-                // Show confirmation dialog when delete button is clicked
-                showDeleteConfirmation = true
-              },
-              containerColor = MaterialTheme.colorScheme.error,
-              contentColor = MaterialTheme.colorScheme.onError,
-          ) {
-            Icon(imageVector = Icons.Default.Delete, contentDescription = "Delete PDF")
-          }
-
-          // Confirmation dialog for deletion
-          if (showDeleteConfirmation) {
-            ConfirmationPopup(
-                title = stringResource(R.string.delete_pdf),
-                text = stringResource(R.string.delete_pdf_text),
-                onConfirm = {
-                  // Perform delete action
-                  fileViewModel.deleteFile(uid = note!!.id, fileType = FileType.NOTE_PDF)
-                  pdfFile = null
-                  pdfExists = false
-                  showDeleteConfirmation = false
-                  isLoading = false
+        if (note != null && note!!.isOwner(currentUser!!.uid)) {
+          // Show a delete button if a PDF exists
+          if (pdfExists) {
+            var showDeleteConfirmation by remember { mutableStateOf(false) }
+            FloatingActionButton(
+                modifier = Modifier.testTag("deletePdfButton"),
+                onClick = {
+                  // Show confirmation dialog when delete button is clicked
+                  showDeleteConfirmation = true
                 },
-                onDismiss = {
-                  // Close the dialog without deleting
-                  showDeleteConfirmation = false
-                })
-          }
-        } else {
-          // Show a scan button if no PDF exists
-          FloatingActionButton(
-              onClick = {
-                // Trigger scanning and start the retry logic for downloading
-                scanner.scan {
-                  fileViewModel.updateFile(note!!.id, it, FileType.NOTE_PDF)
-                  retryDownload = true // Trigger retry logic
-                  attempt = 0 // Reset attempts
+                containerColor = MaterialTheme.colorScheme.error,
+                contentColor = MaterialTheme.colorScheme.onError,
+            ) {
+              Icon(imageVector = Icons.Default.Delete, contentDescription = "Delete PDF")
+            }
+
+            // Confirmation dialog for deletion
+            if (showDeleteConfirmation) {
+              ConfirmationPopup(
+                  title = stringResource(R.string.delete_pdf),
+                  text = stringResource(R.string.delete_pdf_text),
+                  onConfirm = {
+                    // Perform delete action
+                    fileViewModel.deleteFile(uid = note!!.id, fileType = FileType.NOTE_PDF)
+                    pdfFile = null
+                    pdfExists = false
+                    showDeleteConfirmation = false
+                    isLoading = false
+                  },
+                  onDismiss = {
+                    // Close the dialog without deleting
+                    showDeleteConfirmation = false
+                  })
+            }
+          } else {
+            // Show a scan button if no PDF exists
+            FloatingActionButton(
+                onClick = {
+                  // Trigger scanning and start the retry logic for downloading
+                  scanner.scan {
+                    fileViewModel.updateFile(note!!.id, it, FileType.NOTE_PDF)
+                    retryDownload = true // Trigger retry logic
+                    attempt = 0 // Reset attempts
+                  }
+                },
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary,
+                modifier = Modifier.testTag("scanPdfButton")) {
+                  Icon(
+                      imageVector = Icons.Default.UploadFile,
+                      contentDescription = "Scan",
+                  )
                 }
-              },
-              containerColor = MaterialTheme.colorScheme.primary,
-              contentColor = MaterialTheme.colorScheme.onPrimary,
-              modifier = Modifier.testTag("scanPdfButton")) {
-                Icon(
-                    imageVector = Icons.Default.UploadFile,
-                    contentDescription = "Scan",
-                )
-              }
+          }
         }
       },
       topBar = {

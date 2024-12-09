@@ -455,10 +455,10 @@ class NoteRepositoryFirestore(
       val date = document.getTimestamp("date")!!
       val lastModified = document.getTimestamp("lastModified")!!
       val visibility = Visibility.fromString(document.getString("visibility")!!)
-      val courseCode = document.getString("courseCode")!!
-      val courseName = document.getString("courseName")!!
+      val courseCode = document.getString("courseCode") ?: ""
+      val courseName = document.getString("courseName") ?: ""
       val courseYear = document.getLong("courseYear")?.toInt()
-      val publicPath = document.getString("publicPath")!!
+      val publicPath = document.getString("publicPath") ?: ""
       val userId = document.getString("userId")!!
       val folderId = document.getString("folderId")
       val comments = commentStringToCommentClass(document.get("commentsList") as List<String>)

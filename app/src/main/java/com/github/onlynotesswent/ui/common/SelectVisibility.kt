@@ -35,10 +35,17 @@ import com.github.onlynotesswent.model.common.Visibility
  * visibility options by clicking the left and right arrows.
  *
  * @param visibility The current visibility option.
+ * @param currentUserId The Id of the current user.
+ * @param noteUserId The Id of the user who created the note.
  * @param onVisibilityChange The action to perform when the visibility option is changed.
  */
 @Composable
-fun SelectVisibility(visibility: Visibility?, onVisibilityChange: (Visibility) -> Unit) {
+fun SelectVisibility(
+    visibility: Visibility?,
+    currentUserId: String,
+    noteUserId: String,
+    onVisibilityChange: (Visibility) -> Unit
+) {
   var selectedIndex by remember {
     mutableIntStateOf(Visibility.entries.indexOf(visibility ?: Visibility.DEFAULT))
   }
@@ -49,20 +56,22 @@ fun SelectVisibility(visibility: Visibility?, onVisibilityChange: (Visibility) -
   Row(
       modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
       verticalAlignment = Alignment.CenterVertically,
-      horizontalArrangement = Arrangement.SpaceBetween) {
+      horizontalArrangement =
+          if (currentUserId == noteUserId) Arrangement.SpaceBetween else Arrangement.Center) {
         // Left arrow to scroll backward
-        IconButton(
-            onClick = {
-              selectedIndex =
-                  if (selectedIndex > 0) selectedIndex - 1 else Visibility.entries.lastIndex
-              onVisibilityChange(Visibility.entries[selectedIndex])
-            },
-            modifier = Modifier.testTag("previousVisibility")) {
-              Icon(
-                  imageVector = Icons.Default.ChevronLeft,
-                  contentDescription = "Previous Visibility")
-            }
-
+        if (currentUserId == noteUserId) {
+          IconButton(
+              onClick = {
+                selectedIndex =
+                    if (selectedIndex > 0) selectedIndex - 1 else Visibility.entries.lastIndex
+                onVisibilityChange(Visibility.entries[selectedIndex])
+              },
+              modifier = Modifier.testTag("previousVisibility")) {
+                Icon(
+                    imageVector = Icons.Default.ChevronLeft,
+                    contentDescription = "Previous Visibility")
+              }
+        }
         // Crossfade animation for smooth visibility transitions
         Crossfade(targetState = currentVisibility, label = "VisibilityCrossfade") { targetVisibility
           ->
@@ -90,15 +99,19 @@ fun SelectVisibility(visibility: Visibility?, onVisibilityChange: (Visibility) -
         }
 
         // Right arrow to scroll forward
-        IconButton(
-            onClick = {
-              selectedIndex =
-                  if (selectedIndex < Visibility.entries.lastIndex) selectedIndex + 1 else 0
-              onVisibilityChange(Visibility.entries[selectedIndex])
-            },
-            modifier = Modifier.testTag("nextVisibility")) {
-              Icon(imageVector = Icons.Default.ChevronRight, contentDescription = "Next Visibility")
-            }
+        if (currentUserId == noteUserId) {
+          IconButton(
+              onClick = {
+                selectedIndex =
+                    if (selectedIndex < Visibility.entries.lastIndex) selectedIndex + 1 else 0
+                onVisibilityChange(Visibility.entries[selectedIndex])
+              },
+              modifier = Modifier.testTag("nextVisibility")) {
+                Icon(
+                    imageVector = Icons.Default.ChevronRight,
+                    contentDescription = "Next Visibility")
+              }
+        }
       }
 }
 
