@@ -270,7 +270,10 @@ fun FolderContentTopBar(
           TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface),
       title = {
         Row(
-            modifier = Modifier.fillMaxWidth().testTag("folderContentTitle"),
+            modifier =
+                Modifier.fillMaxWidth()
+                    .padding(end = if (currentUser.value?.uid != folder?.userId) 50.dp else 0.dp)
+                    .testTag("folderContentTitle"),
             verticalAlignment = Alignment.CenterVertically) {
               // Update the updatedName state whenever the folder state changes to display it in the
               // title
