@@ -375,7 +375,7 @@ fun FolderContentTopBar(
                       Screen.FOLDER_CONTENTS.replace(
                           oldValue = "{folderId}", newValue = parentFolderId))
                 } else {
-                    folderViewModel.clearSelectedFolder()
+                  folderViewModel.clearSelectedFolder()
                   navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
                 }
 

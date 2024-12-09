@@ -311,7 +311,7 @@ class OverviewTest {
       up()
     }
   }
-  
+
   @Test
   fun openFileSystem() {
     composeTestRule.onNodeWithTag("FileSystemPopup").assertIsNotDisplayed()
