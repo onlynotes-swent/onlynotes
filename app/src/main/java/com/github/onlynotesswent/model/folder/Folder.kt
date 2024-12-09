@@ -12,6 +12,8 @@ import com.google.firebase.Timestamp
  * @param name The name of the folder.
  * @param userId The ID of the user that owns the folder.
  * @param parentFolderId The ID of the parent folder. Has default value null.
+ * @param visibility The visibility of the folder. Has default value Visibility.DEFAULT.
+ * @param isDeckFolder A flag indicating if the folder is a deck folder. Has default value false.
  * @param visibility The visibility setting for the folder.
  * @param lastModified The timestamp of when the folder was last modified.
  */
@@ -22,6 +24,7 @@ data class Folder(
     val userId: String,
     val parentFolderId: String? = null,
     val visibility: Visibility = Visibility.DEFAULT,
+    val isDeckFolder: Boolean = false,
     val lastModified: Timestamp
 ) {
   companion object {

@@ -1,6 +1,9 @@
 package com.github.onlynotesswent.model.folder
 
 import android.content.Context
+import android.net.ConnectivityManager
+import android.net.Network
+import android.net.NetworkCapabilities
 import android.os.Looper
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
@@ -26,6 +29,8 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mock
+import org.mockito.Mockito.doAnswer
+import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
@@ -69,6 +74,8 @@ class FolderRepositoryFirestoreTest {
           parentFolderId = "1",
           lastModified = Timestamp.now())
 
+  private val mockContext = mock(Context::class.java)
+
   @Before
   fun setUp() {
     MockitoAnnotations.openMocks(this)
@@ -82,10 +89,25 @@ class FolderRepositoryFirestoreTest {
     mockNoteDao = mockCacheDatabase.noteDao()
     mockFolderDao = mockCacheDatabase.folderDao()
 
-    folderRepositoryFirestore = FolderRepositoryFirestore(mockFirestore, mockCacheDatabase, context)
+    folderRepositoryFirestore =
+        FolderRepositoryFirestore(mockFirestore, mockCacheDatabase, mockContext)
     noteViewModel = NoteViewModel(mockNoteRepository)
 
     `when`(mockFirestore.collection(any())).thenReturn(mockCollectionReference)
+    // Simulate Firestore task completion
+    `when`(mockQuerySnapshotTask.isSuccessful).thenReturn(true)
+    `when`(mockQuerySnapshotTask.result).thenReturn(mockQuerySnapshot)
+    `when`(mockQuerySnapshotTask.isComplete).thenReturn(true)
+    `when`(mockQuerySnapshotTask.exception).thenReturn(null)
+
+    // Ensure onCompleteListener is triggered
+    doAnswer { invocation ->
+          val listener = invocation.getArgument<OnCompleteListener<QuerySnapshot>>(0)
+          listener.onComplete(mockQuerySnapshotTask)
+          mockQuerySnapshotTask
+        }
+        .`when`(mockQuerySnapshotTask)
+        .addOnCompleteListener(any())
     `when`(mockCollectionReference.document(any())).thenReturn(mockDocumentReference)
     `when`(mockCollectionReference.document()).thenReturn(mockDocumentReference)
 
@@ -121,6 +143,20 @@ class FolderRepositoryFirestoreTest {
         .thenReturn(testSubFolder.lastModified)
   }
 
+  fun mockHasInternetConnection(hasInternetConnection: Boolean) {
+    val mockConnectivityManager = mock(ConnectivityManager::class.java)
+    `when`(mockContext.getSystemService(Context.CONNECTIVITY_SERVICE))
+        .thenReturn(mockConnectivityManager)
+    val mockNetwork = mock(Network::class.java)
+    `when`(mockConnectivityManager.activeNetwork).thenReturn(mockNetwork)
+    val mockCapabilities = mock(NetworkCapabilities::class.java)
+    `when`(mockConnectivityManager.getNetworkCapabilities(mockNetwork)).thenReturn(mockCapabilities)
+    `when`(mockCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET))
+        .thenReturn(hasInternetConnection)
+    `when`(mockCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED))
+        .thenReturn(hasInternetConnection)
+  }
+
   private fun compareFolders(testFolder: Folder?, expectedFolder: Folder) {
     assert(testFolder?.id == expectedFolder.id)
     assert(testFolder?.name == expectedFolder.name)
@@ -145,11 +181,12 @@ class FolderRepositoryFirestoreTest {
   }
 
   @Test
-  fun getFoldersFromUid_callsDocuments() = runTest {
+  fun getFoldersFromUserId_callsDocuments() = runTest {
+    mockHasInternetConnection(true)
     `when`(mockQuerySnapshot.documents)
         .thenReturn(listOf(mockDocumentSnapshot, mockDocumentSnapshot2))
     var receivedFolders: List<Folder>? = null
-    folderRepositoryFirestore.getFoldersFromUid(
+    folderRepositoryFirestore.getFoldersFromUserId(
         testFolder.userId,
         onSuccess = { receivedFolders = it },
         onFailure = { assert(false) },
@@ -160,11 +197,13 @@ class FolderRepositoryFirestoreTest {
   }
 
   @Test
-  fun getRootFoldersFromUid_callsDocuments() = runTest {
+  fun getRootNoteFoldersFromUserId_callsDocuments() = runTest {
+    mockHasInternetConnection(true)
+
     `when`(mockQuerySnapshot.documents)
         .thenReturn(listOf(mockDocumentSnapshot, mockDocumentSnapshot2))
     var receivedFolders: List<Folder>? = null
-    folderRepositoryFirestore.getRootFoldersFromUid(
+    folderRepositoryFirestore.getRootNoteFoldersFromUserId(
         testFolder.userId,
         onSuccess = { receivedFolders = it },
         onFailure = { assert(false) },
@@ -172,6 +211,59 @@ class FolderRepositoryFirestoreTest {
     assertNotNull(receivedFolders)
 
     verify(timeout(100)) { (mockQuerySnapshot).documents }
+  }
+
+  @Test
+  fun getRootDeckFoldersFromUserId_callsDocuments() = runTest {
+    mockHasInternetConnection(true)
+    `when`(mockQuerySnapshot.documents)
+        .thenReturn(listOf(mockDocumentSnapshot, mockDocumentSnapshot2))
+    var receivedFolders: List<Folder>? = null
+    folderRepositoryFirestore.getRootDeckFoldersFromUserId(
+        testFolder.userId,
+        onSuccess = { receivedFolders = it },
+        onFailure = { assert(false) },
+        false)
+    assertNotNull(receivedFolders)
+
+    verify(timeout(100)) { (mockQuerySnapshot).documents }
+  }
+
+  @Test
+  fun getDeckFoldersByName_callsDocuments() = runTest {
+    mockHasInternetConnection(true)
+
+    // Mock Firestore behavior
+    `when`(mockDocumentSnapshot.getBoolean("isDeckFolder")).thenReturn(true)
+    `when`(mockQuerySnapshot.documents)
+        .thenReturn(listOf(mockDocumentSnapshot, mockDocumentSnapshot2))
+
+    // Test logic
+    var receivedFolders: List<Folder>? = null
+    folderRepositoryFirestore.getDeckFoldersByName(
+        testFolder.name,
+        testFolder.userId,
+        onFolderNotFound = { assert(false) },
+        onSuccess = { receivedFolders = it },
+        onFailure = { assert(false) },
+        useCache = false)
+
+    assertNotNull(receivedFolders)
+    verify(mockQuerySnapshot, timeout(100)).documents
+  }
+
+  @Test
+  fun getDeckFoldersByName_callsOnFolderNotFound() = runTest {
+    mockHasInternetConnection(true)
+    `when`(mockQuerySnapshot.documents)
+        .thenReturn(listOf(mockDocumentSnapshot, mockDocumentSnapshot2))
+    folderRepositoryFirestore.getDeckFoldersByName(
+        testFolder.name,
+        testFolder.userId,
+        onFolderNotFound = { assert(true) },
+        onSuccess = { assert(false) },
+        onFailure = { assert(false) },
+        false)
   }
 
   @Test

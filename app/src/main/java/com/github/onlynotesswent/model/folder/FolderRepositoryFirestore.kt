@@ -187,7 +187,7 @@ class FolderRepositoryFirestore(
     }
   }
 
-  override suspend fun getFoldersFromUid(
+  override suspend fun getFoldersFromUserId(
       userId: String,
       onSuccess: (List<Folder>) -> Unit,
       onFailure: (Exception) -> Unit,
@@ -195,7 +195,7 @@ class FolderRepositoryFirestore(
   ) {
     try {
       val cachedFolders: List<Folder> =
-          if (useCache) withContext(Dispatchers.IO) { folderDao.getFoldersFromUid() }
+          if (useCache) withContext(Dispatchers.IO) { folderDao.getFoldersFromUserId() }
           else emptyList()
 
       // If device is offline, fetch from local database
@@ -227,7 +227,7 @@ class FolderRepositoryFirestore(
     }
   }
 
-  override suspend fun getRootFoldersFromUid(
+  override suspend fun getRootNoteFoldersFromUserId(
       userId: String,
       onSuccess: (List<Folder>) -> Unit,
       onFailure: (Exception) -> Unit,
@@ -235,7 +235,7 @@ class FolderRepositoryFirestore(
   ) {
     try {
       val cachedFolders: List<Folder> =
-          if (useCache) withContext(Dispatchers.IO) { folderDao.getRootFoldersFromUid() }
+          if (useCache) withContext(Dispatchers.IO) { folderDao.getRootNoteFoldersFromUserId() }
           else emptyList()
 
       // If device is offline, fetch from local database
@@ -252,7 +252,7 @@ class FolderRepositoryFirestore(
                 .await()
                 .documents
                 .mapNotNull { document -> documentSnapshotToFolder(document) }
-                .filter { it.userId == userId && it.parentFolderId == null } // Only root folders
+                .filter { it.userId == userId && it.parentFolderId == null && !it.isDeckFolder }
           }
 
       // Sync Firestore with cache
@@ -263,6 +263,97 @@ class FolderRepositoryFirestore(
       onSuccess(updatedFolders)
     } catch (e: Exception) {
       Log.e(TAG, "Failed to retrieve root folders from user: ${e.message}")
+      onFailure(e)
+    }
+  }
+
+  override suspend fun getRootDeckFoldersFromUserId(
+      userId: String,
+      onSuccess: (List<Folder>) -> Unit,
+      onFailure: (Exception) -> Unit,
+      useCache: Boolean
+  ) {
+    try {
+      val cachedFolders: List<Folder> =
+          if (useCache) withContext(Dispatchers.IO) { folderDao.getRootDeckFoldersFromUserId() }
+          else emptyList()
+
+      // If device is offline, fetch from local database
+      if (!NetworkUtils.isInternetAvailable(context)) {
+        onSuccess(cachedFolders)
+        return
+      }
+
+      // If device is online, fetch from Firestore
+      val firestoreFolders =
+          withContext(Dispatchers.IO) {
+            db.collection(folderCollectionPath)
+                .get()
+                .await()
+                .documents
+                .mapNotNull { document -> documentSnapshotToFolder(document) }
+                .filter { it.userId == userId && it.parentFolderId == null && it.isDeckFolder }
+          }
+
+      // Sync Firestore with cache
+      val updatedFolders =
+          if (useCache) syncFoldersFirestoreWithCache(firestoreFolders, cachedFolders)
+          else firestoreFolders
+
+      onSuccess(updatedFolders)
+    } catch (e: Exception) {
+      Log.e(TAG, "Failed to retrieve root folders from user: ${e.message}")
+      onFailure(e)
+    }
+  }
+
+  override suspend fun getDeckFoldersByName(
+      name: String,
+      userId: String,
+      onFolderNotFound: () -> Unit,
+      onSuccess: (List<Folder>) -> Unit,
+      onFailure: (Exception) -> Unit,
+      useCache: Boolean
+  ) {
+    try {
+      val cachedFolders: List<Folder> =
+          if (useCache) withContext(Dispatchers.IO) { folderDao.getRootDeckFoldersFromUserId() }
+          else emptyList()
+
+      // If device is offline, fetch from local database
+      if (!NetworkUtils.isInternetAvailable(context)) {
+        println("isInternetAvailable: ${NetworkUtils.isInternetAvailable(context)}")
+        if (cachedFolders.isEmpty()) {
+          onFolderNotFound()
+          return
+        }
+        onSuccess(cachedFolders)
+        return
+      }
+
+      // If device is online, fetch from Firestore
+      val firestoreFolders =
+          withContext(Dispatchers.IO) {
+            db.collection(folderCollectionPath)
+                .get()
+                .await()
+                .documents
+                .mapNotNull { document -> documentSnapshotToFolder(document) }
+                .filter { it.userId == userId && it.name == name && it.isDeckFolder }
+          }
+
+      // Sync Firestore with cache
+      val updatedFolders =
+          if (useCache) syncFoldersFirestoreWithCache(firestoreFolders, cachedFolders)
+          else firestoreFolders
+
+      if (updatedFolders.isNotEmpty()) {
+        onSuccess(updatedFolders)
+      } else {
+        onFolderNotFound()
+      }
+    } catch (e: Exception) {
+      Log.e(TAG, "Failed to retrieve deck folders by name: ${e.message}")
       onFailure(e)
     }
   }
@@ -454,6 +545,7 @@ class FolderRepositoryFirestore(
           id = document.id,
           name = document.getString("name")!!,
           userId = document.getString("userId")!!,
+          isDeckFolder = document.getBoolean("isDeckFolder") ?: false,
           parentFolderId = document.getString("parentFolderId"),
           visibility = Visibility.fromString(document.getString("visibility")!!),
           lastModified = document.getTimestamp("lastModified")!!)
