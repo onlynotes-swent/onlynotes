@@ -46,6 +46,7 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -62,6 +63,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.github.onlynotesswent.R
+import com.github.onlynotesswent.model.authentication.Authenticator
 import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.notification.Notification
 import com.github.onlynotesswent.model.notification.NotificationViewModel
@@ -77,7 +79,7 @@ import com.github.onlynotesswent.ui.navigation.Screen
 import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
 import com.github.onlynotesswent.ui.theme.Typography
 import com.google.firebase.Timestamp
-import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.launch
 
 // User Profile Home screen:
 /**
@@ -86,13 +88,16 @@ import com.google.firebase.auth.FirebaseAuth
  * @param navigationActions An instance of NavigationActions to handle navigation events.
  * @param userViewModel An instance of UserViewModel to manage user data.
  * @param fileViewModel An instance of FileViewModel to manage file data.
+ * @param notificationViewModel An instance of NotificationViewModel to manage notifications.
+ * @param authenticator An instance of Authenticator to handle authentication.
  */
 @Composable
 fun UserProfileScreen(
     navigationActions: NavigationActions,
     userViewModel: UserViewModel,
     fileViewModel: FileViewModel,
-    notificationViewModel: NotificationViewModel
+    notificationViewModel: NotificationViewModel,
+    authenticator: Authenticator,
 ) {
   val user = userViewModel.currentUser.collectAsState()
   user.value?.let { userViewModel.refreshCurrentUser() }
@@ -102,6 +107,7 @@ fun UserProfileScreen(
       navigationActions = navigationActions,
       userViewModel = userViewModel,
       notificationViewModel = notificationViewModel,
+      authenticator = authenticator,
       includeBackButton = false,
       topBarTitle = stringResource(R.string.my_profile),
       floatingActionButton = {
@@ -132,7 +138,8 @@ fun PublicProfileScreen(
     navigationActions: NavigationActions,
     userViewModel: UserViewModel,
     fileViewModel: FileViewModel,
-    notificationViewModel: NotificationViewModel
+    notificationViewModel: NotificationViewModel,
+    authenticator: Authenticator,
 ) {
   val currentUser = userViewModel.currentUser.collectAsState()
   val profileUser = userViewModel.profileUser.collectAsState()
@@ -145,6 +152,7 @@ fun PublicProfileScreen(
       navigationActions,
       userViewModel,
       notificationViewModel,
+      authenticator,
       onSendMessageClick = {
         if (profileUser.value!!.isAccountPublic ||
             currentUser.value!!.friends.following.contains(profileUser.value!!.uid)) {
@@ -189,6 +197,8 @@ fun PublicProfileScreen(
  *
  * @param navigationActions The navigation actions.
  * @param userViewModel The ViewModel for the user.
+ * @param notificationViewModel The ViewModel for the notifications.
+ * @param authenticator The Authenticator used for the app.
  * @param includeBackButton Whether to include the back button in the app bar.
  * @param topBarTitle The title to be displayed on the app bar.
  * @param floatingActionButton The floating action button to be displayed on the screen.
@@ -199,6 +209,7 @@ private fun ProfileScaffold(
     navigationActions: NavigationActions,
     userViewModel: UserViewModel,
     notificationViewModel: NotificationViewModel,
+    authenticator: Authenticator,
     includeBackButton: Boolean = true,
     topBarTitle: String = stringResource(R.string.public_profile),
     floatingActionButton: @Composable () -> Unit = {},
@@ -220,6 +231,7 @@ private fun ProfileScaffold(
             navigationActions = navigationActions,
             userViewModel = userViewModel,
             notificationViewModel = notificationViewModel,
+            authenticator = authenticator,
             includeBackButton = includeBackButton,
             onSendMessageClick = onSendMessageClick)
       },
@@ -244,6 +256,7 @@ private fun ProfileScaffold(
  * @param title The title to be displayed on the app bar.
  * @param navigationActions The navigation actions.
  * @param userViewModel The ViewModel for the user.
+ * @param authenticator The Authenticator used for the app, to enable sign out of the user.
  * @param includeBackButton Whether to include the back button in the app bar.
  * @param onBackButtonClick The action to be performed when the back button is clicked.
  */
@@ -254,10 +267,12 @@ fun TopProfileBar(
     navigationActions: NavigationActions,
     userViewModel: UserViewModel,
     notificationViewModel: NotificationViewModel,
+    authenticator: Authenticator,
     includeBackButton: Boolean = true,
     onBackButtonClick: () -> Unit = { navigationActions.goBack() },
     onSendMessageClick: () -> Unit = {}
 ) {
+  val scope = rememberCoroutineScope()
   TopAppBar(
       title = { Text(title) },
       navigationIcon = {
@@ -271,7 +286,9 @@ fun TopProfileBar(
         if (!includeBackButton) {
           NotificationButton(navigationActions, userViewModel, notificationViewModel)
           LogoutButton {
-            FirebaseAuth.getInstance().signOut()
+            scope.launch {
+              authenticator.signOut()
+            } // Authenticator should be non-null if coded correctly
             navigationActions.navigateTo(Screen.AUTH)
           }
         } else {
