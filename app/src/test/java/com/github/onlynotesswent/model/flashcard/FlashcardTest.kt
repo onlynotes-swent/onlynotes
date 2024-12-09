@@ -50,27 +50,22 @@ class FlashcardTest {
     assert(flashcard.noteId == "4")
   }
 
-    @Test
-    fun `test methode  from UserFlashCard`() {
-        val now= Timestamp.now()
-        var userFlashcard =
-            UserFlashcard(
-                id = "1",
-                lastReviewed = now,
-                level = 3)
-        userFlashcard=userFlashcard.increaseLevel()
-        assert(userFlashcard.level == 4)
-        userFlashcard=userFlashcard.decreaseLevel()
-        assert(userFlashcard.level == 3)
-        userFlashcard=userFlashcard.resetLevel()
-        assert(userFlashcard.level == 0)
-        userFlashcard=userFlashcard.updateLastReviewed()
-        assert(userFlashcard.lastReviewed>now)
-        userFlashcard=userFlashcard.copy(level=UserFlashcard.MAX_FLASHCARD_LEVEL)
-        userFlashcard=userFlashcard.increaseLevel()
-        assert(userFlashcard.level == UserFlashcard.MAX_FLASHCARD_LEVEL)
-        userFlashcard=userFlashcard.decreaseLevel()
-        assert(userFlashcard.level == UserFlashcard.MAX_FLASHCARD_LEVEL-1)
-
-    }
+  @Test
+  fun `test methode  from UserFlashCard`() {
+    val now = Timestamp.now()
+    var userFlashcard = UserFlashcard(id = "1", lastReviewed = now, level = 3)
+    userFlashcard = userFlashcard.increaseLevel()
+    assert(userFlashcard.level == 4)
+    userFlashcard = userFlashcard.decreaseLevel()
+    assert(userFlashcard.level == 3)
+    userFlashcard = userFlashcard.resetLevel()
+    assert(userFlashcard.level == 0)
+    userFlashcard = userFlashcard.updateLastReviewed()
+    assert(userFlashcard.lastReviewed > now)
+    userFlashcard = userFlashcard.copy(level = UserFlashcard.MAX_FLASHCARD_LEVEL)
+    userFlashcard = userFlashcard.increaseLevel()
+    assert(userFlashcard.level == UserFlashcard.MAX_FLASHCARD_LEVEL)
+    userFlashcard = userFlashcard.decreaseLevel()
+    assert(userFlashcard.level == UserFlashcard.MAX_FLASHCARD_LEVEL - 1)
+  }
 }
