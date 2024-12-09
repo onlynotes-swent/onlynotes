@@ -35,7 +35,6 @@ class FlashcardTest {
             latexFormula = "test",
             hasImage = true,
             fakeBacks = listOf("fake1", "fake2"),
-            lastReviewed = Timestamp(0, 0),
             userId = "2",
             folderId = "3",
             noteId = "4")
@@ -46,7 +45,6 @@ class FlashcardTest {
     assert(flashcard.latexFormula == "test")
     assert(flashcard.hasImage)
     assert(flashcard.fakeBacks == listOf("fake1", "fake2"))
-    assert(flashcard.lastReviewed == Timestamp(0, 0))
     assert(flashcard.userId == "2")
     assert(flashcard.folderId == "3")
     assert(flashcard.noteId == "4")

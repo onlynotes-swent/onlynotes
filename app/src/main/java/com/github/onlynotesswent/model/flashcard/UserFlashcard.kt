@@ -4,6 +4,7 @@ import com.google.firebase.Timestamp
 
 /**
  * Represents a user flashcard.
+ *
  * @property id The ID of the User flashcard. this should be the same as the flashcard id
  * @property level The level of the flashcard.
  * @property lastReviewed The timestamp of the last review of the flashcard.

@@ -1,6 +1,7 @@
 package com.github.onlynotesswent.model.user
 
 import com.github.onlynotesswent.model.flashcard.UserFlashcard
+import com.github.onlynotesswent.model.flashcard.deck.Deck
 import com.google.firebase.auth.FirebaseAuth
 
 /** Interface representing a repository for managing user data. */
@@ -142,36 +143,6 @@ interface UserRepository {
   )
 
   /**
-   * Retrieves a user flashcard by its ID.
-   *
-   * @param userID The ID of the user to whom the flashcard belongs.
-   * @param flashcardId The ID of the flashcard to retrieve.
-   * @param onSuccess Callback to be invoked with the retrieved user flashcard.
-   * @param onFlashcardNotFound Callback to be invoked if the user flashcard is not found.
-   * @param onFailure Callback to be invoked if an error occurs.
-   */
-  fun getUserFlashcard(
-      userID: String,
-      flashcardId: String,
-      onSuccess: (UserFlashcard) -> Unit,
-      onFlashcardNotFound: () -> Unit,
-      onFailure: (Exception) -> Unit
-  )
-
-  /**
-   * Retrieves all user flashcards from the current User.
-   *
-   * @param userID The ID of the user to whom the flashcard belongs.
-   * @param onSuccess Callback to be invoked with the list of retrieved user flashcards.
-   * @param onFailure Callback to be invoked if an error occurs.
-   */
-  fun getAllUserFlashcards(
-      userID: String,
-      onSuccess: (List<UserFlashcard>) -> Unit,
-      onFailure: (Exception) -> Unit
-  )
-
-  /**
    * Adds a new user UserFlashcard to the user flashcard collection.
    *
    * @param userID The ID of the user to whom the flashcard belongs.
@@ -213,6 +184,21 @@ interface UserRepository {
       userID: String,
       flashcardId: String,
       onSuccess: () -> Unit,
+      onFailure: (Exception) -> Unit
+  )
+
+  /**
+   * Retrieves all user flashcards from the current User from a specific deck.
+   *
+   * @param userID The ID of the user to whom the flashcard belongs.
+   * @param deck The deck from which to retrieve the flashcards.
+   * @param onSuccess Callback to be invoked with the list of retrieved user flashcards.
+   * @param onFailure Callback to be invoked if an error occurs.
+   */
+  fun getUserFlashcardFromDeck(
+      userID: String,
+      deck: Deck,
+      onSuccess: (Map<String, UserFlashcard>) -> Unit,
       onFailure: (Exception) -> Unit
   )
 }

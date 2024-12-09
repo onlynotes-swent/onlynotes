@@ -2,6 +2,7 @@ package com.github.onlynotesswent.model.user
 
 import android.util.Log
 import com.github.onlynotesswent.model.flashcard.UserFlashcard
+import com.github.onlynotesswent.model.flashcard.deck.Deck
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FieldValue
@@ -54,12 +55,12 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore) : UserRepositor
     }
   }
 
-   fun documentSnapshotToUserFlashcard(document: DocumentSnapshot): UserFlashcard? {
+  fun documentSnapshotToUserFlashcard(document: DocumentSnapshot): UserFlashcard? {
     return try {
       UserFlashcard(
           lastReviewed = document.getTimestamp("lastReviewed")!!,
           level = document.getLong("level")!!.toInt(),
-            id = document.getString("id")!!,
+          id = document.getString("id")!!,
       )
     } catch (e: Exception) {
       Log.e(TAG, "Error converting document to UserFlashcard", e)
@@ -290,54 +291,6 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore) : UserRepositor
         }
   }
 
-  override fun getUserFlashcard(
-      userID: String,
-      flashcardId: String,
-      onSuccess: (UserFlashcard) -> Unit,
-      onFlashcardNotFound: () -> Unit,
-      onFailure: (Exception) -> Unit
-  ) {
-    db.collection(collectionPath)
-        .document(userID)
-        .collection(flashCardLevelSubCollection)
-        .document(flashcardId)
-        .get()
-        .addOnSuccessListener { document ->
-          if (!document.exists()) {
-            onFailure(Exception("UserFlashcard not found"))
-          } else {
-            val userFlashcard = documentSnapshotToUserFlashcard(document)
-            if (userFlashcard == null)
-                onFailure(Exception("Error converting document to UserFlashcard"))
-            else onSuccess(userFlashcard)
-          }
-        }
-        .addOnFailureListener { exception ->
-          onFailure(exception)
-          Log.e(TAG, "Error getting user flashcard by id", exception)
-        }
-  }
-
-  override fun getAllUserFlashcards(
-      userID: String,
-      onSuccess: (List<UserFlashcard>) -> Unit,
-      onFailure: (Exception) -> Unit
-  ) {
-    db.collection(collectionPath)
-        .document(userID)
-        .collection(flashCardLevelSubCollection)
-        .get()
-        .addOnSuccessListener { result ->
-          val userFlashcards =
-              result.documents.mapNotNull { document -> documentSnapshotToUserFlashcard(document) }
-          onSuccess(userFlashcards)
-        }
-        .addOnFailureListener { exception ->
-          onFailure(exception)
-          Log.e(TAG, "Error getting all user flashcards", exception)
-        }
-  }
-
   override fun addUserFlashcard(
       userID: String,
       userFlashcard: UserFlashcard,
@@ -389,6 +342,29 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore) : UserRepositor
         .addOnFailureListener { exception ->
           onFailure(exception)
           Log.e(TAG, "Error deleting user flashcard by id", exception)
+        }
+  }
+
+  override fun getUserFlashcardFromDeck(
+      userID: String,
+      deck: Deck,
+      onSuccess: (Map<String, UserFlashcard>) -> Unit,
+      onFailure: (Exception) -> Unit
+  ) {
+    db.collection(collectionPath)
+        .document(userID)
+        .collection(flashCardLevelSubCollection)
+        .whereIn("uid", deck.flashcardIds)
+        .get()
+        .addOnSuccessListener { result ->
+          val userFlashcards =
+              result.documents.mapNotNull { document -> documentSnapshotToUserFlashcard(document) }
+          val userFlashcardsMap = userFlashcards.associateBy { it.id }
+          onSuccess(userFlashcardsMap)
+        }
+        .addOnFailureListener { exception ->
+          onFailure(exception)
+          Log.e(TAG, "Error getting user flashcards by deck", exception)
         }
   }
 
