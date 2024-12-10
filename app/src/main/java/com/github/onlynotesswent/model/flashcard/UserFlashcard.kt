@@ -11,11 +11,13 @@ import com.google.firebase.Timestamp
  */
 data class UserFlashcard(
     val id: String,
-    val level: Int,
-    val lastReviewed: Timestamp,
+    val level: Int = DEFAULT_FLASHCARD_LEVEL,
+    val lastReviewed: Timestamp = Timestamp.now(),
 ) {
   companion object {
     const val MAX_FLASHCARD_LEVEL = 5
+    const val MIN_FLASHCARD_LEVEL = 0
+    const val DEFAULT_FLASHCARD_LEVEL = 1
   }
 
   /**
@@ -40,8 +42,8 @@ data class UserFlashcard(
    */
   fun decreaseLevel(): UserFlashcard {
     var newLevel = level - 1
-    if (newLevel < 0) {
-      newLevel = 0
+    if (newLevel < MIN_FLASHCARD_LEVEL) {
+      newLevel = MIN_FLASHCARD_LEVEL
     }
     return this.copy(level = newLevel)
   }
@@ -52,7 +54,7 @@ data class UserFlashcard(
    * @return The flashcard with the level reset to 0.
    */
   fun resetLevel(): UserFlashcard {
-    return this.copy(level = 0)
+    return this.copy(level = MIN_FLASHCARD_LEVEL)
   }
 
   /**

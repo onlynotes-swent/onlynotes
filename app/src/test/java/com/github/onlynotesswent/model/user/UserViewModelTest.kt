@@ -38,6 +38,8 @@ class UserViewModelTest {
   @Mock private lateinit var mockRepostioryFirestoreNotification: NotificationRepositoryFirestore
   private lateinit var userViewModel: UserViewModel
 
+  private var defaultTimestamp = Timestamp.now()
+
   private val user =
       User(
           firstName = "User",
@@ -59,6 +61,8 @@ class UserViewModelTest {
           dateOfJoining = Timestamp.now(),
           rating = 0.0,
           friends = Friends(following = listOf("1"), followers = listOf("1")))
+
+  private val userFlashcard = UserFlashcard("flashcardId", 0, defaultTimestamp)
 
   @Before
   fun setUp() {
@@ -134,7 +138,7 @@ class UserViewModelTest {
     `when`(mockRepositoryFirestore.getUserFlashcardFromDeck(anyString(), any(), any(), any()))
         .thenAnswer {
           val onSuccess = it.arguments[2] as (Map<String, UserFlashcard>) -> Unit
-          onSuccess(mapOf("flashcardId" to UserFlashcard("flashcardId", 0, Timestamp.now())))
+          onSuccess(mapOf(userFlashcard.id to userFlashcard))
         }
 
     // Mock the delete user method to call onSuccess
@@ -592,11 +596,19 @@ class UserViewModelTest {
             "deckCategory",
             Visibility.PRIVATE,
             lastModified = Timestamp.now(),
-            flashcardIds = listOf("flashcardId"))
+            flashcardIds = listOf(userFlashcard.id))
     userViewModel.addUser(user)
 
-    userViewModel.getUserFlashcardFromDeck(deck, { assert(false) })
+    userViewModel.getUserFlashcardFromDeck(deck, { assert(true) }, { assert(false) })
     verify(mockRepositoryFirestore).getUserFlashcardFromDeck(anyString(), any(), any(), any())
+
+    assertEquals(userViewModel.deckUserFlashcards.value.size, 1)
+    assertEquals(userViewModel.deckUserFlashcards.value["flashcardId"], userFlashcard)
+
+    // Test default parameters work properly
+    userViewModel.getUserFlashcardFromDeck(deck)
+    assertEquals(userViewModel.deckUserFlashcards.value.size, 1)
+    assertEquals(userViewModel.deckUserFlashcards.value["flashcardId"], userFlashcard)
   }
 
   @Test
@@ -604,51 +616,50 @@ class UserViewModelTest {
     val flashcard = UserFlashcard("flashcardId", 0, Timestamp.now())
     userViewModel.addUser(user)
 
-    userViewModel.addUserFlashcard(flashcard, { assert(true) }, { assert(false) })
-    verify(mockRepositoryFirestore).addUserFlashcard(anyString(), eq(flashcard), any(), any())
-
     // verifies that the default parameters work
     userViewModel.addUserFlashcard(flashcard)
+
+    // this will add a flashcard to the deckUserFlashcards field of the userViewModel
+    userViewModel.addUserFlashcard(flashcard, { assert(true) }, { assert(false) })
+    verify(mockRepositoryFirestore, times(2))
+        .addUserFlashcard(anyString(), eq(flashcard), any(), any())
+
+    assertEquals(userViewModel.deckUserFlashcards.value.size, 1)
+    assertEquals(userViewModel.deckUserFlashcards.value["flashcardId"], flashcard)
   }
 
   @Test
   fun `updateUserFlashCard should call repository updateUserFlashcard`() {
 
-    val deck =
-        Deck(
-            "deckId",
-            "deckName",
-            "1",
-            "deckCategory",
-            Visibility.PRIVATE,
-            lastModified = Timestamp.now(),
-            flashcardIds = listOf("flashcardId"))
-
-    val flashcard = UserFlashcard("flashcardId", 0, Timestamp.now())
     userViewModel.addUser(user)
 
-    userViewModel.updateUserFlashcard(flashcard, { assert(true) }, { assert(false) })
-
     // verifies that the default parameters work
-    userViewModel.updateUserFlashcard(flashcard)
+    userViewModel.updateUserFlashcard(userFlashcard)
 
-    // adding get the deck to test the update
-    userViewModel.getUserFlashcardFromDeck(deck, { assert(false) })
+    // this will add a flashcard to the deckUserFlashcards field of the userViewModel
+    userViewModel.addUserFlashcard(userFlashcard, { assert(true) }, { assert(false) })
 
-    userViewModel.updateUserFlashcard(flashcard, { assert(true) }, { assert(false) })
+    userViewModel.updateUserFlashcard(userFlashcard, { assert(true) }, { assert(false) })
     // verifies that updateUserFlashcard have been called 3 time
-    verify(mockRepositoryFirestore, times(3)).updateUserFlashcard(anyString(), any(), any(), any())
+    verify(mockRepositoryFirestore, times(2)).updateUserFlashcard(anyString(), any(), any(), any())
   }
 
   @Test
   fun `deleteUserFlashCardById should call repository deleteUserFlashcardById`() {
+
     userViewModel.addUser(user)
 
-    userViewModel.deleteUserFlashcardById("flashcardId", { assert(true) }, { assert(false) })
-    verify(mockRepositoryFirestore)
-        .deleteUserFlashcardById(anyString(), eq("flashcardId"), any(), any())
-
     // verifies that the default parameters work
-    userViewModel.deleteUserFlashcardById("flashcardId")
+    userViewModel.deleteUserFlashcardById(userFlashcard.id)
+
+    // this will add a flashcard to the deckUserFlashcards field of the userViewModel
+    userViewModel.addUserFlashcard(userFlashcard, { assert(true) }, { assert(false) })
+
+    // this will delete the flashcard from the deckUserFlashcards field of the userViewModel
+    userViewModel.deleteUserFlashcardById(userFlashcard.id, { assert(true) }, { assert(false) })
+    assertEquals(userViewModel.deckUserFlashcards.value.size, 0)
+
+    verify(mockRepositoryFirestore, times(2))
+        .deleteUserFlashcardById(anyString(), eq(userFlashcard.id), any(), any())
   }
 }

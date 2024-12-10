@@ -19,7 +19,7 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore) : UserRepositor
 
   private val collectionPath = "users"
 
-  private val flashCardLevelSubCollection = "FlashCardLevel"
+  private val flashcardLevelSubcollection = "flashcardLevel"
   /**
    * Converts a Firestore DocumentSnapshot to a User object.
    *
@@ -299,7 +299,7 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore) : UserRepositor
   ) {
     db.collection(collectionPath)
         .document(userID)
-        .collection(flashCardLevelSubCollection)
+        .collection(flashcardLevelSubcollection)
         .document(userFlashcard.id)
         .set(userFlashcard)
         .addOnSuccessListener { onSuccess() }
@@ -317,7 +317,7 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore) : UserRepositor
   ) {
     db.collection(collectionPath)
         .document(userID)
-        .collection(flashCardLevelSubCollection)
+        .collection(flashcardLevelSubcollection)
         .document(userFlashcard.id)
         .set(userFlashcard)
         .addOnSuccessListener { onSuccess() }
@@ -335,7 +335,7 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore) : UserRepositor
   ) {
     db.collection(collectionPath)
         .document(userID)
-        .collection(flashCardLevelSubCollection)
+        .collection(flashcardLevelSubcollection)
         .document(flashcardId)
         .delete()
         .addOnSuccessListener { onSuccess() }
@@ -353,7 +353,7 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore) : UserRepositor
   ) {
     db.collection(collectionPath)
         .document(userID)
-        .collection(flashCardLevelSubCollection)
+        .collection(flashcardLevelSubcollection)
         .whereIn("uid", deck.flashcardIds)
         .get()
         .addOnSuccessListener { result ->

@@ -51,7 +51,7 @@ class FlashcardTest {
   }
 
   @Test
-  fun `test methode  from UserFlashCard`() {
+  fun `test methode from User Flashcard`() {
     val now = Timestamp.now()
     var userFlashcard = UserFlashcard(id = "1", lastReviewed = now, level = 3)
     userFlashcard = userFlashcard.increaseLevel()
@@ -59,7 +59,9 @@ class FlashcardTest {
     userFlashcard = userFlashcard.decreaseLevel()
     assert(userFlashcard.level == 3)
     userFlashcard = userFlashcard.resetLevel()
-    assert(userFlashcard.level == 0)
+    assert(userFlashcard.level == UserFlashcard.MIN_FLASHCARD_LEVEL)
+    userFlashcard = userFlashcard.decreaseLevel()
+    assert(userFlashcard.level == UserFlashcard.MIN_FLASHCARD_LEVEL)
     userFlashcard = userFlashcard.updateLastReviewed()
     assert(userFlashcard.lastReviewed > now)
     userFlashcard = userFlashcard.copy(level = UserFlashcard.MAX_FLASHCARD_LEVEL)

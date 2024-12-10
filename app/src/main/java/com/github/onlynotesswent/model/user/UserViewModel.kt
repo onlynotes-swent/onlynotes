@@ -514,10 +514,27 @@ class UserViewModel(
         onFailure = onFailure)
   }
 
-  fun getUserFlashcardFromDeck(deck: Deck, onFailure: (Exception) -> Unit = {}) {
+  /**
+   * get the user flashcards from the specified deck.
+   *
+   * @param deck The deck to get the user flashcards from.
+   * @param onSuccess Callback to be invoked when the retrieval is successful.
+   * @param onFailure Callback to be invoked if an error occurs.
+   */
+  fun getUserFlashcardFromDeck(
+      deck: Deck,
+      onSuccess: () -> Unit = {},
+      onFailure: (Exception) -> Unit = {}
+  ) {
     _currentUser.value?.let {
       repository.getUserFlashcardFromDeck(
-          it.uid, deck, { flashcards -> _deckUserFlashcards.value = flashcards }, onFailure)
+          it.uid,
+          deck,
+          { flashcards ->
+            _deckUserFlashcards.value = flashcards
+            onSuccess()
+          },
+          onFailure)
     }
   }
 
@@ -534,16 +551,26 @@ class UserViewModel(
       onFailure: (Exception) -> Unit = {}
   ) {
     _currentUser.value?.let {
-      repository.addUserFlashcard(it.uid, userFlashcard, onSuccess, onFailure)
+      repository.addUserFlashcard(
+          it.uid,
+          userFlashcard,
+          {
+            _deckUserFlashcards.value =
+                _deckUserFlashcards.value.toMutableMap().apply {
+                  put(userFlashcard.id, userFlashcard)
+                }
+            onSuccess()
+          },
+          onFailure)
     }
   }
 
   /**
-   * Retrieves a user flashcard by its ID.
+   * update a user flashcard by its ID.
    *
-   * @param userID The ID of the user to whom the flashcard belongs.
-   * @param flashcardId The ID of the flashcard to retrieve.
+   * @param userFlashcard The ID of the user to whom the flashcard belongs.
    * @param onSuccess Callback to be invoked with the retrieved user flashcard.
+   * @param onFailure Callback to be invoked if an error occurs.
    */
   fun updateUserFlashcard(
       userFlashcard: UserFlashcard,
@@ -570,9 +597,9 @@ class UserViewModel(
   /**
    * Deletes a user flashcard by its ID.
    *
-   * @param userID The ID of the user to whom the flashcard belongs.
    * @param flashcardId The ID of the user flashcard to delete.
    * @param onSuccess Callback to be invoked when the deletion is successful.
+   * @param onFailure Callback to be invoked if an error occurs.
    */
   fun deleteUserFlashcardById(
       flashcardId: String,
@@ -580,7 +607,17 @@ class UserViewModel(
       onFailure: (Exception) -> Unit = {}
   ) {
     _currentUser.value?.let {
-      repository.deleteUserFlashcardById(it.uid, flashcardId, onSuccess, onFailure)
+      repository.deleteUserFlashcardById(
+          it.uid,
+          flashcardId,
+          {
+            if (_deckUserFlashcards.value.containsKey(flashcardId)) {
+              _deckUserFlashcards.value =
+                  _deckUserFlashcards.value.toMutableMap().apply { remove(flashcardId) }
+              onSuccess()
+            }
+          },
+          onFailure)
     }
   }
 }
