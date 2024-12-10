@@ -58,9 +58,10 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore) : UserRepositor
   fun documentSnapshotToUserFlashcard(document: DocumentSnapshot): UserFlashcard? {
     return try {
       UserFlashcard(
-          lastReviewed = document.getTimestamp("lastReviewed")?: throw Exception("lastReviewed is null"),
-          level = document.getLong("level")?.toInt()?: throw Exception("level is null"),
-          id = document.getString("id")?: throw Exception("id is null"),
+          lastReviewed =
+              document.getTimestamp("lastReviewed") ?: throw Exception("lastReviewed is null"),
+          level = document.getLong("level")?.toInt() ?: throw Exception("level is null"),
+          id = document.getString("id") ?: throw Exception("id is null"),
       )
     } catch (e: Exception) {
       Log.e(TAG, "Error converting document to UserFlashcard", e)

@@ -682,7 +682,7 @@ class UserRepositoryFirestoreTest {
             "folderId",
             Visibility.PRIVATE,
             lastModified = defaultTimestamp,
-          description = "deckCategory",
+            description = "deckCategory",
             deckList)
 
     val mapFlashCard = mapOf(userFlashcard.id to userFlashcard)
