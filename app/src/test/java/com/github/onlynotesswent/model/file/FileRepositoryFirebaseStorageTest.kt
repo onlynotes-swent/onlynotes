@@ -33,6 +33,7 @@ class FileRepositoryFirebaseStorageTest {
   @Mock private lateinit var mockProfilePicReference: StorageReference
   @Mock private lateinit var mockNoteFilesReference: StorageReference
   @Mock private lateinit var mockFileReference: StorageReference
+  @Mock private lateinit var mockFlashcardReference: StorageReference
   @Mock private lateinit var mockUploadTask: UploadTask
   @Mock private lateinit var mockFileDownloadTask: FileDownloadTask
   @Mock private lateinit var mockDeleteTask: Task<Void>
@@ -49,6 +50,7 @@ class FileRepositoryFirebaseStorageTest {
     `when`(mockFirebaseStorage.reference).thenReturn(mockStorageReference)
     `when`(mockStorageReference.child(eq("profile_pics"))).thenReturn(mockProfilePicReference)
     `when`(mockStorageReference.child(eq("notes"))).thenReturn(mockNoteFilesReference)
+    `when`(mockStorageReference.child(eq("flashcard_images"))).thenReturn(mockFlashcardReference)
 
     // When a file is attempted to be accessed, return mockFileReference (two levels deep for note
     // files,
@@ -56,6 +58,7 @@ class FileRepositoryFirebaseStorageTest {
     `when`(mockProfilePicReference.child(any())).thenReturn(mockFileReference)
     `when`(mockNoteFilesReference.child(any())).thenReturn(mockFileReference)
     `when`(mockFileReference.child(any())).thenReturn(mockFileReference)
+    `when`(mockFlashcardReference.child(any())).thenReturn(mockFileReference)
 
     fileRepository = FileRepositoryFirebaseStorage(mockFirebaseStorage)
   }

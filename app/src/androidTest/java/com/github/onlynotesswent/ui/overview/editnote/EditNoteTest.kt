@@ -2,6 +2,8 @@ package com.github.onlynotesswent.ui.overview.editnote
 
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotDisplayed
+import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
@@ -54,7 +56,7 @@ class EditNoteTest {
       onSuccess()
     }
 
-    val testUser = User("", "", "testUserName", "", "testUID", Timestamp.now(), 0.0)
+    val testUser = User("", "", "testUserName", "", "1", Timestamp.now(), 0.0)
     userViewModel.addUser(testUser, {}, {})
 
     // Mock the current route to be the note edit screen
@@ -82,6 +84,17 @@ class EditNoteTest {
             noteCourse = Course("CS-100", "Sample Class", 2024, "path"),
         )
 
+    val mockNoteDiffUser =
+        Note(
+            id = "3",
+            title = "Sample Title3",
+            date = Timestamp.now(), // Use current timestamp
+            lastModified = Timestamp.now(),
+            visibility = Visibility.DEFAULT,
+            userId = "2",
+            noteCourse = Course("CS-100", "Sample Class", 2024, "path"),
+        )
+
     `when`(noteRepository.getNoteById(eq("1"), any(), any(), any())).thenAnswer { invocation ->
       val onSuccess = invocation.getArgument<(Note) -> Unit>(1)
       onSuccess(mockNote1)
@@ -90,6 +103,11 @@ class EditNoteTest {
     `when`(noteRepository.getNoteById(eq("2"), any(), any(), any())).thenAnswer { invocation ->
       val onSuccess = invocation.getArgument<(Note) -> Unit>(1)
       onSuccess(mockNote2)
+    }
+
+    `when`(noteRepository.getNoteById(eq("3"), any(), any(), any())).thenAnswer { invocation ->
+      val onSuccess = invocation.getArgument<(Note) -> Unit>(1)
+      onSuccess(mockNoteDiffUser)
     }
   }
 
@@ -128,7 +146,7 @@ class EditNoteTest {
 
     composeTestRule.onNodeWithTag("closeButton").performClick()
 
-    verify(navigationActions).navigateTo(TopLevelDestinations.OVERVIEW)
+    verify(navigationActions).goBack()
   }
 
   @Test
@@ -137,7 +155,7 @@ class EditNoteTest {
 
     composeTestRule.onNodeWithTag("closeButton").performClick()
 
-    verify(navigationActions).navigateTo(Screen.FOLDER_CONTENTS.replace("{folderId}", "1"))
+    verify(navigationActions).goBack()
   }
 
   @Test
@@ -180,7 +198,7 @@ class EditNoteTest {
 
     composeTestRule.onNodeWithTag("Detail").performClick()
 
-    verify(navigationActions).navigateTo(Screen.EDIT_NOTE)
+    verify(navigationActions).navigateToAndPop(Screen.EDIT_NOTE)
   }
 
   @Test
@@ -189,7 +207,7 @@ class EditNoteTest {
 
     composeTestRule.onNodeWithTag("Comments").performClick()
 
-    verify(navigationActions).navigateTo(Screen.EDIT_NOTE_COMMENT)
+    verify(navigationActions).navigateToAndPop(Screen.EDIT_NOTE_COMMENT)
   }
 
   @Test
@@ -198,7 +216,7 @@ class EditNoteTest {
 
     composeTestRule.onNodeWithTag("PDF").performClick()
 
-    verify(navigationActions).navigateTo(Screen.EDIT_NOTE_PDF)
+    verify(navigationActions).navigateToAndPop(Screen.EDIT_NOTE_PDF)
   }
 
   @Test
@@ -207,7 +225,7 @@ class EditNoteTest {
 
     composeTestRule.onNodeWithTag("Content").performClick()
 
-    verify(navigationActions).navigateTo(Screen.EDIT_NOTE_MARKDOWN)
+    verify(navigationActions).navigateToAndPop(Screen.EDIT_NOTE_MARKDOWN)
   }
 
   @Test
@@ -258,7 +276,7 @@ class EditNoteTest {
 
     composeTestRule.onNodeWithTag("confirmButton").performClick()
 
-    verify(navigationActions).navigateTo(Screen.EDIT_NOTE_COMMENT)
+    verify(navigationActions).navigateToAndPop(Screen.EDIT_NOTE_COMMENT)
     verify(noteRepository, never()).updateNote(any(), any(), any(), any())
   }
 
@@ -271,5 +289,17 @@ class EditNoteTest {
     composeTestRule.onNodeWithTag("EditCourseCode textField").assertIsDisplayed()
     composeTestRule.onNodeWithTag("EditCourseName textField").assertIsDisplayed()
     composeTestRule.onNodeWithTag("EditCourseYear textField").assertIsDisplayed()
+  }
+
+  @Test
+  fun noteDifferentUserDoesNotDisplayModifyingButtons() {
+    init("3")
+
+    composeTestRule.onNodeWithTag("editNoteTitle").assertTextEquals("View Note")
+    composeTestRule.onNodeWithTag("EditTitle textField").assertIsNotEnabled()
+    composeTestRule.onNodeWithTag("saveNoteButton").assertIsNotDisplayed()
+    composeTestRule.onNodeWithTag("deleteNoteButton").assertIsNotDisplayed()
+    composeTestRule.onNodeWithTag("previousVisibility").assertDoesNotExist()
+    composeTestRule.onNodeWithTag("nextVisibility").assertDoesNotExist()
   }
 }

@@ -15,6 +15,9 @@ import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.note.Note
 import com.github.onlynotesswent.model.note.NoteRepository
 import com.github.onlynotesswent.model.note.NoteViewModel
+import com.github.onlynotesswent.model.user.User
+import com.github.onlynotesswent.model.user.UserRepository
+import com.github.onlynotesswent.model.user.UserViewModel
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
 import com.google.firebase.Timestamp
@@ -33,10 +36,33 @@ import org.mockito.kotlin.verify
 class EditMarkdownTest {
   @Mock private lateinit var noteRepository: NoteRepository
   @Mock private lateinit var fileRepository: FileRepository
+  @Mock private lateinit var userRepository: UserRepository
   @Mock private lateinit var navigationActions: NavigationActions
   private lateinit var noteViewModel: NoteViewModel
   private lateinit var fileViewModel: FileViewModel
+  private lateinit var userViewModel: UserViewModel
   @get:Rule val composeTestRule = createComposeRule()
+
+  private val testNote =
+      Note(
+          "testNoteId",
+          "testTitle",
+          Timestamp.now(),
+          Timestamp.now(),
+          Visibility.PUBLIC,
+          Course("CS-311", "SwEnt", 2024, "testCoursePath"),
+          "1",
+          "1")
+  private val noteDiffUser =
+      Note(
+          "testNoteId",
+          "testTitle",
+          Timestamp.now(),
+          Timestamp.now(),
+          Visibility.PUBLIC,
+          Course("CS-311", "SwEnt", 2024, "testCoursePath"),
+          "2",
+          "1")
 
   @Before
   fun setUp() {
@@ -44,19 +70,23 @@ class EditMarkdownTest {
     MockitoAnnotations.openMocks(this)
     noteViewModel = NoteViewModel(noteRepository)
     fileViewModel = FileViewModel(fileRepository)
+    userViewModel = UserViewModel(userRepository)
 
-    val testNote =
-        Note(
-            "testNoteId",
-            "testTitle",
-            Timestamp.now(),
-            Timestamp.now(),
-            Visibility.PUBLIC,
-            Course("CS-311", "SwEnt", 2024, "testCoursePath"),
-            "testUserId",
-            "1")
+    `when`(userRepository.addUser(any(), any(), any())).thenAnswer { invocation ->
+      val onSuccess = invocation.getArgument<() -> Unit>(1)
+      onSuccess()
+    }
 
-    noteViewModel.selectedNote(testNote)
+    val testUser =
+        User(
+            firstName = "testFirstName",
+            lastName = "testLastName",
+            userName = "testUserName",
+            email = "testEmail",
+            uid = "1",
+            dateOfJoining = Timestamp.now(),
+            rating = 0.0)
+    userViewModel.addUser(testUser, {}, {})
 
     // Mock the current route to be the user create screen
     `when`(navigationActions.currentRoute()).thenReturn(Screen.EDIT_NOTE_MARKDOWN)
@@ -67,13 +97,18 @@ class EditMarkdownTest {
       Log.d("TestDebug", "Mock file created: ${testFile.absolutePath}")
       onSuccess(testFile)
     }
+  }
+
+  private fun init(note: Note) {
+    noteViewModel.selectedNote(note)
     composeTestRule.setContent {
-      EditMarkdownScreen(navigationActions, noteViewModel, fileViewModel)
+      EditMarkdownScreen(navigationActions, noteViewModel, fileViewModel, userViewModel)
     }
   }
 
   @Test
   fun displayBaseComponents() {
+    init(testNote)
     // Top bar buttons
     composeTestRule.onNodeWithTag("closeButton").assertIsDisplayed()
 
@@ -90,12 +125,14 @@ class EditMarkdownTest {
 
   @Test
   fun clickGoBackButton() {
+    init(testNote)
     composeTestRule.onNodeWithTag("closeButton").performClick()
-    Mockito.verify(navigationActions).navigateTo(Screen.FOLDER_CONTENTS.replace("{folderId}", "1"))
+    Mockito.verify(navigationActions).goBack()
   }
 
   @Test
   fun clickEditButton() {
+    init(testNote)
     composeTestRule.onNodeWithTag("editMarkdownFAB").performClick()
 
     // Check that the edit button is not displayed
@@ -111,6 +148,7 @@ class EditMarkdownTest {
 
   @Test
   fun enterText() {
+    init(testNote)
     // Mock updateFile to do nothing
     `when`(fileRepository.updateFile(any(), any(), any(), any(), any())).thenAnswer { {} }
 
@@ -134,6 +172,7 @@ class EditMarkdownTest {
 
   @Test
   fun clickComponents() {
+    init(testNote)
     composeTestRule.onNodeWithTag("editMarkdownFAB").performClick()
 
     composeTestRule.onNodeWithTag("BoldControl").assertContentDescriptionContains("Unselected")
@@ -169,5 +208,11 @@ class EditMarkdownTest {
     composeTestRule
         .onNodeWithTag("StrikethroughControl")
         .assertContentDescriptionContains("Unselected")
+  }
+
+  @Test
+  fun DifferentUserDoesNotDisplayModifyingButtons() {
+    init(noteDiffUser)
+    composeTestRule.onNodeWithTag("editMarkdownFAB").assertDoesNotExist()
   }
 }

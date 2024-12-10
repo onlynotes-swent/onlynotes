@@ -37,6 +37,20 @@ interface FlashcardRepository {
   fun getFlashcardById(id: String, onSuccess: (Flashcard) -> Unit, onFailure: (Exception) -> Unit)
 
   /**
+   * Retrieves the flashcards with the given identifiers.
+   *
+   * @param ids The identifiers of the flashcards to retrieve.
+   * @param onSuccess The callback to be invoked when the flashcards are successfully retrieved.
+   * @param onFailure The callback to be invoked if an error occurs.
+   * @return the flashcards with the given ids.
+   */
+  fun getFlashcardsById(
+      ids: List<String>,
+      onSuccess: (List<Flashcard>) -> Unit,
+      onFailure: (Exception) -> Unit
+  )
+
+  /**
    * Retrieves all flashcards in the given folder.
    *
    * @param folderId The identifier of the folder.
