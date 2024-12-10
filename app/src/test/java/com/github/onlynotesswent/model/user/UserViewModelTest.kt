@@ -64,6 +64,17 @@ class UserViewModelTest {
 
   private val userFlashcard = UserFlashcard("flashcardId", 0, defaultTimestamp)
 
+  private val deck =
+      Deck(
+          "deckId",
+          "deckName",
+          "1",
+          "folderId",
+          Visibility.PRIVATE,
+          lastModified = Timestamp.now(),
+          description = "description",
+          flashcardIds = listOf(userFlashcard.id))
+
   @Before
   fun setUp() {
     mockRepositoryFirestore = mock(UserRepositoryFirestore::class.java)
@@ -588,16 +599,6 @@ class UserViewModelTest {
   @Test
   fun `getUserFlashcardFromDeck should call repository getUserFlashcardFromDeck`() {
 
-    val deck =
-        Deck(
-            "deckId",
-            "deckName",
-            "1",
-            "folderId",
-            Visibility.PRIVATE,
-            lastModified = Timestamp.now(),
-            description = "description",
-            flashcardIds = listOf(userFlashcard.id))
     userViewModel.addUser(user)
 
     userViewModel.getUserFlashcardFromDeck(deck, { assert(true) }, { assert(false) })
@@ -620,13 +621,10 @@ class UserViewModelTest {
     // verifies that the default parameters work
     userViewModel.addUserFlashcard(flashcard)
 
-    // this will add a flashcard to the deckUserFlashcards field of the userViewModel
     userViewModel.addUserFlashcard(flashcard, { assert(true) }, { assert(false) })
+
     verify(mockRepositoryFirestore, times(2))
         .addUserFlashcard(anyString(), eq(flashcard), any(), any())
-
-    assertEquals(userViewModel.deckUserFlashcards.value.size, 1)
-    assertEquals(userViewModel.deckUserFlashcards.value["flashcardId"], flashcard)
   }
 
   @Test
@@ -638,7 +636,7 @@ class UserViewModelTest {
     userViewModel.updateUserFlashcard(userFlashcard)
 
     // this will add a flashcard to the deckUserFlashcards field of the userViewModel
-    userViewModel.addUserFlashcard(userFlashcard, { assert(true) }, { assert(false) })
+    userViewModel.getUserFlashcardFromDeck(deck, { assert(true) }, { assert(false) })
 
     userViewModel.updateUserFlashcard(userFlashcard, { assert(true) }, { assert(false) })
     // verifies that updateUserFlashcard have been called 3 time
@@ -654,7 +652,7 @@ class UserViewModelTest {
     userViewModel.deleteUserFlashcardById(userFlashcard.id)
 
     // this will add a flashcard to the deckUserFlashcards field of the userViewModel
-    userViewModel.addUserFlashcard(userFlashcard, { assert(true) }, { assert(false) })
+    userViewModel.getUserFlashcardFromDeck(deck, { assert(true) }, { assert(false) })
 
     // this will delete the flashcard from the deckUserFlashcards field of the userViewModel
     userViewModel.deleteUserFlashcardById(userFlashcard.id, { assert(true) }, { assert(false) })
