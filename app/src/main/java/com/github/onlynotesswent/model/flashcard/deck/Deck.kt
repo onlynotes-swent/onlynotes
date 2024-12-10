@@ -95,7 +95,7 @@ data class Deck(
         ALPHABETICAL -> flashcards.sortedBy { card -> card.front.lowercase().trim() }
         REVIEW ->
             flashcards // TODO once last reviewed is implemented with User Flashcard, for now does
-                       // nothing
+        // nothing
         LEVEL -> flashcards // TODO once level is implemented, for now does nothing
       }.let { if (sortOrder == Order.HIGH_LOW) it.reversed() else it }
     }
