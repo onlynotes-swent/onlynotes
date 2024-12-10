@@ -80,7 +80,7 @@ fun OverviewScreen(
     folderViewModel.getRootFoldersFromUid(it.uid)
   }
 
-  val parentFolderId = folderViewModel.parentFolderId.collectAsState()
+  val parentFolder = folderViewModel.parentFolder.collectAsState()
   val context = LocalContext.current
 
   var expanded by remember { mutableStateOf(false) }
@@ -145,7 +145,7 @@ fun OverviewScreen(
                         lastModified = Timestamp.now(),
                         visibility = visibility,
                         userId = userViewModel.currentUser.value!!.uid,
-                        folderId = parentFolderId.value)
+                        folderId = parentFolder.value?.id)
                 noteViewModel.addNote(note)
                 noteViewModel.selectedNote(note)
                 showCreateNoteDialog = false
@@ -169,7 +169,7 @@ fun OverviewScreen(
                         id = folderId,
                         name = newName,
                         userId = userViewModel.currentUser.value!!.uid,
-                        parentFolderId = parentFolderId.value,
+                        parentFolderId = parentFolder.value?.id,
                         visibility = visibility,
                         lastModified = Timestamp.now()))
 
@@ -228,7 +228,7 @@ fun CreateItemFab(
                   onClick = {
                     onExpandedFabChange(false)
                     showCreateFolderDialog(true)
-                    folderViewModel.selectedParentFolderId(null)
+                    folderViewModel.selectedParentFolder(null)
                   },
                   modifier = Modifier.testTag("createFolder"))),
       fabIcon = { Icon(imageVector = Icons.Default.Add, contentDescription = "AddNote") },

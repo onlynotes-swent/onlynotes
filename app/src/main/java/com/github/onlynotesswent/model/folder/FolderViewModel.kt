@@ -31,9 +31,8 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
   private val _folderSubFolders = MutableStateFlow<List<Folder>>(emptyList())
   val folderSubFolders: StateFlow<List<Folder>> = _folderSubFolders.asStateFlow()
 
-  // Parent folder Id
-  private val _parentFolderId = MutableStateFlow<String?>(null)
-  val parentFolderId: StateFlow<String?> = _parentFolderId.asStateFlow()
+  private val _parentFolder = MutableStateFlow<Folder?>(null)
+  val parentFolder: StateFlow<Folder?> = _parentFolder.asStateFlow()
 
   private val _selectedFolder = MutableStateFlow<Folder?>(null)
   val selectedFolder: StateFlow<Folder?> = _selectedFolder.asStateFlow()
@@ -53,12 +52,12 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
   }
 
   /**
-   * Sets the parent folder ID.
+   * Sets the parent folder.
    *
-   * @param parentFolderId The parent folder ID.
+   * @param folder The parent folder.
    */
-  fun selectedParentFolderId(parentFolderId: String?) {
-    _parentFolderId.value = parentFolderId
+  fun selectedParentFolder(folder: Folder?) {
+    _parentFolder.value = folder
   }
 
   /**
@@ -245,6 +244,34 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
           folderId = folderId,
           onSuccess = {
             _selectedFolder.value = it
+            onSuccess(it)
+          },
+          onFailure = onFailure,
+          useCache = useCache)
+    }
+  }
+
+  /**
+   * Retrieves a parent folder given its Id.
+   *
+   * @param folderId The unique Id of the parent folder to be retrieved.
+   * @param onSuccess A callback that receives the parent `Folder` object on successful retrieval.
+   * @param onFailure A callback that receives an `Exception` in case of a failure. Defaults to an
+   *   empty lambda if not provided.
+   * @param useCache Whether to update data from cache. Should be true only if userId of the folder
+   *  is the current user.
+   */
+  fun getParentFolderById(
+      folderId: String,
+      onSuccess: (Folder) -> Unit = {},
+      onFailure: (Exception) -> Unit = {},
+      useCache: Boolean = false
+  )  {
+    viewModelScope.launch {
+      repository.getFolderById(
+          folderId = folderId,
+          onSuccess = {
+            _parentFolder.value = it
             onSuccess(it)
           },
           onFailure = onFailure,

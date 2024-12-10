@@ -82,7 +82,7 @@ fun FolderContentScreen(
   val userFolderSubFolders = folderViewModel.folderSubFolders.collectAsState()
   currentUser.let { folderViewModel.getSubFoldersOf(folder.value?.id ?: "") }
 
-  val parentFolderId = folderViewModel.parentFolderId.collectAsState()
+  val parentFolder = folderViewModel.parentFolder.collectAsState()
   val context = LocalContext.current
 
   var expanded by remember { mutableStateOf(false) }
@@ -206,10 +206,10 @@ fun FolderContentScreen(
                           id = folderId,
                           name = name,
                           userId = currentUser.value!!.uid,
-                          parentFolderId = parentFolderId.value,
+                          parentFolderId = parentFolder.value?.id,
                           visibility = visibility,
                           lastModified = Timestamp.now()))
-                  if (parentFolderId.value != null) {
+                  if (parentFolder.value?.id != null) {
                     navigationActions.navigateTo(
                         Screen.FOLDER_CONTENTS.replace(
                             oldValue = "{folderId}", newValue = folderId))
@@ -487,7 +487,8 @@ fun CreateSubItemFab(
                   onClick = {
                     onExpandedFolderChange(false)
                     showCreateFolderDialog(true)
-                    folderViewModel.selectedParentFolderId(folder!!.id)
+                    //folderViewModel.selectedParentFolderId(folder!!.id)
+                    folderViewModel.selectedParentFolder(folder)
                   },
                   modifier = Modifier.testTag("createFolder"))),
       fabIcon = { Icon(imageVector = Icons.Default.Add, contentDescription = "AddNote") },
