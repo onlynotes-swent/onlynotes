@@ -593,9 +593,10 @@ class UserViewModelTest {
             "deckId",
             "deckName",
             "1",
-            "deckCategory",
+            "folderId",
             Visibility.PRIVATE,
             lastModified = Timestamp.now(),
+            description = "description",
             flashcardIds = listOf(userFlashcard.id))
     userViewModel.addUser(user)
 

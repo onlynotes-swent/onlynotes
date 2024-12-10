@@ -427,7 +427,6 @@ fun FlashcardDialog(
                                 back = back.value,
                                 hasImage = newHasImage,
                                 fakeBacks = fakeBacks.value,
-                                lastReviewed = null,
                                 userId = deckViewModel.selectedDeck.value!!.userId,
                                 folderId = null,
                                 noteId = null)
