@@ -14,11 +14,15 @@ import com.github.onlynotesswent.model.note.Note
 import com.github.onlynotesswent.model.note.NoteViewModel
 import com.google.firebase.Timestamp
 import com.google.gson.JsonParser
-import kotlinx.coroutines.CompletableDeferred
+import java.io.FileNotFoundException
+import java.util.concurrent.atomic.AtomicInteger
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
+import kotlin.coroutines.suspendCoroutine
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.launch
 
 /**
  * A utility class that converts notes into flashcards using the OpenAI API.
@@ -156,36 +160,74 @@ class NotesToFlashcard(
   }
 
   /**
+   * Converts a note into a deck of flashcards using the OpenAI API. This method is a suspend
+   * function that can be called from a coroutine.
+   *
+   * @param note the note to be converted into flashcards
+   * @param folderId the ID of the folder containing the note
+   * @return the deck of flashcards created from the note
+   */
+  private suspend fun convertNoteToDeckSuspend(note: Note, folderId: String): Deck =
+      suspendCoroutine { continuation ->
+        convertNoteToDeck(
+            note,
+            folderId,
+            onSuccess = { continuation.resume(it) },
+            onFailure = { continuation.resumeWithException(it) },
+            onFileNotFoundException = {
+              continuation.resumeWithException(
+                  FileNotFoundException("Text file not found for note: ${note.title}"))
+            })
+      }
+
+  /**
    * Converts a folder and its subfolders into decks of flashcards.
    *
    * This method starts the conversion process for the selected folder and ensures all its
    * subfolders are processed recursively. Each note in the folder is converted into a deck of
    * flashcards, and combined decks are created for a folder if it contains multiple notes.
    *
+   * @param onProgress Callback invoked when a note is converted with the current progress.
    * @param onSuccess Callback invoked when the conversion is successful with the final deck.
    * @param onFailure Callback invoked when the conversion process fails with an exception.
    */
-  fun convertFolderToDecks(onSuccess: (Deck) -> Unit, onFailure: (Exception) -> Unit) {
+  suspend fun convertFolderToDecks(
+      onProgress: (Int, Int, Exception?) -> Unit,
+      onSuccess: (Deck) -> Unit,
+      onFailure: (Exception) -> Unit
+  ) {
     val currentFolder = folderViewModel.selectedFolder.value
     if (currentFolder == null) {
       onFailure(IllegalStateException("No folder selected"))
       return
     }
 
-    getOrCreateDeckSubFolder(
-        currentFolder,
-        null,
-        onSuccess = { deckFolder ->
-          processFolderRecursively(currentFolder, deckFolder, onSuccess, onFailure)
-          // Reset sub folder list and folder notes
-          folderViewModel.getSubFoldersOf(parentFolderId = currentFolder.id)
-          noteViewModel.getNotesFromFolder(folderId = currentFolder.id)
-        },
-        onFailure = { error ->
-          Log.e(
-              TAG, "Failed to create or retrieve root deck folder for ${currentFolder.name}", error)
-          onFailure(error)
-        })
+    val notesProcessedCounter = AtomicInteger(0)
+    val foldersProcessedCounter = AtomicInteger(0)
+
+    try {
+      val deckFolder = getOrCreateDeckSubFolder(currentFolder, null)
+      val finalDeck =
+          processFolderRecursively(
+              folder = currentFolder,
+              deckFolder = deckFolder,
+              notesProcessed = notesProcessedCounter,
+              foldersProcessed = foldersProcessedCounter,
+              onProgress = onProgress)
+
+      // Optional: Reset subfolder list and folder notes
+      folderViewModel.getSubFoldersOf(parentFolderId = currentFolder.id)
+      noteViewModel.getNotesFromFolder(folderId = currentFolder.id)
+
+      if (finalDeck != null) {
+        onSuccess(finalDeck)
+      } else {
+        onFailure(IllegalStateException("No deck was created"))
+      }
+    } catch (e: Exception) {
+      Log.e(TAG, "Error during folder conversion: ${currentFolder.name}", e)
+      onFailure(e)
+    }
   }
 
   /**
@@ -197,98 +239,84 @@ class NotesToFlashcard(
    *
    * @param folder The folder to process.
    * @param deckFolder The deck folder where decks will be stored.
-   * @param onSuccess Callback invoked when the processing is successful with the final deck.
-   * @param onFailure Callback invoked when the processing fails with an exception.
+   * @param notesProcessed The counter to track the number of notes processed.
+   * @param foldersProcessed The counter to track the number of folders processed.
+   * @param onProgress Callback invoked when processing a note or subfolder with the current
+   *   progress.
    */
-  private fun processFolderRecursively(
+  private suspend fun processFolderRecursively(
       folder: Folder,
       deckFolder: Folder,
-      onSuccess: (Deck) -> Unit,
-      onFailure: (Exception) -> Unit
-  ) {
-    val scope = CoroutineScope(Dispatchers.IO)
+      notesProcessed: AtomicInteger,
+      foldersProcessed: AtomicInteger,
+      onProgress: (Int, Int, Exception?) -> Unit
+  ): Deck? {
+    var finalDeck: Deck? = null
+    val notes = suspendCoroutine { continuation ->
+      noteViewModel.getNotesFromFolder(
+          folder.id,
+          onSuccess = { continuation.resume(it) },
+          onFailure = { continuation.resumeWithException(it) })
+    }
 
-    noteViewModel.getNotesFromFolder(
-        folder.id,
-        onSuccess = { notes ->
-          val folderFlashcardIds = mutableListOf<String>()
-
-          // Convert notes to flashcards and track with Deferred
-          val deferreds =
-              notes.map { note ->
-                CompletableDeferred<Unit>().also { deferred ->
-                  convertNoteToDeck(
-                      note,
-                      folderId = deckFolder.id,
-                      onSuccess = { deck ->
-                        folderFlashcardIds.addAll(deck.flashcardIds)
-                        deferred.complete(Unit) // Complete on success
-                      },
-                      onFileNotFoundException = {
-                        Log.e(TAG, "File not found for note ${note.id}")
-                        deferred.complete(Unit) // Complete even if there's an error
-                      },
-                      onFailure = {
-                        Log.e(TAG, "Failed to convert note ${note.id} to deck", it)
-                        deferred.complete(Unit) // Complete even if there's an error
-                      })
-                }
-              }
-
-          // Create a combined deck if the folder contains multiple notes and flashcards are
-          // generated
-          scope.launch {
+    val folderFlashcardIds = mutableListOf<String>()
+    val noteDeferreds =
+        notes.map { note ->
+          CoroutineScope(Dispatchers.IO).async {
             try {
-              // Wait for all deferred to complete
-              deferreds.awaitAll()
-              if (folderFlashcardIds.isNotEmpty() && notes.size > 1) {
-                val combinedDeck =
-                    Deck(
-                        id = deckViewModel.getNewUid(),
-                        name = folder.name,
-                        userId = folder.userId,
-                        folderId = deckFolder.id,
-                        visibility = folder.visibility,
-                        lastModified = Timestamp.now(),
-                        flashcardIds = folderFlashcardIds)
-                deckViewModel.updateDeck(combinedDeck)
-                onSuccess(combinedDeck)
-              }
+              val deck = convertNoteToDeckSuspend(note, deckFolder.id)
+              finalDeck = deck
+              folderFlashcardIds.addAll(deck.flashcardIds)
+              onProgress(notesProcessed.incrementAndGet(), foldersProcessed.get(), null)
             } catch (e: Exception) {
-              Log.e(TAG, "Error while waiting for all flashcard conversions", e)
-              onFailure(e)
+              // Log the error and continue processing other notes
+              Log.e(TAG, "Failed to convert note ${note.id} to deck", e)
+              onProgress(notesProcessed.get(), foldersProcessed.get(), e)
             }
           }
+        }
 
-          // Process subfolders recursively
-          folderViewModel.getSubFoldersOf(
-              parentFolderId = folder.id,
-              onSuccess = { subfolders ->
-                subfolders.forEach { subfolder ->
-                  getOrCreateDeckSubFolder(
-                      subfolder,
-                      deckFolder,
-                      onSuccess = { deckSubFolder ->
-                        processFolderRecursively(subfolder, deckSubFolder, onSuccess, onFailure)
-                      },
-                      onFailure = { error ->
-                        Log.e(
-                            TAG,
-                            "Failed to create or retrieve deck subfolder for ${subfolder.name}",
-                            error)
-                        onFailure(error)
-                      })
-                }
-              },
-              onFailure = {
-                Log.e(TAG, "Failed to retrieve subfolders of folder ${folder.id}", it)
-                onFailure(it)
-              })
-        },
-        onFailure = {
-          Log.e(TAG, "Failed to retrieve notes in folder ${folder.id}", it)
-          onFailure(it)
-        })
+    val subfolders = suspendCoroutine { continuation ->
+      folderViewModel.getSubFoldersOf(
+          parentFolderId = folder.id,
+          onSuccess = { continuation.resume(it) },
+          onFailure = { continuation.resumeWithException(it) })
+    }
+
+    val subfolderDeferreds =
+        subfolders.map { subfolder ->
+          CoroutineScope(Dispatchers.IO).async {
+            try {
+              val subDeckFolder = getOrCreateDeckSubFolder(subfolder, deckFolder)
+              processFolderRecursively(
+                  subfolder, subDeckFolder, notesProcessed, foldersProcessed, onProgress)
+              onProgress(notesProcessed.get(), foldersProcessed.incrementAndGet(), null)
+            } catch (e: Exception) {
+              // Log the error and continue processing other subfolders
+              Log.e(TAG, "Failed to process subfolder ${subfolder.id}", e)
+              onProgress(notesProcessed.get(), foldersProcessed.get(), e)
+            }
+          }
+        }
+
+    noteDeferreds.awaitAll()
+    subfolderDeferreds.awaitAll()
+
+    return if (folderFlashcardIds.isNotEmpty() && notes.size > 1) {
+      val combinedDeck =
+          Deck(
+              id = deckViewModel.getNewUid(),
+              name = folder.name,
+              userId = folder.userId,
+              folderId = deckFolder.id,
+              visibility = folder.visibility,
+              lastModified = Timestamp.now(),
+              flashcardIds = folderFlashcardIds)
+      deckViewModel.updateDeck(combinedDeck)
+      combinedDeck
+    } else {
+      finalDeck
+    }
   }
 
   /**
@@ -299,20 +327,15 @@ class NotesToFlashcard(
    *
    * @param subfolder The subfolder to check or create.
    * @param parentDeckFolder The parent deck folder under which the subfolder resides.
-   * @param onSuccess Callback invoked when the subfolder is successfully retrieved or created.
-   * @param onFailure Callback invoked when the retrieval or creation process fails with an
-   *   exception.
    */
-  private fun getOrCreateDeckSubFolder(
+  private suspend fun getOrCreateDeckSubFolder(
       subfolder: Folder,
-      parentDeckFolder: Folder?,
-      onSuccess: (Folder) -> Unit,
-      onFailure: (Exception) -> Unit
-  ) {
+      parentDeckFolder: Folder?
+  ): Folder = suspendCoroutine { continuation ->
     folderViewModel.getDeckFoldersByName(
         subfolder.name,
         subfolder.userId,
-        {
+        onFolderNotFound = {
           val newDeckFolder =
               Folder(
                   id = folderViewModel.getNewFolderId(),
@@ -322,20 +345,19 @@ class NotesToFlashcard(
                   parentFolderId = parentDeckFolder?.id,
                   isDeckFolder = true,
                   lastModified = Timestamp.now())
-
           folderViewModel.addFolder(
-              newDeckFolder, onSuccess = { onSuccess(newDeckFolder) }, onFailure = onFailure)
+              newDeckFolder,
+              onSuccess = { continuation.resume(newDeckFolder) },
+              onFailure = { continuation.resumeWithException(it) })
         },
-        { existingFolders ->
+        onSuccess = { existingFolders ->
           if (parentDeckFolder == null) {
-            // Use the first folder if no parentDeckFolder exists
-            onSuccess(existingFolders.first())
+            continuation.resume(existingFolders.first())
           } else {
-            // Find or create a subfolder with the correct parentFolderId
             val matchingFolder =
                 existingFolders.firstOrNull { it.parentFolderId == parentDeckFolder.id }
             if (matchingFolder != null) {
-              onSuccess(matchingFolder)
+              continuation.resume(matchingFolder)
             } else {
               val newDeckFolder =
                   Folder(
@@ -347,13 +369,12 @@ class NotesToFlashcard(
                       isDeckFolder = true,
                       lastModified = Timestamp.now())
               folderViewModel.addFolder(
-                  newDeckFolder, onSuccess = { onSuccess(newDeckFolder) }, onFailure = onFailure)
+                  newDeckFolder,
+                  onSuccess = { continuation.resume(newDeckFolder) },
+                  onFailure = { continuation.resumeWithException(it) })
             }
           }
         },
-        onFailure = { error ->
-          Log.e(TAG, "Failed to get existing deck folders for ${subfolder.name}", error)
-          onFailure(error)
-        })
+        onFailure = { continuation.resumeWithException(it) })
   }
 }
