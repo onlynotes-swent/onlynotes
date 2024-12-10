@@ -37,6 +37,7 @@ import com.github.onlynotesswent.ui.common.LoadingIndicator
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
 import com.github.onlynotesswent.utils.Scanner
+import com.github.onlynotesswent.utils.TextExtractor
 import com.rajat.pdfviewer.compose.PdfRendererViewCompose
 import java.io.File
 import kotlinx.coroutines.delay
@@ -52,11 +53,12 @@ import kotlinx.coroutines.delay
  */
 @Composable
 fun PdfViewerScreen(
+    navigationActions: NavigationActions,
     noteViewModel: NoteViewModel,
     fileViewModel: FileViewModel,
     userViewModel: UserViewModel,
     scanner: Scanner,
-    navigationActions: NavigationActions
+    textExtractor: TextExtractor
 ) {
 
   // State to track the currently selected note
