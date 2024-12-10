@@ -16,6 +16,7 @@ class FileRepositoryFirebaseStorage(private val db: FirebaseStorage) : FileRepos
 
   private val profilePicFolderRef = db.reference.child("profile_pics")
   private val notesFilesFolderRef = db.reference.child("notes")
+  private val flashcardImagesFolderRef = db.reference.child("flashcard_images")
 
   override fun init(onSuccess: () -> Unit) {
     onSuccess()
@@ -52,6 +53,7 @@ class FileRepositoryFirebaseStorage(private val db: FirebaseStorage) : FileRepos
     // uid.fileExtension (e.g. 2RkHrdA7zZrd4os3685f.jpg, 2RkHrdA7zZrd4os3685f.pdf)
     // for profile pictures, uid is the user's uid,
     // for notes, uid is the note's uid
+    // For flashcards, uid is the flashcard's uid
 
     val localFile = File.createTempFile(uid, fileType.fileExtension, cacheDir)
 
@@ -109,12 +111,15 @@ class FileRepositoryFirebaseStorage(private val db: FirebaseStorage) : FileRepos
   /**
    * Returns the file reference based on the UID and file type, according to our storage structure:
    * - profile_pics
-   *     - userUid.jpg or userUid.png (which stores that user's profile picture)
-   *     - ...
+   *         - userUid.jpg or userUid.png (which stores that user's profile picture)
+   *         - ...
    * - notes
-   *     - noteUid
-   *         - note.md (Markdown text file associated to this note)
-   *         - note.pdf (Pdf file associated to this note)
+   *         - noteUid
+   *             - note.md (Markdown text file associated to this note)
+   *             - note.pdf (Pdf file associated to this note)
+   *         - ...
+   * - flashcard_images
+   *     - flashcardUid.jpg (which stores that flashcard's image)
    *     - ...
    *
    * @param uid The unique identifier for the file, also functions as it's name. For profile
@@ -129,6 +134,7 @@ class FileRepositoryFirebaseStorage(private val db: FirebaseStorage) : FileRepos
       FileType.NOTE_PDF,
       FileType.NOTE_TEXT ->
           notesFilesFolderRef.child(uid).child(noteFileName + fileType.fileExtension)
+      FileType.FLASHCARD_IMAGE -> flashcardImagesFolderRef.child(uid + fileType.fileExtension)
     }
   }
 

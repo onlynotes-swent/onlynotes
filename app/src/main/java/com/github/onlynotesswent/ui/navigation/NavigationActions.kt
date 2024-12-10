@@ -1,5 +1,6 @@
 package com.github.onlynotesswent.ui.navigation
 
+import android.util.Log
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Comment
 import androidx.compose.material.icons.filled.EditNote
@@ -11,6 +12,8 @@ import androidx.compose.material.icons.outlined.Search
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
+import com.github.onlynotesswent.model.folder.Folder
+import com.github.onlynotesswent.model.user.User
 
 object Route {
   const val OVERVIEW = "Overview"
@@ -34,6 +37,7 @@ object Screen {
   const val NOTIFICATIONS = "Notifications Screen"
   const val FOLDER_CONTENTS = "Folder Contents Screen/{folderId}"
   const val DECK_MENU = "Deck Menu Screen/{deckId}"
+  const val DECK_PLAY = "Deck Play Screen/{deckId}/{mode}"
 }
 
 data class Destination(
@@ -77,6 +81,10 @@ val LIST_EDIT_NOTE_DESTINATION =
 open class NavigationActions(
     private val navController: NavHostController,
 ) {
+
+  companion object {
+    const val TAG = "NavigationActions"
+  }
 
   /**
    * Navigate to the specified [Destination] and clear the navigation stack.
@@ -123,13 +131,17 @@ open class NavigationActions(
   }
 
   /**
-   * Navigate back to the folder contents screen.
+   * Handle navigation when inside a folder.
    *
-   * @param folderId The ID of the folder to navigate back to
+   * @param folder The current folder to navigate back from
+   * @param currentUser The current user
    */
-  open fun goBackFolderContents(folderId: String?) {
-    if (folderId != null) {
-      navigateTo(Screen.FOLDER_CONTENTS.replace(oldValue = "{folderId}", newValue = folderId))
+  open fun goBackFolderContents(folder: Folder, currentUser: User) {
+    if (!folder.isOwner(currentUser.uid)) {
+      navigateTo(TopLevelDestinations.SEARCH)
+    } else if (folder.parentFolderId != null) {
+      navigateTo(
+          Screen.FOLDER_CONTENTS.replace(oldValue = "{folderId}", newValue = folder.parentFolderId))
     } else {
       navigateTo(TopLevelDestinations.OVERVIEW)
     }
@@ -142,5 +154,30 @@ open class NavigationActions(
    */
   open fun currentRoute(): String {
     return navController.currentDestination?.route ?: ""
+  }
+
+  /**
+   * Get the previous screen from the navigation controller.
+   *
+   * @return The previous screen
+   */
+  open fun getPreviousScreen(): String? {
+    return navController.previousBackStackEntry?.destination?.route
+  }
+
+  /**
+   * Navigate to the specified screen and immediately clears it from the back stack.
+   *
+   * @param screen The screen to navigate to
+   */
+  open fun navigateToAndPop(screen: String) {
+    navController.navigate(screen) {
+      val currentRoute = navController.currentBackStackEntry?.destination?.route
+      if (currentRoute != null) {
+        popUpTo(currentRoute) { inclusive = true }
+      } else {
+        Log.e(TAG, "Current route is null")
+      }
+    }
   }
 }

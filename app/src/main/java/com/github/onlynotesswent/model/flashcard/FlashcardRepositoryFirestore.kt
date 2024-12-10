@@ -90,6 +90,28 @@ class FlashcardRepositoryFirestore(private val db: FirebaseFirestore) : Flashcar
         }
   }
 
+  override fun getFlashcardsById(
+      ids: List<String>,
+      onSuccess: (List<Flashcard>) -> Unit,
+      onFailure: (Exception) -> Unit
+  ) {
+    if (ids.isEmpty()) {
+      onSuccess(emptyList())
+      return
+    }
+    db.collection(collectionPath)
+        .whereIn("id", ids)
+        .get()
+        .addOnSuccessListener { querySnapshot ->
+          val flashcards = querySnapshot.documents.mapNotNull { documentSnapshotToFlashcard(it) }
+          onSuccess(flashcards)
+        }
+        .addOnFailureListener { exception ->
+          onFailure(exception)
+          Log.e(TAG, "Error getting flashcards by ids", exception)
+        }
+  }
+
   override fun getFlashcardsByFolder(
       folderId: String,
       onSuccess: (List<Flashcard>) -> Unit,

@@ -2,7 +2,6 @@ package com.github.onlynotesswent.ui.overview
 
 import android.content.Context
 import android.util.Log
-import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -96,7 +95,9 @@ fun FolderContentScreen(
 
   // Custom back handler to manage back navigation
   BackHandler {
-    if (folder.value!!.parentFolderId != null) {
+    if (!folder.value!!.isOwner(currentUser.value!!.uid)) {
+      navigationActions.navigateTo(TopLevelDestinations.SEARCH)
+    } else if (folder.value!!.parentFolderId != null) {
       navigationActions.navigateTo(
           Screen.FOLDER_CONTENTS.replace(
               oldValue = "{folderId}", newValue = folder.value!!.parentFolderId!!))
@@ -119,6 +120,7 @@ fun FolderContentScreen(
               navigationActions = navigationActions,
               folderViewModel = folderViewModel,
               noteViewModel = noteViewModel,
+              userViewModel = userViewModel,
               currentUser = currentUser,
               context = context,
               userFolderSubFolders = userFolderSubFolders,
@@ -128,16 +130,16 @@ fun FolderContentScreen(
               showUpdateDialog = { showUpdateDialog = it })
         },
         floatingActionButton = {
-          CreateSubItemFab(
-              expandedFolder = expandedFolder,
-              onExpandedFolderChange = { expandedFolder = it },
-              showCreateFolderDialog = { showCreateFolderDialog = it },
-              showCreateNoteDialog = { showCreateNoteDialog = it },
-              noteViewModel = noteViewModel,
-              folderViewModel = folderViewModel,
-              currentUser = currentUser,
-              context = context,
-              folder = folder.value)
+          if (folder.value!!.isOwner(currentUser.value!!.uid)) {
+            CreateSubItemFab(
+                expandedFolder = expandedFolder,
+                onExpandedFolderChange = { expandedFolder = it },
+                showCreateFolderDialog = { showCreateFolderDialog = it },
+                showCreateNoteDialog = { showCreateNoteDialog = it },
+                noteViewModel = noteViewModel,
+                folderViewModel = folderViewModel,
+                folder = folder.value)
+          }
         }) { paddingValues ->
           Text(
               text = "Selected Folder: ${folderViewModel.selectedFolder.value?.name ?: "None"}",
@@ -150,7 +152,6 @@ fun FolderContentScreen(
               folderViewModel = folderViewModel,
               noteViewModel = noteViewModel,
               userViewModel = userViewModel,
-              context = context,
               navigationActions = navigationActions)
           // Logic to show the dialog to update a folder
 
@@ -158,29 +159,22 @@ fun FolderContentScreen(
             FolderDialog(
                 onDismiss = { showUpdateDialog = false },
                 onConfirm = { name, vis ->
-                  if (currentUser.value!!.uid == folder.value?.userId) {
-                    folderViewModel.updateFolder(
-                        Folder(
-                            id = folder.value!!.id,
-                            name = name,
-                            userId = folder.value!!.userId,
-                            parentFolderId = folder.value!!.parentFolderId,
-                            visibility = vis,
-                            lastModified = Timestamp.now()))
-                    updatedName = name
-                  } else {
-                    Toast.makeText(
-                            context, "You are not the owner of this folder", Toast.LENGTH_SHORT)
-                        .show()
-                  }
+                  folderViewModel.updateFolder(
+                      Folder(
+                          id = folder.value!!.id,
+                          name = name,
+                          userId = folder.value!!.userId,
+                          parentFolderId = folder.value!!.parentFolderId,
+                          visibility = vis,
+                          lastModified = Timestamp.now()))
+                  updatedName = name
                   showUpdateDialog = false
                 },
                 action = stringResource(R.string.update),
                 oldName = updatedName,
                 oldVisibility = folder.value!!.visibility)
           }
-
-          if (showCreateNoteDialog) {
+          if (showCreateNoteDialog && folder.value!!.isOwner(currentUser.value!!.uid)) {
             NoteDialog(
                 onDismiss = { showCreateNoteDialog = false },
                 onConfirm = { newName, visibility ->
@@ -206,28 +200,22 @@ fun FolderContentScreen(
             FolderDialog(
                 onDismiss = { showCreateFolderDialog = false },
                 onConfirm = { name, visibility ->
-                  if (currentUser.value!!.uid == folder.value?.userId) {
-                    val folderId = folderViewModel.getNewFolderId()
-                    folderViewModel.addFolder(
-                        Folder(
-                            id = folderId,
-                            name = name,
-                            userId = currentUser.value!!.uid,
-                            parentFolderId = parentFolderId.value,
-                            visibility = visibility,
-                            lastModified = Timestamp.now()))
-                    if (parentFolderId.value != null) {
-                      navigationActions.navigateTo(
-                          Screen.FOLDER_CONTENTS.replace(
-                              oldValue = "{folderId}", newValue = folderId))
-                    } else {
-                      folderViewModel.clearSelectedFolder()
-                      navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
-                    }
+                  val folderId = folderViewModel.getNewFolderId()
+                  folderViewModel.addFolder(
+                      Folder(
+                          id = folderId,
+                          name = name,
+                          userId = currentUser.value!!.uid,
+                          parentFolderId = parentFolderId.value,
+                          visibility = visibility,
+                          lastModified = Timestamp.now()))
+                  if (parentFolderId.value != null) {
+                    navigationActions.navigateTo(
+                        Screen.FOLDER_CONTENTS.replace(
+                            oldValue = "{folderId}", newValue = folderId))
                   } else {
-                    Toast.makeText(
-                            context, "You are not the owner of this folder", Toast.LENGTH_SHORT)
-                        .show()
+                    folderViewModel.clearSelectedFolder()
+                    navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
                   }
                   showCreateFolderDialog = false
                 },
@@ -258,6 +246,7 @@ fun UserNotFoundFolderContentScreen() {
  * @param navigationActions actions that can be performed in the app
  * @param folderViewModel view model for the folder
  * @param noteViewModel view model for the note
+ * @param userViewModel view model to get the current user
  * @param currentUser the current user
  * @param context the context of the app
  * @param userFolderSubFolders the sub folders of the user
@@ -275,6 +264,7 @@ fun FolderContentTopBar(
     navigationActions: NavigationActions,
     folderViewModel: FolderViewModel,
     noteViewModel: NoteViewModel,
+    userViewModel: UserViewModel,
     currentUser: State<User?>,
     context: Context,
     userFolderSubFolders: State<List<Folder>>,
@@ -297,7 +287,11 @@ fun FolderContentTopBar(
               LaunchedEffect(folder?.name) {
                 onUpdateName(folder?.name ?: context.getString(R.string.folder_name_not_found))
               }
-              Spacer(modifier = Modifier.weight(2f))
+              if (currentUser.value?.uid != folder?.userId) {
+                Spacer(modifier = Modifier.weight(1.5f))
+              } else {
+                Spacer(modifier = Modifier.weight(2f))
+              }
               Icon(
                   painter = painterResource(id = R.drawable.open_folder_icon),
                   contentDescription = "Folder icon")
@@ -309,93 +303,89 @@ fun FolderContentTopBar(
       navigationIcon = {
         IconButton(
             onClick = {
-              if (folder?.parentFolderId == null) {
+              navigationActions.goBackFolderContents(folder!!, userViewModel.currentUser.value!!)
+              if (folder.parentFolderId == null) {
                 folderViewModel.clearSelectedFolder()
               }
-              navigationActions.goBackFolderContents(folder?.parentFolderId)
             },
             modifier = Modifier.testTag("goBackButton")) {
               Icon(imageVector = Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "Back")
             }
       },
       actions = {
-        CustomDropDownMenu(
-            modifier = Modifier.testTag("folderSettingsButton"),
-            menuItems =
-                listOf(
-                    CustomDropDownMenuItem(
-                        text = { Text(stringResource(R.string.update_folder)) },
-                        icon = {
-                          Icon(
-                              imageVector = Icons.Default.Edit, contentDescription = "UpdateFolder")
-                        },
-                        onClick = {
-                          onExpandedChange(false)
-                          showUpdateDialog(true)
-                        },
-                        modifier = Modifier.testTag("updateFolderButton")),
-                    CustomDropDownMenuItem(
-                        text = { Text(stringResource(R.string.delete_folder)) },
-                        icon = {
-                          Icon(
-                              painter = painterResource(id = R.drawable.folder_delete_icon),
-                              contentDescription = "DeleteFolder")
-                        },
-                        onClick = {
-                          onExpandedChange(false)
-                          showDeleteFolderConfirmation = true
-                        },
-                        modifier = Modifier.testTag("deleteFolderButton")),
-                    CustomDropDownMenuItem(
-                        text = { Text(stringResource(R.string.delete_folder_contents)) },
-                        icon = {
-                          Icon(
-                              painter = painterResource(id = R.drawable.delete_folder_contents),
-                              contentDescription = "DeleteFolderContents")
-                        },
-                        onClick = {
-                          onExpandedChange(false)
-                          showDeleteFolderContentsConfirmation = true
-                        },
-                        modifier = Modifier.testTag("deleteFolderContentsButton"))),
-            fabIcon = {
-              Icon(imageVector = Icons.Default.MoreVert, contentDescription = "settings")
-            },
-            expanded = expanded,
-            onFabClick = { onExpandedChange(true) },
-            onDismissRequest = { onExpandedChange(false) })
-
+        if (folder!!.isOwner(currentUser.value!!.uid)) {
+          CustomDropDownMenu(
+              modifier = Modifier.testTag("folderSettingsButton"),
+              menuItems =
+                  listOf(
+                      CustomDropDownMenuItem(
+                          text = { Text(stringResource(R.string.update_folder)) },
+                          icon = {
+                            Icon(
+                                imageVector = Icons.Default.Edit,
+                                contentDescription = "UpdateFolder")
+                          },
+                          onClick = {
+                            onExpandedChange(false)
+                            showUpdateDialog(true)
+                          },
+                          modifier = Modifier.testTag("updateFolderButton")),
+                      CustomDropDownMenuItem(
+                          text = { Text(stringResource(R.string.delete_folder)) },
+                          icon = {
+                            Icon(
+                                painter = painterResource(id = R.drawable.folder_delete_icon),
+                                contentDescription = "DeleteFolder")
+                          },
+                          onClick = {
+                            onExpandedChange(false)
+                            showDeleteFolderConfirmation = true
+                          },
+                          modifier = Modifier.testTag("deleteFolderButton")),
+                      CustomDropDownMenuItem(
+                          text = { Text(stringResource(R.string.delete_folder_contents)) },
+                          icon = {
+                            Icon(
+                                painter = painterResource(id = R.drawable.delete_folder_contents),
+                                contentDescription = "DeleteFolderContents")
+                          },
+                          onClick = {
+                            onExpandedChange(false)
+                            showDeleteFolderContentsConfirmation = true
+                          },
+                          modifier = Modifier.testTag("deleteFolderContentsButton"))),
+              fabIcon = {
+                Icon(imageVector = Icons.Default.MoreVert, contentDescription = "settings")
+              },
+              expanded = expanded,
+              onFabClick = { onExpandedChange(true) },
+              onDismissRequest = { onExpandedChange(false) })
+        }
         // Popup for delete folder confirmation
         if (showDeleteFolderConfirmation) {
           ConfirmationPopup(
               title = stringResource(R.string.delete_folder),
               text = stringResource(R.string.confirm_delete_folder),
               onConfirm = {
-                if (currentUser.value!!.uid == folder?.userId) {
-                  // Retrieve parent folder id to navigate to the parent folder
-                  val parentFolderId = folder.parentFolderId
-                  folderViewModel.deleteFolderById(folder.id, folder.userId)
+                // Retrieve parent folder id to navigate to the parent folder
+                val parentFolderId = folder.parentFolderId
+                folderViewModel.deleteFolderById(folder.id, folder.userId)
 
-                  if (parentFolderId != null) {
-                    navigationActions.navigateTo(
-                        Screen.FOLDER_CONTENTS.replace(
-                            oldValue = "{folderId}", newValue = parentFolderId))
-                  } else {
-                    folderViewModel.clearSelectedFolder()
-                    navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
-                  }
-
-                  handleSubFoldersAndNotes(
-                      folder = folder,
-                      userFolderSubFolders = userFolderSubFolders.value,
-                      userFolderNotes = userFolderNotes.value,
-                      folderViewModel = folderViewModel,
-                      noteViewModel = noteViewModel)
+                if (parentFolderId != null) {
+                  navigationActions.navigateTo(
+                      Screen.FOLDER_CONTENTS.replace(
+                          oldValue = "{folderId}", newValue = parentFolderId))
                 } else {
-                  Toast.makeText(
-                          context, "You are not the owner of this folder", Toast.LENGTH_SHORT)
-                      .show()
+                  folderViewModel.clearSelectedFolder()
+                  navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
                 }
+
+                handleSubFoldersAndNotes(
+                    folder = folder,
+                    userFolderSubFolders = userFolderSubFolders.value,
+                    userFolderNotes = userFolderNotes.value,
+                    folderViewModel = folderViewModel,
+                    noteViewModel = noteViewModel)
                 showDeleteFolderConfirmation = false
               },
               onDismiss = { showDeleteFolderConfirmation = false })
@@ -407,14 +397,8 @@ fun FolderContentTopBar(
               title = stringResource(R.string.delete_folder_contents),
               text = stringResource(R.string.confirm_delete_folder_contents),
               onConfirm = {
-                if (currentUser.value!!.uid == folder?.userId) {
-                  noteViewModel.deleteNotesFromFolder(folder.id)
-                  folderViewModel.deleteFolderContents(folder, noteViewModel)
-                } else {
-                  Toast.makeText(
-                          context, "You are not the owner of this folder", Toast.LENGTH_SHORT)
-                      .show()
-                }
+                noteViewModel.deleteNotesFromFolder(folder.id)
+                folderViewModel.deleteFolderContents(folder, noteViewModel)
                 showDeleteFolderContentsConfirmation = false
               },
               onDismiss = { showDeleteFolderContentsConfirmation = false })
@@ -474,8 +458,6 @@ fun CreateSubItemFab(
     showCreateNoteDialog: (Boolean) -> Unit,
     noteViewModel: NoteViewModel,
     folderViewModel: FolderViewModel,
-    currentUser: State<User?>,
-    context: Context,
     folder: Folder?,
 ) {
   CustomDropDownMenu(
@@ -491,14 +473,8 @@ fun CreateSubItemFab(
                   },
                   onClick = {
                     onExpandedFolderChange(false)
-                    if (currentUser.value!!.uid == folder?.userId) {
-                      showCreateNoteDialog(true)
-                      noteViewModel.selectedFolderId(folder.id)
-                    } else {
-                      Toast.makeText(
-                              context, "You are not the owner of this folder", Toast.LENGTH_SHORT)
-                          .show()
-                    }
+                    showCreateNoteDialog(true)
+                    noteViewModel.selectedFolderId(folder!!.id)
                   },
                   modifier = Modifier.testTag("createNote")),
               CustomDropDownMenuItem(
@@ -511,9 +487,7 @@ fun CreateSubItemFab(
                   onClick = {
                     onExpandedFolderChange(false)
                     showCreateFolderDialog(true)
-                    if (currentUser.value!!.uid == folder?.userId) {
-                      folderViewModel.selectedParentFolderId(folder.id)
-                    }
+                    folderViewModel.selectedParentFolderId(folder!!.id)
                   },
                   modifier = Modifier.testTag("createFolder"))),
       fabIcon = { Icon(imageVector = Icons.Default.Add, contentDescription = "AddNote") },
@@ -531,7 +505,6 @@ fun CreateSubItemFab(
  * @param folderViewModel the view model for the folder
  * @param noteViewModel the view model for the note
  * @param userViewModel the view model for the user
- * @param context the context of the app
  * @param navigationActions actions that can be performed in the app
  */
 @Composable
@@ -542,7 +515,6 @@ fun FolderContentScreenGrid(
     folderViewModel: FolderViewModel,
     noteViewModel: NoteViewModel,
     userViewModel: UserViewModel,
-    context: Context,
     navigationActions: NavigationActions
 ) {
   CustomSeparatedLazyGrid(
@@ -554,7 +526,6 @@ fun FolderContentScreenGrid(
       folderViewModel = folderViewModel,
       noteViewModel = noteViewModel,
       userViewModel = userViewModel,
-      context = context,
       navigationActions = navigationActions,
       paddingValues = paddingValues,
       columnContent = {

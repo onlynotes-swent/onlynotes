@@ -94,7 +94,7 @@ fun OptionDropDownMenu(
   BoxWithConstraints(modifier = Modifier.fillMaxWidth(widthFactor)) {
     Button(
         onClick = { onExpandedChange(!expanded) },
-        modifier = Modifier.width(maxWidth).testTag(buttonTag)) {
+        modifier = Modifier.width(this.maxWidth).testTag(buttonTag)) {
           Text(text = value)
           Icon(Icons.Outlined.ArrowDropDown, "Dropdown icon")
         }
@@ -102,7 +102,7 @@ fun OptionDropDownMenu(
     DropdownMenu(
         expanded = expanded,
         onDismissRequest = { onExpandedChange(false) },
-        modifier = modifier.width(maxWidth).testTag(menuTag)) {
+        modifier = modifier.width(this.maxWidth).testTag(menuTag)) {
           items.forEach { item ->
             DropdownMenuItem(
                 modifier = Modifier.testTag("item--$item"),
