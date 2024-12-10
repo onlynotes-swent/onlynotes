@@ -80,7 +80,6 @@ class NotesToFlashcard(
                   id = flashcardViewModel.getNewUid(),
                   front = question,
                   back = answer,
-                  lastReviewed = null,
                   userId = note.userId,
                   folderId = note.folderId,
                   noteId = note.id)
