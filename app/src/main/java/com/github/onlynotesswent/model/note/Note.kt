@@ -1,5 +1,8 @@
 package com.github.onlynotesswent.model.note
 
+import androidx.room.Embedded
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 import com.github.onlynotesswent.model.common.Course
 import com.github.onlynotesswent.model.common.Visibility
 import com.google.firebase.Timestamp
@@ -11,6 +14,7 @@ import java.security.MessageDigest
  * @property id A unique identifier for this note.
  * @property title The title of the note.
  * @property date The timestamp of when the note was created.
+ * @property lastModified The timestamp of when the note was last modified.
  * @property visibility The visibility setting for the note.
  * @property noteCourse The [Course] object associated with this note. If the note is not associated
  *   with a course, this value is `null`.
@@ -19,19 +23,30 @@ import java.security.MessageDigest
  *   assigned to a folder, this value is `null`.
  * @property comments A collection of comments associated with the note.
  */
+@Entity
 data class Note(
-    val id: String,
+    @PrimaryKey val id: String,
     val title: String,
     val date: Timestamp,
+    val lastModified: Timestamp,
     val visibility: Visibility = Visibility.DEFAULT,
-    val noteCourse: Course? = null,
+    @Embedded val noteCourse: Course? = null,
     val userId: String,
     val folderId: String? = null,
     val comments: CommentCollection = CommentCollection()
 ) {
+  /**
+   * Checks if the note is owned by the user with the given Id.
+   *
+   * @param uid The Id of the user to check.
+   * @return `true` if the note is owned by the user; `false` otherwise.
+   */
+  fun isOwner(uid: String): Boolean {
+    return userId == uid
+  }
 
   companion object {
-    // note title max length
+    // Note title max length
     private const val TITLE_MAX_LENGTH = 35
 
     /**
@@ -157,6 +172,16 @@ data class Note(
      */
     fun isUnedited(): Boolean {
       return creationDate == editedDate
+    }
+
+    /**
+     * Checks if the comment is owned by the user with the given Id.
+     *
+     * @param uid The Id of the user to check.
+     * @return `true` if the comment is owned by the user; `false` otherwise.
+     */
+    fun isOwner(uid: String): Boolean {
+      return userId == uid
     }
   }
 }

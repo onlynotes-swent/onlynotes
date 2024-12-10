@@ -60,12 +60,12 @@ class FlashcardViewModelTest {
   }
 
   @Test
-  fun getFlashcardsFromCallsRepository() {
+  fun getFlashcardsFromUserCallsRepository() {
     `when`(flashcardRepository.getFlashcardsFrom(any(), any(), any())).thenAnswer {
       val onSuccess: (List<Flashcard>) -> Unit = it.getArgument(1)
       onSuccess(listOf(flashcard))
     }
-    flashcardViewModel.getFlashcardsFrom(flashcard.userId, { assert(true) })
+    flashcardViewModel.getFlashcardsFromUser(flashcard.userId, { assert(true) })
     assertEquals(flashcardViewModel.userFlashcards.value, listOf(flashcard))
   }
 

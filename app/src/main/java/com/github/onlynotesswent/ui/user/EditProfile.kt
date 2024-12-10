@@ -78,14 +78,14 @@ import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Route
 import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
 import com.github.onlynotesswent.ui.theme.Typography
-import com.github.onlynotesswent.utils.ProfilePictureTaker
+import com.github.onlynotesswent.utils.PictureTaker
 
 /**
  * A composable function that displays the profile screen.
  *
  * @param navigationActions An instance of NavigationActions to handle navigation events.
  * @param userViewModel An instance of UserViewModel to manage user data.
- * @param profilePictureTaker An instance of ProfilePictureTaker to choose a profile picture.
+ * @param pictureTaker An instance of ProfilePictureTaker to choose a profile picture.
  * @param fileViewModel An instance of FileViewModel to manage file operations.
  * @param noteViewModel An instance of UserViewModel to manage note data.
  */
@@ -94,10 +94,10 @@ import com.github.onlynotesswent.utils.ProfilePictureTaker
 fun EditProfileScreen(
     navigationActions: NavigationActions,
     userViewModel: UserViewModel,
-    profilePictureTaker: ProfilePictureTaker,
+    pictureTaker: PictureTaker,
     fileViewModel: FileViewModel,
     noteViewModel: NoteViewModel,
-    folderViewModel: FolderViewModel
+    folderViewModel: FolderViewModel,
 ) {
   val user = userViewModel.currentUser.collectAsState()
 
@@ -239,7 +239,7 @@ fun EditProfileScreen(
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally) {
                   EditableProfilePicture(
-                      profilePictureTaker,
+                      pictureTaker,
                       userViewModel,
                       profilePictureUri,
                       fileViewModel,
@@ -326,15 +326,15 @@ fun EditProfileScreen(
                               modifier = Modifier.testTag("confirmDeleteButton"),
                               onClick = {
                                 showDeleteAccountAlert.value = false
-                                noteViewModel.deleteNotesByUserId(user.value!!.uid)
-                                folderViewModel.deleteFoldersByUserId(user.value!!.uid)
+
+                                noteViewModel.deleteNotesFromUid(user.value!!.uid)
+                                folderViewModel.deleteFoldersFromUid(user.value!!.uid)
                                 noteViewModel.getNoteById(user.value!!.uid)
                                 noteViewModel.userRootNotes.value.forEach {
                                   fileViewModel.deleteFile(it.id, FileType.NOTE_PDF)
                                 }
                                 fileViewModel.deleteFile(
                                     user.value!!.uid, FileType.PROFILE_PIC_JPEG)
-
                                 userViewModel.deleteUserById(
                                     user.value!!.uid,
                                     onSuccess = { navigationActions.navigateTo(Route.AUTH) })
@@ -391,7 +391,7 @@ fun BioTextField(bioState: MutableState<String>) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditableProfilePicture(
-    profilePictureTaker: ProfilePictureTaker,
+    pictureTaker: PictureTaker,
     userViewModel: UserViewModel,
     profilePictureUri: MutableState<String>,
     fileViewModel: FileViewModel,
@@ -468,7 +468,7 @@ fun EditableProfilePicture(
       ModalBottomSheet(onDismissRequest = { showSheet.value = false }, sheetState = sheetState) {
         BottomSheetContent(
             onClose = { showSheet.value = false },
-            profilePictureTaker,
+            pictureTaker,
             profilePictureUri,
             hasProfilePictureBeenChanged)
       }
@@ -479,7 +479,7 @@ fun EditableProfilePicture(
 @Composable
 fun BottomSheetContent(
     onClose: () -> Unit,
-    profilePictureTaker: ProfilePictureTaker,
+    pictureTaker: PictureTaker,
     profilePictureUri: MutableState<String>,
     hasProfilePictureBeenChanged: MutableState<Boolean>
 ) {
@@ -492,13 +492,13 @@ fun BottomSheetContent(
           Column(horizontalAlignment = Alignment.Start) {
             BottomSheetRow(
                 onClick = {
-                  profilePictureTaker.setOnImageSelected { uri ->
+                  pictureTaker.setOnImageSelected { uri ->
                     if (uri != null) {
                       profilePictureUri.value = uri.toString()
                       hasProfilePictureBeenChanged.value = true
                     }
                   }
-                  profilePictureTaker.pickImage()
+                  pictureTaker.pickImage()
                   onClose()
                 },
                 description = stringResource(R.string.edit_profile_picture),
@@ -521,13 +521,13 @@ fun BottomSheetContent(
           // If the user doesn't have a profile picture, display the add option
           BottomSheetRow(
               onClick = {
-                profilePictureTaker.setOnImageSelected { uri ->
+                pictureTaker.setOnImageSelected { uri ->
                   if (uri != null) {
                     profilePictureUri.value = uri.toString()
                     hasProfilePictureBeenChanged.value = true
                   }
                 }
-                profilePictureTaker.pickImage()
+                pictureTaker.pickImage()
                 onClose()
               },
               description = stringResource(R.string.add_a_profile_picture),

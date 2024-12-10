@@ -1,22 +1,39 @@
 package com.github.onlynotesswent.model.folder
 
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 import com.github.onlynotesswent.model.common.Visibility
+import com.google.firebase.Timestamp
 
 /**
  * Represents a folder that contains notes.
  *
- * @param id The ID of the folder.
+ * @param id The Id of the folder.
  * @param name The name of the folder.
- * @param userId The ID of the user that owns the folder.
- * @param parentFolderId The ID of the parent folder. Has default value null.
+ * @param userId The Id of the user that owns the folder.
+ * @param parentFolderId The Id of the parent folder. Has default value null.
+ * @param visibility The visibility setting for the folder.
+ * @param lastModified The timestamp of when the folder was last modified.
  */
+@Entity
 data class Folder(
-    val id: String,
+    @PrimaryKey val id: String,
     val name: String,
     val userId: String,
     val parentFolderId: String? = null,
-    val visibility: Visibility = Visibility.DEFAULT
+    val visibility: Visibility = Visibility.DEFAULT,
+    val lastModified: Timestamp
 ) {
+  /**
+   * Checks if the folder is owned by the user with the given Id.
+   *
+   * @param uid The Id of the user to check.
+   * @return True if the folder is owned by the user, false otherwise.
+   */
+  fun isOwner(uid: String): Boolean {
+    return userId == uid
+  }
+
   companion object {
     // folder name max length
     private const val FOLDER_NAME_MAX_LENGTH = 28

@@ -16,10 +16,11 @@ interface FileRepository {
    * Uploads a file to Firebase Storage.
    *
    * @param uid The unique identifier for the file, also functions as it's name. For profile
-   *   pictures, it's the user's UID For documents/texts of a note, it's the note's UID.
+   *   pictures, it's the user's UID; for documents/texts of a note, it's the note's UID; for
+   *   flashcards images, it's the flashcard's UID.
    * @param fileUri The URI of the file to upload.
-   * @param fileType The type of the file. This type determines if it is a profile picture (JPEG or
-   *   PNG) or a note file (PDF or MD).
+   * @param fileType The type of the file. This type determines if it is a profile picture (JPEG), a
+   *   note file (PDF or MD) or a flashcard image (JPEG).
    * @param onSuccess The function to call when the upload is successful.
    * @param onFailure The function to call when the upload fails.
    */
@@ -35,9 +36,10 @@ interface FileRepository {
    * Downloads a file from Firebase Storage.
    *
    * @param uid The unique identifier for the file, also functions as it's name. For profile
-   *   pictures, it's the user's UID For documents/texts of a note, it's the note's UID.
-   * @param fileType The type of the file. This type determines if it is a profile picture (JPEG or
-   *   PNG) or a note file (PDF or MD).
+   *   pictures, it's the user's UID; for documents/texts of a note, it's the note's UID; for
+   *   flashcards images, it's the flashcard's UID.
+   * @param fileType The type of the file. This type determines if it is a profile picture (JPEG), a
+   *   note file (PDF or MD) or a flashcard image (JPEG).
    * @param cacheDir The directory to cache the downloaded file.
    * @param onSuccess The function to call when the download is successful.
    * @param onFileNotFound The function to call when the file is not found.
@@ -56,9 +58,10 @@ interface FileRepository {
    * Deletes a file from Firebase Storage.
    *
    * @param uid The unique identifier for the file, also functions as it's name. For profile
-   *   pictures, it's the user's UID For documents/texts of a note, it's the note's UID.
-   * @param fileType The type of the file. This type determines if it is a profile picture (JPEG or
-   *   PNG) or a note file (PDF or MD).
+   *   pictures, it's the user's UID; for documents/texts of a note, it's the note's UID; for
+   *   flashcards images, it's the flashcard's UID.
+   * @param fileType The type of the file. This type determines if it is a profile picture (JPEG), a
+   *   note file (PDF or MD) or a flashcard image (JPEG).
    * @param onSuccess The function to call when the deletion is successful.
    * @param onFileNotFound The function to call when the file is not found.
    * @param onFailure The function to call when the deletion fails.
@@ -75,10 +78,11 @@ interface FileRepository {
    * Updates a file in Firebase Storage.
    *
    * @param uid The unique identifier for the file, also functions as it's name. For profile
-   *   pictures, it's the user's UID For documents/texts of a note, it's the note's UID.
+   *   pictures, it's the user's UID; for documents/texts of a note, it's the note's UID; for
+   *   flashcards images, it's the flashcard's UID.
    * @param fileUri The URI of the file to update.
-   * @param fileType The type of the file. This type determines if it is a profile picture (JPEG or
-   *   PNG) or a note file (PDF or MD).
+   * @param fileType The type of the file. This type determines if it is a profile picture (JPEG), a
+   *   note file (PDF or MD) or a flashcard image (JPEG).
    * @param onSuccess The function to call when the update is successful.
    * @param onFailure The function to call when the update fails.
    */
@@ -94,9 +98,10 @@ interface FileRepository {
    * Retrieves a file from Firebase Storage as a byte array.
    *
    * @param uid The unique identifier for the file, also functions as it's name. For profile
-   *   pictures, it's the user's UID For documents/texts of a note, it's the note's UID.
-   * @param fileType The type of the file. This type determines if it is a profile picture (JPEG or
-   *   PNG) or a note file (PDF or MD).
+   *   pictures, it's the user's UID; for documents/texts of a note, it's the note's UID; for
+   *   flashcards images, it's the flashcard's UID.
+   * @param fileType The type of the file. This type determines if it is a profile picture (JPEG), a
+   *   note file (PDF or MD) or a flashcard image (JPEG).
    * @param onSuccess The function to call when the retrieval is successful.
    * @param onFileNotFound The function to call when the file is not found.
    * @param onFailure The function to call when the retrieval fails.

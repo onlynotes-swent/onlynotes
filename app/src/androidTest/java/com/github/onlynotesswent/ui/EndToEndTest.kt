@@ -24,6 +24,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navigation
 import androidx.test.espresso.intent.Intents
+import com.github.onlynotesswent.model.authentication.Authenticator
 import com.github.onlynotesswent.model.file.FileRepository
 import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.flashcard.deck.DeckRepository
@@ -52,8 +53,9 @@ import com.github.onlynotesswent.ui.user.CreateUserScreen
 import com.github.onlynotesswent.ui.user.EditProfileScreen
 import com.github.onlynotesswent.ui.user.PublicProfileScreen
 import com.github.onlynotesswent.ui.user.UserProfileScreen
-import com.github.onlynotesswent.utils.ProfilePictureTaker
+import com.github.onlynotesswent.utils.PictureTaker
 import com.google.firebase.Timestamp
+import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
@@ -73,7 +75,7 @@ class EndToEndTest {
   @Mock private lateinit var folderRepository: FolderRepository
   @Mock private lateinit var deckRepository: DeckRepository
   @Mock private lateinit var fileRepository: FileRepository
-  @Mock private lateinit var profilePictureTaker: ProfilePictureTaker
+  @Mock private lateinit var pictureTaker: PictureTaker
   private lateinit var userViewModel: UserViewModel
   private lateinit var noteViewModel: NoteViewModel
   private lateinit var folderViewModel: FolderViewModel
@@ -81,6 +83,8 @@ class EndToEndTest {
   private lateinit var fileViewModel: FileViewModel
   @Mock private lateinit var mockNotificationRepository: NotificationRepository
   private lateinit var notificationViewModel: NotificationViewModel
+
+  @Mock private lateinit var authenticator: Authenticator
 
   private lateinit var navController: NavHostController
   private lateinit var navigationActions: NavigationActions
@@ -117,7 +121,13 @@ class EndToEndTest {
     }
   }
 
-  private var testNote = Note(id = "1", title = "title", date = Timestamp.now(), userId = testUid)
+  private var testNote =
+      Note(
+          id = "1",
+          title = "title",
+          date = Timestamp.now(),
+          userId = testUid,
+          lastModified = Timestamp.now())
 
   private val newTitle = "New Title"
 
@@ -174,7 +184,8 @@ class EndToEndTest {
                         navigationActions, folderViewModel, noteViewModel, userViewModel)
                   }
                   composable(Screen.EDIT_NOTE_MARKDOWN) {
-                    EditMarkdownScreen(navigationActions, noteViewModel, fileViewModel)
+                    EditMarkdownScreen(
+                        navigationActions, noteViewModel, fileViewModel, userViewModel)
                   }
                 }
                 navigation(
@@ -197,17 +208,25 @@ class EndToEndTest {
                 ) {
                   composable(Screen.USER_PROFILE) {
                     UserProfileScreen(
-                        navigationActions, userViewModel, fileViewModel, notificationViewModel)
+                        navigationActions,
+                        userViewModel,
+                        fileViewModel,
+                        notificationViewModel,
+                        authenticator)
                   }
                   composable(Screen.PUBLIC_PROFILE) {
                     PublicProfileScreen(
-                        navigationActions, userViewModel, fileViewModel, notificationViewModel)
+                        navigationActions,
+                        userViewModel,
+                        fileViewModel,
+                        notificationViewModel,
+                        authenticator)
                   }
                   composable(Screen.EDIT_PROFILE) {
                     EditProfileScreen(
                         navigationActions,
                         userViewModel,
-                        profilePictureTaker,
+                        pictureTaker,
                         fileViewModel,
                         noteViewModel,
                         folderViewModel)
@@ -227,7 +246,7 @@ class EndToEndTest {
 
   // Creates the mock behavior needed for the end-to-end flow of creating a user, adding a note, and
   // editing the note
-  private fun testEndToEndFlow1_init() {
+  private fun testEndToEndFlow1_init() = runTest {
     // Set up mock behavior for user and note repository methods
     `when`(userViewModel.getNewUid()).thenReturn(testUid)
 
@@ -239,7 +258,7 @@ class EndToEndTest {
     `when`(noteRepository.getNewUid()).thenReturn(testNote.id)
 
     // Mock the note repository update
-    `when`(noteRepository.updateNote(any(), any(), any())).thenAnswer {
+    `when`(noteRepository.updateNote(any(), any(), any(), any())).thenAnswer {
       testNote = it.arguments[0] as Note
       noteViewModel.selectedNote(testNote)
       val onSuccess = it.getArgument<() -> Unit>(1)
@@ -247,14 +266,14 @@ class EndToEndTest {
     }
 
     // Mock get note by id
-    `when`(noteRepository.getNoteById(any(), any(), any())).thenAnswer {
+    `when`(noteRepository.getNoteById(any(), any(), any(), any())).thenAnswer {
       val onSuccess = it.getArgument<(Note) -> Unit>(1)
       onSuccess(testNote)
     }
 
     // Mock retrieval of notes
-    `when`(noteRepository.getRootNotesFrom(eq(testUser1.uid), any(), any())).thenAnswer { invocation
-      ->
+    `when`(noteRepository.getRootNotesFromUid(eq(testUser1.uid), any(), any(), any())).thenAnswer {
+        invocation ->
       val onSuccess = invocation.getArgument<(List<Note>) -> Unit>(1)
       onSuccess(listOf(testNote))
     }

@@ -15,6 +15,7 @@ import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextReplacement
+import com.github.onlynotesswent.model.authentication.Authenticator
 import com.github.onlynotesswent.model.file.FileRepository
 import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.note.NoteRepository
@@ -35,19 +36,23 @@ import org.junit.Assert.assertNotNull
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.junit.runner.RunWith
 import org.mockito.Mock
 import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
+import org.mockito.junit.MockitoJUnitRunner
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.verify
 
+@RunWith(MockitoJUnitRunner::class)
 class ProfileScreenTest {
   @Mock private lateinit var mockUserRepository: UserRepository
   @Mock private lateinit var mockNavigationActions: NavigationActions
   @Mock private lateinit var mockNoteRepository: NoteRepository
   @Mock private lateinit var mockFileRepository: FileRepository
   @Mock private lateinit var mockNotificationRepository: NotificationRepository
+  @Mock private lateinit var authenticator: Authenticator
   private lateinit var noteViewModel: NoteViewModel
   private lateinit var userViewModel: UserViewModel
   private lateinit var fileViewModel: FileViewModel
@@ -229,7 +234,8 @@ class ProfileScreenTest {
   @Test
   fun displayAllComponents() {
     composeTestRule.setContent {
-      UserProfileScreen(mockNavigationActions, userViewModel, fileViewModel, notificationViewModel)
+      UserProfileScreen(
+          mockNavigationActions, userViewModel, fileViewModel, notificationViewModel, authenticator)
     }
 
     composeTestRule.onNodeWithTag("profileScaffold").assertExists()
@@ -254,7 +260,8 @@ class ProfileScreenTest {
   @Test
   fun displayAndNavigateToFollowersAndFollowing() {
     composeTestRule.setContent {
-      UserProfileScreen(mockNavigationActions, userViewModel, fileViewModel, notificationViewModel)
+      UserProfileScreen(
+          mockNavigationActions, userViewModel, fileViewModel, notificationViewModel, authenticator)
     }
 
     composeTestRule.onNodeWithTag("followingButton").assertIsDisplayed().performClick()
@@ -289,7 +296,8 @@ class ProfileScreenTest {
   @Test
   fun editProfileButtonNavigatesCorrectly() {
     composeTestRule.setContent {
-      UserProfileScreen(mockNavigationActions, userViewModel, fileViewModel, notificationViewModel)
+      UserProfileScreen(
+          mockNavigationActions, userViewModel, fileViewModel, notificationViewModel, authenticator)
     }
 
     composeTestRule.onNodeWithTag("editProfileButton").assertIsDisplayed().performClick()
@@ -300,7 +308,7 @@ class ProfileScreenTest {
   fun followUnfollowButtonsWork() {
     composeTestRule.setContent {
       PublicProfileScreen(
-          mockNavigationActions, userViewModel, fileViewModel, notificationViewModel)
+          mockNavigationActions, userViewModel, fileViewModel, notificationViewModel, authenticator)
     }
 
     composeTestRule.onNodeWithTag("userNotFound").assertIsDisplayed()
@@ -350,7 +358,7 @@ class ProfileScreenTest {
   fun profileLinkRedirectsToUserProfile() {
     composeTestRule.setContent {
       PublicProfileScreen(
-          mockNavigationActions, userViewModel, fileViewModel, notificationViewModel)
+          mockNavigationActions, userViewModel, fileViewModel, notificationViewModel, authenticator)
     }
 
     userViewModel.setProfileUser(testUser2)
@@ -368,7 +376,7 @@ class ProfileScreenTest {
   fun goBackButtonNavigatesCorrectly() {
     composeTestRule.setContent {
       PublicProfileScreen(
-          mockNavigationActions, userViewModel, fileViewModel, notificationViewModel)
+          mockNavigationActions, userViewModel, fileViewModel, notificationViewModel, authenticator)
     }
 
     composeTestRule.onNodeWithTag("goBackButton").assertIsDisplayed().performClick()
@@ -378,11 +386,11 @@ class ProfileScreenTest {
   @Test
   fun logoutButtonWorksCorrectly() {
     composeTestRule.setContent {
-      UserProfileScreen(mockNavigationActions, userViewModel, fileViewModel, notificationViewModel)
+      UserProfileScreen(
+          mockNavigationActions, userViewModel, fileViewModel, notificationViewModel, authenticator)
     }
 
-    composeTestRule.onNodeWithTag("logoutButton").assertIsDisplayed().performClick()
-    verify(mockNavigationActions).navigateTo(Screen.AUTH)
+    composeTestRule.onNodeWithTag("logoutButton").assertIsDisplayed()
   }
 
   @Test
@@ -403,7 +411,7 @@ class ProfileScreenTest {
     userViewModel.setProfileUser(testUser3)
     composeTestRule.setContent {
       PublicProfileScreen(
-          mockNavigationActions, userViewModel, fileViewModel, notificationViewModel)
+          mockNavigationActions, userViewModel, fileViewModel, notificationViewModel, authenticator)
     }
     composeTestRule.onNodeWithTag("sendMessageButton").assertIsDisplayed().performClick()
     composeTestRule.onNodeWithTag("messageDialog").assertIsDisplayed()

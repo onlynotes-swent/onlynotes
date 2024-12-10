@@ -8,11 +8,11 @@ import androidx.activity.result.contract.ActivityResultContracts
 import com.github.dhaval2404.imagepicker.ImagePicker
 
 /**
- * ProfilePictureTaker class that use the image picker to select a profile picture
+ * PictureTaker class that use the image picker to select a picture
  *
  * @param activity the ComponentActivity that will use the image picker
  */
-open class ProfilePictureTaker(private val activity: ComponentActivity) {
+open class PictureTaker(private val activity: ComponentActivity) {
 
   private lateinit var imagePickerLauncher: ActivityResultLauncher<Intent>
   private var onImageSelected: (Uri?) -> Unit = {}
@@ -37,13 +37,19 @@ open class ProfilePictureTaker(private val activity: ComponentActivity) {
   }
 
   /**
-   * Opens the image picker to select a profile picture The image picker is configured to crop the
-   * image to a square shape and use only the gallery for selection
+   * Opens the image picker to select a picture. The image picker is configured to crop the image to
+   * a square shape and use only the gallery for selection
    */
-  open fun pickImage() {
+  open fun pickImage(fromGalleryOnly: Boolean = true, cropToSquare: Boolean = true) {
     ImagePicker.with(activity)
-        .cropSquare() // Crop the image to a square shape
-        .galleryOnly() // Use only gallery for selection
+        .let {
+          if (cropToSquare) it.cropSquare() // Crop the image to a square shape
+          else it
+        }
+        .let {
+          if (fromGalleryOnly) it.galleryOnly() // Pick only from the gallery
+          else it
+        }
         .createIntent { intent ->
           try {
             imagePickerLauncher.launch(intent)

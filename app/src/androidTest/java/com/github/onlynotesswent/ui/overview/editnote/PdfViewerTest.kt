@@ -11,37 +11,47 @@ import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.note.Note
 import com.github.onlynotesswent.model.note.NoteRepository
 import com.github.onlynotesswent.model.note.NoteViewModel
+import com.github.onlynotesswent.model.user.User
+import com.github.onlynotesswent.model.user.UserRepository
+import com.github.onlynotesswent.model.user.UserViewModel
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
 import com.github.onlynotesswent.utils.Scanner
 import com.google.firebase.Timestamp
 import java.io.File
 import java.io.IOException
+import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.junit.runner.RunWith
 import org.mockito.Mock
 import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
+import org.mockito.junit.MockitoJUnitRunner
 import org.mockito.kotlin.any
 import org.mockito.kotlin.verify
 
+@RunWith(MockitoJUnitRunner::class)
 class PdfViewerTest {
   @Mock private lateinit var fileRepository: FileRepository
   @Mock private lateinit var noteRepository: NoteRepository
+  @Mock private lateinit var userRepository: UserRepository
   @Mock private lateinit var navigationActions: NavigationActions
   @Mock private lateinit var mockScanner: Scanner
   private lateinit var noteViewModel: NoteViewModel
   private lateinit var fileViewModel: FileViewModel
+  private lateinit var userViewModel: UserViewModel
   private val pdfFile: File = File.createTempFile("test", ".pdf")
 
   @get:Rule val composeTestRule = createComposeRule()
 
   @Before
-  fun setUp() {
+  fun setUp() = runTest {
     MockitoAnnotations.openMocks(this)
     fileViewModel = FileViewModel(fileRepository)
     noteViewModel = NoteViewModel(noteRepository)
+    userViewModel = UserViewModel(userRepository)
 
     // Mock the current route to be the note edit screen
     `when`(navigationActions.currentRoute()).thenReturn(Screen.EDIT_NOTE_PDF)
@@ -50,16 +60,34 @@ class PdfViewerTest {
             id = "1",
             title = "Sample Title",
             date = Timestamp.now(),
+            lastModified = Timestamp.now(),
             visibility = Visibility.DEFAULT,
             userId = "1",
             noteCourse = Course("CS-100", "Sample Class", 2024, "path"),
             folderId = "1")
-    `when`(noteRepository.getNoteById(any(), any(), any())).thenAnswer { invocation ->
+    `when`(noteRepository.getNoteById(any(), any(), any(), any())).thenAnswer { invocation ->
       val onSuccess = invocation.getArgument<(Note) -> Unit>(1)
       onSuccess(mockNote)
     }
 
-    noteViewModel.getNoteById("mockNoteId")
+    noteViewModel.getNoteById("1")
+
+    // Mock the addUser method to call the onSuccess callback
+    `when`(userRepository.addUser(any(), any(), any())).thenAnswer { invocation ->
+      val onSuccess = invocation.getArgument<() -> Unit>(1)
+      onSuccess()
+    }
+
+    val testUser =
+        User(
+            firstName = "testFirstName",
+            lastName = "testLastName",
+            userName = "testUserName",
+            email = "testEmail",
+            uid = "1",
+            dateOfJoining = Timestamp.now(),
+            rating = 0.0)
+    userViewModel.addUser(testUser, {}, {})
 
     // Create a valid PDF file programmatically
     createSamplePdf(pdfFile)
@@ -71,7 +99,7 @@ class PdfViewerTest {
     }
 
     composeTestRule.setContent {
-      PdfViewerScreen(noteViewModel, fileViewModel, mockScanner, navigationActions)
+      PdfViewerScreen(noteViewModel, fileViewModel, userViewModel, mockScanner, navigationActions)
     }
   }
 
@@ -121,7 +149,7 @@ class PdfViewerTest {
   fun clickGoBackButton() {
     composeTestRule.onNodeWithTag("closeButton").performClick()
 
-    verify(navigationActions).navigateTo(Screen.FOLDER_CONTENTS.replace("{folderId}", "1"))
+    verify(navigationActions).goBack()
   }
 
   @Test

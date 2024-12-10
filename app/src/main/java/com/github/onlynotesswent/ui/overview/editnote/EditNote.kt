@@ -105,14 +105,19 @@ fun EditNoteScreen(
   }
 
   Scaffold(
-      floatingActionButton = { DeleteButton(currentUser, note, navigationActions, noteViewModel) },
+      floatingActionButton = {
+        if (note != null && note!!.isOwner(currentUser!!.uid)) {
+          DeleteButton(currentUser, note, navigationActions, noteViewModel)
+        }
+      },
       modifier = Modifier.testTag("editNoteScreen"),
       topBar = {
         EditNoteGeneralTopBar(
             noteViewModel = noteViewModel,
+            userViewModel = userViewModel,
             navigationActions = navigationActions,
             actions = {
-              if (note != null && currentUser != null) {
+              if (note != null && currentUser != null && note!!.isOwner(currentUser!!.uid)) {
                 SaveButton(
                     noteTitle = noteTitle,
                     note = note!!,
@@ -156,7 +161,9 @@ fun EditNoteScreen(
                     courseYear = courseYear,
                     onCourseYearChange = { courseYear = it.toIntOrNull() },
                     visibility = visibility,
-                    onVisibilityChange = { visibility = it })
+                    onVisibilityChange = { visibility = it },
+                    currentUserId = currentUser!!.uid,
+                    note = note!!)
               }
         }
       }
@@ -169,6 +176,7 @@ fun EditNoteScreen(
  *
  * @param noteViewModel The ViewModel that provides the current note to be edited and handles note
  *   updates.
+ * @param userViewModel The ViewModel that provides the current user.
  * @param navigationActions The navigation view model used to transition between different screens.
  * @param actions The actions to display in the top app bar.
  * @param isModified A flag indicating whether the note has been modified.
@@ -177,11 +185,14 @@ fun EditNoteScreen(
 @Composable
 fun EditNoteGeneralTopBar(
     noteViewModel: NoteViewModel,
+    userViewModel: UserViewModel,
     navigationActions: NavigationActions,
     actions: @Composable RowScope.() -> Unit,
     isModified: Boolean
 ) {
   var showDiscardChangesDialog by remember { mutableStateOf(false) }
+  val note by noteViewModel.selectedNote.collectAsState()
+  val currentUser by userViewModel.currentUser.collectAsState()
 
   TopAppBar(
       title = {
@@ -189,10 +200,16 @@ fun EditNoteGeneralTopBar(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center) {
+              if (currentUser?.uid != note?.userId) {
+                Spacer(modifier = Modifier.weight(1.5f))
+              }
               Text(
-                  "Edit Note",
+                  if (currentUser?.uid == note?.userId) "Edit Note" else "View Note",
                   color = MaterialTheme.colorScheme.onSurface,
                   modifier = Modifier.testTag("editNoteTitle"))
+              if (currentUser?.uid != note?.userId) {
+                Spacer(modifier = Modifier.weight(2f))
+              }
             }
       },
       navigationIcon = {
@@ -203,14 +220,7 @@ fun EditNoteGeneralTopBar(
               if (isModified) {
                 showDiscardChangesDialog = true
               } else {
-                if (noteViewModel.selectedNote.value?.folderId != null) {
-                  navigationActions.navigateTo(
-                      Screen.FOLDER_CONTENTS.replace(
-                          oldValue = "{folderId}",
-                          newValue = noteViewModel.selectedNote.value?.folderId!!))
-                } else {
-                  navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
-                }
+                navigationActions.goBack()
                 noteViewModel.selectedNote(null)
               }
             }) {
@@ -257,6 +267,8 @@ fun EditNoteGeneralTopBar(
  * @param onCourseYearChange The callback function to update the course year.
  * @param visibility The visibility of the note.
  * @param onVisibilityChange The callback function to update the visibility.
+ * @param currentUserId The Id of the current user.
+ * @param note The note to be edited.
  */
 @Composable
 fun NoteSection(
@@ -269,9 +281,13 @@ fun NoteSection(
     courseYear: Int?,
     onCourseYearChange: (String) -> Unit,
     visibility: Visibility,
-    onVisibilityChange: (Visibility) -> Unit
+    onVisibilityChange: (Visibility) -> Unit,
+    currentUserId: String,
+    note: Note
 ) {
   var showCourseDetails by remember { mutableStateOf(false) }
+
+  val isEnabled = note.isOwner(currentUserId)
 
   Column(modifier = Modifier.fillMaxWidth()) {
     Text(text = "Title", style = MaterialTheme.typography.titleMedium)
@@ -281,8 +297,9 @@ fun NoteSection(
         label = "",
         placeholder = "Enter the new title here",
         modifier = Modifier.fillMaxWidth().testTag("EditTitle textField"),
+        enabled = note.isOwner(currentUserId),
         trailingIcon = {
-          IconButton(onClick = { onNoteTitleChange("") }) {
+          IconButton(onClick = { onNoteTitleChange("") }, enabled = isEnabled) {
             Icon(Icons.Outlined.Clear, contentDescription = "Clear Title")
           }
         })
@@ -292,7 +309,7 @@ fun NoteSection(
 
   Column(modifier = Modifier.fillMaxWidth()) {
     Text(text = "Visibility", style = MaterialTheme.typography.titleMedium)
-    SelectVisibility(visibility) { onVisibilityChange(it) }
+    SelectVisibility(visibility, currentUserId, note.userId) { onVisibilityChange(it) }
   }
 
   Spacer(modifier = Modifier.height(8.dp))
@@ -347,7 +364,8 @@ fun NoteSection(
                 onValueChange = { onCourseCodeChange(Course.formatCourseCode(it)) },
                 label = "Course Code",
                 placeholder = "Set the course code for the note",
-                modifier = Modifier.fillMaxWidth().testTag("EditCourseCode textField"))
+                modifier = Modifier.fillMaxWidth().testTag("EditCourseCode textField"),
+                enabled = isEnabled)
 
             // Course Name
             NoteDataTextField(
@@ -355,7 +373,8 @@ fun NoteSection(
                 onValueChange = { onCourseNameChange(Course.formatCourseName(it)) },
                 label = "Course Name",
                 placeholder = "Set the course name for the note",
-                modifier = Modifier.fillMaxWidth().testTag("EditCourseName textField"))
+                modifier = Modifier.fillMaxWidth().testTag("EditCourseName textField"),
+                enabled = isEnabled)
 
             // Course Year
             NoteDataTextField(
@@ -363,7 +382,8 @@ fun NoteSection(
                 onValueChange = { onCourseYearChange(it) },
                 label = "Course Year",
                 placeholder = "Set the course year for the note",
-                modifier = Modifier.fillMaxWidth().testTag("EditCourseYear textField"))
+                modifier = Modifier.fillMaxWidth().testTag("EditCourseYear textField"),
+                enabled = isEnabled)
           }
         }
   }
@@ -418,7 +438,8 @@ fun SaveButton(
             Note(
                 id = note.id,
                 title = noteTitle,
-                date = Timestamp.now(), // Use current timestamp
+                date = note.date, // Use current timestamp
+                lastModified = Timestamp.now(),
                 visibility = visibility ?: Visibility.DEFAULT,
                 noteCourse = if (course == Course.EMPTY) null else course,
                 userId = note.userId,
@@ -439,6 +460,7 @@ fun SaveButton(
  * Displays a button that deletes the note. When clicked, the button deletes the note from the
  * ViewModel and navigates back to the overview screen.
  *
+ * @param currentUser The current user.
  * @param note The note to be deleted.
  * @param navigationActions The navigation view model used to transition between different screens.
  * @param noteViewModel The ViewModel that provides the current note to be edited and handles note
