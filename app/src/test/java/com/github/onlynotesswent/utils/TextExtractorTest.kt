@@ -32,13 +32,13 @@ import org.robolectric.shadows.ShadowLog
 
 @RunWith(RobolectricTestRunner::class)
 @Suppress("UNCHECKED_CAST")
-class CustomTextRecognizerTest {
+class TextExtractorTest {
 
   @Mock private lateinit var mockActivity: ComponentActivity
   @Mock private lateinit var mockTextRecognizer: TextRecognizer
   @Mock private lateinit var mockActivityResultLauncher: ActivityResultLauncher<String>
 
-  private lateinit var customTextRecognizer: CustomTextRecognizer
+  private lateinit var textExtractor: TextExtractor
 
   private fun <T> capture(argumentCaptor: ArgumentCaptor<T>): T = argumentCaptor.capture()
 
@@ -53,12 +53,12 @@ class CustomTextRecognizerTest {
                 any<ActivityResultCallback<ActivityResult>>()))
         .thenReturn(mockActivityResultLauncher)
 
-    customTextRecognizer = CustomTextRecognizer(mockActivity, mockTextRecognizer)
+    textExtractor = TextExtractor(mockActivity, mockTextRecognizer)
   }
 
   @Test
   fun initRegistersActivityResultLauncherTest() {
-    customTextRecognizer.init()
+    textExtractor.init()
 
     // Verify that the activity result launcher is registered
     verify(mockActivity)
@@ -69,7 +69,7 @@ class CustomTextRecognizerTest {
 
   @Test
   fun scanImageLogsErrorWhenNotInitializedTest() {
-    customTextRecognizer.scanImage()
+    textExtractor.scanImage()
 
     // Get all the logs
     val logs = ShadowLog.getLogs()
@@ -78,7 +78,7 @@ class CustomTextRecognizerTest {
     val errorLog =
         logs.find {
           it.type == Log.ERROR &&
-              it.tag == CustomTextRecognizer.TAG &&
+              it.tag == TextExtractor.TAG &&
               it.msg == "Error: textRecognitionLauncher is not initialized"
         }
     assert(errorLog != null) { "Expected error log was not found!" }
@@ -86,8 +86,8 @@ class CustomTextRecognizerTest {
 
   @Test
   fun scanImageLaunchesImagePickerIntentTest() {
-    customTextRecognizer.init()
-    customTextRecognizer.scanImage()
+    textExtractor.init()
+    textExtractor.scanImage()
 
     // Verify that the activity result launcher was launched with the correct MIME type
     verify(mockActivityResultLauncher).launch("image/*")
@@ -106,8 +106,8 @@ class CustomTextRecognizerTest {
           .thenReturn(mockToast)
 
       // Start the activity
-      customTextRecognizer.init()
-      customTextRecognizer.scanImage()
+      textExtractor.init()
+      textExtractor.scanImage()
 
       // Get all the logs
       val logs = ShadowLog.getLogs()
@@ -116,7 +116,7 @@ class CustomTextRecognizerTest {
       val errorLog =
           logs.find {
             it.type == Log.ERROR &&
-                it.tag == CustomTextRecognizer.TAG &&
+                it.tag == TextExtractor.TAG &&
                 it.msg == "Failed to launch gallery"
           }
       assert(errorLog != null) { "Expected error log was not found!" }
@@ -156,8 +156,8 @@ class CustomTextRecognizerTest {
           .thenReturn(mockInputImage)
 
       // Trigger the text extraction process
-      customTextRecognizer.init()
-      customTextRecognizer.scanImage()
+      textExtractor.init()
+      textExtractor.scanImage()
 
       // Simulate the image selection callback
       val captor =
@@ -189,8 +189,8 @@ class CustomTextRecognizerTest {
             .thenReturn(mockToast)
 
         // Trigger the text extraction process
-        customTextRecognizer.init()
-        customTextRecognizer.scanImage()
+        textExtractor.init()
+        textExtractor.scanImage()
 
         // Simulate the image selection callback
         val captor =
@@ -206,9 +206,7 @@ class CustomTextRecognizerTest {
         // Check for the error log that should be generated
         val errorLog =
             logs.find {
-              it.type == Log.ERROR &&
-                  it.tag == CustomTextRecognizer.TAG &&
-                  it.msg == "Error reading image"
+              it.type == Log.ERROR && it.tag == TextExtractor.TAG && it.msg == "Error reading image"
             }
         assert(errorLog != null) { "Expected error log was not found!" }
 
@@ -255,8 +253,8 @@ class CustomTextRecognizerTest {
             .thenReturn(mockToast)
 
         // Trigger the text extraction process
-        customTextRecognizer.init()
-        customTextRecognizer.scanImage()
+        textExtractor.init()
+        textExtractor.scanImage()
 
         // Simulate the image selection callback
         val captor =
@@ -273,7 +271,7 @@ class CustomTextRecognizerTest {
         val debugLog =
             logs.find {
               it.type == Log.DEBUG &&
-                  it.tag == CustomTextRecognizer.TAG &&
+                  it.tag == TextExtractor.TAG &&
                   it.msg == "No text found in the image"
             }
         assert(debugLog != null) { "Expected warning log was not found!" }
@@ -320,8 +318,8 @@ class CustomTextRecognizerTest {
             .thenReturn(mockToast)
 
         // Trigger the text extraction process
-        customTextRecognizer.init()
-        customTextRecognizer.scanImage()
+        textExtractor.init()
+        textExtractor.scanImage()
 
         // Simulate the image selection callback
         val captor =
@@ -338,7 +336,7 @@ class CustomTextRecognizerTest {
         val errorLog =
             logs.find {
               it.type == Log.ERROR &&
-                  it.tag == CustomTextRecognizer.TAG &&
+                  it.tag == TextExtractor.TAG &&
                   it.msg == "Text recognition failed"
             }
         assert(errorLog != null) { "Expected error log was not found!" }

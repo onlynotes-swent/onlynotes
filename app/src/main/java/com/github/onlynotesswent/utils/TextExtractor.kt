@@ -13,12 +13,12 @@ import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import java.io.File
 
 /**
- * CustomTextRecognizer class that detects latin-based text from a PDF file. The class uses the
- * Google ML Kit Text Recognition API to extract text from the PDF file.
+ * TextExtractor class that detects latin-based text from a PDF file. The class uses the Google ML
+ * Kit Text Recognition API to extract text from the PDF file.
  *
- * @param activity the ComponentActivity that will use the CustomTextRecognizer
+ * @param activity the ComponentActivity that will use the TextExtractor
  */
-class CustomTextRecognizer(private val activity: ComponentActivity) {
+class TextExtractor(private val activity: ComponentActivity) {
   private lateinit var textRecognizer: TextRecognizer
 
   fun init() {
@@ -97,6 +97,6 @@ class CustomTextRecognizer(private val activity: ComponentActivity) {
   }
 
   companion object {
-    const val TAG = "CustomTextRecognizer"
+    const val TAG = "TextExtractor"
   }
 }
