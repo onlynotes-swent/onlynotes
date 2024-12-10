@@ -1,112 +1,99 @@
 package com.github.onlynotesswent.utils
 
-import android.content.ActivityNotFoundException
-import android.content.Intent
-import android.net.Uri
+import android.graphics.Bitmap
+import android.graphics.pdf.PdfRenderer
+import android.os.ParcelFileDescriptor
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
-import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.contract.ActivityResultContracts
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.TextRecognizer
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
-import java.io.IOException
-
-/* Using Google ML Kit’s Text Recognition v2 API to extract text from an image:
-  https://developers.google.com/ml-kit/vision/text-recognition/v2
- Inspired by: https://github.com/mundodigitalpro/MLVisionKotlin/tree/master
-*/
+import java.io.File
 
 /**
- * CustomTextRecognizer class that detects latin-based text from an input image
+ * CustomTextRecognizer class that detects latin-based text from a PDF file. The class uses the
+ * Google ML Kit Text Recognition API to extract text from the PDF file.
  *
  * @param activity the ComponentActivity that will use the CustomTextRecognizer
- * @param textRecognizer the TextRecognizer object, initialized with the default options
  */
-class CustomTextRecognizer(
-    private val activity: ComponentActivity,
-    private val textRecognizer: TextRecognizer =
-        TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
-) {
+class CustomTextRecognizer(private val activity: ComponentActivity) {
+  private lateinit var textRecognizer: TextRecognizer
 
-  private lateinit var textRecognitionLauncher: ActivityResultLauncher<String>
-
-  /**
-   * Initializes the activity result launcher to handle the image result. To be called in the
-   * `onCreate` method of the activity.
-   */
   fun init() {
-    textRecognitionLauncher =
-        activity.registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
-          uri?.let { extractTextFromImage(it) }
-              ?: Toast.makeText(activity, "Failed to load image", Toast.LENGTH_LONG).show()
-        }
+    textRecognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
   }
 
-  /** Launches an intent to pick an image from the gallery. */
-  fun scanImage() {
-    if (!::textRecognitionLauncher.isInitialized) {
-      Log.e(TAG, "Error: textRecognitionLauncher is not initialized")
+  /**
+   * Processes the given PDF file to extract text from it.
+   *
+   * @param pdfFile the PDF file to extract text from.
+   * @param onResult the lambda function to call with the extracted text.
+   */
+  fun processPdfFile(pdfFile: File, onResult: (String) -> Unit) {
+    if (!::textRecognizer.isInitialized) {
+      // Case should not happen if class is correctly initialized
+      Log.e(TAG, "TextRecognizer is not initialized. Call init() before processing PDF file.")
       return
     }
 
     try {
-      textRecognitionLauncher.launch("image/*")
-    } catch (e: ActivityNotFoundException) {
-      Toast.makeText(activity, "Failed to launch gallery", Toast.LENGTH_LONG).show()
-      Log.e(TAG, "Failed to launch gallery", e)
+      val bitmaps = convertPdfToBitmap(pdfFile)
+      extractTextFromBitmaps(bitmaps, onResult)
+    } catch (e: Exception) {
+      Log.e(TAG, "Error while converting PDF to bitmap", e)
+      Toast.makeText(activity, "Error: text recognition failed", Toast.LENGTH_SHORT).show()
     }
   }
 
   /**
-   * Extracts text from the given image URI and displays it.
+   * Converts the given PDF file to a list of bitmaps.
    *
-   * @param imageUri the URI of the image from which to extract text
+   * @param pdfFile the PDF file to convert to bitmaps
+   * @return a list of bitmaps extracted from the PDF file
+   * @throws Exception if the PDF file cannot be converted to bitmaps
    */
-  private fun extractTextFromImage(imageUri: Uri) {
-    val inputImage: InputImage
-    try {
-      inputImage = InputImage.fromFilePath(activity, imageUri)
-    } catch (e: IOException) {
-      Toast.makeText(activity, "Error reading image: ${e.message}", Toast.LENGTH_LONG).show()
-      Log.e(TAG, "Error reading image", e)
-      return
-    }
+  private fun convertPdfToBitmap(pdfFile: File): List<Bitmap> {
+    val bitmaps = mutableListOf<Bitmap>()
+    val fileDescriptor = ParcelFileDescriptor.open(pdfFile, ParcelFileDescriptor.MODE_READ_ONLY)
+    val pdfRenderer = PdfRenderer(fileDescriptor)
 
-    textRecognizer
-        .process(inputImage)
-        .addOnSuccessListener { visionText ->
-          if (visionText.text.isNotEmpty()) {
-            shareText(visionText.text)
-          } else {
-            Toast.makeText(activity, "No text found in the image", Toast.LENGTH_LONG).show()
-            Log.d(TAG, "No text found in the image")
+    for (pageIndex in 0 until pdfRenderer.pageCount) {
+      val page = pdfRenderer.openPage(pageIndex)
+      val bitmap = Bitmap.createBitmap(page.width, page.height, Bitmap.Config.ARGB_8888)
+      page.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
+      bitmaps.add(bitmap)
+      page.close()
+    }
+    pdfRenderer.close()
+    fileDescriptor.close()
+    return bitmaps
+  }
+
+  /**
+   * Extracts text from the given list of bitmaps.
+   *
+   * @param bitmaps the list of bitmaps to extract text from.
+   * @param onResult the lambda function to call with the extracted text.
+   */
+  private fun extractTextFromBitmaps(bitmaps: List<Bitmap>, onResult: (String) -> Unit) {
+    val textResults = StringBuilder()
+
+    bitmaps.forEachIndexed { index, bitmap ->
+      val image = InputImage.fromBitmap(bitmap, 0)
+      textRecognizer
+          .process(image)
+          .addOnSuccessListener { visionText ->
+            val text = visionText.text
+            if (text.isNotEmpty()) textResults.append(text).append("\n")
+            if (index == bitmaps.size - 1) onResult(textResults.toString())
           }
-        }
-        .addOnFailureListener { e ->
-          Toast.makeText(activity, "Text recognition failed: ${e.message}", Toast.LENGTH_LONG)
-              .show()
-          Log.e(TAG, "Text recognition failed", e)
-        }
-  }
-
-  /**
-   * Shares the recognized text using an Android sharing intent.
-   *
-   * @param text the text to share
-   *
-   * TODO: Update function when we know what to do with the recognized text
-   */
-  private fun shareText(text: String) {
-    val shareIntent =
-        Intent(Intent.ACTION_SEND).apply {
-          type = "text/plain"
-          putExtra(Intent.EXTRA_TEXT, text)
-          putExtra(Intent.EXTRA_TITLE, "Recognized Text")
-        }
-    activity.startActivity(Intent.createChooser(shareIntent, "Share text"))
+          .addOnFailureListener { e ->
+            Log.e(TAG, "Text recognition failed", e)
+            Toast.makeText(activity, "Error: text recognition failed", Toast.LENGTH_SHORT).show()
+          }
+    }
   }
 
   companion object {
