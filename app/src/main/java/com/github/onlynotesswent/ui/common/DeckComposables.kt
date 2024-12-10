@@ -103,7 +103,7 @@ fun EditDeckDialog(
   val deckTitle = remember { mutableStateOf(deck.value?.name ?: "") }
   val deckDescription = remember { mutableStateOf(deck.value?.description ?: "") }
   val deckVisibility = remember { mutableStateOf(deck.value?.visibility ?: Visibility.DEFAULT) }
-  val currentUser = userViewModel.currentUser.collectAsState()
+  val currentUser = userViewModel.currentUser.collectAsState().value
 
   Dialog(onDismissRequest = onDismissRequest) {
     Card(modifier = Modifier.testTag("editDeckDialog").padding(5.dp)) {
@@ -118,7 +118,7 @@ fun EditDeckDialog(
                 maxLines = 1,
                 modifier = Modifier.testTag("deckTitleTextField"),
             )
-            SelectVisibility(deckVisibility.value, currentUser.value!!.uid, deck.value!!.userId) {
+            SelectVisibility(deckVisibility.value, currentUser!!.uid, deck.value!!.userId) {
               deckVisibility.value = it
             }
             OutlinedTextField(

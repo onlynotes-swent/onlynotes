@@ -81,7 +81,7 @@ fun NoteItem(
         title = stringResource(R.string.move_note_out_of_folder),
         text = stringResource(R.string.move_note_out_of_folder_confirmation),
         onConfirm = {
-          val parentFolderId = folderViewModel.parentFolder.value?.id
+          val parentFolderId = folderViewModel.parentFolderId.value
           if (parentFolderId != null) {
             noteViewModel.updateNote(note.copy(folderId = parentFolderId))
             navigationActions.navigateTo(

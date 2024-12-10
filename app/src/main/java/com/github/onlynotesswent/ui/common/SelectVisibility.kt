@@ -36,14 +36,14 @@ import com.github.onlynotesswent.model.common.Visibility
  *
  * @param visibility The current visibility option.
  * @param currentUserId The Id of the current user.
- * @param itemUserId The Id of the user who created the item (note, folder or deck).
+ * @param noteUserId The Id of the user who created the note.
  * @param onVisibilityChange The action to perform when the visibility option is changed.
  */
 @Composable
 fun SelectVisibility(
     visibility: Visibility?,
     currentUserId: String,
-    itemUserId: String,
+    noteUserId: String,
     onVisibilityChange: (Visibility) -> Unit
 ) {
   var selectedIndex by remember {
@@ -57,9 +57,9 @@ fun SelectVisibility(
       modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
       verticalAlignment = Alignment.CenterVertically,
       horizontalArrangement =
-          if (currentUserId == itemUserId) Arrangement.SpaceBetween else Arrangement.Center) {
+          if (currentUserId == noteUserId) Arrangement.SpaceBetween else Arrangement.Center) {
         // Left arrow to scroll backward
-        if (currentUserId == itemUserId) {
+        if (currentUserId == noteUserId) {
           IconButton(
               onClick = {
                 selectedIndex =
@@ -99,7 +99,7 @@ fun SelectVisibility(
         }
 
         // Right arrow to scroll forward
-        if (currentUserId == itemUserId) {
+        if (currentUserId == noteUserId) {
           IconButton(
               onClick = {
                 selectedIndex =

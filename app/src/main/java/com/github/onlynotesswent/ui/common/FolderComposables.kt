@@ -89,20 +89,10 @@ fun FolderItem(
 
                           override fun onEnded(event: DragAndDropEvent) {
                             if (dropSuccess.value) {
-                              if (folder.parentFolderId == null) {
-                                  folderViewModel.selectedParentFolder(null)
-                                  navigationActions.navigateTo(
-                                      Screen.FOLDER_CONTENTS.replace(
-                                          oldValue = "{folderId}", newValue = folder.id))
-                              } else {
-                                  folderViewModel.getParentFolderById(
-                                      folderId = folder.parentFolderId,
-                                      onSuccess = {
-                                          navigationActions.navigateTo(
-                                              Screen.FOLDER_CONTENTS.replace(
-                                                  oldValue = "{folderId}", newValue = folder.id))
-                                      })
-                              }
+                              folderViewModel.selectedParentFolderId(folder.parentFolderId)
+                              navigationActions.navigateTo(
+                                  Screen.FOLDER_CONTENTS.replace(
+                                      oldValue = "{folderId}", newValue = folder.id))
                             }
                             // Reset dropSuccess value
                             dropSuccess.value = false

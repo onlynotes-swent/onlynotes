@@ -1,6 +1,5 @@
 package com.github.onlynotesswent.ui.common
 
-import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -79,18 +78,10 @@ fun CustomSeparatedLazyGrid(
                     navigationActions = navigationActions,
                     noteViewModel = noteViewModel,
                     folderViewModel = folderViewModel) {
-                      if (folder.parentFolderId == null) {
-                        folderViewModel.selectedParentFolder(null)
-                        navigationActions.navigateTo(Screen.FOLDER_CONTENTS.replace(
-                            oldValue = "{folderId}", newValue = folder.id))
-                      } else {
-                          folderViewModel.getParentFolderById(
-                              folderId = folder.parentFolderId,
-                              onSuccess = {
-                                  navigationActions.navigateTo( Screen.FOLDER_CONTENTS.replace(
-                                      oldValue = "{folderId}", newValue = folder.id))
-                              })
-                      }
+                      folderViewModel.selectedParentFolderId(folder.parentFolderId)
+                      navigationActions.navigateTo(
+                          Screen.FOLDER_CONTENTS.replace(
+                              oldValue = "{folderId}", newValue = folder.id))
                     }
               }
             }
