@@ -1,5 +1,7 @@
 package com.github.onlynotesswent.model.note
 
+import com.github.onlynotesswent.model.user.User
+
 interface NoteRepository {
 
   /**
@@ -23,6 +25,19 @@ interface NoteRepository {
    * @param onFailure Callback to be invoked if an error occurs.
    */
   fun getPublicNotes(onSuccess: (List<Note>) -> Unit, onFailure: (Exception) -> Unit)
+
+    /**
+     * Retrieves all friends only notes from a list of following users.
+     *
+     * @param followingListIds The list of users Ids to retrieve friends only notes from.
+     * @param onSuccess Callback to be invoked with the retrieved notes.
+     * @param onFailure Callback to be invoked if an error occurs.
+     */
+  fun getNotesFromFollowingList(
+      followingListIds: List<String>,
+      onSuccess: (List<Note>) -> Unit,
+      onFailure: (Exception) -> Unit
+  )
 
   /**
    * Retrieves all notes from a user (irrespective of folderId value).

@@ -19,6 +19,9 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
   private val _publicNotes = MutableStateFlow<List<Note>>(emptyList())
   val publicNotes: StateFlow<List<Note>> = _publicNotes.asStateFlow()
 
+  private val _friendsNotes = MutableStateFlow<List<Note>>(emptyList())
+  val friendsNotes: StateFlow<List<Note>> = _friendsNotes.asStateFlow()
+
   private val _userNotes = MutableStateFlow<List<Note>>(emptyList())
   val userNotes: StateFlow<List<Note>> = _userNotes.asStateFlow()
 
@@ -104,6 +107,28 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
           onSuccess(it)
         },
         onFailure = onFailure)
+  }
+
+  /**
+   * Gets all friends only Note documents from a list of following users. If the list is null,
+   * an empty list is used.
+   *
+   * @param followingListIds The list of users Ids to retrieve friends only notes from.
+   * @param onSuccess The function to call when the retrieval is successful.
+   * @param onFailure The function to call when the retrieval fails.
+   */
+  fun getNotesFromFollowingList(
+      followingListIds: List<String>?,
+      onSuccess: (List<Note>) -> Unit = {},
+      onFailure: (Exception) -> Unit = {}
+  ) {
+      repository.getNotesFromFollowingList(
+          followingListIds = followingListIds ?: emptyList(),
+          onSuccess = {
+            _friendsNotes.value = it
+            onSuccess(it)
+          },
+          onFailure = onFailure)
   }
 
   /**
