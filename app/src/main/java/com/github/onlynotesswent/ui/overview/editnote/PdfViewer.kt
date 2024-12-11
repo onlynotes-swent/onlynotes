@@ -174,6 +174,7 @@ fun PdfViewerScreen(
         var showDeleteConfirmation by remember { mutableStateOf(false) }
 
         TopAppBar(
+            modifier = Modifier.testTag("pdfTopBar"),
             colors =
                 TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surface),
@@ -268,6 +269,8 @@ fun PdfViewerScreen(
                       },
                       onDismiss = { showDeleteConfirmation = false })
                 }
+              } else {
+                  IconButton(onClick = {}) {} // Empty action button to keep the title aligned
               }
             })
       },
@@ -302,12 +305,10 @@ fun TitlePdfTopBar() {
       modifier = Modifier.fillMaxWidth(),
       verticalAlignment = Alignment.CenterVertically,
       horizontalArrangement = Arrangement.Center) {
-        Spacer(modifier = Modifier.weight(1.5f))
         Text(
             text = stringResource(R.string.pdf),
             color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.testTag("pdfTitle"))
-        Spacer(modifier = Modifier.weight(1.5f))
       }
 }
 
