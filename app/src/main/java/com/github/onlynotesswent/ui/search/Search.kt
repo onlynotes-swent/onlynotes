@@ -21,6 +21,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -34,6 +35,7 @@ import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.flashcard.deck.DeckViewModel
 import com.github.onlynotesswent.model.folder.FolderViewModel
 import com.github.onlynotesswent.model.note.NoteViewModel
+import com.github.onlynotesswent.model.user.User
 import com.github.onlynotesswent.model.user.UserViewModel
 import com.github.onlynotesswent.ui.common.CustomSeparatedLazyGrid
 import com.github.onlynotesswent.ui.common.DeckSearchItem
@@ -45,6 +47,7 @@ import com.github.onlynotesswent.ui.navigation.Screen
 import com.github.onlynotesswent.ui.user.UserItem
 import com.github.onlynotesswent.ui.user.switchProfileTo
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.combine
 
 /**
  * Displays the search screen where users can search notes by title.
@@ -69,9 +72,17 @@ fun SearchScreen(
   val searchWords = remember { mutableStateOf(emptyList<String>()) }
   searchWords.value = searchQuery.value.split("\\s+".toRegex())
 
-  val notes = noteViewModel.publicNotes.collectAsState()
-  val filteredNotes = remember { mutableStateOf(notes.value) }
-  filteredNotes.value = notes.value.filter { textMatchesSearch(it.title, searchWords.value) }
+  val currentUser = userViewModel.currentUser.collectAsState()
+
+  val combinedNotes = combine(noteViewModel.publicNotes, noteViewModel.friendsNotes) {
+    publicNotes, friendsNotes -> publicNotes + friendsNotes
+  }.collectAsState(initial = emptyList())
+
+  //val publicNotes = noteViewModel.publicNotes.collectAsState()
+  //val friendsNotes = noteViewModel.friendsNotes.collectAsState()
+  //val combinedNotes = publicNotes.value + friendsNotes.value
+  val filteredNotes = remember { mutableStateOf(combinedNotes.value) }
+  filteredNotes.value = combinedNotes.value.filter { textMatchesSearch(it.title, searchWords.value) }
 
   val users = userViewModel.allUsers.collectAsState()
   val filteredUsers = remember { mutableStateOf(users.value) }
@@ -81,23 +92,34 @@ fun SearchScreen(
             textMatchesSearch(it.userHandle(), searchWords.value)
       }
 
-  val folders = folderViewModel.publicFolders.collectAsState()
-  val filteredFolders = remember { mutableStateOf(folders.value) }
-  filteredFolders.value = folders.value.filter { textMatchesSearch(it.name, searchWords.value) }
+  val combinedFolders = combine(folderViewModel.publicFolders, folderViewModel.friendsFolders) {
+    publicFolders, friendsFolders -> publicFolders + friendsFolders
+  }.collectAsState(initial = emptyList())
+  //val publicFolders = folderViewModel.publicFolders.collectAsState()
+  //val friendsFolders = folderViewModel.friendsFolders.collectAsState()
+  //val combinedFolders = publicFolders.value + friendsFolders.value
+  val filteredFolders = remember { mutableStateOf(combinedFolders.value) }
+  filteredFolders.value = combinedFolders.value.filter { textMatchesSearch(it.name, searchWords.value) }
 
-  val decks = deckViewModel.publicDecks.collectAsState()
-  val filteredDecks = remember { mutableStateOf(decks.value) }
-  filteredDecks.value = decks.value.filter { textMatchesSearch(it.name, searchWords.value) }
+  val combinedDecks = combine(deckViewModel.publicDecks, deckViewModel.friendsDecks) {
+    publicDecks, friendsDecks -> publicDecks + friendsDecks
+  }.collectAsState(initial = emptyList())
+  //val decks = deckViewModel.publicDecks.collectAsState()
+  val filteredDecks = remember { mutableStateOf(combinedDecks.value) }
+  filteredDecks.value = combinedDecks.value.filter { textMatchesSearch(it.name, searchWords.value) }
 
-  // Refresh the list of notes, users, and folders periodically.
-  RefreshPeriodically(searchQuery, noteViewModel, userViewModel, folderViewModel, deckViewModel)
+  // Refresh the list of notes, users, folders and decks periodically.
+  RefreshPeriodically(searchQuery, noteViewModel, userViewModel, folderViewModel, deckViewModel, currentUser)
   // Refresh the list of notes, users, and folders when the search query is empty,
   // typically when reloading the screen.
   if (searchQuery.value.isBlank()) {
     noteViewModel.getPublicNotes()
+    noteViewModel.getNotesFromFollowingList(currentUser.value?.friends?.following)
     userViewModel.getAllUsers()
     folderViewModel.getPublicFolders()
+    folderViewModel.getFoldersFromFollowingList(currentUser.value?.friends?.following)
     deckViewModel.getPublicDecks()
+    deckViewModel.getDecksFromFollowingList(currentUser.value?.friends?.following)
   }
 
   Scaffold(
@@ -151,6 +173,7 @@ fun SearchScreen(
                   onClick = {
                     searchType.value = SearchType.NOTES
                     noteViewModel.getPublicNotes()
+                    noteViewModel.getNotesFromFollowingList(currentUser.value?.friends?.following)
                   },
                   leadingIcon = {
                     if (searchType.value == SearchType.NOTES)
@@ -168,6 +191,7 @@ fun SearchScreen(
                   onClick = {
                     searchType.value = SearchType.FOLDERS
                     folderViewModel.getPublicFolders()
+                    folderViewModel.getFoldersFromFollowingList(currentUser.value?.friends?.following)
                   },
                   leadingIcon = {
                     if (searchType.value == SearchType.FOLDERS)
@@ -185,6 +209,7 @@ fun SearchScreen(
                   onClick = {
                     searchType.value = SearchType.DECKS
                     deckViewModel.getPublicDecks()
+                    deckViewModel.getDecksFromFollowingList(currentUser.value?.friends?.following)
                   },
                   leadingIcon = {
                     if (searchType.value == SearchType.DECKS)
@@ -338,15 +363,19 @@ private fun RefreshPeriodically(
     noteViewModel: NoteViewModel,
     userViewModel: UserViewModel,
     folderViewModel: FolderViewModel,
-    deckViewModel: DeckViewModel
+    deckViewModel: DeckViewModel,
+    currentUser: State<User?>
 ) {
   LaunchedEffect(Unit) {
     while (searchQuery.value.isNotBlank()) {
       delay(3000)
       noteViewModel.getPublicNotes()
+      noteViewModel.getNotesFromFollowingList(currentUser.value?.friends?.following)
       userViewModel.getAllUsers()
       folderViewModel.getPublicFolders()
+      folderViewModel.getFoldersFromFollowingList(currentUser.value?.friends?.following)
       deckViewModel.getPublicDecks()
+      deckViewModel.getDecksFromFollowingList(currentUser.value?.friends?.following)
     }
   }
 }
