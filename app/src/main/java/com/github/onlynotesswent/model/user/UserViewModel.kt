@@ -10,6 +10,7 @@ import com.github.onlynotesswent.model.flashcard.deck.Deck
 import com.github.onlynotesswent.model.notification.Notification
 import com.github.onlynotesswent.model.notification.NotificationRepository
 import com.github.onlynotesswent.model.notification.NotificationRepositoryFirestore
+import com.github.onlynotesswent.model.user.UserRepositoryFirestore.SavedDocumentType
 import com.google.firebase.Firebase
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
@@ -610,4 +611,49 @@ class UserViewModel(
           onFailure)
     }
   }
+
+    /**
+     * Adds a new saved document uid of the given type  to the user's saved document list.
+     *
+     * @param documentUid The UID of the document to add to the saved document list.
+     * @param documentType The type of the document to add to the saved document list.
+     * @param onSuccess Callback to be invoked when the addition is successful.
+     * @param onFailure Callback to be invoked if an error occurs.
+     */
+    fun addSavedDocumentUidOfType(
+        documentUid: String,
+        documentType: SavedDocumentType,
+        onSuccess: () -> Unit = {},
+        onFailure: (Exception) -> Unit = {}) {
+        _currentUser.value?.let {
+            repository.addSavedDocumentUidOfType(
+                it.uid,
+                documentUid,
+                documentType,
+                onSuccess,
+                onFailure)
+        }
+    }
+
+    /**
+     * Retrieves all saved document UIDs of the given type from the current User.
+     *
+     * @param currentUserID The ID of the current user.
+     * @param documentType The type of the saved document to retrieve.
+     * @param onSuccess Callback to be invoked with the list of retrieved saved document uids.
+     * @param onFailure Callback to be invoked if an error occurs.
+     */
+    fun getSavedDocumentsUidOfType(
+        currentUserID: String,
+        documentType: SavedDocumentType,
+        onSuccess: (List<String>) -> Unit,
+        onFailure: (Exception) -> Unit) {
+        _currentUser.value?.let {
+            repository.getSavedDocumentsUidOfType(
+                it.uid,
+                documentType,
+                onSuccess,
+                onFailure)
+        }
+    }
 }
