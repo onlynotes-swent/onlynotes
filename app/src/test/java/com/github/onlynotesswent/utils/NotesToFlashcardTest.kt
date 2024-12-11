@@ -23,7 +23,11 @@ import com.google.gson.JsonSyntaxException
 import java.io.File
 import java.io.IOException
 import java.util.concurrent.atomic.AtomicInteger
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.setMain
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
@@ -212,8 +216,11 @@ class NotesToFlashcardTest {
     }
   }
 
+  @OptIn(ExperimentalCoroutinesApi::class)
   @Test
   fun convertFolderToDecks() = runTest {
+    // Override Dispatchers.IO with TestDispatcher in your test setup
+    Dispatchers.setMain(StandardTestDispatcher(testScheduler))
     // Initialize the view models, repositories and saved objects
     savedFlashcards.clear()
     savedDecks.clear()
@@ -267,7 +274,9 @@ class NotesToFlashcardTest {
         }
 
     notesToFlashcard.convertFolderToDecks(
-        onSuccess = {}, onFailure = { fail("Conversion failed with exception: $it") })
+        onProgress = { _, _, _ -> },
+        onSuccess = {},
+        onFailure = { fail("Conversion failed with exception: $it") })
 
     // Assert
     // Check 4 decks were created
