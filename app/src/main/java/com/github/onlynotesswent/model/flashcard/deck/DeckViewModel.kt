@@ -100,9 +100,9 @@ class DeckViewModel(private val repository: DeckRepository) : ViewModel() {
    * @param onFailure The callback to be executed when an error occurs.
    */
   fun getDecksFromFollowingList(
-        followingListIds: List<String>?,
-        onSuccess: (List<Deck>) -> Unit = {},
-        onFailure: (Exception) -> Unit = {}
+      followingListIds: List<String>?,
+      onSuccess: (List<Deck>) -> Unit = {},
+      onFailure: (Exception) -> Unit = {}
   ) {
     repository.getDecksFromFollowingList(
         followingListIds ?: emptyList(),

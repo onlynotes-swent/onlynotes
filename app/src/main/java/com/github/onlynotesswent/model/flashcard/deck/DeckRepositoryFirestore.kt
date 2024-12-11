@@ -78,8 +78,8 @@ class DeckRepositoryFirestore(private val db: FirebaseFirestore) : DeckRepositor
   ) {
     // The current user is not following anyone
     if (followingListIds.isEmpty()) {
-        onSuccess(emptyList())
-        return
+      onSuccess(emptyList())
+      return
     }
 
     db.collection(collectionPath)

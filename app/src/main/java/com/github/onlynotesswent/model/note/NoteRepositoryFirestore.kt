@@ -5,7 +5,6 @@ import android.util.Log
 import com.github.onlynotesswent.model.cache.CacheDatabase
 import com.github.onlynotesswent.model.common.Course
 import com.github.onlynotesswent.model.common.Visibility
-import com.github.onlynotesswent.model.user.User
 import com.github.onlynotesswent.utils.NetworkUtils
 import com.google.android.gms.tasks.Task
 import com.google.firebase.Firebase
@@ -74,32 +73,32 @@ class NoteRepositoryFirestore(
     }
   }
 
-    override fun getNotesFromFollowingList(
-        followingListIds: List<String>,
-        onSuccess: (List<Note>) -> Unit,
-        onFailure: (Exception) -> Unit
-    ) {
-        // The current user is not following anyone
-        if (followingListIds.isEmpty()) {
-            onSuccess(emptyList())
-            return
-        }
-
-        db.collection(collectionPath).get().addOnCompleteListener { task ->
-            if (task.isSuccessful) {
-                val followingNotes =
-                    task.result.documents
-                        .mapNotNull { document -> documentSnapshotToNote(document) }
-                        .filter { it.visibility == Visibility.FRIENDS && it.userId in followingListIds }
-                onSuccess(followingNotes)
-            } else {
-                task.exception?.let { e ->
-                    Log.e(TAG, "Error getting following documents", e)
-                    onFailure(e)
-                }
-            }
-        }
+  override fun getNotesFromFollowingList(
+      followingListIds: List<String>,
+      onSuccess: (List<Note>) -> Unit,
+      onFailure: (Exception) -> Unit
+  ) {
+    // The current user is not following anyone
+    if (followingListIds.isEmpty()) {
+      onSuccess(emptyList())
+      return
     }
+
+    db.collection(collectionPath).get().addOnCompleteListener { task ->
+      if (task.isSuccessful) {
+        val followingNotes =
+            task.result.documents
+                .mapNotNull { document -> documentSnapshotToNote(document) }
+                .filter { it.visibility == Visibility.FRIENDS && it.userId in followingListIds }
+        onSuccess(followingNotes)
+      } else {
+        task.exception?.let { e ->
+          Log.e(TAG, "Error getting following documents", e)
+          onFailure(e)
+        }
+      }
+    }
+  }
 
   override suspend fun getNotesFromUid(
       userId: String,

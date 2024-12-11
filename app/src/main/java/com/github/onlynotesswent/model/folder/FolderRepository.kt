@@ -178,9 +178,9 @@ interface FolderRepository {
    * @param onFailure Callback to be invoked if an error occurs.
    */
   fun getFoldersFromFollowingList(
-        followingListIds: List<String>,
-        onSuccess: (List<Folder>) -> Unit,
-        onFailure: (Exception) -> Unit
+      followingListIds: List<String>,
+      onSuccess: (List<Folder>) -> Unit,
+      onFailure: (Exception) -> Unit
   )
 
   /**

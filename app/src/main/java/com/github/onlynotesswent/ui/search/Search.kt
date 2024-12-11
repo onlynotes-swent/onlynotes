@@ -74,15 +74,18 @@ fun SearchScreen(
 
   val currentUser = userViewModel.currentUser.collectAsState()
 
-  val combinedNotes = combine(noteViewModel.publicNotes, noteViewModel.friendsNotes) {
-    publicNotes, friendsNotes -> publicNotes + friendsNotes
-  }.collectAsState(initial = emptyList())
+  val combinedNotes =
+      combine(noteViewModel.publicNotes, noteViewModel.friendsNotes) { publicNotes, friendsNotes ->
+            publicNotes + friendsNotes
+          }
+          .collectAsState(initial = emptyList())
 
-  //val publicNotes = noteViewModel.publicNotes.collectAsState()
-  //val friendsNotes = noteViewModel.friendsNotes.collectAsState()
-  //val combinedNotes = publicNotes.value + friendsNotes.value
+  // val publicNotes = noteViewModel.publicNotes.collectAsState()
+  // val friendsNotes = noteViewModel.friendsNotes.collectAsState()
+  // val combinedNotes = publicNotes.value + friendsNotes.value
   val filteredNotes = remember { mutableStateOf(combinedNotes.value) }
-  filteredNotes.value = combinedNotes.value.filter { textMatchesSearch(it.title, searchWords.value) }
+  filteredNotes.value =
+      combinedNotes.value.filter { textMatchesSearch(it.title, searchWords.value) }
 
   val users = userViewModel.allUsers.collectAsState()
   val filteredUsers = remember { mutableStateOf(users.value) }
@@ -92,24 +95,32 @@ fun SearchScreen(
             textMatchesSearch(it.userHandle(), searchWords.value)
       }
 
-  val combinedFolders = combine(folderViewModel.publicFolders, folderViewModel.friendsFolders) {
-    publicFolders, friendsFolders -> publicFolders + friendsFolders
-  }.collectAsState(initial = emptyList())
-  //val publicFolders = folderViewModel.publicFolders.collectAsState()
-  //val friendsFolders = folderViewModel.friendsFolders.collectAsState()
-  //val combinedFolders = publicFolders.value + friendsFolders.value
+  val combinedFolders =
+      combine(folderViewModel.publicFolders, folderViewModel.friendsFolders) {
+              publicFolders,
+              friendsFolders ->
+            publicFolders + friendsFolders
+          }
+          .collectAsState(initial = emptyList())
+  // val publicFolders = folderViewModel.publicFolders.collectAsState()
+  // val friendsFolders = folderViewModel.friendsFolders.collectAsState()
+  // val combinedFolders = publicFolders.value + friendsFolders.value
   val filteredFolders = remember { mutableStateOf(combinedFolders.value) }
-  filteredFolders.value = combinedFolders.value.filter { textMatchesSearch(it.name, searchWords.value) }
+  filteredFolders.value =
+      combinedFolders.value.filter { textMatchesSearch(it.name, searchWords.value) }
 
-  val combinedDecks = combine(deckViewModel.publicDecks, deckViewModel.friendsDecks) {
-    publicDecks, friendsDecks -> publicDecks + friendsDecks
-  }.collectAsState(initial = emptyList())
-  //val decks = deckViewModel.publicDecks.collectAsState()
+  val combinedDecks =
+      combine(deckViewModel.publicDecks, deckViewModel.friendsDecks) { publicDecks, friendsDecks ->
+            publicDecks + friendsDecks
+          }
+          .collectAsState(initial = emptyList())
+  // val decks = deckViewModel.publicDecks.collectAsState()
   val filteredDecks = remember { mutableStateOf(combinedDecks.value) }
   filteredDecks.value = combinedDecks.value.filter { textMatchesSearch(it.name, searchWords.value) }
 
   // Refresh the list of notes, users, folders and decks periodically.
-  RefreshPeriodically(searchQuery, noteViewModel, userViewModel, folderViewModel, deckViewModel, currentUser)
+  RefreshPeriodically(
+      searchQuery, noteViewModel, userViewModel, folderViewModel, deckViewModel, currentUser)
   // Refresh the list of notes, users, and folders when the search query is empty,
   // typically when reloading the screen.
   if (searchQuery.value.isBlank()) {
@@ -191,7 +202,8 @@ fun SearchScreen(
                   onClick = {
                     searchType.value = SearchType.FOLDERS
                     folderViewModel.getPublicFolders()
-                    folderViewModel.getFoldersFromFollowingList(currentUser.value?.friends?.following)
+                    folderViewModel.getFoldersFromFollowingList(
+                        currentUser.value?.friends?.following)
                   },
                   leadingIcon = {
                     if (searchType.value == SearchType.FOLDERS)

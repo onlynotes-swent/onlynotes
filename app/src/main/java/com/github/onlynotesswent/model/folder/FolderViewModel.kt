@@ -350,26 +350,26 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
   }
 
   /**
-   * Retrieves all friends only folders from a list of following users. If the list is null, an empty
-   * list is used.
+   * Retrieves all friends only folders from a list of following users. If the list is null, an
+   * empty list is used.
    *
    * @param followingListIds The list of users IDs to retrieve friends only folders from.
    * @param onSuccess The function to call when the friends folders are retrieved successfully.
    * @param onFailure The function to call when the friends folders fail to be retrieved.
    */
   fun getFoldersFromFollowingList(
-        followingListIds: List<String>?,
-        onSuccess: () -> Unit = {},
-        onFailure: (Exception) -> Unit = {}
-    ) {
-        repository.getFoldersFromFollowingList(
-            followingListIds = followingListIds ?: emptyList(),
-            onSuccess = {
-            _friendsFolders.value = it
-            onSuccess()
-            },
-            onFailure = onFailure)
-    }
+      followingListIds: List<String>?,
+      onSuccess: () -> Unit = {},
+      onFailure: (Exception) -> Unit = {}
+  ) {
+    repository.getFoldersFromFollowingList(
+        followingListIds = followingListIds ?: emptyList(),
+        onSuccess = {
+          _friendsFolders.value = it
+          onSuccess()
+        },
+        onFailure = onFailure)
+  }
 
   /**
    * Deletes all elements from a folder.

@@ -110,8 +110,8 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
   }
 
   /**
-   * Gets all friends only Note documents from a list of following users. If the list is null,
-   * an empty list is used.
+   * Gets all friends only Note documents from a list of following users. If the list is null, an
+   * empty list is used.
    *
    * @param followingListIds The list of users Ids to retrieve friends only notes from.
    * @param onSuccess The function to call when the retrieval is successful.
@@ -122,13 +122,13 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
       onSuccess: (List<Note>) -> Unit = {},
       onFailure: (Exception) -> Unit = {}
   ) {
-      repository.getNotesFromFollowingList(
-          followingListIds = followingListIds ?: emptyList(),
-          onSuccess = {
-            _friendsNotes.value = it
-            onSuccess(it)
-          },
-          onFailure = onFailure)
+    repository.getNotesFromFollowingList(
+        followingListIds = followingListIds ?: emptyList(),
+        onSuccess = {
+          _friendsNotes.value = it
+          onSuccess(it)
+        },
+        onFailure = onFailure)
   }
 
   /**

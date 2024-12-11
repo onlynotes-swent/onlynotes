@@ -348,32 +348,32 @@ class FolderRepositoryFirestore(
     }
   }
 
-    override fun getFoldersFromFollowingList(
-        followingListIds: List<String>,
-        onSuccess: (List<Folder>) -> Unit,
-        onFailure: (Exception) -> Unit
-    ) {
-        // The current user is not following anyone
-        if (followingListIds.isEmpty()) {
-            onSuccess(emptyList())
-            return
-        }
-
-        db.collection(folderCollectionPath).get().addOnCompleteListener { task ->
-            if (task.isSuccessful) {
-                val followingFolders =
-                    task.result.documents
-                        .mapNotNull { document -> documentSnapshotToFolder(document) }
-                        .filter { it.visibility == Visibility.FRIENDS && it.userId in followingListIds }
-                onSuccess(followingFolders)
-            } else {
-                task.exception?.let { e: Exception ->
-                    onFailure(e)
-                    Log.e(TAG, "Failed to retrieve friends only folders: ${e.message}")
-                }
-            }
-        }
+  override fun getFoldersFromFollowingList(
+      followingListIds: List<String>,
+      onSuccess: (List<Folder>) -> Unit,
+      onFailure: (Exception) -> Unit
+  ) {
+    // The current user is not following anyone
+    if (followingListIds.isEmpty()) {
+      onSuccess(emptyList())
+      return
     }
+
+    db.collection(folderCollectionPath).get().addOnCompleteListener { task ->
+      if (task.isSuccessful) {
+        val followingFolders =
+            task.result.documents
+                .mapNotNull { document -> documentSnapshotToFolder(document) }
+                .filter { it.visibility == Visibility.FRIENDS && it.userId in followingListIds }
+        onSuccess(followingFolders)
+      } else {
+        task.exception?.let { e: Exception ->
+          onFailure(e)
+          Log.e(TAG, "Failed to retrieve friends only folders: ${e.message}")
+        }
+      }
+    }
+  }
 
   override suspend fun deleteFolderContents(
       folder: Folder,

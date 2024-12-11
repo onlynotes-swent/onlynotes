@@ -20,17 +20,17 @@ interface DeckRepository {
    */
   fun getPublicDecks(onSuccess: (List<Deck>) -> Unit, onFailure: (Exception) -> Unit)
 
-    /**
-     * Retrieves all decks from a list of following users.
-     *
-     * @param followingListIds The list of users to retrieve decks from.
-     * @param onSuccess The callback to be invoked when the decks are successfully retrieved.
-     * @param onFailure The callback to be invoked if an error occurs.
-     */
+  /**
+   * Retrieves all decks from a list of following users.
+   *
+   * @param followingListIds The list of users to retrieve decks from.
+   * @param onSuccess The callback to be invoked when the decks are successfully retrieved.
+   * @param onFailure The callback to be invoked if an error occurs.
+   */
   fun getDecksFromFollowingList(
-        followingListIds: List<String>,
-        onSuccess: (List<Deck>) -> Unit,
-        onFailure: (Exception) -> Unit
+      followingListIds: List<String>,
+      onSuccess: (List<Deck>) -> Unit,
+      onFailure: (Exception) -> Unit
   )
   /**
    * Retrieves all decks for the given user.
