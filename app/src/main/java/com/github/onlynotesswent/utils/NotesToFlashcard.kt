@@ -23,6 +23,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
 
 /**
  * A utility class that converts notes into flashcards using the OpenAI API.
@@ -44,6 +46,9 @@ class NotesToFlashcard(
   companion object {
     private const val TAG = "NotesToFlashcard"
   }
+
+    private val noteSemaphore = Semaphore(10) // Allow 10 concurrent note processing tasks
+    private val subfolderSemaphore = Semaphore(4) // Allow 4 concurrent subfolder processing tasks
 
   private val promptPrefix =
       """Convert the following notes into a JSON array of flashcards. 
@@ -215,8 +220,7 @@ class NotesToFlashcard(
               foldersProcessed = foldersProcessedCounter,
               onProgress = onProgress)
 
-      // Optional: Reset subfolder list and folder notes
-      folderViewModel.getSubFoldersOf(parentFolderId = currentFolder.id)
+      // Reset note lists
       noteViewModel.getNotesFromFolder(folderId = currentFolder.id)
 
       if (finalDeck != null) {
@@ -263,21 +267,23 @@ class NotesToFlashcard(
     val noteDeferreds =
         notes.map { note ->
           CoroutineScope(Dispatchers.IO).async {
-            try {
-              val deck = convertNoteToDeckSuspend(note, deckFolder.id)
-              finalDeck = deck
-              folderFlashcardIds.addAll(deck.flashcardIds)
-              onProgress(notesProcessed.incrementAndGet(), foldersProcessed.get(), null)
-            } catch (e: Exception) {
-              // Log the error and continue processing other notes
-              Log.e(TAG, "Failed to convert note ${note.id} to deck", e)
-              onProgress(notesProcessed.get(), foldersProcessed.get(), e)
-            }
+              noteSemaphore.withPermit {
+                  try {
+                      val deck = convertNoteToDeckSuspend(note, deckFolder.id)
+                      finalDeck = deck
+                      folderFlashcardIds.addAll(deck.flashcardIds)
+                      onProgress(notesProcessed.incrementAndGet(), foldersProcessed.get(), null)
+                  } catch (e: Exception) {
+                      // Log the error and continue processing other notes
+                      Log.e(TAG, "Failed to convert note ${note.id} to deck", e)
+                      onProgress(notesProcessed.get(), foldersProcessed.get(), e)
+                  }
+              }
           }
         }
 
     val subfolders = suspendCoroutine { continuation ->
-      folderViewModel.getSubFoldersOf(
+      folderViewModel.getSubFoldersOfNoStateUpdate(
           parentFolderId = folder.id,
           onSuccess = { continuation.resume(it) },
           onFailure = { continuation.resumeWithException(it) })
@@ -286,16 +292,19 @@ class NotesToFlashcard(
     val subfolderDeferreds =
         subfolders.map { subfolder ->
           CoroutineScope(Dispatchers.IO).async {
-            try {
-              val subDeckFolder = getOrCreateDeckSubFolder(subfolder, deckFolder)
-              processFolderRecursively(
-                  subfolder, subDeckFolder, notesProcessed, foldersProcessed, onProgress)
-              onProgress(notesProcessed.get(), foldersProcessed.incrementAndGet(), null)
-            } catch (e: Exception) {
-              // Log the error and continue processing other subfolders
-              Log.e(TAG, "Failed to process subfolder ${subfolder.id}", e)
-              onProgress(notesProcessed.get(), foldersProcessed.get(), e)
-            }
+              subfolderSemaphore.withPermit {
+                  try {
+                      val subDeckFolder = getOrCreateDeckSubFolder(subfolder, deckFolder)
+                      processFolderRecursively(
+                          subfolder, subDeckFolder, notesProcessed, foldersProcessed, onProgress
+                      )
+                      onProgress(notesProcessed.get(), foldersProcessed.incrementAndGet(), null)
+                  } catch (e: Exception) {
+                      // Log the error and continue processing other subfolders
+                      Log.e(TAG, "Failed to process subfolder ${subfolder.id}", e)
+                      onProgress(notesProcessed.get(), foldersProcessed.get(), e)
+                  }
+              }
           }
         }
 
