@@ -214,7 +214,28 @@ fun PdfViewerScreen(
                                         contentDescription = "Convert to text",
                                         modifier = Modifier.size(24.dp))
                                   })
-                              // Item 2: Delete PDF
+                              // Item 2: Re-scan PDF
+                              RowItemPdfViewer(
+                                  buttonText = "Re-scan PDF",
+                                  testTag = "rescanPdfMenuItem",
+                                  onClick = {
+                                    scanner.scan {
+                                      fileViewModel.deleteFile(note!!.id, FileType.NOTE_PDF)
+                                      pdfFile = null
+                                      pdfExists = false
+                                      fileViewModel.updateFile(note!!.id, it, FileType.NOTE_PDF)
+                                      retryDownload = true // Trigger retry logic
+                                      attempt = 0 // Reset attempts
+                                    }
+                                    expandedMenu = false
+                                  },
+                                  icon = {
+                                    Icon(
+                                        imageVector = Icons.Outlined.Sync,
+                                        contentDescription = "Re-scan PDF",
+                                        modifier = Modifier.size(24.dp))
+                                  })
+                              // Item 3: Delete PDF
                               RowItemPdfViewer(
                                   buttonText = "Delete PDF",
                                   textColor = MaterialTheme.colorScheme.error,
