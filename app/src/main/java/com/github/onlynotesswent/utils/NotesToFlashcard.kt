@@ -47,8 +47,8 @@ class NotesToFlashcard(
     private const val TAG = "NotesToFlashcard"
   }
 
-    private val noteSemaphore = Semaphore(10) // Allow 10 concurrent note processing tasks
-    private val subfolderSemaphore = Semaphore(4) // Allow 4 concurrent subfolder processing tasks
+  private val noteSemaphore = Semaphore(10) // Allow 10 concurrent note processing tasks
+  private val subfolderSemaphore = Semaphore(4) // Allow 4 concurrent subfolder processing tasks
 
   private val promptPrefix =
       """Convert the following notes into a JSON array of flashcards. 
@@ -267,18 +267,18 @@ class NotesToFlashcard(
     val noteDeferreds =
         notes.map { note ->
           CoroutineScope(Dispatchers.IO).async {
-              noteSemaphore.withPermit {
-                  try {
-                      val deck = convertNoteToDeckSuspend(note, deckFolder.id)
-                      finalDeck = deck
-                      folderFlashcardIds.addAll(deck.flashcardIds)
-                      onProgress(notesProcessed.incrementAndGet(), foldersProcessed.get(), null)
-                  } catch (e: Exception) {
-                      // Log the error and continue processing other notes
-                      Log.e(TAG, "Failed to convert note ${note.id} to deck", e)
-                      onProgress(notesProcessed.get(), foldersProcessed.get(), e)
-                  }
+            noteSemaphore.withPermit {
+              try {
+                val deck = convertNoteToDeckSuspend(note, deckFolder.id)
+                finalDeck = deck
+                folderFlashcardIds.addAll(deck.flashcardIds)
+                onProgress(notesProcessed.incrementAndGet(), foldersProcessed.get(), null)
+              } catch (e: Exception) {
+                // Log the error and continue processing other notes
+                Log.e(TAG, "Failed to convert note ${note.id} to deck", e)
+                onProgress(notesProcessed.get(), foldersProcessed.get(), e)
               }
+            }
           }
         }
 
@@ -292,19 +292,18 @@ class NotesToFlashcard(
     val subfolderDeferreds =
         subfolders.map { subfolder ->
           CoroutineScope(Dispatchers.IO).async {
-              subfolderSemaphore.withPermit {
-                  try {
-                      val subDeckFolder = getOrCreateDeckSubFolder(subfolder, deckFolder)
-                      processFolderRecursively(
-                          subfolder, subDeckFolder, notesProcessed, foldersProcessed, onProgress
-                      )
-                      onProgress(notesProcessed.get(), foldersProcessed.incrementAndGet(), null)
-                  } catch (e: Exception) {
-                      // Log the error and continue processing other subfolders
-                      Log.e(TAG, "Failed to process subfolder ${subfolder.id}", e)
-                      onProgress(notesProcessed.get(), foldersProcessed.get(), e)
-                  }
+            subfolderSemaphore.withPermit {
+              try {
+                val subDeckFolder = getOrCreateDeckSubFolder(subfolder, deckFolder)
+                processFolderRecursively(
+                    subfolder, subDeckFolder, notesProcessed, foldersProcessed, onProgress)
+                onProgress(notesProcessed.get(), foldersProcessed.incrementAndGet(), null)
+              } catch (e: Exception) {
+                // Log the error and continue processing other subfolders
+                Log.e(TAG, "Failed to process subfolder ${subfolder.id}", e)
+                onProgress(notesProcessed.get(), foldersProcessed.get(), e)
               }
+            }
           }
         }
 
