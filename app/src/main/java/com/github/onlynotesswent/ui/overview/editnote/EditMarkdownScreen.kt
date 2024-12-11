@@ -57,6 +57,7 @@ import com.github.onlynotesswent.R
 import com.github.onlynotesswent.model.file.FileType
 import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.note.NoteViewModel
+import com.github.onlynotesswent.model.user.UserViewModel
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
 import com.mohamedrejeb.richeditor.model.RichTextState
@@ -78,16 +79,19 @@ import kotlinx.coroutines.delay
  *   previous screen.
  * @param noteViewModel ViewModel to manage the note's state and interactions.
  * @param fileViewModel ViewModel to handle file downloads and uploads for markdown files.
+ * @param userViewModel ViewModel to manage the user's state and interactions.
  */
 @Composable
 fun EditMarkdownScreen(
     navigationActions: NavigationActions,
     noteViewModel: NoteViewModel,
-    fileViewModel: FileViewModel
+    fileViewModel: FileViewModel,
+    userViewModel: UserViewModel
 ) {
   val state = rememberRichTextState()
   val context = LocalContext.current
   val selectedNote by noteViewModel.selectedNote.collectAsState()
+  val currentUser by userViewModel.currentUser.collectAsState()
   var markdownContent: File? by remember { mutableStateOf(null) }
   var isEditing by rememberSaveable { mutableStateOf(false) } // Add this line
 
@@ -102,13 +106,13 @@ fun EditMarkdownScreen(
           state.setMarkdown(markdownContent?.readText() ?: "")
         },
         onFileNotFound = {
+          // If the file is not found, create a new file, that will be uploaded when saved
           val file =
               File(context.cacheDir, "${selectedNote!!.id}.md").apply {
                 if (!exists()) createNewFile()
               }
-          file.writeText("") // Write empty content to the file
+
           markdownContent = file
-          state.setMarkdown("")
         },
         onFailure = { exception ->
           Toast.makeText(context, "Error downloading file: ${exception.message}", Toast.LENGTH_LONG)
@@ -141,8 +145,8 @@ fun EditMarkdownScreen(
       bottomBar = {
         EditNoteNavigationMenu(navigationActions, selectedItem = Screen.EDIT_NOTE_MARKDOWN)
       },
-      floatingActionButton = { // Add FAB here
-        if (!isEditing) {
+      floatingActionButton = {
+        if (!isEditing && selectedNote != null && selectedNote!!.isOwner(currentUser!!.uid)) {
           FloatingActionButton(
               modifier = Modifier.testTag("editMarkdownFAB"),
               onClick = {

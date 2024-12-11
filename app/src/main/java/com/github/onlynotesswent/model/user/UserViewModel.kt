@@ -5,6 +5,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import com.github.onlynotesswent.model.flashcard.UserFlashcard
+import com.github.onlynotesswent.model.flashcard.deck.Deck
 import com.github.onlynotesswent.model.notification.Notification
 import com.github.onlynotesswent.model.notification.NotificationRepository
 import com.github.onlynotesswent.model.notification.NotificationRepositoryFirestore
@@ -35,6 +37,9 @@ class UserViewModel(
 
   private val _profileUser = MutableStateFlow<User?>(null)
   val profileUser: StateFlow<User?> = _profileUser.asStateFlow()
+
+  private val _deckUserFlashcards = MutableStateFlow<Map<String, UserFlashcard>>(emptyMap())
+  val deckUserFlashcards: StateFlow<Map<String, UserFlashcard>> = _deckUserFlashcards.asStateFlow()
 
   /** Exception thrown when a user is not logged in. */
   class UserNotLoggedInException : Exception("User Not Logged In")
@@ -507,5 +512,102 @@ class UserViewModel(
         },
         onUserNotFound = { onSuccess(emptyList()) },
         onFailure = onFailure)
+  }
+
+  /**
+   * get the user flashcards from the specified deck.
+   *
+   * @param deck The deck to get the user flashcards from.
+   * @param onSuccess Callback to be invoked when the retrieval is successful.
+   * @param onFailure Callback to be invoked if an error occurs.
+   */
+  fun getUserFlashcardFromDeck(
+      deck: Deck,
+      onSuccess: () -> Unit = {},
+      onFailure: (Exception) -> Unit = {}
+  ) {
+    _currentUser.value?.let {
+      repository.getUserFlashcardFromDeck(
+          it.uid,
+          deck,
+          { flashcards ->
+            _deckUserFlashcards.value = flashcards
+            onSuccess()
+          },
+          onFailure)
+    }
+  }
+
+  /**
+   * Adds a new user UserFlashcard to the user flashcard collection.
+   *
+   * @param userFlashcard The user flashcard to added.
+   * @param onSuccess Callback to be invoked when the addition is successful.
+   * @param onFailure Callback to be invoked if an error occurs.
+   */
+  fun addUserFlashcard(
+      userFlashcard: UserFlashcard,
+      onSuccess: () -> Unit = {},
+      onFailure: (Exception) -> Unit = {}
+  ) {
+    _currentUser.value?.let {
+      repository.addUserFlashcard(it.uid, userFlashcard, onSuccess, onFailure)
+    }
+  }
+
+  /**
+   * update a user flashcard by its ID.
+   *
+   * @param userFlashcard The ID of the user to whom the flashcard belongs.
+   * @param onSuccess Callback to be invoked with the retrieved user flashcard.
+   * @param onFailure Callback to be invoked if an error occurs.
+   */
+  fun updateUserFlashcard(
+      userFlashcard: UserFlashcard,
+      onSuccess: () -> Unit = {},
+      onFailure: (Exception) -> Unit = {}
+  ) {
+    _currentUser.value?.let {
+      repository.updateUserFlashcard(
+          it.uid,
+          userFlashcard,
+          {
+            if (_deckUserFlashcards.value.containsKey(userFlashcard.id)) {
+              _deckUserFlashcards.value =
+                  _deckUserFlashcards.value.toMutableMap().apply {
+                    put(userFlashcard.id, userFlashcard)
+                  }
+              onSuccess()
+            }
+          },
+          onFailure)
+    }
+  }
+
+  /**
+   * Deletes a user flashcard by its ID.
+   *
+   * @param flashcardId The ID of the user flashcard to delete.
+   * @param onSuccess Callback to be invoked when the deletion is successful.
+   * @param onFailure Callback to be invoked if an error occurs.
+   */
+  fun deleteUserFlashcardById(
+      flashcardId: String,
+      onSuccess: () -> Unit = {},
+      onFailure: (Exception) -> Unit = {}
+  ) {
+    _currentUser.value?.let {
+      repository.deleteUserFlashcardById(
+          it.uid,
+          flashcardId,
+          {
+            if (_deckUserFlashcards.value.containsKey(flashcardId)) {
+              _deckUserFlashcards.value =
+                  _deckUserFlashcards.value.toMutableMap().apply { remove(flashcardId) }
+              onSuccess()
+            }
+          },
+          onFailure)
+    }
   }
 }

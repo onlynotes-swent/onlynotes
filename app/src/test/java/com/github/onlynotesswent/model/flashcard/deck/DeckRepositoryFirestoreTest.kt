@@ -53,7 +53,8 @@ class DeckRepositoryFirestoreTest {
           folderId = "3",
           visibility = Visibility.PUBLIC,
           lastModified = Timestamp.now(),
-          flashcardIds = listOf("4", "5"))
+          flashcardIds = listOf("4", "5"),
+          description = "Description")
 
   private fun verifyErrorLog(msg: String) {
     // Get all the logs
@@ -153,6 +154,7 @@ class DeckRepositoryFirestoreTest {
     `when`(mockDocumentSnapshot.getString("visibility")).thenReturn(testDeck.visibility.toString())
     `when`(mockDocumentSnapshot.getTimestamp("lastModified")).thenReturn(testDeck.lastModified)
     `when`(mockDocumentSnapshot.get("flashcardIds")).thenReturn(testDeck.flashcardIds)
+    `when`(mockDocumentSnapshot.getString("description")).thenReturn(testDeck.description)
   }
 
   @Test
@@ -171,6 +173,7 @@ class DeckRepositoryFirestoreTest {
     `when`(mockDocumentSnapshotEmpty.get("visibility")).thenReturn(null)
     `when`(mockDocumentSnapshotEmpty.get("lastModified")).thenReturn(null)
     `when`(mockDocumentSnapshotEmpty.get("flashcardIds")).thenReturn(null)
+    `when`(mockDocumentSnapshotEmpty.getString("description")).thenReturn(null)
     val deckEmpty = deckRepository.documentSnapshotToDeck(mockDocumentSnapshotEmpty)
     assertEquals(null, deckEmpty)
   }

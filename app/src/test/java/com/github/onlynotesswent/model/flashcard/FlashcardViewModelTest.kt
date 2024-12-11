@@ -1,7 +1,6 @@
 package com.github.onlynotesswent.model.flashcard
 
 import com.google.firebase.FirebaseApp
-import com.google.firebase.Timestamp
 import junit.framework.TestCase.assertEquals
 import org.hamcrest.CoreMatchers.`is`
 import org.hamcrest.MatcherAssert.assertThat
@@ -23,13 +22,7 @@ class FlashcardViewModelTest {
 
   private val flashcard =
       Flashcard(
-          id = "1",
-          front = "front",
-          back = "back",
-          lastReviewed = Timestamp.now(),
-          userId = "2",
-          folderId = "3",
-          noteId = "4")
+          id = "1", front = "front", back = "back", userId = "2", folderId = "3", noteId = "4")
 
   @Before
   fun setUp() {
@@ -60,12 +53,12 @@ class FlashcardViewModelTest {
   }
 
   @Test
-  fun getFlashcardsFromCallsRepository() {
+  fun getFlashcardsFromUserCallsRepository() {
     `when`(flashcardRepository.getFlashcardsFrom(any(), any(), any())).thenAnswer {
       val onSuccess: (List<Flashcard>) -> Unit = it.getArgument(1)
       onSuccess(listOf(flashcard))
     }
-    flashcardViewModel.getFlashcardsFrom(flashcard.userId, { assert(true) })
+    flashcardViewModel.getFlashcardsFromUser(flashcard.userId, { assert(true) })
     assertEquals(flashcardViewModel.userFlashcards.value, listOf(flashcard))
   }
 

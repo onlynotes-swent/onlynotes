@@ -24,6 +24,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navigation
 import androidx.test.espresso.intent.Intents
+import com.github.onlynotesswent.model.authentication.Authenticator
 import com.github.onlynotesswent.model.file.FileRepository
 import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.flashcard.deck.DeckRepository
@@ -52,7 +53,7 @@ import com.github.onlynotesswent.ui.user.CreateUserScreen
 import com.github.onlynotesswent.ui.user.EditProfileScreen
 import com.github.onlynotesswent.ui.user.PublicProfileScreen
 import com.github.onlynotesswent.ui.user.UserProfileScreen
-import com.github.onlynotesswent.utils.ProfilePictureTaker
+import com.github.onlynotesswent.utils.PictureTaker
 import com.google.firebase.Timestamp
 import kotlinx.coroutines.test.runTest
 import org.junit.After
@@ -74,7 +75,7 @@ class EndToEndTest {
   @Mock private lateinit var folderRepository: FolderRepository
   @Mock private lateinit var deckRepository: DeckRepository
   @Mock private lateinit var fileRepository: FileRepository
-  @Mock private lateinit var profilePictureTaker: ProfilePictureTaker
+  @Mock private lateinit var pictureTaker: PictureTaker
   private lateinit var userViewModel: UserViewModel
   private lateinit var noteViewModel: NoteViewModel
   private lateinit var folderViewModel: FolderViewModel
@@ -82,6 +83,8 @@ class EndToEndTest {
   private lateinit var fileViewModel: FileViewModel
   @Mock private lateinit var mockNotificationRepository: NotificationRepository
   private lateinit var notificationViewModel: NotificationViewModel
+
+  @Mock private lateinit var authenticator: Authenticator
 
   private lateinit var navController: NavHostController
   private lateinit var navigationActions: NavigationActions
@@ -181,7 +184,8 @@ class EndToEndTest {
                         navigationActions, folderViewModel, noteViewModel, userViewModel)
                   }
                   composable(Screen.EDIT_NOTE_MARKDOWN) {
-                    EditMarkdownScreen(navigationActions, noteViewModel, fileViewModel)
+                    EditMarkdownScreen(
+                        navigationActions, noteViewModel, fileViewModel, userViewModel)
                   }
                 }
                 navigation(
@@ -204,17 +208,25 @@ class EndToEndTest {
                 ) {
                   composable(Screen.USER_PROFILE) {
                     UserProfileScreen(
-                        navigationActions, userViewModel, fileViewModel, notificationViewModel)
+                        navigationActions,
+                        userViewModel,
+                        fileViewModel,
+                        notificationViewModel,
+                        authenticator)
                   }
                   composable(Screen.PUBLIC_PROFILE) {
                     PublicProfileScreen(
-                        navigationActions, userViewModel, fileViewModel, notificationViewModel)
+                        navigationActions,
+                        userViewModel,
+                        fileViewModel,
+                        notificationViewModel,
+                        authenticator)
                   }
                   composable(Screen.EDIT_PROFILE) {
                     EditProfileScreen(
                         navigationActions,
                         userViewModel,
-                        profilePictureTaker,
+                        pictureTaker,
                         fileViewModel,
                         noteViewModel,
                         folderViewModel)

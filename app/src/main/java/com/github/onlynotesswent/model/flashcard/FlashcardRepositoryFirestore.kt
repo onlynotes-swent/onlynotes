@@ -32,7 +32,6 @@ class FlashcardRepositoryFirestore(private val db: FirebaseFirestore) : Flashcar
           hasImage = document.getBoolean("hasImage") ?: throw Exception("hasImage is null"),
           fakeBacks =
               document.get("fakeBacks") as List<String>? ?: throw Exception("Fake backs is null"),
-          lastReviewed = document.getTimestamp("lastReviewed"),
           userId = document.getString("userId") ?: throw Exception("User ID is null"),
           folderId = document.getString("folderId"),
           noteId = document.getString("noteId"))
@@ -88,6 +87,28 @@ class FlashcardRepositoryFirestore(private val db: FirebaseFirestore) : Flashcar
         .addOnFailureListener { exception ->
           onFailure(exception)
           Log.e(TAG, "Error getting flashcard by id", exception)
+        }
+  }
+
+  override fun getFlashcardsById(
+      ids: List<String>,
+      onSuccess: (List<Flashcard>) -> Unit,
+      onFailure: (Exception) -> Unit
+  ) {
+    if (ids.isEmpty()) {
+      onSuccess(emptyList())
+      return
+    }
+    db.collection(collectionPath)
+        .whereIn("id", ids)
+        .get()
+        .addOnSuccessListener { querySnapshot ->
+          val flashcards = querySnapshot.documents.mapNotNull { documentSnapshotToFlashcard(it) }
+          onSuccess(flashcards)
+        }
+        .addOnFailureListener { exception ->
+          onFailure(exception)
+          Log.e(TAG, "Error getting flashcards by ids", exception)
         }
   }
 
