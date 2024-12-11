@@ -137,7 +137,6 @@ class NotesToFlashcard(
                   latexFormula = latexFormula,
                   hasImage = false,
                   fakeBacks = fakeBacks,
-                  lastReviewed = null,
                   userId = note.userId,
                   folderId = folderId,
                   noteId = note.id)
