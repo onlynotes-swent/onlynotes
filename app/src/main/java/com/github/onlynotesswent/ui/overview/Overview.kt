@@ -77,7 +77,7 @@ fun OverviewScreen(
 
   val userRootFolders = folderViewModel.userRootFolders.collectAsState()
   userViewModel.currentUser.collectAsState().value?.let {
-    folderViewModel.getRootFoldersFromUid(it.uid)
+    folderViewModel.getRootFoldersFromUserId(it.uid)
   }
 
   val parentFolderId = folderViewModel.parentFolderId.collectAsState()
@@ -282,7 +282,9 @@ fun OverviewScreenGrid(
         Spacer(modifier = Modifier.height(50.dp))
         RefreshButton {
           userViewModel.currentUser.value?.let { noteViewModel.getRootNotesFromUid(it.uid) }
-          userViewModel.currentUser.value?.let { folderViewModel.getRootFoldersFromUid(it.uid) }
+          userViewModel.currentUser.value?.let {
+            folderViewModel.getRootNoteFoldersFromUserId(it.uid)
+          }
         }
         Spacer(modifier = Modifier.height(20.dp))
       })
