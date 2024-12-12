@@ -263,7 +263,7 @@ class FolderContentTest {
     composeTestRule.onNodeWithTag("popup").assertIsDisplayed()
     composeTestRule.onNodeWithTag("confirmButton").performClick()
 
-    verify(mockNavigationActions).navigateTo(TopLevelDestinations.OVERVIEW)
+    verify(mockNavigationActions).navigateTo(TopLevelDestinations.NOTE_OVERVIEW)
   }
 
   @Test

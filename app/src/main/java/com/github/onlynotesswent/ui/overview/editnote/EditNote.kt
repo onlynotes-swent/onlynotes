@@ -243,7 +243,7 @@ fun EditNoteGeneralTopBar(
                     oldValue = "{folderId}",
                     newValue = noteViewModel.selectedNote.value?.folderId!!))
           } else {
-            navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
+            navigationActions.navigateTo(TopLevelDestinations.NOTE_OVERVIEW)
           }
           noteViewModel.selectedNote(null)
         },
@@ -495,7 +495,7 @@ fun DeleteButton(
           onConfirm = {
             noteViewModel.deleteNoteById(note.id, note.userId)
             noteViewModel.selectedNote(null)
-            navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
+            navigationActions.navigateTo(TopLevelDestinations.NOTE_OVERVIEW)
           },
           onDismiss = {
             // Close the dialog without deleting

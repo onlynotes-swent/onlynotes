@@ -88,7 +88,7 @@ fun NoteItem(
                 Screen.FOLDER_CONTENTS.replace(oldValue = "{folderId}", newValue = parentFolderId))
           } else {
             noteViewModel.updateNote(note.copy(folderId = null))
-            navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
+            navigationActions.navigateTo(TopLevelDestinations.NOTE_OVERVIEW)
           }
           showMoveOutDialog = false
         },

@@ -170,10 +170,10 @@ class EndToEndTest {
                 }
 
                 navigation(
-                    startDestination = Screen.OVERVIEW,
-                    route = Route.OVERVIEW,
+                    startDestination = Screen.NOTE_OVERVIEW,
+                    route = Route.NOTE_OVERVIEW,
                 ) {
-                  composable(Screen.OVERVIEW) {
+                  composable(Screen.NOTE_OVERVIEW) {
                     OverviewScreen(navigationActions, noteViewModel, userViewModel, folderViewModel)
                   }
                   composable(Screen.EDIT_NOTE) {
@@ -399,7 +399,7 @@ class EndToEndTest {
     }
 
     // Start at overview screen
-    composeTestRule.runOnUiThread { navController.navigate(Route.OVERVIEW) }
+    composeTestRule.runOnUiThread { navController.navigate(Route.NOTE_OVERVIEW) }
 
     `when`(mockNotificationRepository.getNewUid()).thenReturn(testUid)
 

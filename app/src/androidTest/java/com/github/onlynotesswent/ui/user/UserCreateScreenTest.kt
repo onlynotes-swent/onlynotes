@@ -132,6 +132,6 @@ class UserCreateScreenTest {
     composeTestRule.onNodeWithTag("saveButton").performClick()
 
     // Assert: Check that the navigation action was called
-    verify(mockNavigationActions).navigateTo(TopLevelDestinations.OVERVIEW)
+    verify(mockNavigationActions).navigateTo(TopLevelDestinations.NOTE_OVERVIEW)
   }
 }

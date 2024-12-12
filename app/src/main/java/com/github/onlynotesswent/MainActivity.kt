@@ -99,10 +99,10 @@ fun OnlyNotesApp(
     }
 
     navigation(
-        startDestination = Screen.OVERVIEW,
-        route = Route.OVERVIEW,
+        startDestination = Screen.NOTE_OVERVIEW,
+        route = Route.NOTE_OVERVIEW,
     ) {
-      composable(Screen.OVERVIEW) {
+      composable(Screen.NOTE_OVERVIEW) {
         OverviewScreen(navigationActions, noteViewModel, userViewModel, folderViewModel)
       }
       composable(Screen.EDIT_NOTE) {
@@ -117,6 +117,46 @@ fun OnlyNotesApp(
       composable(Screen.EDIT_NOTE_MARKDOWN) {
         EditMarkdownScreen(navigationActions, noteViewModel, fileViewModel, userViewModel)
       }
+      composable(
+          route = Screen.FOLDER_CONTENTS,
+          enterTransition = { scaleIn(animationSpec = tween(300, easing = EaseIn)) },
+          popExitTransition = {
+            fadeOut(animationSpec = tween(300, easing = LinearEasing)) +
+                slideOutOfContainer(
+                    animationSpec = tween(300, easing = EaseOut),
+                    towards = AnimatedContentTransitionScope.SlideDirection.End)
+          },
+          popEnterTransition = { null }) { navBackStackEntry ->
+            val folderId = navBackStackEntry.arguments?.getString("folderId")
+            val selectedFolder by folderViewModel.selectedFolder.collectAsState()
+            // Update the selected folder when the folder ID changes
+            LaunchedEffect(folderId) {
+              if (folderId != null && folderId != "{folderId}") {
+                folderViewModel.getFolderById(folderId)
+              }
+            }
+            // Wait until selected folder is updated to display the screen
+            if (selectedFolder != null) {
+              FolderContentScreen(navigationActions, folderViewModel, noteViewModel, userViewModel)
+            }
+          }
+    }
+
+    navigation(
+        startDestination = Screen.DECK_OVERVIEW,
+        route = Route.DECK_OVERVIEW,
+    ) {
+      composable(Screen.DECK_OVERVIEW) {}
+      composable(Screen.DECK_MENU) {
+        DeckScreen(
+            userViewModel,
+            deckViewModel,
+            flashcardViewModel,
+            fileViewModel,
+            pictureTaker,
+            navigationActions)
+      }
+      composable(Screen.DECK_PLAY) { DeckPlayScreen() }
       composable(
           route = Screen.FOLDER_CONTENTS,
           enterTransition = { scaleIn(animationSpec = tween(300, easing = EaseIn)) },

@@ -103,7 +103,7 @@ fun FolderContentScreen(
               oldValue = "{folderId}", newValue = folder.value!!.parentFolderId!!))
     } else {
       folderViewModel.clearSelectedFolder()
-      navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
+      navigationActions.navigateTo(TopLevelDestinations.NOTE_OVERVIEW)
     }
   }
 
@@ -215,7 +215,7 @@ fun FolderContentScreen(
                             oldValue = "{folderId}", newValue = folderId))
                   } else {
                     folderViewModel.clearSelectedFolder()
-                    navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
+                    navigationActions.navigateTo(TopLevelDestinations.NOTE_OVERVIEW)
                   }
                   showCreateFolderDialog = false
                 },
@@ -377,7 +377,7 @@ fun FolderContentTopBar(
                           oldValue = "{folderId}", newValue = parentFolderId))
                 } else {
                   folderViewModel.clearSelectedFolder()
-                  navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
+                  navigationActions.navigateTo(TopLevelDestinations.NOTE_OVERVIEW)
                 }
 
                 handleSubFoldersAndNotes(

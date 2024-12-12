@@ -108,7 +108,7 @@ class OverviewTest {
     userViewModel.addUser(testUser, {}, {})
 
     // Mock the current route to be the user create screen
-    `when`(navigationActions.currentRoute()).thenReturn(Screen.OVERVIEW)
+    `when`(navigationActions.currentRoute()).thenReturn(Screen.NOTE_OVERVIEW)
     composeTestRule.setContent {
       OverviewScreen(navigationActions, noteViewModel, userViewModel, folderViewModel)
     }
