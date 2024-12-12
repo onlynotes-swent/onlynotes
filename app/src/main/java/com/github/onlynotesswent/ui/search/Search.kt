@@ -1,7 +1,10 @@
 package com.github.onlynotesswent.ui.search
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -10,6 +13,8 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
@@ -25,6 +30,7 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
@@ -47,7 +53,6 @@ import com.github.onlynotesswent.ui.navigation.Screen
 import com.github.onlynotesswent.ui.user.UserItem
 import com.github.onlynotesswent.ui.user.switchProfileTo
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.combine
 
 /**
  * Displays the search screen where users can search notes by title.
@@ -56,6 +61,7 @@ import kotlinx.coroutines.flow.combine
  * @param noteViewModel The ViewModel that provides the list of publicNotes to search from.
  * @param userViewModel The ViewModel that provides the list of users to search from.
  * @param folderViewModel The ViewModel that provides the list of folders to search from.
+ * @param deckViewModel The ViewModel that provides the list of decks to search from.
  * @param fileViewModel The ViewModel used to download large files.
  */
 @Composable
@@ -68,24 +74,23 @@ fun SearchScreen(
     fileViewModel: FileViewModel
 ) {
   val searchQuery = remember { mutableStateOf("") }
-  val searchType = remember { mutableStateOf(SearchType.NOTES) }
+  val searchType = remember { mutableStateOf(SearchType.USERS) } // maybe set it to users
   val searchWords = remember { mutableStateOf(emptyList<String>()) }
   searchWords.value = searchQuery.value.split("\\s+".toRegex())
 
   val currentUser = userViewModel.currentUser.collectAsState()
+  val showAdditionalFilters = remember { mutableStateOf(false) }
+  val additionalFilter = remember { mutableStateOf(AdditionalFilterType.PUBLIC) }
 
-  val combinedNotes =
-      combine(noteViewModel.publicNotes, noteViewModel.friendsNotes) { publicNotes, friendsNotes ->
-            publicNotes + friendsNotes
-          }
-          .collectAsState(initial = emptyList())
+  val publicNotes = noteViewModel.publicNotes.collectAsState()
+  val friendsNotes = noteViewModel.friendsNotes.collectAsState()
 
-  // val publicNotes = noteViewModel.publicNotes.collectAsState()
-  // val friendsNotes = noteViewModel.friendsNotes.collectAsState()
-  // val combinedNotes = publicNotes.value + friendsNotes.value
-  val filteredNotes = remember { mutableStateOf(combinedNotes.value) }
-  filteredNotes.value =
-      combinedNotes.value.filter { textMatchesSearch(it.title, searchWords.value) }
+  val filteredPublicNotes = remember { mutableStateOf(publicNotes.value) }
+  filteredPublicNotes.value =
+      publicNotes.value.filter { textMatchesSearch(it.title, searchWords.value) }
+  val filteredFriendsNotes = remember { mutableStateOf(friendsNotes.value) }
+  filteredFriendsNotes.value =
+      friendsNotes.value.filter { textMatchesSearch(it.title, searchWords.value) }
 
   val users = userViewModel.allUsers.collectAsState()
   val filteredUsers = remember { mutableStateOf(users.value) }
@@ -95,28 +100,23 @@ fun SearchScreen(
             textMatchesSearch(it.userHandle(), searchWords.value)
       }
 
-  val combinedFolders =
-      combine(folderViewModel.publicFolders, folderViewModel.friendsFolders) {
-              publicFolders,
-              friendsFolders ->
-            publicFolders + friendsFolders
-          }
-          .collectAsState(initial = emptyList())
-  // val publicFolders = folderViewModel.publicFolders.collectAsState()
-  // val friendsFolders = folderViewModel.friendsFolders.collectAsState()
-  // val combinedFolders = publicFolders.value + friendsFolders.value
-  val filteredFolders = remember { mutableStateOf(combinedFolders.value) }
-  filteredFolders.value =
-      combinedFolders.value.filter { textMatchesSearch(it.name, searchWords.value) }
+  val publicFolders = folderViewModel.publicFolders.collectAsState()
+  val friendsFolders = folderViewModel.friendsFolders.collectAsState()
 
-  val combinedDecks =
-      combine(deckViewModel.publicDecks, deckViewModel.friendsDecks) { publicDecks, friendsDecks ->
-            publicDecks + friendsDecks
-          }
-          .collectAsState(initial = emptyList())
-  // val decks = deckViewModel.publicDecks.collectAsState()
-  val filteredDecks = remember { mutableStateOf(combinedDecks.value) }
-  filteredDecks.value = combinedDecks.value.filter { textMatchesSearch(it.name, searchWords.value) }
+  val filteredPublicFolders = remember { mutableStateOf(publicFolders.value) }
+  filteredPublicFolders.value =
+      publicFolders.value.filter { textMatchesSearch(it.name, searchWords.value) }
+  val filteredFriendsFolders = remember { mutableStateOf(friendsFolders.value) }
+  filteredFriendsFolders.value =
+      friendsFolders.value.filter { textMatchesSearch(it.name, searchWords.value) }
+
+  val publicDecks = deckViewModel.publicDecks.collectAsState()
+  val friendsDecks = deckViewModel.friendsDecks.collectAsState()
+
+  val filteredPublicDecks = remember { mutableStateOf(publicDecks.value) }
+  filteredPublicDecks.value = publicDecks.value.filter { textMatchesSearch(it.name, searchWords.value) }
+  val filteredFriendsDecks = remember { mutableStateOf(friendsDecks.value) }
+    filteredFriendsDecks.value = friendsDecks.value.filter { textMatchesSearch(it.name, searchWords.value) }
 
   // Refresh the list of notes, users, folders and decks periodically.
   RefreshPeriodically(
@@ -136,7 +136,9 @@ fun SearchScreen(
   Scaffold(
       modifier = Modifier.testTag("searchScreen"),
       topBar = {
-        Column {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
           OutlinedTextField(
               value = searchQuery.value,
               onValueChange = { searchQuery.value = it },
@@ -165,6 +167,7 @@ fun SearchScreen(
                   searchType.value == SearchType.USERS,
                   label = { Text(stringResource(R.string.users_maj), maxLines = 1) },
                   onClick = {
+                    showAdditionalFilters.value = false
                     searchType.value = SearchType.USERS
                     userViewModel.getAllUsers()
                   },
@@ -182,9 +185,12 @@ fun SearchScreen(
                   searchType.value == SearchType.NOTES,
                   label = { Text(stringResource(R.string.notes_maj), maxLines = 1) },
                   onClick = {
+                    if (searchType.value != SearchType.NOTES && !showAdditionalFilters.value) {
+                        showAdditionalFilters.value = !showAdditionalFilters.value
+                    } else if (searchType.value == SearchType.NOTES) {
+                        showAdditionalFilters.value = !showAdditionalFilters.value
+                    }
                     searchType.value = SearchType.NOTES
-                    noteViewModel.getPublicNotes()
-                    noteViewModel.getNotesFromFollowingList(currentUser.value?.friends?.following)
                   },
                   leadingIcon = {
                     if (searchType.value == SearchType.NOTES)
@@ -193,6 +199,13 @@ fun SearchScreen(
                             contentDescription = "Chip Icon",
                             tint = MaterialTheme.colorScheme.onBackground)
                   },
+                  trailingIcon = {
+                    if (searchType.value == SearchType.NOTES && showAdditionalFilters.value) {
+                        Icon(Icons.Default.KeyboardArrowUp, contentDescription = null)
+                    } else {
+                        Icon(Icons.Default.KeyboardArrowDown, contentDescription = null)
+                    }
+                  },
                   modifier = Modifier.padding(horizontal = 5.dp).testTag("noteFilterChip"))
             }
             item {
@@ -200,10 +213,12 @@ fun SearchScreen(
                   searchType.value == SearchType.FOLDERS,
                   label = { Text(stringResource(R.string.folders_maj), maxLines = 1) },
                   onClick = {
+                    if (searchType.value != SearchType.FOLDERS && !showAdditionalFilters.value) {
+                        showAdditionalFilters.value = !showAdditionalFilters.value
+                    } else if (searchType.value == SearchType.FOLDERS) {
+                        showAdditionalFilters.value = !showAdditionalFilters.value
+                    }
                     searchType.value = SearchType.FOLDERS
-                    folderViewModel.getPublicFolders()
-                    folderViewModel.getFoldersFromFollowingList(
-                        currentUser.value?.friends?.following)
                   },
                   leadingIcon = {
                     if (searchType.value == SearchType.FOLDERS)
@@ -212,6 +227,13 @@ fun SearchScreen(
                             contentDescription = "Chip Icon",
                             tint = MaterialTheme.colorScheme.onBackground)
                   },
+                  trailingIcon = {
+                      if (searchType.value == SearchType.FOLDERS && showAdditionalFilters.value) {
+                          Icon(Icons.Default.KeyboardArrowUp, contentDescription = null)
+                      } else {
+                          Icon(Icons.Default.KeyboardArrowDown, contentDescription = null)
+                      }
+                  },
                   modifier = Modifier.padding(horizontal = 5.dp).testTag("folderFilterChip"))
             }
             item {
@@ -219,9 +241,12 @@ fun SearchScreen(
                   searchType.value == SearchType.DECKS,
                   label = { Text(stringResource(R.string.decks_maj), maxLines = 1) },
                   onClick = {
+                    if (searchType.value != SearchType.DECKS && !showAdditionalFilters.value) {
+                        showAdditionalFilters.value = !showAdditionalFilters.value
+                    } else if (searchType.value == SearchType.DECKS) {
+                        showAdditionalFilters.value = !showAdditionalFilters.value
+                    }
                     searchType.value = SearchType.DECKS
-                    deckViewModel.getPublicDecks()
-                    deckViewModel.getDecksFromFollowingList(currentUser.value?.friends?.following)
                   },
                   leadingIcon = {
                     if (searchType.value == SearchType.DECKS)
@@ -230,9 +255,25 @@ fun SearchScreen(
                             contentDescription = "Chip Icon",
                             tint = MaterialTheme.colorScheme.onBackground)
                   },
+                  trailingIcon = {
+                      if (searchType.value == SearchType.DECKS && showAdditionalFilters.value) {
+                          Icon(Icons.Default.KeyboardArrowUp, contentDescription = null)
+                      } else {
+                          Icon(Icons.Default.KeyboardArrowDown, contentDescription = null)
+                      }
+                  },
                   modifier = Modifier.padding(horizontal = 5.dp).testTag("deckFilterChip"))
             }
           }
+            AdditionalFilters(
+                showAdditionalFilters = showAdditionalFilters,
+                additionalFilter = additionalFilter,
+                itemType = searchType,
+                noteViewModel = noteViewModel,
+                folderViewModel = folderViewModel,
+                deckViewModel = deckViewModel,
+                userViewModel = userViewModel
+            )
         }
       },
       bottomBar = {
@@ -247,32 +288,44 @@ fun SearchScreen(
         val displayUsers: Boolean =
             searchType.value == SearchType.USERS && filteredUsers.value.isNotEmpty()
 
-        val displayNotes: Boolean =
-            searchType.value == SearchType.NOTES && filteredNotes.value.isNotEmpty()
+        val displayPublicNotes: Boolean =
+            searchType.value == SearchType.NOTES && additionalFilter.value == AdditionalFilterType.PUBLIC && filteredPublicNotes.value.isNotEmpty()
 
-        val displayFolders: Boolean =
-            searchType.value == SearchType.FOLDERS && filteredFolders.value.isNotEmpty()
+        val displayFriendsNotes: Boolean =
+            searchType.value == SearchType.NOTES && additionalFilter.value == AdditionalFilterType.FRIENDS && filteredFriendsNotes.value.isNotEmpty()
 
-        val displayDecks: Boolean =
-            searchType.value == SearchType.DECKS && filteredDecks.value.isNotEmpty()
+        val displayPublicFolders: Boolean =
+            searchType.value == SearchType.FOLDERS && additionalFilter.value == AdditionalFilterType.PUBLIC && filteredPublicFolders.value.isNotEmpty()
+
+        val displayFriendsFolders: Boolean =
+            searchType.value == SearchType.FOLDERS && additionalFilter.value == AdditionalFilterType.FRIENDS && filteredFriendsFolders.value.isNotEmpty()
+
+        val displayPublicDecks: Boolean =
+            searchType.value == SearchType.DECKS && additionalFilter.value == AdditionalFilterType.PUBLIC && filteredPublicDecks.value.isNotEmpty()
+
+        val displayFriendsDecks: Boolean =
+            searchType.value == SearchType.DECKS && additionalFilter.value == AdditionalFilterType.FRIENDS && filteredFriendsDecks.value.isNotEmpty()
 
         val displayLoader: Boolean =
             searchQuery.value.isNotBlank() &&
                 ((searchType.value == SearchType.USERS && filteredUsers.value.isEmpty()) ||
-                    (searchType.value == SearchType.NOTES && filteredNotes.value.isEmpty()) ||
-                    (searchType.value == SearchType.FOLDERS && filteredFolders.value.isEmpty()) ||
-                    (searchType.value == SearchType.DECKS && filteredDecks.value.isEmpty()))
+                    (searchType.value == SearchType.NOTES && additionalFilter.value == AdditionalFilterType.PUBLIC && filteredPublicNotes.value.isEmpty()) ||
+                    (searchType.value == SearchType.NOTES && additionalFilter.value == AdditionalFilterType.FRIENDS && filteredFriendsNotes.value.isEmpty()) ||
+                    (searchType.value == SearchType.FOLDERS && additionalFilter.value == AdditionalFilterType.PUBLIC && filteredPublicFolders.value.isEmpty()) ||
+                    (searchType.value == SearchType.FOLDERS && additionalFilter.value == AdditionalFilterType.FRIENDS && filteredFriendsFolders.value.isEmpty()) ||
+                    (searchType.value == SearchType.DECKS && additionalFilter.value == AdditionalFilterType.PUBLIC && filteredPublicDecks.value.isEmpty()) ||
+                    (searchType.value == SearchType.DECKS && additionalFilter.value == AdditionalFilterType.FRIENDS && filteredFriendsDecks.value.isEmpty()))
 
-        if (displayNotes) {
+        if (displayPublicNotes) {
           LazyColumn(
               contentPadding = PaddingValues(horizontal = 16.dp),
-              modifier = Modifier.fillMaxWidth().padding(padding).testTag("filteredNoteList")) {
-                items(filteredNotes.value.size) { index ->
+              modifier = Modifier.fillMaxWidth().padding(padding).testTag("filteredPublicNoteList")) {
+                items(filteredPublicNotes.value.size) { index ->
                   NoteItem(
-                      note = filteredNotes.value[index],
+                      note = filteredPublicNotes.value[index],
                       author =
                           users.value
-                              .first { it.uid == filteredNotes.value[index].userId }
+                              .first { it.uid == filteredPublicNotes.value[index].userId }
                               .userHandle(),
                       currentUser = userViewModel.currentUser.collectAsState(),
                       noteViewModel = noteViewModel,
@@ -280,12 +333,37 @@ fun SearchScreen(
                       showDialog = false,
                       navigationActions = navigationActions,
                   ) {
-                    noteViewModel.selectedNote(filteredNotes.value[index])
+                    noteViewModel.selectedNote(filteredPublicNotes.value[index])
                     navigationActions.navigateTo(Screen.EDIT_NOTE)
                   }
                 }
               }
         }
+
+        if (displayFriendsNotes) {
+            LazyColumn(
+                contentPadding = PaddingValues(horizontal = 16.dp),
+                modifier = Modifier.fillMaxWidth().padding(padding).testTag("filteredFriendNoteList")) {
+                items(filteredFriendsNotes.value.size) { index ->
+                    NoteItem(
+                        note = filteredFriendsNotes.value[index],
+                        author =
+                        users.value
+                            .first { it.uid == filteredFriendsNotes.value[index].userId }
+                            .userHandle(),
+                        currentUser = userViewModel.currentUser.collectAsState(),
+                        noteViewModel = noteViewModel,
+                        folderViewModel = folderViewModel,
+                        showDialog = false,
+                        navigationActions = navigationActions,
+                    ) {
+                        noteViewModel.selectedNote(filteredFriendsNotes.value[index])
+                        navigationActions.navigateTo(Screen.EDIT_NOTE)
+                    }
+                }
+            }
+        }
+
         if (displayUsers) {
           LazyColumn(
               contentPadding = PaddingValues(horizontal = 16.dp),
@@ -304,11 +382,11 @@ fun SearchScreen(
               }
         }
 
-        if (displayFolders) {
+        if (displayPublicFolders) {
           CustomSeparatedLazyGrid(
               modifier = Modifier.fillMaxSize().padding(padding),
               notes = remember { mutableStateOf(emptyList()) },
-              folders = filteredFolders,
+              folders = filteredPublicFolders,
               gridModifier =
                   Modifier.fillMaxWidth().padding(horizontal = 16.dp).testTag("filteredFolderList"),
               folderViewModel = folderViewModel,
@@ -319,24 +397,59 @@ fun SearchScreen(
               columnContent = {})
         }
 
-        if (displayDecks) {
+        if (displayFriendsFolders) {
+            CustomSeparatedLazyGrid(
+                modifier = Modifier.fillMaxSize().padding(padding),
+                notes = remember { mutableStateOf(emptyList()) },
+                folders = filteredFriendsFolders,
+                gridModifier =
+                    Modifier.fillMaxWidth().padding(horizontal = 16.dp).testTag("filteredFriendFolderList"),
+                folderViewModel = folderViewModel,
+                noteViewModel = noteViewModel,
+                userViewModel = userViewModel,
+                navigationActions = navigationActions,
+                paddingValues = padding,
+                columnContent = {})
+        }
+
+        if (displayPublicDecks) {
           LazyColumn(
               contentPadding = PaddingValues(horizontal = 16.dp),
               modifier = Modifier.fillMaxWidth().padding(padding).testTag("filteredDeckList")) {
-                items(filteredDecks.value.size) { index ->
+                items(filteredPublicDecks.value.size) { index ->
                   DeckSearchItem(
-                      deck = filteredDecks.value[index],
+                      deck = filteredPublicDecks.value[index],
                       author =
                           users.value
-                              .first { it.uid == filteredDecks.value[index].userId }
+                              .first { it.uid == filteredPublicDecks.value[index].userId }
                               .userHandle(),
                   ) {
-                    deckViewModel.selectDeck(filteredDecks.value[index])
+                    deckViewModel.selectDeck(filteredPublicDecks.value[index])
                     navigationActions.navigateTo(
-                        Screen.DECK_MENU.replace("{deckId}", filteredDecks.value[index].id))
+                        Screen.DECK_MENU.replace("{deckId}", filteredPublicDecks.value[index].id))
                   }
                 }
               }
+        }
+
+        if (displayFriendsDecks) {
+            LazyColumn(
+                contentPadding = PaddingValues(horizontal = 16.dp),
+                modifier = Modifier.fillMaxWidth().padding(padding).testTag("filteredFriendDeckList")) {
+                items(filteredFriendsDecks.value.size) { index ->
+                    DeckSearchItem(
+                        deck = filteredFriendsDecks.value[index],
+                        author =
+                        users.value
+                            .first { it.uid == filteredFriendsDecks.value[index].userId }
+                            .userHandle(),
+                    ) {
+                        deckViewModel.selectDeck(filteredFriendsDecks.value[index])
+                        navigationActions.navigateTo(
+                            Screen.DECK_MENU.replace("{deckId}", filteredFriendsDecks.value[index].id))
+                    }
+                }
+            }
         }
 
         if (displayLoader) {
@@ -368,6 +481,7 @@ fun SearchScreen(
  * @param userViewModel The ViewModel that provides the list of users to search from.
  * @param folderViewModel The ViewModel that provides the list of folders to search from.
  * @param deckViewModel The ViewModel that provides the list of decks to search from.
+ * @param currentUser The current user.
  */
 @Composable
 private fun RefreshPeriodically(
@@ -399,6 +513,103 @@ enum class SearchType {
   DECKS
 }
 
+enum class AdditionalFilterType {
+    PUBLIC,
+    FRIENDS;
+
+    /**
+     * Converts the filter type to a readable string.
+     *
+     * @return The readable string.
+     */
+    fun toReadableString(): String {
+        return when (this) {
+            PUBLIC -> "Public"
+            FRIENDS -> "Friends"
+        }
+    }
+}
+
 fun textMatchesSearch(text: String, searchWords: List<String>): Boolean {
   return searchWords.all { text.contains(it, ignoreCase = true) } || searchWords.isEmpty()
+}
+
+// Animated visibility to show additional filters
+@Composable
+private fun AdditionalFilters(
+    showAdditionalFilters: MutableState<Boolean>,
+    additionalFilter: MutableState<AdditionalFilterType>,
+    itemType: MutableState<SearchType>,
+    noteViewModel: NoteViewModel,
+    folderViewModel: FolderViewModel,
+    deckViewModel: DeckViewModel,
+    userViewModel: UserViewModel
+) {
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.padding(vertical = 5.dp))
+    {
+        AnimatedVisibility(visible = showAdditionalFilters.value) {
+            LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                items(AdditionalFilterType.entries.size) { index ->
+                    FilterChip(
+                        modifier = Modifier.testTag("additionalFilterChip--${AdditionalFilterType.entries[index]}"),
+                        selected = additionalFilter.value == AdditionalFilterType.entries[index],
+                        onClick = {
+                            additionalFilter.value = AdditionalFilterType.entries[index]
+                            applyFilter(noteViewModel, folderViewModel, deckViewModel, userViewModel, additionalFilter.value, itemType.value)
+                        },
+                        label = { Text(AdditionalFilterType.entries[index].toReadableString(), maxLines = 1) },
+                        leadingIcon = {
+                            if (additionalFilter.value == AdditionalFilterType.entries[index])
+                                Icon(
+                                    imageVector = Icons.Default.Check,
+                                    contentDescription = "Chip Icon",
+                                    tint = MaterialTheme.colorScheme.onBackground)
+                        }
+                    )
+
+                }
+            }
+        }
+    }
+}
+
+// Helper function to apply the filter (public or friend) based on the filter and item type.
+private fun applyFilter(
+    noteViewModel: NoteViewModel,
+    folderViewModel: FolderViewModel,
+    deckViewModel: DeckViewModel,
+    userViewModel: UserViewModel,
+    filterType: AdditionalFilterType,
+    itemType: SearchType) {
+    when (filterType) {
+        AdditionalFilterType.PUBLIC -> {
+            when (itemType) {
+                SearchType.NOTES -> {
+                    noteViewModel.getPublicNotes()
+                }
+                SearchType.FOLDERS -> {
+                    folderViewModel.getPublicFolders()
+                }
+                else -> {
+                    deckViewModel.getPublicDecks()
+                }
+            }
+        }
+        AdditionalFilterType.FRIENDS -> {
+            when (itemType) {
+                SearchType.NOTES -> {
+                    noteViewModel.getNotesFromFollowingList(userViewModel.currentUser.value?.friends?.following)
+                }
+                SearchType.FOLDERS -> {
+                    folderViewModel.getFoldersFromFollowingList(userViewModel.currentUser.value?.friends?.following)
+                }
+                else -> {
+                    deckViewModel.getDecksFromFollowingList(userViewModel.currentUser.value?.friends?.following)
+                }
+            }
+        }
+    }
 }
