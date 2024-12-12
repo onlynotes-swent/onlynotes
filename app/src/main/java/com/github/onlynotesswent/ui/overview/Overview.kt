@@ -86,7 +86,6 @@ fun OverviewScreen(
   var expanded by remember { mutableStateOf(false) }
   var showCreateFolderDialog by remember { mutableStateOf(false) }
   var showCreateNoteDialog by remember { mutableStateOf(false) }
-  var showFilePopup by remember { mutableStateOf(false) } // State to control the popup visibility
 
   // Handle back press
   BackHandler {
@@ -107,15 +106,6 @@ fun OverviewScreen(
                   showCreateNoteDialog = { showCreateNoteDialog = it },
                   noteViewModel = noteViewModel,
                   folderViewModel = folderViewModel)
-              FloatingActionButton(
-                  modifier = Modifier.testTag("showFileSystemButton"),
-                  onClick = { showFilePopup = true },
-                  containerColor = MaterialTheme.colorScheme.primary,
-                  contentColor = MaterialTheme.colorScheme.onPrimary) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.open_folder_icon),
-                        contentDescription = "Open File Manager")
-                  }
             }
       },
       bottomBar = {
@@ -154,9 +144,6 @@ fun OverviewScreen(
               action = stringResource(R.string.create))
         }
 
-        if (showFilePopup) {
-          FileSystemPopup(onDismiss = { showFilePopup = false }, folderViewModel = folderViewModel)
-        }
 
         // Logic to show the dialog to create a folder
         if (showCreateFolderDialog) {
