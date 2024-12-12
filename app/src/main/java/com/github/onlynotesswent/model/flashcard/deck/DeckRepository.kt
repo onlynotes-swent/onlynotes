@@ -31,6 +31,19 @@ interface DeckRepository {
   fun getDecksFrom(userId: String, onSuccess: (List<Deck>) -> Unit, onFailure: (Exception) -> Unit)
 
   /**
+   * Retrieves all root decks from a user (folderId == null).
+   *
+   * @param userId The ID of the user to retrieve root decks for.
+   * @param onSuccess Callback to be invoked with the retrieved root decks.
+   * @param onFailure Callback to be invoked if an error occurs.
+   */
+  fun getRootDecksFromUserId(
+      userId: String,
+      onSuccess: (List<Deck>) -> Unit,
+      onFailure: (Exception) -> Unit,
+  )
+
+  /**
    * Retrieves the deck with the given identifier.
    *
    * @param id The identifier of the deck to retrieve.

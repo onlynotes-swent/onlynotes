@@ -16,6 +16,9 @@ class DeckViewModel(private val repository: DeckRepository) : ViewModel() {
   private val _userDecks = MutableStateFlow<List<Deck>>(emptyList())
   val userDecks: StateFlow<List<Deck>> = _userDecks.asStateFlow()
 
+  private val _userRootDecks = MutableStateFlow<List<Deck>>(emptyList())
+  val userRootDecks: StateFlow<List<Deck>> = _userRootDecks.asStateFlow()
+
   // The selected deck
   private val _selectedDeck = MutableStateFlow<Deck?>(null)
   val selectedDeck: StateFlow<Deck?> = _selectedDeck.asStateFlow()
@@ -101,6 +104,27 @@ class DeckViewModel(private val repository: DeckRepository) : ViewModel() {
         userId,
         { decks ->
           _userDecks.value = decks
+          onSuccess(decks)
+        },
+        { onFailure(it) })
+  }
+
+  /**
+   * Retrieves all root decks from a user (folderId == null).
+   *
+   * @param userId The ID of the user to retrieve root decks for.
+   * @param onSuccess Callback to be invoked with the retrieved root decks.
+   * @param onFailure Callback to be invoked if an error occurs.
+   */
+  fun getRootDecksFromUserId(
+      userId: String,
+      onSuccess: (List<Deck>) -> Unit = {},
+      onFailure: (Exception) -> Unit = {}
+  ) {
+    repository.getRootDecksFromUserId(
+        userId,
+        { decks ->
+          _userRootDecks.value = decks
           onSuccess(decks)
         },
         { onFailure(it) })

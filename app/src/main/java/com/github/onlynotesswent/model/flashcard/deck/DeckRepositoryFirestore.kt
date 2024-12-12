@@ -89,6 +89,25 @@ class DeckRepositoryFirestore(private val db: FirebaseFirestore) : DeckRepositor
         }
   }
 
+  override fun getRootDecksFromUserId(
+      userId: String,
+      onSuccess: (List<Deck>) -> Unit,
+      onFailure: (Exception) -> Unit,
+  ) {
+    db.collection(collectionPath)
+        .whereEqualTo("userId", userId)
+        .whereEqualTo("folderId", null)
+        .get()
+        .addOnSuccessListener { querySnapshot ->
+          val decks = querySnapshot.documents.mapNotNull { documentSnapshotToDeck(it) }
+          onSuccess(decks)
+        }
+        .addOnFailureListener { exception ->
+          onFailure(exception)
+          Log.e(TAG, "Error getting root decks from user", exception)
+        }
+  }
+
   override fun getDeckById(id: String, onSuccess: (Deck) -> Unit, onFailure: (Exception) -> Unit) {
     db.collection(collectionPath)
         .document(id)
