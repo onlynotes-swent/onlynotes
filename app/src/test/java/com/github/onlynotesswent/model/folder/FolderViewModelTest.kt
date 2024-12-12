@@ -36,13 +36,13 @@ class FolderViewModelTest {
           lastModified = Timestamp.now())
 
   private val testFolderFriend =
-        Folder(
-            id = "2",
-            name = "name",
-            userId = "1",
-            parentFolderId = "pid",
-            lastModified = Timestamp.now(),
-            visibility = Visibility.FRIENDS)
+      Folder(
+          id = "2",
+          name = "name",
+          userId = "1",
+          parentFolderId = "pid",
+          lastModified = Timestamp.now(),
+          visibility = Visibility.FRIENDS)
 
   @Before
   fun setUp() {

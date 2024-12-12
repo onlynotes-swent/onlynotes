@@ -36,16 +36,16 @@ class NoteViewModelTest {
       )
 
   private val friendNote =
-        Note(
-            id = "2",
-            title = "title2",
-            date = Timestamp.now(),
-            lastModified = Timestamp.now(),
-            visibility = Visibility.FRIENDS,
-            userId = "1",
-            folderId = "1",
-            noteCourse = Course("CS-100", "Sample Course", 2024, "path"),
-        )
+      Note(
+          id = "2",
+          title = "title2",
+          date = Timestamp.now(),
+          lastModified = Timestamp.now(),
+          visibility = Visibility.FRIENDS,
+          userId = "1",
+          folderId = "1",
+          noteCourse = Course("CS-100", "Sample Course", 2024, "path"),
+      )
 
   @Before
   fun setUp() {

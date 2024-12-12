@@ -64,13 +64,13 @@ class FolderRepositoryFirestoreTest {
           lastModified = Timestamp.now())
 
   private val testFolderFriend =
-        Folder(
-            id = "3",
-            name = "name",
-            userId = "1",
-            parentFolderId = null,
-            lastModified = Timestamp.now(),
-            visibility = Visibility.FRIENDS)
+      Folder(
+          id = "3",
+          name = "name",
+          userId = "1",
+          parentFolderId = null,
+          lastModified = Timestamp.now(),
+          visibility = Visibility.FRIENDS)
 
   private val testSubFolder =
       Folder(
@@ -134,10 +134,12 @@ class FolderRepositoryFirestoreTest {
     `when`(mockDocumentSnapshot3.id).thenReturn(testFolderFriend.id)
     `when`(mockDocumentSnapshot3.getString("name")).thenReturn(testFolderFriend.name)
     `when`(mockDocumentSnapshot3.getString("userId")).thenReturn(testFolderFriend.userId)
-    `when`(mockDocumentSnapshot3.getString("parentFolderId")).thenReturn(testFolderFriend.parentFolderId)
+    `when`(mockDocumentSnapshot3.getString("parentFolderId"))
+        .thenReturn(testFolderFriend.parentFolderId)
     `when`(mockDocumentSnapshot3.getString("visibility"))
-      .thenReturn(testFolderFriend.visibility.toString())
-    `when`(mockDocumentSnapshot3.getTimestamp("lastModified")).thenReturn(testFolderFriend.lastModified)
+        .thenReturn(testFolderFriend.visibility.toString())
+    `when`(mockDocumentSnapshot3.getTimestamp("lastModified"))
+        .thenReturn(testFolderFriend.lastModified)
   }
 
   private fun compareFolders(testFolder: Folder?, expectedFolder: Folder) {
@@ -296,9 +298,7 @@ class FolderRepositoryFirestoreTest {
         .thenReturn(listOf(mockDocumentSnapshot, mockDocumentSnapshot2, mockDocumentSnapshot3))
     var receivedFolders: List<Folder>? = null
     folderRepositoryFirestore.getFoldersFromFollowingList(
-        listOf("1", "2"),
-        onSuccess = { receivedFolders = it },
-        onFailure = { assert(false) })
+        listOf("1", "2"), onSuccess = { receivedFolders = it }, onFailure = { assert(false) })
     assertNotNull(receivedFolders)
     assert(receivedFolders!!.size == 1)
     compareFolders(receivedFolders!![0], testFolderFriend)

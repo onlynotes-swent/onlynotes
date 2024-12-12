@@ -78,17 +78,17 @@ class NoteRepositoryFirestoreTest {
                   listOf(Note.Comment("1", "1", "bob", "1", Timestamp.now(), Timestamp.now()))))
 
   private val testNoteFriend =
-        Note(
-            id = "3",
-            title = "title",
-            date = Timestamp.now(),
-            lastModified = Timestamp.now(),
-            visibility = Visibility.FRIENDS,
-            userId = "1",
-            noteCourse = Course("CS-100", "Sample Course", 2024, "path"),
-            comments =
-                Note.CommentCollection(
-                    listOf(Note.Comment("1", "1", "bob", "1", Timestamp.now(), Timestamp.now()))))
+      Note(
+          id = "3",
+          title = "title",
+          date = Timestamp.now(),
+          lastModified = Timestamp.now(),
+          visibility = Visibility.FRIENDS,
+          userId = "1",
+          noteCourse = Course("CS-100", "Sample Course", 2024, "path"),
+          comments =
+              Note.CommentCollection(
+                  listOf(Note.Comment("1", "1", "bob", "1", Timestamp.now(), Timestamp.now()))))
 
   private val testSubNotePublic =
       Note(
@@ -237,25 +237,25 @@ class NoteRepositoryFirestoreTest {
         .thenReturn(
             noteRepositoryFirestore.convertCommentsList(testSubNotePublic.comments.commentsList))
 
-      `when`(mockDocumentSnapshot5.id).thenReturn(testNoteFriend.id)
-      `when`(mockDocumentSnapshot5.getString("title")).thenReturn(testNoteFriend.title)
-      `when`(mockDocumentSnapshot5.getTimestamp("date")).thenReturn(testNoteFriend.date)
-      `when`(mockDocumentSnapshot5.getTimestamp("lastModified"))
-          .thenReturn(testNoteFriend.lastModified)
-      `when`(mockDocumentSnapshot5.getString("visibility"))
-          .thenReturn(testNoteFriend.visibility.toString())
-      `when`(mockDocumentSnapshot5.getString("courseCode"))
-          .thenReturn(testNoteFriend.noteCourse?.courseCode)
-      `when`(mockDocumentSnapshot5.getString("courseName"))
-          .thenReturn(testNoteFriend.noteCourse?.courseName)
-      `when`(mockDocumentSnapshot5.getLong("courseYear"))
-          .thenReturn(testNoteFriend.noteCourse?.courseYear?.toLong())
-      `when`(mockDocumentSnapshot5.getString("publicPath"))
-          .thenReturn(testNoteFriend.noteCourse?.publicPath)
-      `when`(mockDocumentSnapshot5.getString("userId")).thenReturn(testNoteFriend.userId)
-      `when`(mockDocumentSnapshot5.get("commentsList"))
-          .thenReturn(
-              noteRepositoryFirestore.convertCommentsList(testNoteFriend.comments.commentsList))
+    `when`(mockDocumentSnapshot5.id).thenReturn(testNoteFriend.id)
+    `when`(mockDocumentSnapshot5.getString("title")).thenReturn(testNoteFriend.title)
+    `when`(mockDocumentSnapshot5.getTimestamp("date")).thenReturn(testNoteFriend.date)
+    `when`(mockDocumentSnapshot5.getTimestamp("lastModified"))
+        .thenReturn(testNoteFriend.lastModified)
+    `when`(mockDocumentSnapshot5.getString("visibility"))
+        .thenReturn(testNoteFriend.visibility.toString())
+    `when`(mockDocumentSnapshot5.getString("courseCode"))
+        .thenReturn(testNoteFriend.noteCourse?.courseCode)
+    `when`(mockDocumentSnapshot5.getString("courseName"))
+        .thenReturn(testNoteFriend.noteCourse?.courseName)
+    `when`(mockDocumentSnapshot5.getLong("courseYear"))
+        .thenReturn(testNoteFriend.noteCourse?.courseYear?.toLong())
+    `when`(mockDocumentSnapshot5.getString("publicPath"))
+        .thenReturn(testNoteFriend.noteCourse?.publicPath)
+    `when`(mockDocumentSnapshot5.getString("userId")).thenReturn(testNoteFriend.userId)
+    `when`(mockDocumentSnapshot5.get("commentsList"))
+        .thenReturn(
+            noteRepositoryFirestore.convertCommentsList(testNoteFriend.comments.commentsList))
   }
 
   private fun compareNotes(testNote: Note?, expectedNote: Note) {
