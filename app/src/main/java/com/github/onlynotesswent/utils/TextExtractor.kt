@@ -29,9 +29,9 @@ class TextExtractor(private val activity: ComponentActivity) {
    * Processes the given PDF file to extract text from it.
    *
    * @param pdfFile the PDF file to extract text from.
-   * @param onResult the lambda function to call with the extracted text.
+   * @param onSuccess the lambda function to call with the extracted text.
    */
-  fun processPdfFile(pdfFile: File, onResult: (String) -> Unit) {
+  fun processPdfFile(pdfFile: File, onSuccess: (String) -> Unit) {
     if (!::textRecognizer.isInitialized) {
       // Case should not happen if class is correctly initialized
       Log.e(TAG, "TextRecognizer is not initialized. Call init() before processing PDF file.")
@@ -40,7 +40,7 @@ class TextExtractor(private val activity: ComponentActivity) {
 
     try {
       val bitmaps = convertPdfToBitmap(pdfFile)
-      extractTextFromBitmaps(bitmaps, onResult)
+      extractTextFromBitmaps(bitmaps, onSuccess)
     } catch (e: Exception) {
       Log.e(TAG, "Error while converting PDF to bitmap", e)
       Toast.makeText(activity, "Error: text recognition failed", Toast.LENGTH_SHORT).show()
@@ -75,9 +75,9 @@ class TextExtractor(private val activity: ComponentActivity) {
    * Extracts text from the given list of bitmaps.
    *
    * @param bitmaps the list of bitmaps to extract text from.
-   * @param onResult the lambda function to call with the extracted text.
+   * @param onSuccess the lambda function to call with the extracted text.
    */
-  private fun extractTextFromBitmaps(bitmaps: List<Bitmap>, onResult: (String) -> Unit) {
+  private fun extractTextFromBitmaps(bitmaps: List<Bitmap>, onSuccess: (String) -> Unit) {
     val textResults = StringBuilder()
 
     bitmaps.forEachIndexed { index, bitmap ->
@@ -87,7 +87,7 @@ class TextExtractor(private val activity: ComponentActivity) {
           .addOnSuccessListener { visionText ->
             val text = visionText.text
             if (text.isNotEmpty()) textResults.append(text).append("\n")
-            if (index == bitmaps.size - 1) onResult(textResults.toString())
+            if (index == bitmaps.size - 1) onSuccess(textResults.toString())
           }
           .addOnFailureListener { e ->
             Log.e(TAG, "Text recognition failed", e)

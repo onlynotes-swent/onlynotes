@@ -159,7 +159,7 @@ fun PdfViewerScreen(
         onClick = {
           textExtractor.processPdfFile(
               pdfFile = pdfFile!!,
-              onResult = { text ->
+              onSuccess = { text ->
                 if (text.isEmpty()) {
                   Toast.makeText(context, "No text found", Toast.LENGTH_LONG).show()
                 } else {
