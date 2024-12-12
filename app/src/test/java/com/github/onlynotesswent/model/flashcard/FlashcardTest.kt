@@ -35,7 +35,6 @@ class FlashcardTest {
             latexFormula = "test",
             hasImage = true,
             fakeBacks = listOf("fake1", "fake2"),
-            lastReviewed = Timestamp(0, 0),
             userId = "2",
             folderId = "3",
             noteId = "4")
@@ -46,9 +45,29 @@ class FlashcardTest {
     assert(flashcard.latexFormula == "test")
     assert(flashcard.hasImage)
     assert(flashcard.fakeBacks == listOf("fake1", "fake2"))
-    assert(flashcard.lastReviewed == Timestamp(0, 0))
     assert(flashcard.userId == "2")
     assert(flashcard.folderId == "3")
     assert(flashcard.noteId == "4")
+  }
+
+  @Test
+  fun `test methode from User Flashcard`() {
+    val now = Timestamp.now()
+    var userFlashcard = UserFlashcard(id = "1", lastReviewed = now, level = 3)
+    userFlashcard = userFlashcard.increaseLevel()
+    assert(userFlashcard.level == 4)
+    userFlashcard = userFlashcard.decreaseLevel()
+    assert(userFlashcard.level == 3)
+    userFlashcard = userFlashcard.resetLevel()
+    assert(userFlashcard.level == UserFlashcard.MIN_FLASHCARD_LEVEL)
+    userFlashcard = userFlashcard.decreaseLevel()
+    assert(userFlashcard.level == UserFlashcard.MIN_FLASHCARD_LEVEL)
+    userFlashcard = userFlashcard.updateLastReviewed()
+    assert(userFlashcard.lastReviewed > now)
+    userFlashcard = userFlashcard.copy(level = UserFlashcard.MAX_FLASHCARD_LEVEL)
+    userFlashcard = userFlashcard.increaseLevel()
+    assert(userFlashcard.level == UserFlashcard.MAX_FLASHCARD_LEVEL)
+    userFlashcard = userFlashcard.decreaseLevel()
+    assert(userFlashcard.level == UserFlashcard.MAX_FLASHCARD_LEVEL - 1)
   }
 }

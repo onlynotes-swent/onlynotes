@@ -32,7 +32,6 @@ class FlashcardRepositoryFirestore(private val db: FirebaseFirestore) : Flashcar
           hasImage = document.getBoolean("hasImage") ?: throw Exception("hasImage is null"),
           fakeBacks =
               document.get("fakeBacks") as List<String>? ?: throw Exception("Fake backs is null"),
-          lastReviewed = document.getTimestamp("lastReviewed"),
           userId = document.getString("userId") ?: throw Exception("User ID is null"),
           folderId = document.getString("folderId"),
           noteId = document.getString("noteId"))
