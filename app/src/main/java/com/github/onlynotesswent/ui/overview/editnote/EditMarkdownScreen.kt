@@ -93,7 +93,7 @@ fun EditMarkdownScreen(
   val selectedNote by noteViewModel.selectedNote.collectAsState()
   val currentUser by userViewModel.currentUser.collectAsState()
   var markdownContent: File? by remember { mutableStateOf(null) }
-  var isEditing by rememberSaveable { mutableStateOf(false) } // Add this line
+  var isEditing by rememberSaveable { mutableStateOf(false) }
 
   // Function to download and set the Markdown file
   LaunchedEffect(Unit) {
