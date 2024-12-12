@@ -100,7 +100,6 @@ fun PdfViewerScreen(
   // LaunchedEffect for initial load when entering the screen
   LaunchedEffect(note) {
     if (note != null) {
-      Log.d("PdfViewerScreen", "Entering screen: attempting initial PDF download.")
       isLoading = true
       attempt = 0
       try {
@@ -125,7 +124,6 @@ fun PdfViewerScreen(
   // LaunchedEffect for retry logic
   LaunchedEffect(retryDownload) {
     if (retryDownload) {
-      Log.d("PdfViewerScreen", "Retrying PDF download...")
       isLoading = true
       attempt = 0 // Reset attempts
       while (attempt < 5) {
