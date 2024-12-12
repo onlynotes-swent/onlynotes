@@ -10,10 +10,16 @@ import com.github.onlynotesswent.model.folder.Folder
 interface FolderDao {
   @Query("SELECT * FROM folder WHERE id = :folderId") fun getFolderById(folderId: String): Folder?
 
-  @Query("SELECT * FROM folder") fun getFoldersFromUid(): List<Folder>
+  @Query("SELECT * FROM folder") fun getFoldersFromUserId(): List<Folder>
 
-  @Query("SELECT * FROM folder WHERE parentFolderId IS NULL")
-  fun getRootFoldersFromUid(): List<Folder>
+  @Query("SELECT * FROM folder WHERE parentFolderId IS NULL AND isDeckFolder = 0")
+  fun getRootNoteFoldersFromUserId(): List<Folder>
+
+  @Query("SELECT * FROM folder WHERE parentFolderId IS NULL AND isDeckFolder = 1")
+  fun getRootDeckFoldersFromUserId(): List<Folder>
+
+  @Query("SELECT * FROM folder WHERE name = :folderName AND isDeckFolder = 1")
+  fun getDeckFolderByName(folderName: String): List<Folder>
 
   @Query("SELECT * FROM folder WHERE parentFolderId = :parentFolderId")
   fun getSubfoldersOf(parentFolderId: String): List<Folder>
