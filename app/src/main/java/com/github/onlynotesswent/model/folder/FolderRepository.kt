@@ -107,7 +107,7 @@ interface FolderRepository {
    * @param useCache Whether to update data from cache. Should be true only if [userId] is the
    *   current user.
    */
-  suspend fun getFoldersFromUid(
+  suspend fun getFoldersFromUserId(
       userId: String,
       onSuccess: (List<Folder>) -> Unit,
       onFailure: (Exception) -> Unit,
@@ -115,7 +115,7 @@ interface FolderRepository {
   )
 
   /**
-   * Retrieves all root folders owned by a user.
+   * Retrieves all root note folders owned by a user.
    *
    * @param userId The ID of the user to retrieve folders for.
    * @param onSuccess Callback to be invoked with the retrieved folders.
@@ -123,8 +123,44 @@ interface FolderRepository {
    * @param useCache Whether to update data from cache. Should be true only if [userId] is the
    *   current user.
    */
-  suspend fun getRootFoldersFromUid(
+  suspend fun getRootNoteFoldersFromUserId(
       userId: String,
+      onSuccess: (List<Folder>) -> Unit,
+      onFailure: (Exception) -> Unit,
+      useCache: Boolean
+  )
+
+  /**
+   * Retrieves all root deck folders owned by a user.
+   *
+   * @param userId The ID of the user to retrieve decks for.
+   * @param onSuccess Callback to be invoked with the retrieved decks.
+   * @param onFailure Callback to be invoked if an error occurs.
+   * @param useCache Whether to update data from cache. Should be true only if [userId] is the
+   *   current user.
+   */
+  suspend fun getRootDeckFoldersFromUserId(
+      userId: String,
+      onSuccess: (List<Folder>) -> Unit,
+      onFailure: (Exception) -> Unit,
+      useCache: Boolean
+  )
+
+  /**
+   * Retrieves a folder by its name.
+   *
+   * @param name The name of the folder to retrieve.
+   * @param userId The ID of the user that owns the folder.
+   * @param onFolderNotFound Callback to be invoked if the folder is not found.
+   * @param onSuccess Callback to be invoked with the retrieved folders.
+   * @param onFailure Callback to be invoked if an error occurs.
+   * @param useCache Whether to update data from cache. Should be true only if userId of the folder
+   *   is the current user.
+   */
+  suspend fun getDeckFoldersByName(
+      name: String,
+      userId: String,
+      onFolderNotFound: () -> Unit,
       onSuccess: (List<Folder>) -> Unit,
       onFailure: (Exception) -> Unit,
       useCache: Boolean

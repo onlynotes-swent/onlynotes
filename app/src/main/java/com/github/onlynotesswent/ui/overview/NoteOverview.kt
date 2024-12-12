@@ -68,7 +68,7 @@ fun NoteOverviewScreen(
 
   val userRootFolders = folderViewModel.userRootFolders.collectAsState()
   userViewModel.currentUser.collectAsState().value?.let {
-    folderViewModel.getRootFoldersFromUid(it.uid)
+    folderViewModel.getRootFoldersFromUserId(it.uid)
   }
 
   val parentFolderId = folderViewModel.parentFolderId.collectAsState()

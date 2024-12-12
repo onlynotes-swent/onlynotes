@@ -122,8 +122,8 @@ class NoteOverviewTest {
       val onSuccess = invocation.getArgument<(List<Note>) -> Unit>(1)
       onSuccess(listOf())
     }
-    `when`(folderRepository.getRootFoldersFromUid(eq("1"), any(), any(), any())).then { invocation
-      ->
+    `when`(folderRepository.getRootNoteFoldersFromUserId(eq("1"), any(), any(), any())).then {
+        invocation ->
       val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(1)
       onSuccess(listOf())
     }
@@ -135,8 +135,8 @@ class NoteOverviewTest {
       val onSuccess = invocation.getArgument<(List<Note>) -> Unit>(1)
       onSuccess(noteList)
     }
-    `when`(folderRepository.getRootFoldersFromUid(eq("1"), any(), any(), any())).then { invocation
-      ->
+    `when`(folderRepository.getRootNoteFoldersFromUserId(eq("1"), any(), any(), any())).then {
+        invocation ->
       val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(1)
       onSuccess(folderList)
     }
@@ -146,7 +146,7 @@ class NoteOverviewTest {
     // the
     // refresh click
     verify(noteRepository, times(2)).getRootNotesFromUid(eq("1"), any(), any(), any())
-    verify(folderRepository, times(2)).getRootFoldersFromUid(eq("1"), any(), any(), any())
+    verify(folderRepository, times(2)).getRootNoteFoldersFromUserId(eq("1"), any(), any(), any())
     composeTestRule.onNodeWithTag("noteAndFolderList").assertIsDisplayed()
   }
 
@@ -156,13 +156,13 @@ class NoteOverviewTest {
       val onSuccess = invocation.getArgument<(List<Note>) -> Unit>(1)
       onSuccess(noteList)
     }
-    `when`(folderRepository.getRootFoldersFromUid(eq("1"), any(), any(), any())).then { invocation
-      ->
+    `when`(folderRepository.getRootNoteFoldersFromUserId(eq("1"), any(), any(), any())).then {
+        invocation ->
       val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(1)
       onSuccess(folderList)
     }
     noteViewModel.getRootNotesFromUid("1")
-    folderViewModel.getRootFoldersFromUid("1")
+    folderViewModel.getRootFoldersFromUserId("1")
     composeTestRule.onNodeWithTag("noteAndFolderList").assertIsDisplayed()
   }
 
@@ -200,12 +200,12 @@ class NoteOverviewTest {
 
   @Test
   fun selectFolderCallsNavActions() = runTest {
-    `when`(folderRepository.getRootFoldersFromUid(eq("1"), any(), any(), any())).then { invocation
-      ->
+    `when`(folderRepository.getRootNoteFoldersFromUserId(eq("1"), any(), any(), any())).then {
+        invocation ->
       val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(1)
       onSuccess(folderList)
     }
-    folderViewModel.getRootFoldersFromUid("1")
+    folderViewModel.getRootFoldersFromUserId("1")
     composeTestRule.onAllNodesWithTag("folderCard").onFirst().assertIsDisplayed()
     composeTestRule.onAllNodesWithTag("folderCard").onFirst().performClick()
     val folderContentsScreen =
@@ -288,13 +288,13 @@ class NoteOverviewTest {
       val onSuccess = invocation.getArgument<(List<Note>) -> Unit>(1)
       onSuccess(noteList)
     }
-    `when`(folderRepository.getRootFoldersFromUid(eq("1"), any(), any(), any())).then { invocation
-      ->
+    `when`(folderRepository.getRootNoteFoldersFromUserId(eq("1"), any(), any(), any())).then {
+        invocation ->
       val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(1)
       onSuccess(folderList)
     }
     noteViewModel.getRootNotesFromUid("1")
-    folderViewModel.getRootFoldersFromUid("1")
+    folderViewModel.getRootFoldersFromUserId("1")
     composeTestRule.onNodeWithTag("noteAndFolderList").assertIsDisplayed()
 
     composeTestRule.onNodeWithTag("noteCard").assertIsDisplayed()
@@ -337,12 +337,12 @@ class NoteOverviewTest {
                 parentFolderId = "1",
                 lastModified = Timestamp.now()))
 
-    `when`(folderRepository.getRootFoldersFromUid(eq("1"), any(), any(), any())).then { invocation
-      ->
+    `when`(folderRepository.getRootNoteFoldersFromUserId(eq("1"), any(), any(), any())).then {
+        invocation ->
       val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(1)
       onSuccess(userRootFoldersFlow)
     }
-    folderViewModel.getRootFoldersFromUid("1")
+    folderViewModel.getRootNoteFoldersFromUserId("1")
 
     val subFolderList =
         listOf(
