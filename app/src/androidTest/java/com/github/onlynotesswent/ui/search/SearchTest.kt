@@ -184,16 +184,25 @@ class SearchScreenTest {
     composeTestRule.onNodeWithTag("noSearchResults").assertIsNotDisplayed()
 
     composeTestRule.onNodeWithTag("noteFilterChip").performClick()
-    composeTestRule.onNodeWithTag("filteredNoteList").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("additionalFilterChip--PUBLIC").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("additionalFilterChip--FRIENDS").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("additionalFilterChip--PUBLIC").performClick()
+    composeTestRule.onNodeWithTag("filteredPublicNoteList").assertIsDisplayed()
 
     composeTestRule.onNodeWithTag("userFilterChip").performClick()
     composeTestRule.onNodeWithTag("filteredUserList").assertIsDisplayed()
 
     composeTestRule.onNodeWithTag("folderFilterChip").performClick()
-    composeTestRule.onNodeWithTag("filteredFolderList").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("additionalFilterChip--PUBLIC").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("additionalFilterChip--FRIENDS").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("additionalFilterChip--PUBLIC").performClick()
+    composeTestRule.onNodeWithTag("filteredPublicFolderList").assertIsDisplayed()
 
     composeTestRule.onNodeWithTag("deckFilterChip").performClick()
-    composeTestRule.onNodeWithTag("filteredDeckList").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("additionalFilterChip--PUBLIC").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("additionalFilterChip--FRIENDS").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("additionalFilterChip--PUBLIC").performClick()
+    composeTestRule.onNodeWithTag("filteredPublicDeckList").assertIsDisplayed()
   }
 
   @Test
@@ -201,7 +210,7 @@ class SearchScreenTest {
     composeTestRule.onNodeWithTag("searchTextField").performTextInput(testNote1.title)
     composeTestRule.onNodeWithTag("noteFilterChip").performClick()
 
-    composeTestRule.onNodeWithTag("filteredNoteList").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("filteredPublicNoteList").assertIsDisplayed()
     composeTestRule.onNodeWithTag("noSearchResults").assertIsNotDisplayed()
     composeTestRule
         .onAllNodesWithTag("noteCard")
@@ -225,7 +234,7 @@ class SearchScreenTest {
     composeTestRule.onNodeWithTag("searchTextField").performTextReplacement(testFolder1.name)
     composeTestRule.onNodeWithTag("folderFilterChip").performClick()
 
-    composeTestRule.onNodeWithTag("filteredFolderList").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("filteredPublicFolderList").assertIsDisplayed()
     composeTestRule.onNodeWithTag("noSearchResults").assertIsNotDisplayed()
     composeTestRule
         .onAllNodesWithTag("folderCard")
@@ -237,7 +246,7 @@ class SearchScreenTest {
     composeTestRule.onNodeWithTag("searchTextField").performTextReplacement(testDeck1.name)
     composeTestRule.onNodeWithTag("deckFilterChip").performClick()
 
-    composeTestRule.onNodeWithTag("filteredDeckList").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("filteredPublicDeckList").assertIsDisplayed()
     composeTestRule.onNodeWithTag("noSearchResults").assertIsNotDisplayed()
     composeTestRule
         .onAllNodesWithTag("deckCard")
@@ -252,7 +261,7 @@ class SearchScreenTest {
     composeTestRule.onNodeWithTag("searchTextField").performTextInput("Note")
     composeTestRule.onNodeWithTag("noteFilterChip").performClick()
 
-    composeTestRule.onNodeWithTag("filteredNoteList").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("filteredPublicNoteList").assertIsDisplayed()
     composeTestRule.onNodeWithTag("noSearchResults").assertIsNotDisplayed()
     composeTestRule
         .onAllNodesWithTag("noteCard")
@@ -290,7 +299,7 @@ class SearchScreenTest {
     composeTestRule.onNodeWithTag("searchTextField").performTextReplacement("Folder")
     composeTestRule.onNodeWithTag("folderFilterChip").performClick()
 
-    composeTestRule.onNodeWithTag("filteredFolderList").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("filteredPublicFolderList").assertIsDisplayed()
     composeTestRule.onNodeWithTag("noSearchResults").assertIsNotDisplayed()
     composeTestRule
         .onAllNodesWithTag("folderCard")
@@ -308,7 +317,7 @@ class SearchScreenTest {
     composeTestRule.onNodeWithTag("searchTextField").performTextReplacement("Deck")
     composeTestRule.onNodeWithTag("deckFilterChip").performClick()
 
-    composeTestRule.onNodeWithTag("filteredDeckList").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("filteredPublicDeckList").assertIsDisplayed()
     composeTestRule.onNodeWithTag("noSearchResults").assertIsNotDisplayed()
     composeTestRule
         .onAllNodesWithTag("deckCard")
@@ -350,7 +359,7 @@ class SearchScreenTest {
   fun testNoteSelectionNavigatesToEditScreen() {
     composeTestRule.onNodeWithTag("searchTextField").performTextInput(testNote1.title)
     composeTestRule.onNodeWithTag("noteFilterChip").performClick()
-    composeTestRule.onNodeWithTag("filteredNoteList").onChildren().onFirst().performClick()
+    composeTestRule.onNodeWithTag("filteredPublicNoteList").onChildren().onFirst().performClick()
 
     verify(navigationActions).navigateTo(Screen.EDIT_NOTE)
   }
@@ -374,7 +383,7 @@ class SearchScreenTest {
   fun testFolderSelectionNavigatesToFolderScreen() {
     composeTestRule.onNodeWithTag("searchTextField").performTextInput(testFolder1.name)
     composeTestRule.onNodeWithTag("folderFilterChip").performClick()
-    composeTestRule.onNodeWithTag("filteredFolderList").onChildren().onFirst().performClick()
+    composeTestRule.onNodeWithTag("filteredPublicFolderList").onChildren().onFirst().performClick()
 
     val folderContentsScreen = Screen.FOLDER_CONTENTS.replace("{folderId}", testFolder1.id)
     verify(navigationActions).navigateTo(folderContentsScreen)
@@ -384,7 +393,7 @@ class SearchScreenTest {
   fun testDeckSelectionNavigatesToDeckMenuScreen() {
     composeTestRule.onNodeWithTag("searchTextField").performTextInput(testDeck2.name)
     composeTestRule.onNodeWithTag("deckFilterChip").performClick()
-    composeTestRule.onNodeWithTag("filteredDeckList").onChildren().onFirst().performClick()
+    composeTestRule.onNodeWithTag("filteredPublicDeckList").onChildren().onFirst().performClick()
 
     val deckMenuScreen = Screen.DECK_MENU.replace("{deckId}", testDeck2.id)
     verify(navigationActions).navigateTo(deckMenuScreen)

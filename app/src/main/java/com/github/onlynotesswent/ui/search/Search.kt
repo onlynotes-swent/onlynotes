@@ -415,7 +415,9 @@ fun SearchScreen(
               notes = remember { mutableStateOf(emptyList()) },
               folders = filteredPublicFolders,
               gridModifier =
-                  Modifier.fillMaxWidth().padding(horizontal = 16.dp).testTag("filteredFolderList"),
+                  Modifier.fillMaxWidth()
+                      .padding(horizontal = 16.dp)
+                      .testTag("filteredPublicFolderList"),
               folderViewModel = folderViewModel,
               noteViewModel = noteViewModel,
               userViewModel = userViewModel,
@@ -444,7 +446,8 @@ fun SearchScreen(
         if (displayPublicDecks) {
           LazyColumn(
               contentPadding = PaddingValues(horizontal = 16.dp),
-              modifier = Modifier.fillMaxWidth().padding(padding).testTag("filteredDeckList")) {
+              modifier =
+                  Modifier.fillMaxWidth().padding(padding).testTag("filteredPublicDeckList")) {
                 items(filteredPublicDecks.value.size) { index ->
                   DeckSearchItem(
                       deck = filteredPublicDecks.value[index],
