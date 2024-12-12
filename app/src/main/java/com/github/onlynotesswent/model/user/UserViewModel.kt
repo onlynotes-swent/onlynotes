@@ -613,22 +613,22 @@ class UserViewModel(
   }
 
     /**
-     * Adds a new saved document uid of the given type  to the user's saved document list.
+     * Adds a new saved document id of the given type  to the user's saved document list.
      *
-     * @param documentUid The UID of the document to add to the saved document list.
+     * @param documentId The ID of the document to add to the saved document list.
      * @param documentType The type of the document to add to the saved document list.
      * @param onSuccess Callback to be invoked when the addition is successful.
      * @param onFailure Callback to be invoked if an error occurs.
      */
-    fun addSavedDocumentUidOfType(
-        documentUid: String,
+    fun addSavedDocumentIdOfType(
+        documentId: String,
         documentType: SavedDocumentType,
         onSuccess: () -> Unit = {},
         onFailure: (Exception) -> Unit = {}) {
         _currentUser.value?.let {
-            repository.addSavedDocumentUidOfType(
+            repository.addSavedDocumentIdOfType(
                 it.uid,
-                documentUid,
+                documentId,
                 documentType,
                 onSuccess,
                 onFailure)
@@ -636,18 +636,18 @@ class UserViewModel(
     }
 
     /**
-     * Retrieves all saved document UIDs of the given type from the current User.
+     * Retrieves all saved document IDs of the given type from the current User.
      *
      * @param documentType The type of the saved document to retrieve.
-     * @param onSuccess Callback to be invoked with the list of retrieved saved document uids.
+     * @param onSuccess Callback to be invoked with the list of retrieved saved document ids.
      * @param onFailure Callback to be invoked if an error occurs.
      */
-    fun getSavedDocumentsUidOfType(
+    fun getSavedDocumentIdsOfType(
         documentType: SavedDocumentType,
         onSuccess: (List<String>) -> Unit,
         onFailure: (Exception) -> Unit) {
         _currentUser.value?.let {
-            repository.getSavedDocumentsUidOfType(
+            repository.getSavedDocumentsIdOfType(
                 it.uid,
                 documentType,
                 onSuccess,
@@ -656,26 +656,47 @@ class UserViewModel(
     }
 
     /**
-     * Deletes a saved document uid of the given type from the user's saved document list.
+     * Deletes a list of saved document ids of the given type from the user's saved document list.
      *
-     * @param documentUid The UID of the document to remove from the saved document list.
+     * @param documentIds The list of IDs of the documents to remove from the saved document list.
      * @param documentType The type of the document to remove from the saved document list.
      * @param onSuccess Callback to be invoked when the removal is successful.
      * @param onFailure Callback to be invoked if an error occurs.
      */
-    fun deleteSavedDocumentUidOfType(
-        documentUid: String,
+    fun deleteSavedDocumentIdsOfType(
+        documentIds: List<String>,
         documentType: SavedDocumentType,
         onSuccess: () -> Unit = {},
         onFailure: (Exception) -> Unit = {}) {
         _currentUser.value?.let {
-            repository.deleteSavedDocumentUidOfType(
+            repository.deleteSavedDocumentIdsOfType(
                 it.uid,
-                documentUid,
+                documentIds,
                 documentType,
                 onSuccess,
                 onFailure
             )
         }
+    }
+
+    /**
+     * Deletes a saved document id of the given type from the user's saved document list.
+     *
+     * @param documentId The ID of the document to remove from the saved document list.
+     * @param documentType The type of the document to remove from the saved document list.
+     * @param onSuccess Callback to be invoked when the removal is successful.
+     * @param onFailure Callback to be invoked if an error occurs.
+     */
+    fun deleteSavedDocumentIdOfType(
+        documentId: String,
+        documentType: SavedDocumentType,
+        onSuccess: () -> Unit = {},
+        onFailure: (Exception) -> Unit = {}) {
+        deleteSavedDocumentIdsOfType(
+            listOf(documentId),
+            documentType,
+            onSuccess,
+            onFailure
+        )
     }
 }

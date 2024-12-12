@@ -360,26 +360,37 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
     }
   }
 
+    /**
+     * Retrieves the list of saved notes of the current user.
+     *
+     * @param userViewModel The userViewModel to use for retrieving the saved notes.
+     * @param onSuccess The function to call when the retrieval is successful.
+     * @param onFailure The function to call when the retrieval fails.
+     * @param useCache Whether to update data from cache.
+     */
     fun getCurrentUserSavedNotes(
         userViewModel: UserViewModel,
         onSuccess: (List<Note>) -> Unit = {},
         onFailure: (Exception) -> Unit = {},
         useCache: Boolean
     ) {
-        // Get the list of saved document UIDs of type NOTE for the current user from the userViewModel, and retrieve them
-        userViewModel.getSavedDocumentsUidOfType(
+        // Get the list of saved document IDs of type NOTE for the current user from the userViewModel, and retrieve them
+        userViewModel.getSavedDocumentIdsOfType(
             documentType = UserRepositoryFirestore.SavedDocumentType.NOTE,
-            onSuccess = { documentUids ->
+            onSuccess = { documentIds ->
                 viewModelScope.launch {
                     repository.getSavedNotesByIds(
-                        savedNotesIds = documentUids,
+                        savedNotesIds = documentIds,
                         friends = userViewModel.currentUser.value!!.friends,
                         onSuccess = { savedNotes, nonSaveableNotesIds ->
                             _userSavedNotes.value = savedNotes
+
+                                // Delete the no longer saveable (deleted or privated) notes from
+                            // the user's saved notes list
                             for (noteId in nonSaveableNotesIds) {
-                                userViewModel.deleteSavedDocumentUidOfType(
+                                userViewModel.deleteSavedDocumentIdOfType(
                                     documentType = UserRepositoryFirestore.SavedDocumentType.NOTE,
-                                    documentUid = noteId
+                                    documentId = noteId
                                 )
                             }
 

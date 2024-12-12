@@ -76,7 +76,7 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore) : UserRepositor
     }
   }
 
-    fun documentSnapshotToSavedDocumentsUid(document: DocumentSnapshot): List<String> {
+    fun documentSnapshotToSavedDocumentsId(document: DocumentSnapshot): List<String> {
         // Todo: This function is quite unecessary to define separately, but for consistency with
         //  the other similar functions, it is defined here.
         // Todo: Also, this uses default values as it is a new introduction. Once all users get the
@@ -385,14 +385,14 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore) : UserRepositor
   }
 
 
-    override fun addSavedDocumentUidOfType(
+    override fun addSavedDocumentIdOfType(
         currentUserID: String,
-        documentUid: String,
+        documentId: String,
         documentType: SavedDocumentType,
         onSuccess: () -> Unit,
         onFailure: (Exception) -> Unit) {
 
-        // Update the current array in the user's {documentType.firebaseDocumentName} document with the new saved uid
+        // Update the current array in the user's {documentType.firebaseDocumentName} document with the new saved id
         // Todo: We could potentially separate an add document function, to initially create the
         //  document and empty array, and separately use firebase's update function to enable easier
         //  partial updates
@@ -400,15 +400,15 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore) : UserRepositor
             .document(currentUserID)
             .collection(savedDocumentLevelSubcollection)
             .document(documentType.firebaseDocumentName)
-            .set(hashMapOf(savedDocumentArrayName to FieldValue.arrayUnion(documentUid)))
+            .set(hashMapOf(savedDocumentArrayName to FieldValue.arrayUnion(documentId)))
             .addOnSuccessListener { onSuccess() }
             .addOnFailureListener { exception ->
                 onFailure(exception)
-                Log.e(TAG, "Error adding saved document uid", exception)
+                Log.e(TAG, "Error adding saved document id", exception)
             }
     }
 
-    override fun getSavedDocumentsUidOfType(
+    override fun getSavedDocumentsIdOfType(
       currentUserID: String,
       documentType: SavedDocumentType,
       onSuccess: (List<String>) -> Unit,
@@ -420,7 +420,7 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore) : UserRepositor
         .get()
         .addOnSuccessListener { document ->
           if (document.exists()) {
-            onSuccess(documentSnapshotToSavedDocumentsUid(document))
+            onSuccess(documentSnapshotToSavedDocumentsId(document))
           } else {
             onFailure(Exception("Document does not exist"))
             Log.e(TAG, "The firebase document ${documentType.firebaseDocumentName} doesn't exist")
@@ -428,27 +428,27 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore) : UserRepositor
         }
         .addOnFailureListener { exception ->
           onFailure(exception)
-          Log.e(TAG, "Error getting saved documents' uid", exception)
+          Log.e(TAG, "Error getting saved documents' id", exception)
         }
     }
 
-    override fun deleteSavedDocumentUidOfType(
+    override fun deleteSavedDocumentIdsOfType(
         currentUserID: String,
-        documentUid: String,
+        documentIds: List<String>,
         documentType: SavedDocumentType,
         onSuccess: () -> Unit,
         onFailure: (Exception) -> Unit) {
         // Update the current array in the user's {documentType.firebaseDocumentName} document
-        // removing the new document with documentUid
+        // removing the new document with documentId
         db.collection(collectionPath)
             .document(currentUserID)
             .collection(savedDocumentLevelSubcollection)
             .document(documentType.firebaseDocumentName)
-            .set(hashMapOf(savedDocumentArrayName to FieldValue.arrayRemove(documentUid)))
+            .set(hashMapOf(savedDocumentArrayName to FieldValue.arrayRemove(documentIds)))
             .addOnSuccessListener { onSuccess() }
             .addOnFailureListener { exception ->
                 onFailure(exception)
-                Log.e(TAG, "Error deleting documentUid from the saved document list", exception)
+                Log.e(TAG, "Error deleting documentId from the saved document list", exception)
             }
     }
 
