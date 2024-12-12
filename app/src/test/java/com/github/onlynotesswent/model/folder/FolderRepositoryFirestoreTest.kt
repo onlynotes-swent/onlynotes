@@ -7,6 +7,7 @@ import androidx.test.core.app.ApplicationProvider
 import com.github.onlynotesswent.model.cache.CacheDatabase
 import com.github.onlynotesswent.model.cache.FolderDao
 import com.github.onlynotesswent.model.cache.NoteDao
+import com.github.onlynotesswent.model.common.Visibility
 import com.github.onlynotesswent.model.note.NoteRepository
 import com.github.onlynotesswent.model.note.NoteViewModel
 import com.google.android.gms.tasks.OnCompleteListener
@@ -45,6 +46,7 @@ class FolderRepositoryFirestoreTest {
   @Mock private lateinit var mockCollectionReference: CollectionReference
   @Mock private lateinit var mockDocumentSnapshot: DocumentSnapshot
   @Mock private lateinit var mockDocumentSnapshot2: DocumentSnapshot
+  @Mock private lateinit var mockDocumentSnapshot3: DocumentSnapshot
   @Mock private lateinit var mockQuerySnapshot: QuerySnapshot
   @Mock private lateinit var mockQuerySnapshotTask: Task<QuerySnapshot>
 
@@ -60,6 +62,15 @@ class FolderRepositoryFirestoreTest {
           userId = "1",
           parentFolderId = null,
           lastModified = Timestamp.now())
+
+  private val testFolderFriend =
+        Folder(
+            id = "3",
+            name = "name",
+            userId = "1",
+            parentFolderId = null,
+            lastModified = Timestamp.now(),
+            visibility = Visibility.FRIENDS)
 
   private val testSubFolder =
       Folder(
@@ -100,7 +111,7 @@ class FolderRepositoryFirestoreTest {
     }
 
     `when`(mockQuerySnapshot.documents)
-        .thenReturn(listOf(mockDocumentSnapshot, mockDocumentSnapshot2))
+        .thenReturn(listOf(mockDocumentSnapshot, mockDocumentSnapshot2, mockDocumentSnapshot3))
 
     `when`(mockDocumentSnapshot.id).thenReturn(testFolder.id)
     `when`(mockDocumentSnapshot.getString("name")).thenReturn(testFolder.name)
@@ -119,6 +130,14 @@ class FolderRepositoryFirestoreTest {
         .thenReturn(testSubFolder.visibility.toString())
     `when`(mockDocumentSnapshot2.getTimestamp("lastModified"))
         .thenReturn(testSubFolder.lastModified)
+
+    `when`(mockDocumentSnapshot3.id).thenReturn(testFolderFriend.id)
+    `when`(mockDocumentSnapshot3.getString("name")).thenReturn(testFolderFriend.name)
+    `when`(mockDocumentSnapshot3.getString("userId")).thenReturn(testFolderFriend.userId)
+    `when`(mockDocumentSnapshot3.getString("parentFolderId")).thenReturn(testFolderFriend.parentFolderId)
+    `when`(mockDocumentSnapshot3.getString("visibility"))
+      .thenReturn(testFolderFriend.visibility.toString())
+    `when`(mockDocumentSnapshot3.getTimestamp("lastModified")).thenReturn(testFolderFriend.lastModified)
   }
 
   private fun compareFolders(testFolder: Folder?, expectedFolder: Folder) {
@@ -262,11 +281,27 @@ class FolderRepositoryFirestoreTest {
   @Test
   fun getPublicFolders_callsDocuments() {
     `when`(mockQuerySnapshot.documents)
-        .thenReturn(listOf(mockDocumentSnapshot, mockDocumentSnapshot2))
+        .thenReturn(listOf(mockDocumentSnapshot, mockDocumentSnapshot2, mockDocumentSnapshot3))
     var receivedFolders: List<Folder>? = null
     folderRepositoryFirestore.getPublicFolders(
         onSuccess = { receivedFolders = it }, onFailure = { assert(false) })
     assertNotNull(receivedFolders)
+
+    verify(timeout(100)) { (mockQuerySnapshot).documents }
+  }
+
+  @Test
+  fun getFoldersFromFollowingList_callsDocuments() {
+    `when`(mockQuerySnapshot.documents)
+        .thenReturn(listOf(mockDocumentSnapshot, mockDocumentSnapshot2, mockDocumentSnapshot3))
+    var receivedFolders: List<Folder>? = null
+    folderRepositoryFirestore.getFoldersFromFollowingList(
+        listOf("1", "2"),
+        onSuccess = { receivedFolders = it },
+        onFailure = { assert(false) })
+    assertNotNull(receivedFolders)
+    assert(receivedFolders!!.size == 1)
+    compareFolders(receivedFolders!![0], testFolderFriend)
 
     verify(timeout(100)) { (mockQuerySnapshot).documents }
   }

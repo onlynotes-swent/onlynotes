@@ -1,5 +1,6 @@
 package com.github.onlynotesswent.model.folder
 
+import com.github.onlynotesswent.model.common.Visibility
 import com.github.onlynotesswent.model.note.NoteRepository
 import com.github.onlynotesswent.model.note.NoteViewModel
 import com.google.firebase.Timestamp
@@ -34,6 +35,15 @@ class FolderViewModelTest {
           parentFolderId = "pid",
           lastModified = Timestamp.now())
 
+  private val testFolderFriend =
+        Folder(
+            id = "2",
+            name = "name",
+            userId = "1",
+            parentFolderId = "pid",
+            lastModified = Timestamp.now(),
+            visibility = Visibility.FRIENDS)
+
   @Before
   fun setUp() {
     MockitoAnnotations.openMocks(this)
@@ -60,6 +70,16 @@ class FolderViewModelTest {
     }
     folderViewModel.getFoldersFromUid(testFolder.id, { assert(true) })
     assertEquals(folderViewModel.userFolders.value, listOf(testFolder))
+  }
+
+  @Test
+  fun getFolderFromFollowingListCallsRepository() {
+    `when`(mockFolderRepository.getFoldersFromFollowingList(any(), any(), any())).thenAnswer {
+      val onSuccess: (List<Folder>) -> Unit = it.getArgument(1)
+      onSuccess(listOf(testFolderFriend))
+    }
+    folderViewModel.getFoldersFromFollowingList(listOf("1"), { assert(true) })
+    assertEquals(folderViewModel.friendsFolders.value, listOf(testFolderFriend))
   }
 
   @Test
