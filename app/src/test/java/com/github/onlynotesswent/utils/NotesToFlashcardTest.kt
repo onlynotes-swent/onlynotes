@@ -8,19 +8,34 @@ import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.flashcard.Flashcard
 import com.github.onlynotesswent.model.flashcard.FlashcardRepository
 import com.github.onlynotesswent.model.flashcard.FlashcardViewModel
+import com.github.onlynotesswent.model.flashcard.deck.Deck
+import com.github.onlynotesswent.model.flashcard.deck.DeckRepository
+import com.github.onlynotesswent.model.flashcard.deck.DeckViewModel
+import com.github.onlynotesswent.model.folder.Folder
+import com.github.onlynotesswent.model.folder.FolderRepository
+import com.github.onlynotesswent.model.folder.FolderViewModel
 import com.github.onlynotesswent.model.note.Note
+import com.github.onlynotesswent.model.note.NoteRepository
+import com.github.onlynotesswent.model.note.NoteViewModel
 import com.google.firebase.FirebaseApp
 import com.google.firebase.Timestamp
 import com.google.gson.JsonSyntaxException
 import java.io.File
 import java.io.IOException
+import java.util.concurrent.atomic.AtomicInteger
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.setMain
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.ArgumentCaptor
-import org.mockito.Captor
 import org.mockito.Mock
 import org.mockito.Mockito.anyString
 import org.mockito.Mockito.doAnswer
@@ -35,9 +50,6 @@ import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
 class NotesToFlashcardTest {
-  // Helper function to capture arguments in Mockito tests, bypassing Kotlin's null-safety checks
-  private fun <T> capture(argumentCaptor: ArgumentCaptor<T>): T = argumentCaptor.capture()
-
   private val jsonResponse =
       """
     {
@@ -50,7 +62,12 @@ class NotesToFlashcardTest {
                 "index": 0,
                 "message": {
                     "role": "assistant",
-                    "content": "[{\"question\": \"What is cryptocurrency?\",\"answer\": \"Cryptocurrency is a digital payment system...\"},{\"question\": \"How does cryptocurrency work?\",\"answer\": \"Cryptocurrencies run on a distributed public ledger...\"},{\"question\": \"Cryptocurrency examples\",\"answer\": \"There are thousands of cryptocurrencies. Some of the best known include: Bitcoin, Ethereum...\"}]"
+                    "content": "[
+                    {\"question\": \"What is cryptocurrency?\",\"answer\": \"Cryptocurrency is a digital payment system...\"}
+                    ,{\"question\": \"How does cryptocurrency work?\",\"answer\": \"Cryptocurrencies run on a distributed public ledger...\"}
+                    ,{\"question\": \"Cryptocurrency examples\",\"answer\": \"There are thousands of cryptocurrencies. Some of the best known include: Bitcoin, Ethereum...\"}
+                    ,{\"question\": \"Which one of the following is a cryptocurrency?\",\"answer\": \"Bitcoin\",\"fakeBacks\": [\"PayPal\",\"Visa\",\"Mastercard\"]}
+                    ]"
                 },
                 "logprobs": null,
                 "finish_reason": "stop"
@@ -60,7 +77,47 @@ class NotesToFlashcardTest {
     """
           .trimIndent()
 
-  private val testNote =
+  private val testFolder =
+      Folder(
+          id = "1",
+          name = "folder1",
+          userId = "1",
+          visibility = Visibility.DEFAULT,
+          lastModified = Timestamp.now(),
+      )
+
+  private val testSubfolder =
+      Folder(
+          id = "2",
+          name = "folder2",
+          userId = "1",
+          parentFolderId = "1",
+          visibility = Visibility.DEFAULT,
+          lastModified = Timestamp.now(),
+      )
+
+  private val deckFolder =
+      Folder(
+          id = "3",
+          name = "folder1",
+          userId = "1",
+          visibility = Visibility.DEFAULT,
+          lastModified = Timestamp.now(),
+          isDeckFolder = true,
+      )
+
+  private val deckSubfolder =
+      Folder(
+          id = "4",
+          name = "folder2",
+          userId = "1",
+          parentFolderId = "3",
+          visibility = Visibility.DEFAULT,
+          lastModified = Timestamp.now(),
+          isDeckFolder = true,
+      )
+
+  private val testNote1 =
       Note(
           id = "1",
           title = "title",
@@ -68,25 +125,66 @@ class NotesToFlashcardTest {
           lastModified = Timestamp.now(),
           visibility = Visibility.DEFAULT,
           userId = "1",
-          folderId = "1",
+          folderId = testFolder.id,
           noteCourse = Course("CS-100", "Sample Course", 2024, "path"),
       )
+
+  private val testNote2 =
+      Note(
+          id = "2",
+          title = "title",
+          date = Timestamp.now(),
+          visibility = Visibility.DEFAULT,
+          userId = "1",
+          folderId = testFolder.id,
+          noteCourse = Course("CS-100", "Sample Course", 2024, "path"),
+          lastModified = Timestamp.now())
+
+  private val testNote3 =
+      Note(
+          id = "3",
+          title = "title",
+          date = Timestamp.now(),
+          visibility = Visibility.DEFAULT,
+          userId = "1",
+          folderId = testSubfolder.id,
+          noteCourse = Course("CS-100", "Sample Course", 2024, "path"),
+          lastModified = Timestamp.now())
 
   private lateinit var notesToFlashcard: NotesToFlashcard
 
   private lateinit var flashcardViewModel: FlashcardViewModel
+
+  private lateinit var deckViewModel: DeckViewModel
+
+  private lateinit var folderViewModel: FolderViewModel
+
+  private lateinit var noteViewModel: NoteViewModel
 
   // Mock dependencies
   @Mock private lateinit var mockFlashcardRepository: FlashcardRepository
 
   @Mock private lateinit var mockFileViewModel: FileViewModel
 
+  @Mock private lateinit var mockDeckRepository: DeckRepository
+
+  @Mock private lateinit var mockFolderRepository: FolderRepository
+
+  @Mock private lateinit var mockNoteRepository: NoteRepository
+
   @Mock private lateinit var mockOpenAI: OpenAI
 
   @Mock private lateinit var mockContext: Context
 
-  // Argument captor for Flashcard objects
-  @Captor private lateinit var flashcardCaptor: ArgumentCaptor<Flashcard>
+  private val savedFlashcards = mutableListOf<Flashcard>()
+
+  private val savedDecks = mutableListOf<Deck>()
+
+  private val savedFolders = mutableListOf<Folder>()
+
+  private val flashcardId = AtomicInteger(0)
+
+  private val folderId = AtomicInteger(3)
 
   @Before
   fun setup() {
@@ -95,10 +193,21 @@ class NotesToFlashcardTest {
     // Initialize FirebaseApp with Robolectric context
     FirebaseApp.initializeApp(org.robolectric.RuntimeEnvironment.getApplication())
 
-    // Mock FlashcardRepository and set up FlashcardViewModel with it
+    // Setup view models
     flashcardViewModel = FlashcardViewModel(mockFlashcardRepository)
+    deckViewModel = DeckViewModel(mockDeckRepository)
+    folderViewModel = FolderViewModel(mockFolderRepository)
+    noteViewModel = NoteViewModel(mockNoteRepository)
+
     notesToFlashcard =
-        NotesToFlashcard(flashcardViewModel, mockFileViewModel, mockOpenAI, mockContext)
+        NotesToFlashcard(
+            flashcardViewModel,
+            mockFileViewModel,
+            deckViewModel,
+            noteViewModel,
+            folderViewModel,
+            mockOpenAI,
+            mockContext)
 
     val testFile = File.createTempFile("test", ".md")
     testFile.deleteOnExit()
@@ -110,13 +219,6 @@ class NotesToFlashcardTest {
           onSuccess(testFile)
         }
 
-    // Mock the return value for getNewUid
-    `when`(mockFlashcardRepository.getNewUid()).thenReturn("test")
-  }
-
-  @Test
-  fun `convertNoteToFlashcards should parse JSON and create flashcards`() {
-
     // Mocking OpenAI's sendRequest to trigger onSuccess
     doAnswer { invocation ->
           val onSuccess = invocation.getArgument<(String) -> Unit>(1)
@@ -126,47 +228,205 @@ class NotesToFlashcardTest {
         .`when`(mockOpenAI)
         .sendRequest(anyString(), any(), any(), anyString())
 
+    // Mock the repositories
+    `when`(mockFlashcardRepository.getNewUid()).thenReturn(flashcardId.getAndIncrement().toString())
+    `when`(mockDeckRepository.getNewUid()).thenReturn("test")
+    `when`(mockFlashcardRepository.addFlashcard(any(), any(), any())).thenAnswer { invocation ->
+      savedFlashcards.add(invocation.getArgument(0))
+    }
+    `when`(mockDeckRepository.updateDeck(any(), any(), any())).thenAnswer { invocation ->
+      savedDecks.add(invocation.getArgument(0))
+    }
+  }
+
+  private fun convertFolderToDecksChecks(expectedAddedFolderSize: Int) {
+    // Check 4 decks were created
+    assertEquals(4, savedDecks.size)
+
+    // Check 16 flashcards were created
+    assertEquals(12, savedFlashcards.size)
+
+    // Check 2 folders were created
+    assertEquals(expectedAddedFolderSize, savedFolders.size)
+
+    // Check the parent folder has 3 decks
+    val parentDecks = savedDecks.filter { it.folderId == deckFolder.id }
+    assertEquals(3, parentDecks.size)
+    assertTrue(parentDecks.any { it.name == testFolder.name })
+    assertTrue(parentDecks.any { it.name == testNote1.title })
+    assertTrue(parentDecks.any { it.name == testNote2.title })
+
+    // Check the subfolder has 1 deck
+    val subFolderDecks = savedDecks.filter { it.folderId == deckSubfolder.id }
+    assertEquals(1, subFolderDecks.size)
+    assertEquals(testNote3.title, subFolderDecks.first().name)
+  }
+
+  private fun convertFolderToDecksCommonMocks() = runTest {
+    // Initialize the view models, repositories and saved objects
+    savedFlashcards.clear()
+    savedDecks.clear()
+    savedFolders.clear()
+    folderViewModel.selectedFolder(testFolder)
+
+    `when`(mockFolderRepository.addFolder(any(), any(), any(), any())).thenAnswer { invocation ->
+      savedFolders.add(invocation.getArgument(0))
+      val onSuccess = invocation.getArgument<() -> Unit>(1)
+      onSuccess()
+    }
+
+    `when`(mockFolderRepository.getSubFoldersOf(any(), any(), any(), any())).thenAnswer { invocation
+      ->
+      val parentFolderId = invocation.getArgument<String>(0)
+      val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(1)
+      if (parentFolderId == testFolder.id) {
+        onSuccess(listOf(testSubfolder))
+      } else {
+        onSuccess(emptyList())
+      }
+    }
+    folderViewModel.getSubFoldersOf(testFolder.id)
+
+    `when`(mockNoteRepository.getNotesFromFolder(any(), any(), any(), any())).thenAnswer {
+        invocation ->
+      val folderId = invocation.getArgument<String>(0)
+      val onSuccess = invocation.getArgument<(List<Note>) -> Unit>(1)
+      when (folderId) {
+        testFolder.id -> {
+          onSuccess(listOf(testNote1, testNote2))
+        }
+        testSubfolder.id -> {
+          onSuccess(listOf(testNote3))
+        }
+        else -> {
+          onSuccess(emptyList())
+        }
+      }
+    }
+    noteViewModel.getNotesFromFolder(testFolder.id)
+
+    `when`(mockFolderRepository.getNewFolderId()).thenAnswer {
+      folderId.getAndIncrement().toString()
+    }
+  }
+
+  @OptIn(ExperimentalCoroutinesApi::class)
+  @Test
+  fun `convertFolderToDecks with existing deck folders`() = runTest {
+    // Override Dispatchers.IO with TestDispatcher in your test setup
+    Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+    convertFolderToDecksCommonMocks()
+
+    `when`(mockFolderRepository.getDeckFoldersByName(any(), any(), any(), any(), any(), any()))
+        .thenAnswer { invocation ->
+          val name = invocation.getArgument<String>(0)
+          val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(3)
+          when (name) {
+            testFolder.name -> {
+              onSuccess(listOf(deckFolder))
+            }
+            testSubfolder.name -> {
+              onSuccess(listOf(deckSubfolder))
+            }
+            else -> {
+              onSuccess(emptyList())
+            }
+          }
+        }
+
+    notesToFlashcard.convertFolderToDecks(
+        onProgress = { _, _, _ -> },
+        onSuccess = {},
+        onFailure = { fail("Conversion failed with exception: $it") })
+
+    convertFolderToDecksChecks(0)
+    // close the dispatcher
+    Dispatchers.resetMain()
+  }
+
+  @OptIn(ExperimentalCoroutinesApi::class)
+  @Test
+  fun `convertFolderToDecks with no existing deck folders`() = runTest {
+    // Override Dispatchers.IO with TestDispatcher in your test setup
+    Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+    convertFolderToDecksCommonMocks()
+
+    `when`(mockFolderRepository.getDeckFoldersByName(any(), any(), any(), any(), any(), any()))
+        .thenAnswer { invocation ->
+          val onFolderNotFound = invocation.getArgument<() -> Unit>(2)
+          onFolderNotFound()
+        }
+
+    notesToFlashcard.convertFolderToDecks(
+        onProgress = { _, _, _ -> },
+        onSuccess = {},
+        onFailure = { fail("Conversion failed with exception: $it") })
+
+    convertFolderToDecksChecks(2)
+
+    // close the dispatcher
+    Dispatchers.resetMain()
+  }
+
+  @Test
+  fun `convertNoteToFlashcards should parse JSON and create flashcards`() {
+    // Initialize the view models, repositories and saved objects
+    savedFlashcards.clear()
+
     // Capture the success callback's flashcards list
-    val onSuccess: (List<Flashcard>) -> Unit = { flashcards ->
-      assertEquals(3, flashcards.size)
+    val onSuccess: (Deck) -> Unit = { deck ->
+      // Verify the number of flashcards
+      val flashcardUid = deck.flashcardIds
+
+      // Check the number of flashcards
+      assertEquals(4, deck.flashcardIds.size)
+      assertEquals(4, savedFlashcards.size)
+
+      // Check the flashcard IDs match
+      assertEquals(flashcardUid[0], savedFlashcards[0].id)
+      assertEquals(flashcardUid[1], savedFlashcards[1].id)
+      assertEquals(flashcardUid[2], savedFlashcards[2].id)
+      assertEquals(flashcardUid[3], savedFlashcards[3].id)
 
       // Verify each flashcard's content
-      assertEquals("What is cryptocurrency?", flashcards[0].front)
-      assertEquals("Cryptocurrency is a digital payment system...", flashcards[0].back)
+      assertEquals("What is cryptocurrency?", savedFlashcards[0].front)
+      assertEquals("Cryptocurrency is a digital payment system...", savedFlashcards[0].back)
 
-      assertEquals("How does cryptocurrency work?", flashcards[1].front)
-      assertEquals("Cryptocurrencies run on a distributed public ledger...", flashcards[1].back)
+      assertEquals("How does cryptocurrency work?", savedFlashcards[1].front)
+      assertEquals(
+          "Cryptocurrencies run on a distributed public ledger...", savedFlashcards[1].back)
 
-      assertEquals("Cryptocurrency examples", flashcards[2].front)
+      assertEquals("Cryptocurrency examples", savedFlashcards[2].front)
       assertEquals(
           "There are thousands of cryptocurrencies. Some of the best known include: Bitcoin, Ethereum...",
-          flashcards[2].back)
+          savedFlashcards[2].back)
+
+      assert(savedFlashcards[3].isMCQ())
+      assertEquals("Which one of the following is a cryptocurrency?", savedFlashcards[3].front)
+      assertEquals("Bitcoin", savedFlashcards[3].back)
+      assertEquals(listOf("PayPal", "Visa", "Mastercard"), savedFlashcards[3].fakeBacks)
 
       // Verify for each flashcard
-      for (flashcard in flashcards) {
-        assertEquals(testNote.userId, flashcard.userId)
-        assertEquals(testNote.id, flashcard.noteId)
-        assertEquals(testNote.folderId, flashcard.folderId)
+      for (flashcard in savedFlashcards) {
+        assertEquals(testNote1.userId, flashcard.userId)
+        assertEquals(testNote1.id, flashcard.noteId)
+        assertNull(flashcard.folderId)
       }
     }
 
     // Execute the method
-    notesToFlashcard.convertNoteToFlashcards(
-        note = testNote,
+    notesToFlashcard.convertNoteToDeck(
+        note = testNote1,
         onSuccess = onSuccess,
         onFileNotFoundException = { fail("Expected successful conversion") },
         onFailure = { fail("Expected successful conversion") })
 
     // Verify that addFlashcard was called exactly three times with the correct flashcards
-    verify(mockFlashcardRepository, times(3)).addFlashcard(capture(flashcardCaptor), any(), any())
-
-    // Retrieve captured flashcards and validate them
-    val capturedFlashcards = flashcardCaptor.allValues
-    assertEquals(3, capturedFlashcards.size)
+    verify(mockFlashcardRepository, times(4)).addFlashcard(any(), any(), any())
   }
 
   @Test
-  fun `convertNoteToFlashcards failure`() {
+  fun `convertNoteToDeck failure`() {
     // Mocking OpenAI's sendRequest to trigger onFailure
     doAnswer { invocation ->
           val onFailure = invocation.getArgument<(IOException) -> Unit>(2)
@@ -180,8 +440,8 @@ class NotesToFlashcardTest {
     var failureCallbackCalled = false
 
     // Execute the method
-    notesToFlashcard.convertNoteToFlashcards(
-        note = testNote,
+    notesToFlashcard.convertNoteToDeck(
+        note = testNote1,
         onSuccess = { fail("Expected failure but got success") },
         onFileNotFoundException = { fail("Expected failure but got not found") },
         onFailure = { error ->
@@ -195,7 +455,7 @@ class NotesToFlashcardTest {
   }
 
   @Test
-  fun `convertNoteToFlashcards invalid JSON`() {
+  fun `convertNoteToDeck invalid JSON`() {
     // Mocking OpenAI's sendRequest to trigger onSuccess
     doAnswer { invocation ->
           val onSuccess = invocation.getArgument<(String) -> Unit>(1)
@@ -207,8 +467,8 @@ class NotesToFlashcardTest {
 
     // Set up a flag to ensure the failure callback was called
     var failureCallbackCalled = false
-    notesToFlashcard.convertNoteToFlashcards(
-        note = testNote,
+    notesToFlashcard.convertNoteToDeck(
+        note = testNote1,
         onSuccess = { fail("Expected failure but got success") },
         onFileNotFoundException = { fail("Expected failure but got not found") },
         onFailure = { error ->

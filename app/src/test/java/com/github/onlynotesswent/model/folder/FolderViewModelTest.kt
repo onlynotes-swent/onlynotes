@@ -64,11 +64,11 @@ class FolderViewModelTest {
 
   @Test
   fun getFoldersFromCallsRepository() = runTest {
-    `when`(mockFolderRepository.getFoldersFromUid(any(), any(), any(), any())).thenAnswer {
+    `when`(mockFolderRepository.getFoldersFromUserId(any(), any(), any(), any())).thenAnswer {
       val onSuccess: (List<Folder>) -> Unit = it.getArgument(1)
       onSuccess(listOf(testFolder))
     }
-    folderViewModel.getFoldersFromUid(testFolder.id, { assert(true) })
+    folderViewModel.getFoldersFromUserId(testFolder.id, { assert(true) })
     assertEquals(folderViewModel.userFolders.value, listOf(testFolder))
   }
 
@@ -83,13 +83,64 @@ class FolderViewModelTest {
   }
 
   @Test
-  fun getRootFoldersFromCallsRepository() = runTest {
-    `when`(mockFolderRepository.getRootFoldersFromUid(any(), any(), any(), any())).thenAnswer {
-      val onSuccess: (List<Folder>) -> Unit = it.getArgument(1)
-      onSuccess(listOf(testFolder))
-    }
-    folderViewModel.getRootFoldersFromUid(testFolder.id, { assert(true) })
+  fun getRootFoldersFromCallsNoteRepository() = runTest {
+    `when`(mockFolderRepository.getRootNoteFoldersFromUserId(any(), any(), any(), any()))
+        .thenAnswer {
+          val onSuccess: (List<Folder>) -> Unit = it.getArgument(1)
+          onSuccess(listOf(testFolder))
+        }
+    folderViewModel.getRootFoldersFromUserId(testFolder.id, false, { assert(true) })
     assertEquals(folderViewModel.userRootFolders.value, listOf(testFolder))
+  }
+
+  @Test
+  fun getRootFoldersFromCallsDeckRepository() = runTest {
+    `when`(mockFolderRepository.getRootDeckFoldersFromUserId(any(), any(), any(), any()))
+        .thenAnswer {
+          val onSuccess: (List<Folder>) -> Unit = it.getArgument(1)
+          onSuccess(listOf(testFolder))
+        }
+    folderViewModel.getRootFoldersFromUserId(testFolder.id, true, { assert(true) })
+    assertEquals(folderViewModel.userRootFolders.value, listOf(testFolder))
+  }
+
+  @Test
+  fun getRootNoteFoldersFromCallsRepository() = runTest {
+    `when`(mockFolderRepository.getRootNoteFoldersFromUserId(any(), any(), any(), any()))
+        .thenAnswer {
+          val onSuccess: (List<Folder>) -> Unit = it.getArgument(1)
+          onSuccess(listOf(testFolder))
+        }
+    folderViewModel.getRootNoteFoldersFromUserId(testFolder.id, { assert(true) })
+    assertEquals(folderViewModel.userRootFolders.value, listOf(testFolder))
+  }
+
+  @Test
+  fun getRootDeckFoldersFromCallsRepository() = runTest {
+    `when`(mockFolderRepository.getRootDeckFoldersFromUserId(any(), any(), any(), any()))
+        .thenAnswer {
+          val onSuccess: (List<Folder>) -> Unit = it.getArgument(1)
+          onSuccess(listOf(testFolder))
+        }
+    folderViewModel.getRootDeckFoldersFromUserId(testFolder.id, { assert(true) })
+    assertEquals(folderViewModel.userRootFolders.value, listOf(testFolder))
+  }
+
+  @Test
+  fun getDeckFoldersByNameCallsRepository() = runTest {
+    `when`(mockFolderRepository.getDeckFoldersByName(any(), any(), any(), any(), any(), any()))
+        .thenAnswer {
+          val onSuccess: (List<Folder>) -> Unit = it.getArgument(3)
+          onSuccess(listOf(testFolder))
+        }
+    var deckFolders: List<Folder> = listOf()
+    folderViewModel.getDeckFoldersByName(
+        testFolder.name,
+        testFolder.userId,
+        { assert(false) },
+        { deckFolders = it },
+        { assert(false) })
+    assertEquals(deckFolders, listOf(testFolder))
   }
 
   @Test
@@ -187,7 +238,7 @@ class FolderViewModelTest {
     folderViewModel.updateFolder(testFolder)
 
     verify(mockFolderRepository).updateFolder(eq(testFolder), any(), any(), any())
-    verify(mockFolderRepository).getRootFoldersFromUid(eq("1"), any(), any(), any())
+    verify(mockFolderRepository).getRootNoteFoldersFromUserId(eq("1"), any(), any(), any())
     verify(mockFolderRepository).getSubFoldersOf(eq("pid"), any(), any(), any())
   }
 }

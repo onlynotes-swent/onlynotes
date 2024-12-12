@@ -74,7 +74,7 @@ fun SearchScreen(
     fileViewModel: FileViewModel
 ) {
   val searchQuery = remember { mutableStateOf("") }
-  val searchType = remember { mutableStateOf(SearchType.USERS) } // maybe set it to users
+  val searchType = remember { mutableStateOf(SearchType.NOTES) }
   val searchWords = remember { mutableStateOf(emptyList<String>()) }
   searchWords.value = searchQuery.value.split("\\s+".toRegex())
 

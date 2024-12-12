@@ -67,7 +67,6 @@ class DeckMenuTest {
               userId = testUser.uid,
               folderId = null,
               noteId = null,
-              lastReviewed = Timestamp(0, 0),
           ),
           Flashcard(
               id = "testFlashcardId2",
@@ -76,7 +75,6 @@ class DeckMenuTest {
               userId = testUser.uid,
               folderId = null,
               noteId = null,
-              lastReviewed = Timestamp(1, 0),
               fakeBacks = listOf("Fake Back 1", "Fake Back 2"),
           ),
           Flashcard(
@@ -86,8 +84,7 @@ class DeckMenuTest {
               hasImage = true,
               userId = testUser.uid,
               folderId = null,
-              noteId = null,
-              lastReviewed = Timestamp(2, 0)),
+              noteId = null),
       )
 
   private val testDeck =
@@ -325,7 +322,6 @@ class DeckMenuTest {
                     userId = testUser.uid,
                     folderId = null,
                     noteId = null,
-                    lastReviewed = Timestamp(0, 0),
                 )),
             any(),
             any(),
@@ -520,7 +516,6 @@ class DeckMenuTest {
                     userId = testUser.uid,
                     folderId = null,
                     noteId = null,
-                    lastReviewed = null,
                 )),
             any(),
             any(),

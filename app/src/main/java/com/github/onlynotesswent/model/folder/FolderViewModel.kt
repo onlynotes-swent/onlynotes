@@ -97,6 +97,7 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
    * @param folder The folder to add.
    * @param onSuccess The function to call when the folder is added successfully.
    * @param onFailure The function to call when the folder fails to be added.
+   * @param isDeckView A flag indicating if the folder is a deck view.
    * @param useCache Whether to update data from cache. Should be true only if userId of the folder
    *   is the current user.
    */
@@ -104,13 +105,14 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
       folder: Folder,
       onSuccess: () -> Unit = {},
       onFailure: (Exception) -> Unit = {},
+      isDeckView: Boolean = false,
       useCache: Boolean = false
   ) {
     viewModelScope.launch {
       repository.addFolder(
           folder = folder,
           onSuccess = {
-            getRootFoldersFromUid(folder.userId)
+            getRootFoldersFromUserId(folder.userId, isDeckView)
             onSuccess()
           },
           onFailure = onFailure,
@@ -127,19 +129,21 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
    * @param onFailure The function to call when the folder fails to be deleted.
    * @param useCache Whether to update data from cache. Should be true only if [userId] is the
    *   current user.
+   * @param isDeckView A flag indicating if the folder is a deck view.
    */
   fun deleteFolderById(
       folderId: String,
       userId: String,
       onSuccess: () -> Unit = {},
       onFailure: (Exception) -> Unit = {},
-      useCache: Boolean = false
+      useCache: Boolean = false,
+      isDeckView: Boolean = false
   ) {
     viewModelScope.launch {
       repository.deleteFolderById(
           folderId = folderId,
           onSuccess = {
-            getRootFoldersFromUid(userId)
+            getRootFoldersFromUserId(userId, isDeckView)
             onSuccess()
           },
           onFailure = onFailure,
@@ -155,18 +159,20 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
    * @param onFailure The function to call when the folders fail to be deleted.
    * @param useCache Whether to update data from cache. Should be true only if [userId] is the
    *   current user.
+   * @param isDeckView A flag indicating if the folder is a deck view.
    */
   fun deleteFoldersFromUid(
       userId: String,
       onSuccess: () -> Unit = {},
       onFailure: (Exception) -> Unit = {},
-      useCache: Boolean = false
+      useCache: Boolean = false,
+      isDeckView: Boolean = false
   ) {
     viewModelScope.launch {
       repository.deleteFoldersFromUid(
           userId = userId,
           onSuccess = {
-            getRootFoldersFromUid(userId)
+            getRootFoldersFromUserId(userId, isDeckView)
             onSuccess()
           },
           onFailure = onFailure,
@@ -183,14 +189,14 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
    * @param useCache Whether to update data from cache. Should be true only if [userId] is the
    *   current user.
    */
-  fun getFoldersFromUid(
+  fun getFoldersFromUserId(
       userId: String,
       onSuccess: (List<Folder>) -> Unit = {},
       onFailure: (Exception) -> Unit = {},
       useCache: Boolean = false
   ) {
     viewModelScope.launch {
-      repository.getFoldersFromUid(
+      repository.getFoldersFromUserId(
           userId = userId,
           onSuccess = {
             _userFolders.value = it
@@ -205,24 +211,99 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
    * Retrieves all root folders owned by a user.
    *
    * @param userId The ID of the user to retrieve root folders for.
+   * @param isDeckView A flag indicating if the folder is a deck view.
+   * @param onSuccess The function to call when the root folders are retrieved successfully.
+   * @param onFailure The function to call when the root folders fail to be retrieved.
+   */
+  fun getRootFoldersFromUserId(
+      userId: String,
+      isDeckView: Boolean = false,
+      onSuccess: (List<Folder>) -> Unit = {},
+      onFailure: (Exception) -> Unit = {},
+  ) {
+    if (isDeckView) {
+      getRootDeckFoldersFromUserId(userId, onSuccess, onFailure)
+    } else {
+      getRootNoteFoldersFromUserId(userId, onSuccess, onFailure)
+    }
+  }
+
+  /**
+   * Retrieves all root note folders owned by a user.
+   *
+   * @param userId The ID of the user to retrieve root folders for.
    * @param onSuccess The function to call when the root folders are retrieved successfully.
    * @param onFailure The function to call when the root folders fail to be retrieved.
    * @param useCache Whether to update data from cache. Should be true only if [userId] is the
-   *   current user.
    */
-  fun getRootFoldersFromUid(
+  fun getRootNoteFoldersFromUserId(
       userId: String,
       onSuccess: (List<Folder>) -> Unit = {},
       onFailure: (Exception) -> Unit = {},
       useCache: Boolean = false
   ) {
     viewModelScope.launch {
-      repository.getRootFoldersFromUid(
+      repository.getRootNoteFoldersFromUserId(
           userId = userId,
           onSuccess = {
             _userRootFolders.value = it
             onSuccess(it)
           },
+          onFailure = onFailure,
+          useCache = useCache)
+    }
+  }
+
+  /**
+   * Retrieves all root deck folders owned by a user.
+   *
+   * @param userId The ID of the user to retrieve root folders for.
+   * @param onSuccess The function to call when the root folders are retrieved successfully.
+   * @param onFailure The function to call when the root folders fail to be retrieved.
+   * @param useCache Whether to update data from cache. Should be true only if [userId] is the
+   *   current user.
+   */
+  fun getRootDeckFoldersFromUserId(
+      userId: String,
+      onSuccess: (List<Folder>) -> Unit = {},
+      onFailure: (Exception) -> Unit = {},
+      useCache: Boolean = false
+  ) {
+    viewModelScope.launch {
+      repository.getRootDeckFoldersFromUserId(
+          userId = userId,
+          onSuccess = {
+            _userRootFolders.value = it
+            onSuccess(it)
+          },
+          onFailure = onFailure,
+          useCache = useCache)
+    }
+  }
+
+  /**
+   * Retrieves a folder by its name.
+   *
+   * @param name The name of the folder to retrieve.
+   * @param userId The ID of the user that owns the folder.
+   * @param onFolderNotFound The function to call when the folder is not found.
+   * @param onSuccess The function to call when the folders are retrieved successfully.
+   * @param onFailure The function to call when the folder fails to be retrieved.
+   */
+  fun getDeckFoldersByName(
+      name: String,
+      userId: String,
+      onFolderNotFound: () -> Unit = {},
+      onSuccess: (List<Folder>) -> Unit = {},
+      onFailure: (Exception) -> Unit = {},
+      useCache: Boolean = false
+  ) {
+    viewModelScope.launch {
+      repository.getDeckFoldersByName(
+          name = name,
+          userId = userId,
+          onSuccess = { onSuccess(it) },
+          onFolderNotFound = onFolderNotFound,
           onFailure = onFailure,
           useCache = useCache)
     }
@@ -263,18 +344,20 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
    * @param onFailure The function to call when the folder fails to be updated.
    * @param useCache Whether to update data from cache. Should be true only if userId of the folder
    *   is the current user.
+   * @param isDeckView A flag indicating if the folder is a deck view.
    */
   fun updateFolder(
       folder: Folder,
       onSuccess: () -> Unit = {},
       onFailure: (Exception) -> Unit = {},
-      useCache: Boolean = false
+      useCache: Boolean = false,
+      isDeckView: Boolean = false
   ) {
     viewModelScope.launch {
       repository.updateFolder(
           folder = folder,
           onSuccess = {
-            getRootFoldersFromUid(folder.userId)
+            getRootFoldersFromUserId(folder.userId, isDeckView)
             if (folder.parentFolderId != null) {
               getSubFoldersOf(folder.parentFolderId)
             }
@@ -311,6 +394,7 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
           useCache = useCache)
     }
   }
+
   /**
    * Retrieves the subfolders of a given parent folder without updating the state of the ViewModel.
    *
