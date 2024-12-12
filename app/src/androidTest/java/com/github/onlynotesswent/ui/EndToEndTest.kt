@@ -174,7 +174,8 @@ class EndToEndTest {
                     route = Route.NOTE_OVERVIEW,
                 ) {
                   composable(Screen.NOTE_OVERVIEW) {
-                    NoteOverviewScreen(navigationActions, noteViewModel, userViewModel, folderViewModel)
+                    NoteOverviewScreen(
+                        navigationActions, noteViewModel, userViewModel, folderViewModel)
                   }
                   composable(Screen.EDIT_NOTE) {
                     EditNoteScreen(navigationActions, noteViewModel, userViewModel)

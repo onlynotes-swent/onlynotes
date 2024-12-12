@@ -28,6 +28,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.github.onlynotesswent.R
 import com.github.onlynotesswent.model.common.Visibility
+import com.github.onlynotesswent.model.flashcard.deck.DeckViewModel
 import com.github.onlynotesswent.model.folder.Folder
 import com.github.onlynotesswent.model.folder.FolderViewModel
 import com.github.onlynotesswent.model.note.NoteViewModel
@@ -42,7 +43,9 @@ import com.github.onlynotesswent.ui.navigation.Screen
  * @param folder The folder data that will be displayed in this card.
  * @param navigationActions The navigationActions instance used to transition between different
  *   screens.
+ * @param isDeckView True if the view is for a deck, false otherwise.
  * @param noteViewModel The Note view model.
+ * @param deckViewModel The Deck view model.
  * @param folderViewModel The Folder view model.
  * @param onClick The lambda function to be invoked when the folder card is clicked.
  */
@@ -51,7 +54,9 @@ import com.github.onlynotesswent.ui.navigation.Screen
 fun FolderItem(
     folder: Folder,
     navigationActions: NavigationActions,
-    noteViewModel: NoteViewModel,
+    isDeckView: Boolean = false,
+    noteViewModel: NoteViewModel? = null,
+    deckViewModel: DeckViewModel? = null,
     folderViewModel: FolderViewModel,
     onClick: () -> Unit
 ) {
@@ -75,12 +80,15 @@ fun FolderItem(
                             // Get the dragged object Id
                             val draggedObjectId =
                                 event.toAndroidDragEvent().clipData.getItemAt(0).text.toString()
-                            val draggedNote = noteViewModel.draggedNote.value
-                            if (draggedNote != null && draggedNote.id == draggedObjectId) {
-                              // Update the dragged note with the new folder Id
-                              noteViewModel.updateNote(draggedNote.copy(folderId = folder.id))
-                              noteViewModel.draggedNote(null)
-                              dropSuccess.value = true
+
+                            if (!isDeckView) {
+                              val draggedNote = noteViewModel!!.draggedNote.value
+                              if (draggedNote != null && draggedNote.id == draggedObjectId) {
+                                // Update the dragged note with the new folder Id
+                                noteViewModel.updateNote(draggedNote.copy(folderId = folder.id))
+                                noteViewModel.draggedNote(null)
+                                dropSuccess.value = true
+                              }
                               return true
                             }
                             dropSuccess.value = false

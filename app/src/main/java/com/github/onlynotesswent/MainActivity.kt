@@ -38,6 +38,7 @@ import com.github.onlynotesswent.ui.deck.DeckScreen
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Route
 import com.github.onlynotesswent.ui.navigation.Screen
+import com.github.onlynotesswent.ui.overview.DeckOverviewScreen
 import com.github.onlynotesswent.ui.overview.FolderContentScreen
 import com.github.onlynotesswent.ui.overview.NoteOverviewScreen
 import com.github.onlynotesswent.ui.overview.editnote.CommentsScreen
@@ -146,7 +147,9 @@ fun OnlyNotesApp(
         startDestination = Screen.DECK_OVERVIEW,
         route = Route.DECK_OVERVIEW,
     ) {
-      composable(Screen.DECK_OVERVIEW) {}
+      composable(Screen.DECK_OVERVIEW) {
+        DeckOverviewScreen(navigationActions, deckViewModel, userViewModel, folderViewModel)
+      }
       composable(Screen.DECK_MENU) {
         DeckScreen(
             userViewModel,

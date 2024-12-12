@@ -7,8 +7,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -23,20 +21,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.github.onlynotesswent.MainActivity
 import com.github.onlynotesswent.R
+import com.github.onlynotesswent.model.flashcard.deck.Deck
+import com.github.onlynotesswent.model.flashcard.deck.DeckViewModel
 import com.github.onlynotesswent.model.folder.Folder
 import com.github.onlynotesswent.model.folder.FolderViewModel
-import com.github.onlynotesswent.model.note.Note
-import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.model.user.UserViewModel
 import com.github.onlynotesswent.ui.common.CustomSeparatedLazyGrid
-import com.github.onlynotesswent.ui.common.FileSystemPopup
 import com.github.onlynotesswent.ui.common.FolderDialog
-import com.github.onlynotesswent.ui.common.NoteDialog
 import com.github.onlynotesswent.ui.navigation.BottomNavigationMenu
 import com.github.onlynotesswent.ui.navigation.LIST_TOP_LEVEL_DESTINATION
 import com.github.onlynotesswent.ui.navigation.NavigationActions
@@ -44,26 +39,26 @@ import com.github.onlynotesswent.ui.navigation.Screen
 import com.google.firebase.Timestamp
 
 /**
- * Displays the overview screen which contains a list of the user's notes and folders. The user can
- * create new notes and folders from this screen. If there are no notes or folders, it shows a text
- * to the user indicating that there are no notes or folders.
+ * Displays the overview screen which contains a list of the user's decks and folders. The user can
+ * create new decks and folders from this screen. If there are no decks or folders, it shows a text
+ * to the user indicating that there are no decks or folders.
  *
  * @param navigationActions The navigationActions instance used to transition between different
  *   screens.
- * @param noteViewModel The ViewModel that provides the list of publicNotes to display.
+ * @param deckViewModel The ViewModel that provides the list of decks to display.
  * @param userViewModel The ViewModel that provides the current user.
  * @param folderViewModel The ViewModel that provides the list of folders to display.
  */
 @Composable
-fun NoteOverviewScreen(
+fun DeckOverviewScreen(
     navigationActions: NavigationActions,
-    noteViewModel: NoteViewModel,
+    deckViewModel: DeckViewModel,
     userViewModel: UserViewModel,
     folderViewModel: FolderViewModel
 ) {
-  val userRootNotes = noteViewModel.userRootNotes.collectAsState()
+  val userRootDecks = deckViewModel.userRootDecks.collectAsState()
   userViewModel.currentUser.collectAsState().value?.let {
-    noteViewModel.getRootNotesFromUid(it.uid)
+    deckViewModel.getRootDecksFromUserId(it.uid)
   }
 
   val userRootFolders = folderViewModel.userRootFolders.collectAsState()
@@ -76,8 +71,7 @@ fun NoteOverviewScreen(
 
   var expanded by remember { mutableStateOf(false) }
   var showCreateFolderDialog by remember { mutableStateOf(false) }
-  var showCreateNoteDialog by remember { mutableStateOf(false) }
-  var showFilePopup by remember { mutableStateOf(false) } // State to control the popup visibility
+  var showCreateDeckDialog by remember { mutableStateOf(false) }
 
   // Handle back press
   BackHandler {
@@ -95,16 +89,8 @@ fun NoteOverviewScreen(
                   expandedFab = expanded,
                   onExpandedFabChange = { expanded = it },
                   showCreateFolderDialog = { showCreateFolderDialog = it },
-                  showCreateItemDialog = { showCreateNoteDialog = it })
-              FloatingActionButton(
-                  modifier = Modifier.testTag("showFileSystemButton"),
-                  onClick = { showFilePopup = true },
-                  containerColor = MaterialTheme.colorScheme.primary,
-                  contentColor = MaterialTheme.colorScheme.onPrimary) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.open_folder_icon),
-                        contentDescription = "Open File Manager")
-                  }
+                  showCreateItemDialog = { showCreateDeckDialog = it },
+                  isDeckView = true)
             }
       },
       bottomBar = {
@@ -113,38 +99,17 @@ fun NoteOverviewScreen(
             tabList = LIST_TOP_LEVEL_DESTINATION,
             selectedItem = navigationActions.currentRoute())
       }) { paddingValues ->
-        NoteOverviewScreenGrid(
+        DeckOverviewScreenGrid(
             paddingValues = paddingValues,
-            userRootNotes = userRootNotes,
+            userRootDecks = userRootDecks,
             userRootFolders = userRootFolders,
             folderViewModel = folderViewModel,
-            noteViewModel = noteViewModel,
+            deckViewModel = deckViewModel,
             userViewModel = userViewModel,
             navigationActions = navigationActions)
 
-        if (showCreateNoteDialog) {
-          NoteDialog(
-              onDismiss = { showCreateNoteDialog = false },
-              onConfirm = { newName, visibility ->
-                val note =
-                    Note(
-                        id = noteViewModel.getNewUid(),
-                        title = newName,
-                        date = Timestamp.now(),
-                        lastModified = Timestamp.now(),
-                        visibility = visibility,
-                        userId = userViewModel.currentUser.value!!.uid,
-                        folderId = parentFolderId.value)
-                noteViewModel.addNote(note)
-                noteViewModel.selectedNote(note)
-                showCreateNoteDialog = false
-                navigationActions.navigateTo(Screen.EDIT_NOTE)
-              },
-              action = stringResource(R.string.create))
-        }
-
-        if (showFilePopup) {
-          FileSystemPopup(onDismiss = { showFilePopup = false }, folderViewModel = folderViewModel)
+        if (showCreateDeckDialog) {
+          Text(stringResource(R.string.create))
         }
 
         // Logic to show the dialog to create a folder
@@ -172,46 +137,46 @@ fun NoteOverviewScreen(
 }
 
 /**
- * Displays the overview screen in a grid layout. If there are no notes or folders, it shows a text
- * to the user indicating that there are no notes or folders. It also provides a button to refresh
- * the list of notes and folders.
+ * Displays the overview screen in a grid layout. If there are no decks or folders, it shows a text
+ * to the user indicating that there are no decks or folders.
  *
  * @param paddingValues The padding values to apply to the grid layout.
- * @param userRootNotes The list of notes to display.
+ * @param userRootDecks The list of decks to display.
  * @param userRootFolders The list of folders to display.
  * @param folderViewModel The ViewModel that provides the list of folders to display.
- * @param noteViewModel The ViewModel that provides the list of publicNotes to display.
+ * @param deckViewModel The ViewModel that provides the list of decks to display.
  * @param userViewModel The ViewModel that provides the current user.
  * @param navigationActions The navigation view model used to transition between different screens.
  */
 @Composable
-fun NoteOverviewScreenGrid(
+fun DeckOverviewScreenGrid(
     paddingValues: PaddingValues,
-    userRootNotes: State<List<Note>>,
+    userRootDecks: State<List<Deck>>,
     userRootFolders: State<List<Folder>>,
     folderViewModel: FolderViewModel,
-    noteViewModel: NoteViewModel,
+    deckViewModel: DeckViewModel,
     userViewModel: UserViewModel,
     navigationActions: NavigationActions
 ) {
   CustomSeparatedLazyGrid(
       modifier = Modifier.fillMaxSize(),
-      notes = userRootNotes,
+      isDeckView = true,
+      decks = userRootDecks,
       folders = userRootFolders,
       gridModifier =
           Modifier.fillMaxWidth()
               .padding(horizontal = 20.dp)
               .padding(paddingValues)
-              .testTag("noteAndFolderList"),
+              .testTag("deckAndFolderList"),
       folderViewModel = folderViewModel,
-      noteViewModel = noteViewModel,
+      deckViewModel = deckViewModel,
       userViewModel = userViewModel,
       navigationActions = navigationActions,
       paddingValues = paddingValues,
       columnContent = {
         Text(
-            modifier = Modifier.testTag("emptyNoteAndFolderPrompt"),
-            text = stringResource(R.string.you_have_no_notes_or_folders_yet),
+            modifier = Modifier.testTag("emptyDeckAndFolderPrompt"),
+            text = stringResource(R.string.you_have_no_decks_or_folders_yet),
             color = MaterialTheme.colorScheme.onBackground)
       })
 }
