@@ -26,10 +26,10 @@ import java.util.concurrent.atomic.AtomicInteger
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
@@ -96,6 +96,27 @@ class NotesToFlashcardTest {
           lastModified = Timestamp.now(),
       )
 
+  private val deckFolder =
+      Folder(
+          id = "3",
+          name = "folder1",
+          userId = "1",
+          visibility = Visibility.DEFAULT,
+          lastModified = Timestamp.now(),
+          isDeckFolder = true,
+      )
+
+  private val deckSubfolder =
+      Folder(
+          id = "4",
+          name = "folder2",
+          userId = "1",
+          parentFolderId = "3",
+          visibility = Visibility.DEFAULT,
+          lastModified = Timestamp.now(),
+          isDeckFolder = true,
+      )
+
   private val testNote1 =
       Note(
           id = "1",
@@ -159,6 +180,8 @@ class NotesToFlashcardTest {
 
   private val savedDecks = mutableListOf<Deck>()
 
+  private val savedFolders = mutableListOf<Folder>()
+
   private val flashcardId = AtomicInteger(0)
 
   private val folderId = AtomicInteger(3)
@@ -216,15 +239,41 @@ class NotesToFlashcardTest {
     }
   }
 
-  @OptIn(ExperimentalCoroutinesApi::class)
-  @Test
-  fun convertFolderToDecks() = runTest {
-    // Override Dispatchers.IO with TestDispatcher in your test setup
-    Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+  private fun convertFolderToDecksChecks(expectedAddedFolderSize: Int) {
+    // Check 4 decks were created
+    assertEquals(4, savedDecks.size)
+
+    // Check 16 flashcards were created
+    assertEquals(12, savedFlashcards.size)
+
+    // Check 2 folders were created
+    assertEquals(expectedAddedFolderSize, savedFolders.size)
+
+    // Check the parent folder has 3 decks
+    val parentDecks = savedDecks.filter { it.folderId == deckFolder.id }
+    assertEquals(3, parentDecks.size)
+    assertTrue(parentDecks.any { it.name == testFolder.name })
+    assertTrue(parentDecks.any { it.name == testNote1.title })
+    assertTrue(parentDecks.any { it.name == testNote2.title })
+
+    // Check the subfolder has 1 deck
+    val subFolderDecks = savedDecks.filter { it.folderId == deckSubfolder.id }
+    assertEquals(1, subFolderDecks.size)
+    assertEquals(testNote3.title, subFolderDecks.first().name)
+  }
+
+  private fun convertFolderToDecksCommonMocks() = runTest {
     // Initialize the view models, repositories and saved objects
     savedFlashcards.clear()
     savedDecks.clear()
+    savedFolders.clear()
     folderViewModel.selectedFolder(testFolder)
+
+    `when`(mockFolderRepository.addFolder(any(), any(), any(), any())).thenAnswer { invocation ->
+      savedFolders.add(invocation.getArgument(0))
+      val onSuccess = invocation.getArgument<() -> Unit>(1)
+      onSuccess()
+    }
 
     `when`(mockFolderRepository.getSubFoldersOf(any(), any(), any(), any())).thenAnswer { invocation
       ->
@@ -259,13 +308,48 @@ class NotesToFlashcardTest {
     `when`(mockFolderRepository.getNewFolderId()).thenAnswer {
       folderId.getAndIncrement().toString()
     }
+  }
 
-    val savedFolders = mutableListOf<Folder>()
-    `when`(mockFolderRepository.addFolder(any(), any(), any(), any())).thenAnswer { invocation ->
-      savedFolders.add(invocation.getArgument(0))
-      val onSuccess = invocation.getArgument<() -> Unit>(1)
-      onSuccess()
-    }
+  @OptIn(ExperimentalCoroutinesApi::class)
+  @Test
+  fun `convertFolderToDecks with existing deck folders`() = runTest {
+    // Override Dispatchers.IO with TestDispatcher in your test setup
+    Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+    convertFolderToDecksCommonMocks()
+
+    `when`(mockFolderRepository.getDeckFoldersByName(any(), any(), any(), any(), any(), any()))
+        .thenAnswer { invocation ->
+          val name = invocation.getArgument<String>(0)
+          val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(3)
+          when (name) {
+            testFolder.name -> {
+              onSuccess(listOf(deckFolder))
+            }
+            testSubfolder.name -> {
+              onSuccess(listOf(deckSubfolder))
+            }
+            else -> {
+              onSuccess(emptyList())
+            }
+          }
+        }
+
+    notesToFlashcard.convertFolderToDecks(
+        onProgress = { _, _, _ -> },
+        onSuccess = {},
+        onFailure = { fail("Conversion failed with exception: $it") })
+
+    convertFolderToDecksChecks(0)
+    // close the dispatcher
+    Dispatchers.resetMain()
+  }
+
+  @OptIn(ExperimentalCoroutinesApi::class)
+  @Test
+  fun `convertFolderToDecks with no existing deck folders`() = runTest {
+    // Override Dispatchers.IO with TestDispatcher in your test setup
+    Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+    convertFolderToDecksCommonMocks()
 
     `when`(mockFolderRepository.getDeckFoldersByName(any(), any(), any(), any(), any(), any()))
         .thenAnswer { invocation ->
@@ -278,32 +362,10 @@ class NotesToFlashcardTest {
         onSuccess = {},
         onFailure = { fail("Conversion failed with exception: $it") })
 
-    // Assert
-    // Check 4 decks were created
-    assertEquals(4, savedDecks.size)
+    convertFolderToDecksChecks(2)
 
-    // Check 16 flashcards were created
-    assertEquals(12, savedFlashcards.size)
-
-    // Check 2 folders were created
-    assertEquals(2, savedFolders.size)
-
-    // Check the hierarchy of deck folders
-    val parentFolder = savedFolders.first { it.id == "3" }
-    val subFolder = savedFolders.first { it.parentFolderId == parentFolder.id }
-    assertNotNull(subFolder)
-
-    // Check the parent folder has 3 decks
-    val parentDecks = savedDecks.filter { it.folderId == parentFolder.id }
-    assertEquals(3, parentDecks.size)
-    assertTrue(parentDecks.any { it.name == testFolder.name })
-    assertTrue(parentDecks.any { it.name == testNote1.title })
-    assertTrue(parentDecks.any { it.name == testNote2.title })
-
-    // Check the subfolder has 1 deck
-    val subFolderDecks = savedDecks.filter { it.folderId == subFolder.id }
-    assertEquals(1, subFolderDecks.size)
-    assertEquals(testNote3.title, subFolderDecks.first().name)
+    // close the dispatcher
+    Dispatchers.resetMain()
   }
 
   @Test
