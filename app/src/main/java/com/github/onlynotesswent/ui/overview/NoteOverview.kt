@@ -64,7 +64,7 @@ import com.google.firebase.Timestamp
  * @param folderViewModel The ViewModel that provides the list of folders to display.
  */
 @Composable
-fun OverviewScreen(
+fun NoteOverviewScreen(
     navigationActions: NavigationActions,
     noteViewModel: NoteViewModel,
     userViewModel: UserViewModel,

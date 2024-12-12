@@ -39,7 +39,7 @@ import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Route
 import com.github.onlynotesswent.ui.navigation.Screen
 import com.github.onlynotesswent.ui.overview.FolderContentScreen
-import com.github.onlynotesswent.ui.overview.OverviewScreen
+import com.github.onlynotesswent.ui.overview.NoteOverviewScreen
 import com.github.onlynotesswent.ui.overview.editnote.CommentsScreen
 import com.github.onlynotesswent.ui.overview.editnote.EditMarkdownScreen
 import com.github.onlynotesswent.ui.overview.editnote.EditNoteScreen
@@ -103,7 +103,7 @@ fun OnlyNotesApp(
         route = Route.NOTE_OVERVIEW,
     ) {
       composable(Screen.NOTE_OVERVIEW) {
-        OverviewScreen(navigationActions, noteViewModel, userViewModel, folderViewModel)
+        NoteOverviewScreen(navigationActions, noteViewModel, userViewModel, folderViewModel)
       }
       composable(Screen.EDIT_NOTE) {
         EditNoteScreen(navigationActions, noteViewModel, userViewModel)
