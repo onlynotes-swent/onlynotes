@@ -14,6 +14,8 @@ interface NoteDao {
 
   @Query("SELECT * FROM note WHERE folderid IS NULL") fun getRootNotesFromUid(): List<Note>
 
+  @Query("SELECT * FROM note WHERE id IN(:noteIds)") fun getNotesByIds(noteIds: List<String>): List<Note>
+
   @Query("SELECT * FROM note WHERE folderid = :folderId")
   fun getNotesFromFolder(folderId: String): List<Note>
 
@@ -22,6 +24,8 @@ interface NoteDao {
   @Insert(onConflict = OnConflictStrategy.REPLACE) fun addNotes(notes: List<Note>)
 
   @Query("DELETE FROM note WHERE id = :noteId") fun deleteNoteById(noteId: String)
+
+  @Query("DELETE FROM note WHERE id IN(:noteIds)") fun deleteNotesByIds(noteIds: List<String>)
 
   @Query("DELETE FROM note") fun deleteNotesFromUid()
 

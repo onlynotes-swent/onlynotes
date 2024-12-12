@@ -7,6 +7,8 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.github.onlynotesswent.model.cache.CacheDatabase
+import com.github.onlynotesswent.model.user.UserRepositoryFirestore
+import com.github.onlynotesswent.model.user.UserViewModel
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.firestore
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,6 +17,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
+
+    class NoteNotFoundException : Exception()
 
   private val _publicNotes = MutableStateFlow<List<Note>>(emptyList())
   val publicNotes: StateFlow<List<Note>> = _publicNotes.asStateFlow()
@@ -25,6 +29,10 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
   // root notes from a user displayed on overview Screen
   private val _userRootNotes = MutableStateFlow<List<Note>>(emptyList())
   val userRootNotes: StateFlow<List<Note>> = _userRootNotes.asStateFlow()
+
+    // Saved notes from a user
+    private val _userSavedNotes = MutableStateFlow<List<Note>>(emptyList())
+    val userSavedNotes: StateFlow<List<Note>> = _userSavedNotes.asStateFlow()
 
   // Notes belonging to a folder
   private val _folderNotes = MutableStateFlow<List<Note>>(emptyList())
@@ -351,4 +359,38 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
           useCache = useCache)
     }
   }
+
+    fun getCurrentUserSavedNotes(
+        userViewModel: UserViewModel,
+        onSuccess: (List<Note>) -> Unit = {},
+        onFailure: (Exception) -> Unit = {},
+        useCache: Boolean
+    ) {
+        // Get the list of saved document UIDs of type NOTE for the current user from the userViewModel, and retrieve them
+        userViewModel.getSavedDocumentsUidOfType(
+            documentType = UserRepositoryFirestore.SavedDocumentType.NOTE,
+            onSuccess = { documentUids ->
+                viewModelScope.launch {
+                    repository.getSavedNotesByIds(
+                        savedNotesIds = documentUids,
+                        friends = userViewModel.currentUser.value!!.friends,
+                        onSuccess = { savedNotes, nonSaveableNotesIds ->
+                            _userSavedNotes.value = savedNotes
+                            for (noteId in nonSaveableNotesIds) {
+                                userViewModel.deleteSavedDocumentUidOfType(
+                                    documentType = UserRepositoryFirestore.SavedDocumentType.NOTE,
+                                    documentUid = noteId
+                                )
+                            }
+
+                            onSuccess(savedNotes)
+                        },
+                        onFailure = onFailure,
+                        useCache = useCache
+                    )
+                }
+            },
+            onFailure = onFailure
+        )
+    }
 }
