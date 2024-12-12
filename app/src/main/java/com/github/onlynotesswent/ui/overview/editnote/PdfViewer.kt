@@ -1,6 +1,9 @@
 package com.github.onlynotesswent.ui.overview.editnote
 
+import android.content.Context
+import android.net.Uri
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -16,15 +19,16 @@ import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.UploadFile
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Sync
+import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -90,6 +94,8 @@ fun PdfViewerScreen(
   var retryDownload by remember { mutableStateOf(false) }
   var attempt by remember { mutableIntStateOf(0) }
   var isLoading by remember { mutableStateOf(true) }
+  var expandedMenu by remember { mutableStateOf(false) }
+  var showDeleteConfirmation by remember { mutableStateOf(false) }
 
   // LaunchedEffect for initial load when entering the screen
   LaunchedEffect(note) {
@@ -146,34 +152,147 @@ fun PdfViewerScreen(
     }
   }
 
+  /** Row item button to convert PDF to text */
+  @Composable
+  fun rowItemConvertToText() {
+    RowItemPdfViewer(
+        buttonText = "Convert to text",
+        testTag = "convertPdfToTextMenuItem",
+        onClick = {
+          textExtractor.processPdfFile(
+              pdfFile = pdfFile!!,
+              onResult = { text ->
+                if (text.isEmpty()) {
+                  Toast.makeText(context, "No text found", Toast.LENGTH_LONG).show()
+                } else {
+                  updateMdFile(text, noteViewModel, fileViewModel, navigationActions, context)
+                }
+              })
+          expandedMenu = false
+        },
+        icon = {
+          Icon(
+              painter = painterResource(R.drawable.outline_convert_to_text),
+              contentDescription = "Convert to text",
+              modifier = Modifier.size(24.dp))
+        })
+  }
+
+  /** Row item button to re-scan PDF */
+  @Composable
+  fun rowItemRescanPdf() {
+    RowItemPdfViewer(
+        buttonText = "Re-scan PDF",
+        testTag = "rescanPdfMenuItem",
+        onClick = {
+          scanner.scan {
+            fileViewModel.deleteFile(note!!.id, FileType.NOTE_PDF)
+            pdfFile = null
+            pdfExists = false
+            fileViewModel.updateFile(note!!.id, it, FileType.NOTE_PDF)
+            retryDownload = true // Trigger retry logic
+            attempt = 0 // Reset attempts
+          }
+          expandedMenu = false
+        },
+        icon = {
+          Icon(
+              imageVector = Icons.Outlined.Sync,
+              contentDescription = "Re-scan PDF",
+              modifier = Modifier.size(24.dp))
+        })
+  }
+
+  /** Row item button to delete PDF */
+  @Composable
+  fun rowItemDeletePdf() {
+    RowItemPdfViewer(
+        buttonText = "Delete PDF",
+        textColor = MaterialTheme.colorScheme.error,
+        testTag = "deletePdfMenuItem",
+        onClick = {
+          showDeleteConfirmation = true
+          expandedMenu = false
+        },
+        icon = {
+          Icon(
+              imageVector = Icons.Outlined.Delete,
+              contentDescription = "Delete PDF",
+              tint = MaterialTheme.colorScheme.error,
+              modifier = Modifier.size(24.dp))
+        })
+  }
+
+  /** Confirmation popup when deleting a PDF */
+  @Composable
+  fun confirmationPopupDeletePdf() {
+    ConfirmationPopup(
+        title = stringResource(R.string.delete_pdf),
+        text = stringResource(R.string.delete_pdf_text),
+        onConfirm = {
+          fileViewModel.deleteFile(note!!.id, FileType.NOTE_PDF)
+          pdfFile = null
+          pdfExists = false
+          isLoading = false
+          showDeleteConfirmation = false
+        },
+        onDismiss = { showDeleteConfirmation = false })
+  }
+
+  /** Bottom sheet menu with options for PDF */
+  @Composable
+  fun bottomSheetMenu() {
+    ModalBottomSheet(
+        modifier = Modifier.testTag("pdfOptionsMenu"),
+        onDismissRequest = { expandedMenu = false },
+        content = {
+          Column(
+              modifier = Modifier.fillMaxWidth().padding(20.dp),
+              content = {
+                rowItemConvertToText() // Item 1: Convert to text
+                rowItemRescanPdf() // Item 2: Re-scan PDF
+                HorizontalDivider(Modifier.padding(vertical = 10.dp), 1.dp)
+                rowItemDeletePdf() // Item 3: Delete PDF
+              })
+        })
+  }
+
+  /** Floating action button to scan or add PDF. Shown when no PDF available */
+  @Composable
+  fun floatingActionButton() {
+    FloatingActionButton(
+        onClick = {
+          scanner.scan {
+            fileViewModel.updateFile(note!!.id, it, FileType.NOTE_PDF)
+            retryDownload = true // Trigger retry logic
+            attempt = 0 // Reset attempts
+          }
+        },
+        containerColor = MaterialTheme.colorScheme.primary,
+        contentColor = MaterialTheme.colorScheme.onPrimary,
+        modifier = Modifier.testTag("scanPdfButton"),
+        content = { Icon(Icons.Default.UploadFile, "Scan") })
+  }
+
+  /** More options button to display the bottom sheet. Shown when PDF available */
+  @Composable
+  fun moreOptionsIconButton() {
+    IconButton(
+        modifier = Modifier.testTag("moreOptionsPdfButton"),
+        content = { Icon(Icons.Default.MoreVert, contentDescription = "More options") },
+        onClick = { expandedMenu = true })
+  }
+
+  // ----------------------------- UI -----------------------------
   Scaffold(
       floatingActionButton = {
+        // Show a scan button if no PDF exists
         if (note != null && note!!.isOwner(currentUser!!.uid) && !pdfExists) {
-          // Show a scan button if no PDF exists
-          FloatingActionButton(
-              onClick = {
-                // Trigger scanning and start the retry logic for downloading
-                scanner.scan {
-                  fileViewModel.updateFile(note!!.id, it, FileType.NOTE_PDF)
-                  retryDownload = true // Trigger retry logic
-                  attempt = 0 // Reset attempts
-                }
-              },
-              containerColor = MaterialTheme.colorScheme.primary,
-              contentColor = MaterialTheme.colorScheme.onPrimary,
-              modifier = Modifier.testTag("scanPdfButton")) {
-                Icon(
-                    imageVector = Icons.Default.UploadFile,
-                    contentDescription = "Scan",
-                )
-              }
+          floatingActionButton()
         }
       },
       topBar = {
-        var expandedMenu by remember { mutableStateOf(false) }
-        var showDeleteConfirmation by remember { mutableStateOf(false) }
-
-        TopAppBar(
+        CenterAlignedTopAppBar(
             modifier = Modifier.testTag("pdfTopBar"),
             colors =
                 TopAppBarDefaults.topAppBarColors(
@@ -181,96 +300,15 @@ fun PdfViewerScreen(
             title = { TitlePdfTopBar() },
             navigationIcon = { NavigationIconPdfTopBar(navigationActions, noteViewModel) },
             actions = {
+              // Show "more options" button if PDF exists
               if (note != null && note!!.isOwner(currentUser!!.uid) && pdfExists) {
-                // Show "more options" button if PDF exists
-                IconButton(
-                    modifier = Modifier.testTag("moreOptionsPdfButton"),
-                    content = { Icon(Icons.Default.MoreVert, contentDescription = "More options") },
-                    onClick = { expandedMenu = true })
-
+                moreOptionsIconButton()
                 if (expandedMenu) {
-                  ModalBottomSheet(
-                      modifier = Modifier.testTag("pdfOptionsMenu"),
-                      onDismissRequest = { expandedMenu = false },
-                      content = {
-                        Column(
-                            modifier = Modifier.fillMaxWidth().padding(20.dp),
-                            content = {
-                              // Item 1: Convert to text
-                              RowItemPdfViewer(
-                                  buttonText = "Convert to text",
-                                  testTag = "convertPdfToTextMenuItem",
-                                  onClick = {
-                                    textExtractor.processPdfFile(
-                                        pdfFile = pdfFile!!,
-                                        onResult = {
-                                          // TODO: update md file and navigate to it
-                                        })
-                                    expandedMenu = false
-                                  },
-                                  icon = {
-                                    Icon(
-                                        painter =
-                                            painterResource(R.drawable.outline_convert_to_text),
-                                        contentDescription = "Convert to text",
-                                        modifier = Modifier.size(24.dp))
-                                  })
-                              // Item 2: Re-scan PDF
-                              RowItemPdfViewer(
-                                  buttonText = "Re-scan PDF",
-                                  testTag = "rescanPdfMenuItem",
-                                  onClick = {
-                                    scanner.scan {
-                                      fileViewModel.deleteFile(note!!.id, FileType.NOTE_PDF)
-                                      pdfFile = null
-                                      pdfExists = false
-                                      fileViewModel.updateFile(note!!.id, it, FileType.NOTE_PDF)
-                                      retryDownload = true // Trigger retry logic
-                                      attempt = 0 // Reset attempts
-                                    }
-                                    expandedMenu = false
-                                  },
-                                  icon = {
-                                    Icon(
-                                        imageVector = Icons.Outlined.Sync,
-                                        contentDescription = "Re-scan PDF",
-                                        modifier = Modifier.size(24.dp))
-                                  })
-                              // Item 3: Delete PDF
-                              RowItemPdfViewer(
-                                  buttonText = "Delete PDF",
-                                  textColor = MaterialTheme.colorScheme.error,
-                                  testTag = "deletePdfMenuItem",
-                                  onClick = {
-                                    showDeleteConfirmation = true
-                                    expandedMenu = false
-                                  },
-                                  icon = {
-                                    Icon(
-                                        imageVector = Icons.Outlined.Delete,
-                                        contentDescription = "Delete PDF",
-                                        tint = MaterialTheme.colorScheme.error,
-                                        modifier = Modifier.size(24.dp))
-                                  })
-                            })
-                      })
+                  bottomSheetMenu()
                 }
-                // Confirmation dialog for deletion
                 if (showDeleteConfirmation) {
-                  ConfirmationPopup(
-                      title = stringResource(R.string.delete_pdf),
-                      text = stringResource(R.string.delete_pdf_text),
-                      onConfirm = {
-                        fileViewModel.deleteFile(note!!.id, FileType.NOTE_PDF)
-                        pdfFile = null
-                        pdfExists = false
-                        isLoading = false
-                        showDeleteConfirmation = false
-                      },
-                      onDismiss = { showDeleteConfirmation = false })
+                  confirmationPopupDeletePdf()
                 }
-              } else {
-                  IconButton(onClick = {}) {} // Empty action button to keep the title aligned
               }
             })
       },
@@ -301,15 +339,10 @@ fun PdfViewerScreen(
 /** Composable function to display the title of the PDF viewer screen. */
 @Composable
 fun TitlePdfTopBar() {
-  Row(
-      modifier = Modifier.fillMaxWidth(),
-      verticalAlignment = Alignment.CenterVertically,
-      horizontalArrangement = Arrangement.Center) {
-        Text(
-            text = stringResource(R.string.pdf),
-            color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.testTag("pdfTitle"))
-      }
+  Text(
+      text = stringResource(R.string.pdf),
+      color = MaterialTheme.colorScheme.onSurface,
+      modifier = Modifier.testTag("pdfTitle"))
 }
 
 /**
@@ -358,5 +391,54 @@ fun RowItemPdfViewer(
         icon()
         Spacer(Modifier.padding(10.dp))
         Text(text = buttonText, color = textColor, style = MaterialTheme.typography.titleMedium)
+      })
+}
+
+/**
+ * Function to update (append) the MD file with the extracted text from the PDF file. If the MD file
+ * does not exist, it creates a new one. After updating the MD file, it navigates to the Edit
+ * Markdown screen.
+ *
+ * @param text The extracted text from the PDF file.
+ * @param noteViewModel The NoteViewModel to access the selected note.
+ * @param fileViewModel The FileViewModel to update the MD file.
+ * @param navigationActions The NavigationActions object to navigate between screens.
+ * @param context The context used to access the cache directory.
+ */
+fun updateMdFile(
+    text: String,
+    noteViewModel: NoteViewModel,
+    fileViewModel: FileViewModel,
+    navigationActions: NavigationActions,
+    context: Context
+) {
+  val note = noteViewModel.selectedNote.value
+
+  fileViewModel.downloadFile(
+      uid = note!!.id,
+      fileType = FileType.NOTE_TEXT,
+      context = context,
+      onSuccess = { mdFile ->
+        mdFile.appendText("\n" + text)
+        fileViewModel.updateFile(
+            uid = note.id,
+            fileUri = Uri.fromFile(mdFile),
+            fileType = FileType.NOTE_TEXT,
+            onSuccess = { navigationActions.navigateToAndPop(Screen.EDIT_NOTE_MARKDOWN) })
+      },
+      onFileNotFound = {
+        val mdFile =
+            File(context.cacheDir, "${note.id}.md").apply { if (!exists()) createNewFile() }
+        mdFile.appendText(text)
+        fileViewModel.updateFile(
+            uid = note.id,
+            fileUri = Uri.fromFile(mdFile),
+            fileType = FileType.NOTE_TEXT,
+            onSuccess = { navigationActions.navigateToAndPop(Screen.EDIT_NOTE_MARKDOWN) })
+      },
+      onFailure = {
+        Log.e("PdfViewerScreen", "Error downloading MD file: $it")
+        Toast.makeText(context, "Error: markdown file could not be updated", Toast.LENGTH_LONG)
+            .show()
       })
 }
