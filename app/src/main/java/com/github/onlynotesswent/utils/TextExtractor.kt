@@ -17,13 +17,13 @@ import java.io.File
  * Kit Text Recognition API to extract text from the PDF file.
  *
  * @param activity the ComponentActivity that will use the TextExtractor
+ * @param textRecognizer the text recognizer object, initialized by default with the default options
  */
-class TextExtractor(private val activity: ComponentActivity) {
-  private lateinit var textRecognizer: TextRecognizer
-
-  fun init() {
-    textRecognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
-  }
+class TextExtractor(
+    private val activity: ComponentActivity,
+    private val textRecognizer: TextRecognizer =
+        TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
+) {
 
   /**
    * Processes the given PDF file to extract text from it.
@@ -32,12 +32,6 @@ class TextExtractor(private val activity: ComponentActivity) {
    * @param onSuccess the lambda function to call with the extracted text.
    */
   fun processPdfFile(pdfFile: File, onSuccess: (String) -> Unit) {
-    if (!::textRecognizer.isInitialized) {
-      // Case should not happen if class is correctly initialized
-      Log.e(TAG, "TextRecognizer is not initialized. Call init() before processing PDF file.")
-      return
-    }
-
     try {
       val bitmaps = convertPdfToBitmap(pdfFile)
       extractTextFromBitmaps(bitmaps, onSuccess)
@@ -54,20 +48,28 @@ class TextExtractor(private val activity: ComponentActivity) {
    * @return a list of bitmaps extracted from the PDF file
    * @throws Exception if the PDF file cannot be converted to bitmaps
    */
-  private fun convertPdfToBitmap(pdfFile: File): List<Bitmap> {
+  internal fun convertPdfToBitmap(pdfFile: File): List<Bitmap> {
     val bitmaps = mutableListOf<Bitmap>()
-    val fileDescriptor = ParcelFileDescriptor.open(pdfFile, ParcelFileDescriptor.MODE_READ_ONLY)
-    val pdfRenderer = PdfRenderer(fileDescriptor)
+    var fileDescriptor: ParcelFileDescriptor? = null
+    var pdfRenderer: PdfRenderer? = null
 
-    for (pageIndex in 0 until pdfRenderer.pageCount) {
-      val page = pdfRenderer.openPage(pageIndex)
-      val bitmap = Bitmap.createBitmap(page.width, page.height, Bitmap.Config.ARGB_8888)
-      page.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
-      bitmaps.add(bitmap)
-      page.close()
+    try {
+      fileDescriptor = ParcelFileDescriptor.open(pdfFile, ParcelFileDescriptor.MODE_READ_ONLY)
+      pdfRenderer = PdfRenderer(fileDescriptor)
+
+      for (pageIndex in 0 until pdfRenderer.pageCount) {
+        val page = pdfRenderer.openPage(pageIndex)
+        val bitmap = Bitmap.createBitmap(page.width, page.height, Bitmap.Config.ARGB_8888)
+        page.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
+        bitmaps.add(bitmap)
+        bitmap.recycle()
+        page.close()
+      }
+    } finally {
+      pdfRenderer?.close()
+      fileDescriptor?.close()
     }
-    pdfRenderer.close()
-    fileDescriptor.close()
+
     return bitmaps
   }
 
@@ -77,7 +79,7 @@ class TextExtractor(private val activity: ComponentActivity) {
    * @param bitmaps the list of bitmaps to extract text from.
    * @param onSuccess the lambda function to call with the extracted text.
    */
-  private fun extractTextFromBitmaps(bitmaps: List<Bitmap>, onSuccess: (String) -> Unit) {
+  internal fun extractTextFromBitmaps(bitmaps: List<Bitmap>, onSuccess: (String) -> Unit) {
     val textResults = StringBuilder()
 
     bitmaps.forEachIndexed { index, bitmap ->

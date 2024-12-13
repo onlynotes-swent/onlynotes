@@ -61,7 +61,7 @@ class MainActivity : ComponentActivity() {
 
     val scanner = Scanner(this).apply { init() }
     val pictureTaker = PictureTaker(this).apply { init() }
-    val textExtractor = TextExtractor(this).apply { init() }
+    val textExtractor = TextExtractor(this)
 
     setContent {
       AppTheme {
