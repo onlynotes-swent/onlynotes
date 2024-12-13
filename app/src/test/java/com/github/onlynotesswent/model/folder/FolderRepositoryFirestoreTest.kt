@@ -398,6 +398,24 @@ class FolderRepositoryFirestoreTest {
     verify(timeout(100)) { (mockQuerySnapshot).documents }
   }
 
+  @Test
+  fun getFoldersFromFollowingList_callsOnFailure() {
+    val errorMessage = "TestError"
+    `when`(mockQuerySnapshotTask.isSuccessful).thenReturn(false)
+    `when`(mockQuerySnapshotTask.exception).thenReturn(Exception(errorMessage))
+    `when`(mockQuerySnapshotTask.addOnCompleteListener(any())).thenAnswer { invocation ->
+      val listener = invocation.getArgument<OnCompleteListener<QuerySnapshot>>(0)
+      // Simulate a result being passed to the listener
+      listener.onComplete(mockQuerySnapshotTask)
+      mockQuerySnapshotTask
+    }
+    var exceptionThrown: Exception? = null
+    folderRepositoryFirestore.getFoldersFromFollowingList(
+        listOf("1", "2"), onSuccess = {}, onFailure = { e -> exceptionThrown = e })
+    assertNotNull(exceptionThrown)
+    assertEquals(errorMessage, exceptionThrown?.message)
+  }
+
   //  @Test
   //  fun deleteFolderContents_callsDocuments() = runTest {
   //    `when`(mockDocumentReference.delete()).thenReturn(Tasks.forResult(null))

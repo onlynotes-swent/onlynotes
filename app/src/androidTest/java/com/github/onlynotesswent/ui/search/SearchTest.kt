@@ -68,6 +68,29 @@ class SearchScreenTest {
 
   private val testNotes = listOf(testNote1, testNote2)
 
+  private val testFriendNote1 =
+      Note(
+          id = "10",
+          title = "Note 1",
+          date = Timestamp.now(),
+          lastModified = Timestamp.now(),
+          visibility = Visibility.FRIENDS,
+          userId = "1",
+          noteCourse = Course("CS-100", "Sample Course 1", 2024, "path"),
+      )
+  private val testFriendNote2 =
+      Note(
+          id = "11",
+          title = "Note 2",
+          date = Timestamp.now(),
+          lastModified = Timestamp.now(),
+          visibility = Visibility.FRIENDS,
+          userId = "2",
+          noteCourse = Course("CS-200", "Sample Course 2", 2024, "path"),
+      )
+
+  private val testFriendsNotes = listOf(testFriendNote1, testFriendNote2)
+
   private val testUser1 =
       User(
           firstName = "User One",
@@ -106,6 +129,28 @@ class SearchScreenTest {
 
   private val testFolders = listOf(testFolder1, testFolder2)
 
+  private val testFriendFolder1 =
+      Folder(
+          id = "21",
+          name = "Folder 1",
+          parentFolderId = null,
+          userId = "1",
+          lastModified = Timestamp.now(),
+          visibility = Visibility.FRIENDS,
+      )
+
+  private val testFriendFolder2 =
+      Folder(
+          id = "22",
+          name = "Folder 2",
+          parentFolderId = null,
+          userId = "2",
+          lastModified = Timestamp.now(),
+          visibility = Visibility.FRIENDS,
+      )
+
+  private val testFriendsFolders = listOf(testFriendFolder1, testFriendFolder2)
+
   private val testDeck1 =
       Deck(
           id = "1",
@@ -127,6 +172,28 @@ class SearchScreenTest {
 
   private val testDecks = listOf(testDeck1, testDeck2)
 
+  private val testFriendDeck1 =
+      Deck(
+          id = "31",
+          name = "Deck 1",
+          userId = "1",
+          folderId = "1",
+          visibility = Visibility.FRIENDS,
+          lastModified = Timestamp.now(),
+          flashcardIds = listOf("1", "2"))
+
+  private val testFriendDeck2 =
+      Deck(
+          id = "32",
+          name = "Deck 2",
+          userId = "2",
+          folderId = "2",
+          visibility = Visibility.FRIENDS,
+          lastModified = Timestamp.now(),
+          flashcardIds = listOf("3", "4"))
+
+  private val testFriendsDecks = listOf(testFriendDeck1, testFriendDeck2)
+
   @Before
   fun setUp() {
     MockitoAnnotations.openMocks(this)
@@ -135,6 +202,10 @@ class SearchScreenTest {
     `when`(noteRepository.getPublicNotes(any(), any())).thenAnswer { invocation ->
       val onSuccess = invocation.getArgument<(List<Note>) -> Unit>(0)
       onSuccess(testNotes)
+    }
+    `when`(noteRepository.getNotesFromFollowingList(any(), any(), any())).thenAnswer { invocation ->
+      val onSuccess = invocation.getArgument<(List<Note>) -> Unit>(1)
+      onSuccess(testFriendsNotes)
     }
 
     `when`(userRepository.getAllUsers(any(), any())).thenAnswer { invocation ->
@@ -149,9 +220,18 @@ class SearchScreenTest {
       val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(0)
       onSuccess(testFolders)
     }
+    `when`(folderRepository.getFoldersFromFollowingList(any(), any(), any())).thenAnswer {
+        invocation ->
+      val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(1)
+      onSuccess(testFriendsFolders)
+    }
     `when`(deckRepository.getPublicDecks(any(), any())).thenAnswer { invocation ->
       val onSuccess = invocation.getArgument<(List<Deck>) -> Unit>(0)
       onSuccess(testDecks)
+    }
+    `when`(deckRepository.getDecksFromFollowingList(any(), any(), any())).thenAnswer { invocation ->
+      val onSuccess = invocation.getArgument<(List<Deck>) -> Unit>(1)
+      onSuccess(testFriendsDecks)
     }
 
     userViewModel = UserViewModel(userRepository)
@@ -188,6 +268,8 @@ class SearchScreenTest {
     composeTestRule.onNodeWithTag("additionalFilterChip--FRIENDS").assertIsDisplayed()
     composeTestRule.onNodeWithTag("additionalFilterChip--PUBLIC").performClick()
     composeTestRule.onNodeWithTag("filteredPublicNoteList").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("additionalFilterChip--FRIENDS").performClick()
+    composeTestRule.onNodeWithTag("filteredFriendNoteList").assertIsDisplayed()
 
     composeTestRule.onNodeWithTag("userFilterChip").performClick()
     composeTestRule.onNodeWithTag("filteredUserList").assertIsDisplayed()
@@ -197,12 +279,57 @@ class SearchScreenTest {
     composeTestRule.onNodeWithTag("additionalFilterChip--FRIENDS").assertIsDisplayed()
     composeTestRule.onNodeWithTag("additionalFilterChip--PUBLIC").performClick()
     composeTestRule.onNodeWithTag("filteredPublicFolderList").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("additionalFilterChip--FRIENDS").performClick()
+    composeTestRule.onNodeWithTag("filteredFriendFolderList").assertIsDisplayed()
 
     composeTestRule.onNodeWithTag("deckFilterChip").performClick()
     composeTestRule.onNodeWithTag("additionalFilterChip--PUBLIC").assertIsDisplayed()
     composeTestRule.onNodeWithTag("additionalFilterChip--FRIENDS").assertIsDisplayed()
     composeTestRule.onNodeWithTag("additionalFilterChip--PUBLIC").performClick()
     composeTestRule.onNodeWithTag("filteredPublicDeckList").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("additionalFilterChip--FRIENDS").performClick()
+    composeTestRule.onNodeWithTag("filteredFriendDeckList").assertIsDisplayed()
+  }
+
+  @Test
+  fun testValidFriendSearchQueryShowsOneResult() {
+    composeTestRule.onNodeWithTag("searchTextField").performTextInput(testFriendNote1.title)
+    composeTestRule.onNodeWithTag("noteFilterChip").performClick()
+    composeTestRule.onNodeWithTag("additionalFilterChip--FRIENDS").performClick()
+
+    composeTestRule.onNodeWithTag("filteredFriendNoteList").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("noSearchResults").assertIsNotDisplayed()
+    composeTestRule
+        .onAllNodesWithTag("noteCard")
+        .filter(hasText(testFriendNote1.title))
+        .onFirst()
+        .assertIsDisplayed()
+    composeTestRule.onAllNodesWithTag("noteCard").assertCountEquals(1)
+
+    composeTestRule.onNodeWithTag("searchTextField").performTextReplacement(testFriendFolder1.name)
+    composeTestRule.onNodeWithTag("folderFilterChip").performClick()
+    composeTestRule.onNodeWithTag("additionalFilterChip--FRIENDS").performClick()
+
+    composeTestRule.onNodeWithTag("filteredFriendFolderList").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("noSearchResults").assertIsNotDisplayed()
+    composeTestRule
+        .onAllNodesWithTag("folderCard")
+        .filter(hasText(testFriendFolder1.name))
+        .onFirst()
+        .assertIsDisplayed()
+    composeTestRule.onAllNodesWithTag("folderCard").assertCountEquals(1)
+
+    composeTestRule.onNodeWithTag("searchTextField").performTextReplacement(testFriendDeck1.name)
+    composeTestRule.onNodeWithTag("deckFilterChip").performClick()
+    composeTestRule.onNodeWithTag("additionalFilterChip--FRIENDS").performClick()
+
+    composeTestRule.onNodeWithTag("filteredFriendDeckList").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("noSearchResults").assertIsNotDisplayed()
+    composeTestRule
+        .onAllNodesWithTag("deckCard")
+        .filter(hasText(testFriendDeck1.name))
+        .onFirst()
+        .assertIsDisplayed()
   }
 
   @Test
@@ -338,6 +465,10 @@ class SearchScreenTest {
     composeTestRule.onNodeWithTag("noteFilterChip").performClick()
     composeTestRule.onNodeWithTag("noSearchResults").assertIsDisplayed()
     composeTestRule.onNodeWithText("No notes found matching your search.").assertIsDisplayed()
+    // Check friend only notes behavior
+    composeTestRule.onNodeWithTag("additionalFilterChip--FRIENDS").performClick()
+    composeTestRule.onNodeWithTag("noSearchResults").assertIsDisplayed()
+    composeTestRule.onNodeWithText("No notes found matching your search.").assertIsDisplayed()
 
     composeTestRule.onNodeWithTag("searchTextField").performTextReplacement("Non-existent User")
     composeTestRule.onNodeWithTag("userFilterChip").performClick()
@@ -348,9 +479,15 @@ class SearchScreenTest {
     composeTestRule.onNodeWithTag("folderFilterChip").performClick()
     composeTestRule.onNodeWithTag("noSearchResults").assertIsDisplayed()
     composeTestRule.onNodeWithText("No folders found matching your search.").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("additionalFilterChip--FRIENDS").performClick()
+    composeTestRule.onNodeWithTag("noSearchResults").assertIsDisplayed()
+    composeTestRule.onNodeWithText("No folders found matching your search.").assertIsDisplayed()
 
     composeTestRule.onNodeWithTag("searchTextField").performTextReplacement("Non-existent Deck")
     composeTestRule.onNodeWithTag("deckFilterChip").performClick()
+    composeTestRule.onNodeWithTag("noSearchResults").assertIsDisplayed()
+    composeTestRule.onNodeWithText("No decks found matching your search.").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("additionalFilterChip--FRIENDS").performClick()
     composeTestRule.onNodeWithTag("noSearchResults").assertIsDisplayed()
     composeTestRule.onNodeWithText("No decks found matching your search.").assertIsDisplayed()
   }

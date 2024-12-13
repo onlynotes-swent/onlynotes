@@ -319,6 +319,26 @@ class NoteRepositoryFirestoreTest {
   }
 
   @Test
+  fun getNotesFromFollowingList_fails() = runTest {
+    val errorMessage = "TestError"
+    `when`(mockQuerySnapshotTask.isSuccessful).thenReturn(false)
+    `when`(mockQuerySnapshotTask.exception).thenReturn(Exception(errorMessage))
+    `when`(mockQuerySnapshotTask.addOnCompleteListener(any())).thenAnswer { invocation ->
+      val listener = invocation.getArgument<OnCompleteListener<QuerySnapshot>>(0)
+      // Simulate a result being passed to the listener
+      listener.onComplete(mockQuerySnapshotTask)
+      mockQuerySnapshotTask
+    }
+    `when`(mockQuerySnapshot.documents)
+        .thenReturn(listOf(mockDocumentSnapshot, mockDocumentSnapshot2, mockDocumentSnapshot5))
+    var exceptionThrown: Exception? = null
+    noteRepositoryFirestore.getNotesFromFollowingList(
+        listOf("1"), { assert(false) }, { e -> exceptionThrown = e })
+    assertNotNull(exceptionThrown)
+    assertEquals(errorMessage, exceptionThrown?.message)
+  }
+
+  @Test
   fun getNotesFromUid_callsDocuments() = runTest {
     // Ensure the QuerySnapshot returns a list of mock DocumentSnapshots
     `when`(mockQuerySnapshot.documents)

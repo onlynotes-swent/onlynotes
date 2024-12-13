@@ -187,9 +187,8 @@ fun SearchScreen(
                   searchType.value == SearchType.NOTES,
                   label = { Text(stringResource(R.string.notes_maj), maxLines = 1) },
                   onClick = {
-                    if (searchType.value != SearchType.NOTES && !showAdditionalFilters.value) {
-                      showAdditionalFilters.value = !showAdditionalFilters.value
-                    } else if (searchType.value == SearchType.NOTES) {
+                    if ((searchType.value != SearchType.NOTES && !showAdditionalFilters.value) ||
+                        searchType.value == SearchType.NOTES) {
                       showAdditionalFilters.value = !showAdditionalFilters.value
                     }
                     searchType.value = SearchType.NOTES
@@ -215,9 +214,8 @@ fun SearchScreen(
                   searchType.value == SearchType.FOLDERS,
                   label = { Text(stringResource(R.string.folders_maj), maxLines = 1) },
                   onClick = {
-                    if (searchType.value != SearchType.FOLDERS && !showAdditionalFilters.value) {
-                      showAdditionalFilters.value = !showAdditionalFilters.value
-                    } else if (searchType.value == SearchType.FOLDERS) {
+                    if ((searchType.value != SearchType.FOLDERS && !showAdditionalFilters.value) ||
+                        searchType.value == SearchType.FOLDERS) {
                       showAdditionalFilters.value = !showAdditionalFilters.value
                     }
                     searchType.value = SearchType.FOLDERS
@@ -243,9 +241,8 @@ fun SearchScreen(
                   searchType.value == SearchType.DECKS,
                   label = { Text(stringResource(R.string.decks_maj), maxLines = 1) },
                   onClick = {
-                    if (searchType.value != SearchType.DECKS && !showAdditionalFilters.value) {
-                      showAdditionalFilters.value = !showAdditionalFilters.value
-                    } else if (searchType.value == SearchType.DECKS) {
+                    if (searchType.value != SearchType.DECKS && !showAdditionalFilters.value ||
+                        searchType.value == SearchType.DECKS) {
                       showAdditionalFilters.value = !showAdditionalFilters.value
                     }
                     searchType.value = SearchType.DECKS
@@ -267,6 +264,7 @@ fun SearchScreen(
                   modifier = Modifier.padding(horizontal = 5.dp).testTag("deckFilterChip"))
             }
           }
+
           AdditionalFilters(
               showAdditionalFilters = showAdditionalFilters,
               additionalFilter = additionalFilter,
@@ -563,6 +561,13 @@ enum class AdditionalFilterType {
   }
 }
 
+/**
+ * Checks if the text contains all the search words.
+ *
+ * @param text The text to search.
+ * @param searchWords The search words.
+ * @return True if the text contains all the search words, false otherwise.
+ */
 fun textMatchesSearch(text: String, searchWords: List<String>): Boolean {
   return searchWords.all { text.contains(it, ignoreCase = true) } || searchWords.isEmpty()
 }
