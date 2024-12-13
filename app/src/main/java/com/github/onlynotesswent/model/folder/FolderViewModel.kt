@@ -252,22 +252,20 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
     }
   }
 
-    fun getFolderByIdNoStateUpdate(
-        folderId: String,
-        onSuccess: (Folder) -> Unit = {},
-        onFailure: (Exception) -> Unit = {},
-        useCache: Boolean = false
-    ) {
-        viewModelScope.launch {
-            repository.getFolderById(
-                folderId = folderId,
-                onSuccess = {
-                    onSuccess(it)
-                },
-                onFailure = onFailure,
-                useCache = useCache)
-        }
+  fun getFolderByIdNoStateUpdate(
+      folderId: String,
+      onSuccess: (Folder) -> Unit = {},
+      onFailure: (Exception) -> Unit = {},
+      useCache: Boolean = false
+  ) {
+    viewModelScope.launch {
+      repository.getFolderById(
+          folderId = folderId,
+          onSuccess = { onSuccess(it) },
+          onFailure = onFailure,
+          useCache = useCache)
     }
+  }
 
   /**
    * Updates an existing folder.

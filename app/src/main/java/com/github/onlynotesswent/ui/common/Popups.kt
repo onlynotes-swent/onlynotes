@@ -22,7 +22,6 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -131,7 +130,9 @@ fun CreationDialog(
       title = { Text("$action $type") },
       text = {
         Column(
-            modifier = Modifier.padding(16.dp).testTag("${type}Dialog"),
+            modifier = Modifier
+                .padding(16.dp)
+                .testTag("${type}Dialog"),
             verticalArrangement = Arrangement.spacedBy(8.dp),
             horizontalAlignment = Alignment.CenterHorizontally) {
               OutlinedTextField(
@@ -163,8 +164,19 @@ fun CreationDialog(
       })
 }
 
+/**
+ * A composable function that displays a popup dialog for moving a specific item in the file system.
+ *
+ * @param onDismiss A callback triggered to dismiss the popup dialog.
+ * @param folderViewModel The ViewModel managing folder-related data and operations.
+ * @param onMoveHere A callback triggered when the "Move Here" button is clicked, designed to move the selected item in a specific folder.
+ */
 @Composable
-fun FileSystemPopup(onDismiss: () -> Unit, folderViewModel: FolderViewModel, onMoveHere: (Folder?) -> Unit = {})  {
+fun FileSystemPopup(
+    onDismiss: () -> Unit,
+    folderViewModel: FolderViewModel,
+    onMoveHere: (Folder?) -> Unit = {}
+) {
     var selectedFolder by remember { mutableStateOf<Folder?>(folderViewModel.selectedFolder.value) }
     var folderSubFolders by remember { mutableStateOf<List<Folder>>(emptyList()) }
     val userRootFolders = folderViewModel.userRootFolders.collectAsState()
@@ -176,19 +188,16 @@ fun FileSystemPopup(onDismiss: () -> Unit, folderViewModel: FolderViewModel, onM
     LaunchedEffect(selectedFolder) {
         if (selectedFolder != null) {
             folderViewModel.getSubFoldersOfNoStateUpdate(
-                selectedFolder!!.id,
-                onSuccess = { subFolders ->
-                    folderSubFolders = subFolders
-                }
-            )
+                selectedFolder!!.id, onSuccess = { subFolders -> folderSubFolders = subFolders })
         }
     }
     Dialog(onDismissRequest = { onDismiss() }) {
         Box(
-            modifier = Modifier
+            modifier =
+            Modifier
                 .testTag("FileSystemPopup")
-                .fillMaxWidth(0.9f) // Adjust the popup width
-                .fillMaxHeight(0.5f)
+                .fillMaxWidth(0.95f) // Adjust the popup width
+                .fillMaxHeight(0.7f)
                 .padding(16.dp)
                 .background(
                     color = MaterialTheme.colorScheme.background,
@@ -197,7 +206,8 @@ fun FileSystemPopup(onDismiss: () -> Unit, folderViewModel: FolderViewModel, onM
         ) {
             Column(modifier = Modifier.fillMaxSize()) {
                 Box(
-                    modifier = Modifier
+                    modifier =
+                    Modifier
                         .fillMaxWidth()
                         .background(MaterialTheme.colorScheme.primary)
                         .padding(vertical = 12.dp, horizontal = 16.dp)
@@ -207,6 +217,7 @@ fun FileSystemPopup(onDismiss: () -> Unit, folderViewModel: FolderViewModel, onM
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         IconButton(
+                            modifier = Modifier.testTag("goBackFileSystemPopup"),
                             onClick = {
                                 if (selectedFolder != null) {
                                     if (selectedFolder!!.parentFolderId != null) {
@@ -214,15 +225,12 @@ fun FileSystemPopup(onDismiss: () -> Unit, folderViewModel: FolderViewModel, onM
                                             selectedFolder!!.parentFolderId!!,
                                             onSuccess = { parentFolder ->
                                                 selectedFolder = parentFolder
-                                            }
-                                        )
-                                    }
-                                    else {
+                                            })
+                                    } else {
                                         selectedFolder = null
                                     }
                                 }
-                            }
-                        ) {
+                            }) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                                 contentDescription = "Back"
@@ -242,20 +250,16 @@ fun FileSystemPopup(onDismiss: () -> Unit, folderViewModel: FolderViewModel, onM
 
                         // Home button at the top right
                         IconButton(
-                            onClick = {
-                                selectedFolder = null
-                            }
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Home,
-                                contentDescription = "Home"
-                            )
+                            modifier = Modifier.testTag("goToOverviewFileSystemPopup"),
+                            onClick = { selectedFolder = null }) {
+                            Icon(imageVector = Icons.Default.Home, contentDescription = "Home")
                         }
                     }
                 }
 
                 Column(
-                    modifier = Modifier
+                    modifier =
+                    Modifier
                         .weight(1f)
                         .padding(start = 16.dp, end = 16.dp, top = 8.dp)
                         .verticalScroll(rememberScrollState()),
@@ -264,7 +268,8 @@ fun FileSystemPopup(onDismiss: () -> Unit, folderViewModel: FolderViewModel, onM
                     if (selectedFolder == null) {
                         userRootFolders.value.forEach { folder ->
                             Box(
-                                modifier = Modifier
+                                modifier =
+                                Modifier
                                     .testTag("FileSystemPopupFolderChoiceBox" + folder.id)
                                     .fillMaxWidth()
                                     .background(
@@ -276,12 +281,10 @@ fun FileSystemPopup(onDismiss: () -> Unit, folderViewModel: FolderViewModel, onM
                                             folder.id,
                                             onSuccess = { subFolders ->
                                                 folderSubFolders = subFolders
-                                            }
-                                        )
+                                            })
                                         selectedFolder = folder
                                     }
-                                    .padding(12.dp)
-                            ) {
+                                    .padding(12.dp)) {
                                 Text(
                                     modifier = Modifier.testTag("FileSystemPopupFolderChoiceText"),
                                     text = folder.name,
@@ -293,7 +296,8 @@ fun FileSystemPopup(onDismiss: () -> Unit, folderViewModel: FolderViewModel, onM
                     } else {
                         folderSubFolders.forEach { subFolder ->
                             Box(
-                                modifier = Modifier
+                                modifier =
+                                Modifier
                                     .testTag("FileSystemPopupFolderChoiceBox" + subFolder.id)
                                     .fillMaxWidth()
                                     .background(
@@ -305,12 +309,10 @@ fun FileSystemPopup(onDismiss: () -> Unit, folderViewModel: FolderViewModel, onM
                                             subFolder.id,
                                             onSuccess = { subFolders ->
                                                 folderSubFolders = subFolders
-                                            }
-                                        )
+                                            })
                                         selectedFolder = subFolder
                                     }
-                                    .padding(12.dp)
-                            ) {
+                                    .padding(12.dp)) {
                                 Text(
                                     text = subFolder.name,
                                     style = MaterialTheme.typography.bodyMedium,
@@ -339,7 +341,6 @@ fun FileSystemPopup(onDismiss: () -> Unit, folderViewModel: FolderViewModel, onM
             }
         }
     }
-
 }
 
 /**
@@ -367,7 +368,9 @@ fun EnterTextPopup(
       title = { Text("$action $type") },
       text = {
         Column(
-            modifier = Modifier.padding(16.dp).testTag("${type}Dialog"),
+            modifier = Modifier
+                .padding(16.dp)
+                .testTag("${type}Dialog"),
             verticalArrangement = Arrangement.spacedBy(8.dp),
             horizontalAlignment = Alignment.CenterHorizontally) {
               OutlinedTextField(

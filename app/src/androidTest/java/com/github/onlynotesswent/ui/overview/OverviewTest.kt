@@ -313,15 +313,34 @@ class OverviewTest {
   }
 
   @Test
-  fun openFileSystem() {
-    composeTestRule.onNodeWithTag("FileSystemPopup").assertIsNotDisplayed()
-    composeTestRule.onNodeWithTag("showFileSystemButton").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("showFileSystemButton").performClick()
-    composeTestRule.onNodeWithTag("FileSystemPopup").assertIsDisplayed()
+  fun openFileSystem() = runTest{
+      `when`(noteRepository.getRootNotesFromUid(eq("1"), any(), any(), any())).then { invocation ->
+          val onSuccess = invocation.getArgument<(List<Note>) -> Unit>(1)
+          onSuccess(noteList)
+      }
+      `when`(folderRepository.getRootFoldersFromUid(eq("1"), any(), any(), any())).then { invocation
+          ->
+          val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(1)
+          onSuccess(folderList)
+      }
+      noteViewModel.getRootNotesFromUid("1")
+      folderViewModel.getRootFoldersFromUid("1")
+    composeTestRule.onNodeWithTag("noteModalBottomSheet").assertIsNotDisplayed()
+    composeTestRule.onNodeWithTag("showBottomSheetButton").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("showBottomSheetButton").performClick()
+    composeTestRule.onNodeWithTag("noteModalBottomSheet").assertIsDisplayed()
+      composeTestRule.onNodeWithTag("deleteNoteBottomSheet").assertIsDisplayed()
+      composeTestRule.onNodeWithTag("moveNoteBottomSheet").assertIsDisplayed()
+      composeTestRule.onNodeWithTag("moveNoteBottomSheet").performClick()
+      composeTestRule.onNodeWithTag("FileSystemPopup").assertIsDisplayed()
   }
 
   @Test
   fun navigateFileSystem() = runTest {
+      `when`(noteRepository.getRootNotesFromUid(eq("1"), any(), any(), any())).then { invocation ->
+          val onSuccess = invocation.getArgument<(List<Note>) -> Unit>(1)
+          onSuccess(noteList)
+      }
     val userRootFoldersFlow =
         listOf(
             Folder(
@@ -343,6 +362,7 @@ class OverviewTest {
       onSuccess(userRootFoldersFlow)
     }
     folderViewModel.getRootFoldersFromUid("1")
+      noteViewModel.getRootNotesFromUid("1")
 
     val subFolderList =
         listOf(
@@ -364,10 +384,13 @@ class OverviewTest {
           val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(1)
           onSuccess(subFolderList)
         }
-
-    composeTestRule.onNodeWithTag("showFileSystemButton").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("showFileSystemButton").performClick()
-    composeTestRule.onNodeWithTag("FileSystemPopup").assertIsDisplayed()
+      composeTestRule.onNodeWithTag("noteModalBottomSheet").assertIsNotDisplayed()
+      composeTestRule.onNodeWithTag("showBottomSheetButton").assertIsDisplayed()
+      composeTestRule.onNodeWithTag("showBottomSheetButton").performClick()
+      composeTestRule.onNodeWithTag("noteModalBottomSheet").assertIsDisplayed()
+      composeTestRule.onNodeWithTag("moveNoteBottomSheet").assertIsDisplayed()
+      composeTestRule.onNodeWithTag("moveNoteBottomSheet").performClick()
+      composeTestRule.onNodeWithTag("FileSystemPopup").assertIsDisplayed()
     composeTestRule.onNodeWithTag("FileSystemPopupFolderChoiceBox8").assertIsDisplayed()
     composeTestRule.onNodeWithTag("FileSystemPopupFolderChoiceBox9").assertIsDisplayed()
     composeTestRule.onNodeWithTag("FileSystemPopupFolderChoiceBox8").performClick()

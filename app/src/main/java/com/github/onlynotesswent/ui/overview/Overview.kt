@@ -14,7 +14,6 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ElevatedButton
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -43,7 +42,6 @@ import com.github.onlynotesswent.model.user.UserViewModel
 import com.github.onlynotesswent.ui.common.CustomDropDownMenu
 import com.github.onlynotesswent.ui.common.CustomDropDownMenuItem
 import com.github.onlynotesswent.ui.common.CustomSeparatedLazyGrid
-import com.github.onlynotesswent.ui.common.FileSystemPopup
 import com.github.onlynotesswent.ui.common.FolderDialog
 import com.github.onlynotesswent.ui.common.NoteDialog
 import com.github.onlynotesswent.ui.navigation.BottomNavigationMenu
@@ -143,7 +141,6 @@ fun OverviewScreen(
               },
               action = stringResource(R.string.create))
         }
-
 
         // Logic to show the dialog to create a folder
         if (showCreateFolderDialog) {
