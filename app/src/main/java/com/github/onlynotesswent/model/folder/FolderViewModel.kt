@@ -379,8 +379,36 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
           useCache = useCache)
     }
   }
+    /**
+     * Updates an existing folder without changing the state of the ViewModel.
+     *
+     * @param folder The folder with updated information.
+     * @param onSuccess The function to call when the folder is updated successfully.
+     * @param onFailure The function to call when the folder fails to be updated.
+     * @param useCache Whether to update data from cache. Should be true only if userId of the folder
+     *   is the current user.
+     * @param isDeckView A flag indicating if the folder is a deck view.
+     */
+    fun updateFolderNoStateUpdate(
+        folder: Folder,
+        onSuccess: () -> Unit = {},
+        onFailure: (Exception) -> Unit = {},
+        useCache: Boolean = false,
+        isDeckView: Boolean = false
+    ) {
+        viewModelScope.launch {
+            repository.updateFolder(
+                folder = folder,
+                onSuccess = {
+                    onSuccess()
+                },
+                onFailure = onFailure,
+                useCache = useCache)
+        }
+    }
 
-  /**
+
+    /**
    * Retrieves all children folders of a parent folder.
    *
    * @param parentFolderId The ID of the parent folder.

@@ -426,18 +426,14 @@ fun FolderContentTopBar(
               onMoveHere = { selectedFolder ->
                 if (selectedFolder != folder) {
                   if (selectedFolder != null) {
-                    folderViewModel.updateFolder(folder.copy(parentFolderId = selectedFolder.id))
+                    folderViewModel.updateFolderNoStateUpdate(folder.copy(parentFolderId = selectedFolder.id))
                     // prevents a cycle to be formed
                     if (selectedFolder.parentFolderId == folder.id) {
-                      folderViewModel.updateFolder(
+                      folderViewModel.updateFolderNoStateUpdate(
                           selectedFolder.copy(parentFolderId = folder.parentFolderId))
                     }
-                    println("Moving to folder: ${selectedFolder.name}")
-                    // Add logic to move the selected item to `selectedFolder.id`
                   } else {
                     folderViewModel.updateFolder(folder.copy(parentFolderId = null))
-                    println("Moving to the root folder")
-                    // Add logic to move the selected item to the root
                   }
                 }
               })
