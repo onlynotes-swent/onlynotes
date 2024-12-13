@@ -63,7 +63,7 @@ fun DeckOverviewScreen(
 
   val userRootFolders = folderViewModel.userRootFolders.collectAsState()
   userViewModel.currentUser.collectAsState().value?.let {
-    folderViewModel.getRootFoldersFromUserId(it.uid, true)
+    folderViewModel.getRootDeckFoldersFromUserId(it.uid)
   }
 
   val parentFolderId = folderViewModel.parentFolderId.collectAsState()
@@ -125,7 +125,9 @@ fun DeckOverviewScreen(
                         userId = userViewModel.currentUser.value!!.uid,
                         parentFolderId = parentFolderId.value,
                         visibility = visibility,
-                        lastModified = Timestamp.now()))
+                        lastModified = Timestamp.now(),
+                        isDeckFolder = true),
+                    isDeckView = true)
 
                 showCreateFolderDialog = false
                 navigationActions.navigateTo(

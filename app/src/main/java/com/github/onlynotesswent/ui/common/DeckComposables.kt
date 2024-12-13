@@ -1,6 +1,9 @@
 package com.github.onlynotesswent.ui.common
 
-import androidx.compose.foundation.clickable
+import android.content.ClipData
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.draganddrop.dragAndDropSource
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -20,6 +23,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draganddrop.DragAndDropTransferData
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
@@ -44,14 +48,35 @@ import java.util.Locale
  * @param author The author of the deck.
  * @param onClick The action to perform when the deck is clicked.
  */
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun DeckSearchItem(deck: Deck, author: String, onClick: () -> Unit) {
+fun DeckItem(
+    deck: Deck,
+    deckViewModel: DeckViewModel? = null,
+    author: String? = null,
+    onClick: () -> Unit
+) {
   Card(
       Modifier.testTag("deckCard")
+          .height(140.dp)
           .padding(4.dp)
           .semantics(mergeDescendants = true, properties = {})
           .fillMaxWidth()
-          .clickable(onClick = onClick)) {
+          // Enable drag and drop for the note card as a source
+          .dragAndDropSource {
+            detectTapGestures(
+                onTap = { onClick() },
+                onLongPress = {
+                  if (deckViewModel != null) {
+                    deckViewModel.draggedDeck(deck)
+                    // Start a drag-and-drop operation to transfer the data which is being dragged
+                    startTransfer(
+                        // Transfer the note Id as a ClipData object
+                        DragAndDropTransferData(ClipData.newPlainText("Deck", deck.id)))
+                  }
+                },
+            )
+          }) {
         Column(
             Modifier.testTag("deckColumn").padding(10.dp).fillMaxWidth(),
         ) {
@@ -74,11 +99,13 @@ fun DeckSearchItem(deck: Deck, author: String, onClick: () -> Unit) {
               style = MaterialTheme.typography.bodyMedium,
               fontWeight = FontWeight.Bold,
               modifier = Modifier.padding(0.dp))
-          Text(
-              text = author,
-              style = MaterialTheme.typography.bodySmall,
-              fontStyle = FontStyle.Italic,
-              modifier = Modifier.padding(0.dp))
+          if (author != null) {
+            Text(
+                text = author,
+                style = MaterialTheme.typography.bodySmall,
+                fontStyle = FontStyle.Italic,
+                modifier = Modifier.padding(0.dp))
+          }
         }
       }
 }

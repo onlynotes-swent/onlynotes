@@ -13,7 +13,6 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
@@ -106,7 +105,10 @@ fun CustomSeparatedLazyGrid(
 
             if (isDeckView) {
               items(sortedDecks, key = { it.id }, span = { GridItemSpan(3) }) { deck ->
-                Text("Deck: ${deck.name}")
+                DeckItem(deck = deck, deckViewModel = deckViewModel!!) {
+                  deckViewModel.selectDeck(deck)
+                  navigationActions.navigateTo(Screen.DECK_MENU)
+                }
               }
             } else {
               items(sortedNotes, key = { it.id }, span = { GridItemSpan(3) }) { note ->

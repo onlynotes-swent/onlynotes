@@ -88,9 +88,19 @@ fun FolderItem(
                                 noteViewModel.updateNote(draggedNote.copy(folderId = folder.id))
                                 noteViewModel.draggedNote(null)
                                 dropSuccess.value = true
+                                return true
                               }
-                              return true
+                            } else {
+                              val draggedDeck = deckViewModel!!.draggedDeck.value
+                              if (draggedDeck != null && draggedDeck.id == draggedObjectId) {
+                                // Update the dragged deck with the new folder Id
+                                deckViewModel.updateDeck(draggedDeck.copy(folderId = folder.id))
+                                deckViewModel.draggedDeck(null)
+                                dropSuccess.value = true
+                                return true
+                              }
                             }
+
                             dropSuccess.value = false
                             return false
                           }

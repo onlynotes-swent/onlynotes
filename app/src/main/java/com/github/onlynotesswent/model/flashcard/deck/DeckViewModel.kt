@@ -35,6 +35,10 @@ class DeckViewModel(private val repository: DeckRepository) : ViewModel() {
   private val _publicDecks = MutableStateFlow<List<Deck>>(emptyList())
   val publicDecks: StateFlow<List<Deck>> = _publicDecks.asStateFlow()
 
+  // Dragged deck
+  private val _draggedDeck = MutableStateFlow<Deck?>(null)
+  val draggedDeck: StateFlow<Deck?> = _draggedDeck.asStateFlow()
+
   /** Initializes the DeckViewModel and the repository. */
   init {
     repository.init { getPublicDecks() }
@@ -53,6 +57,15 @@ class DeckViewModel(private val repository: DeckRepository) : ViewModel() {
    */
   fun selectDeck(deck: Deck) {
     _selectedDeck.value = deck
+  }
+
+  /**
+   * Sets the dragged Deck document.
+   *
+   * @param draggedDeck The dragged Deck document.
+   */
+  fun draggedDeck(draggedDeck: Deck?) {
+    _draggedDeck.value = draggedDeck
   }
 
   /**

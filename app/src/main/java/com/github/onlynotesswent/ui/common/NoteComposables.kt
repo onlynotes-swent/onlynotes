@@ -168,6 +168,7 @@ fun NoteItem(
         }
       }
 }
+
 /**
  * Dialog that allows the user to create a note.
  *
