@@ -1,32 +1,28 @@
 package com.github.onlynotesswent.utils
 
-import android.content.ActivityNotFoundException
 import android.content.Context
-import android.net.Uri
+import android.graphics.Bitmap
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
-import androidx.activity.result.ActivityResult
-import androidx.activity.result.ActivityResultCallback
-import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.contract.ActivityResultContract
-import androidx.activity.result.contract.ActivityResultContracts
 import com.google.android.gms.tasks.OnFailureListener
 import com.google.android.gms.tasks.OnSuccessListener
 import com.google.android.gms.tasks.Task
+import com.google.mlkit.common.MlKit.initialize
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.Text
 import com.google.mlkit.vision.text.TextRecognizer
-import java.io.IOException
+import java.io.File
+import org.junit.Assert.assertThrows
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.ArgumentCaptor
 import org.mockito.Mock
 import org.mockito.Mockito.*
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
 import org.mockito.kotlin.verify
+import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.shadows.ShadowLog
 
@@ -34,265 +30,156 @@ import org.robolectric.shadows.ShadowLog
 @Suppress("UNCHECKED_CAST")
 class TextExtractorTest {
 
-  @Mock private lateinit var mockActivity: ComponentActivity
   @Mock private lateinit var mockTextRecognizer: TextRecognizer
-  @Mock private lateinit var mockActivityResultLauncher: ActivityResultLauncher<String>
+  @Mock private lateinit var mockPdfFile: File
+  @Mock private lateinit var mockBitmap: Bitmap
+  //  @Mock private lateinit var mockPdfRenderer: PdfRenderer
+  //  @Mock private lateinit var mockParcelFileDescriptor: ParcelFileDescriptor
 
   private lateinit var textExtractor: TextExtractor
-
-  private fun <T> capture(argumentCaptor: ArgumentCaptor<T>): T = argumentCaptor.capture()
+  private lateinit var mockActivity: ComponentActivity
 
   @Before
   fun setUp() {
     MockitoAnnotations.openMocks(this)
-
-    // Mock the registration of activity result launcher in the activity
-    `when`(
-            mockActivity.registerForActivityResult(
-                any<ActivityResultContract<String, ActivityResult>>(),
-                any<ActivityResultCallback<ActivityResult>>()))
-        .thenReturn(mockActivityResultLauncher)
+    mockActivity = Robolectric.buildActivity(ComponentActivity::class.java).create().get()
+    try {
+      initialize(mockActivity)
+    } catch (e: Exception) {
+      // do nothing
+    }
 
     textExtractor = TextExtractor(mockActivity, mockTextRecognizer)
   }
 
-  @Test
-  fun initRegistersActivityResultLauncherTest() {
-    textExtractor.init()
+  //  @Test
+  //  fun processPdfFileCatchesExceptionTest() {
+  //    `when`(textExtractor.convertPdfToBitmap(mockPdfFile)).thenThrow(Exception("Test Exception"))
+  //    val onSuccess: (String) -> Unit = mock()
+  //
+  //    mockStatic(Toast::class.java).use { toastMock ->
+  //      val mockToast = mock(Toast::class.java)
+  //      toastMock.`when`<Toast> { Toast.makeText(any<Context>(), any<String>(), any()) }
+  //        .thenReturn(mockToast)
+  //
+  //      textExtractor.processPdfFile(mockPdfFile, onSuccess)
+  //
+  //      // log shows
+  //      val logs = ShadowLog.getLogs()
+  //      println(logs)
+  //      val errorLog =
+  //        logs.find {
+  //          it.type == Log.ERROR &&
+  //                  it.tag == TextExtractor.TAG &&
+  //                  it.msg == "Error while converting PDF to bitmap"
+  //        }
+  //      assert(errorLog != null) { "Expected error log was not found!" }
+  //
+  //      // toast shows
+  //      toastMock.verify {
+  //        Toast.makeText(
+  //          eq(mockActivity), eq("Error: text recognition failed"), eq(Toast.LENGTH_SHORT)
+  //        )
+  //      }
+  //      verify(mockToast).show()
+  //    }
+  //  }
+  //
+  //  @Test
+  //  fun processPdfFileCallsCorrectFunctionsTest() {
+  //    `when`(textExtractor.convertPdfToBitmap(mockPdfFile)).thenReturn(listOf(mockBitmap))
+  //    val onSuccess: (String) -> Unit = mock()
+  //
+  //    textExtractor.processPdfFile(mockPdfFile, onSuccess)
+  //
+  //    // Verify the methods were called
+  //    verify(textExtractor).convertPdfToBitmap(mockPdfFile)
+  //    verify(textExtractor).extractTextFromBitmaps(any(), any())
+  //  }
 
-    // Verify that the activity result launcher is registered
-    verify(mockActivity)
-        .registerForActivityResult(
-            any<ActivityResultContract<String, ActivityResult>>(),
-            any<ActivityResultCallback<ActivityResult>>())
+  @Test
+  fun convertPdfToBitmapThrowsException1Test() {
+    `when`(mockPdfFile.canRead()).thenReturn(false)
+
+    assertThrows(Exception::class.java) { textExtractor.convertPdfToBitmap(mockPdfFile) }
   }
 
   @Test
-  fun scanImageLogsErrorWhenNotInitializedTest() {
-    textExtractor.scanImage()
-
-    // Get all the logs
-    val logs = ShadowLog.getLogs()
-
-    // Check for the error log that should be generated
-    val errorLog =
-        logs.find {
-          it.type == Log.ERROR &&
-              it.tag == TextExtractor.TAG &&
-              it.msg == "Error: textRecognitionLauncher is not initialized"
-        }
-    assert(errorLog != null) { "Expected error log was not found!" }
-  }
-
-  @Test
-  fun scanImageLaunchesImagePickerIntentTest() {
-    textExtractor.init()
-    textExtractor.scanImage()
-
-    // Verify that the activity result launcher was launched with the correct MIME type
-    verify(mockActivityResultLauncher).launch("image/*")
-  }
-
-  @Test
-  fun scanImageHandlesActivityNotFoundExceptionTest() {
-    // Simulate ActivityNotFoundException when launching the image picker
-    `when`(mockActivityResultLauncher.launch("image/*"))
-        .thenThrow(ActivityNotFoundException::class.java)
-
-    mockStatic(Toast::class.java).use { toastMock ->
-      val mockToast = mock(Toast::class.java)
-      toastMock
-          .`when`<Toast> { Toast.makeText(any<Context>(), any<String>(), any()) }
-          .thenReturn(mockToast)
-
-      // Start the activity
-      textExtractor.init()
-      textExtractor.scanImage()
-
-      // Get all the logs
-      val logs = ShadowLog.getLogs()
-
-      // Check for the error log that should be generated
-      val errorLog =
-          logs.find {
-            it.type == Log.ERROR &&
-                it.tag == TextExtractor.TAG &&
-                it.msg == "Failed to launch gallery"
-          }
-      assert(errorLog != null) { "Expected error log was not found!" }
-
-      // Verify that Toast.makeText() was called with the appropriate arguments
-      toastMock.verify {
-        Toast.makeText(eq(mockActivity), eq("Failed to launch gallery"), eq(Toast.LENGTH_LONG))
-      }
-
-      // Verify that Toast.show() was called on the returned Toast object
-      verify(mockToast).show()
+  fun convertPdfToBitmapThrowsException2Test() {
+    mockStatic(Bitmap::class.java).use { mockedBitmap ->
+      mockedBitmap
+          .`when`<Bitmap> { Bitmap.createBitmap(anyInt(), anyInt(), any()) }
+          .thenThrow(RuntimeException("Test Exception"))
     }
+
+    assertThrows(RuntimeException::class.java) { textExtractor.convertPdfToBitmap(mockPdfFile) }
   }
 
-  @Test
-  fun extractTextFromImageSuccessTest() {
-    val mockUri = mock(Uri::class.java)
-    val mockInputImage = mock(InputImage::class.java)
-    val mockText = mock(Text::class.java)
-    `when`(mockText.text).thenReturn("Test recognized text")
+  //  @Test
+  //  fun convertPdfToBitmapSuccessTest() {
+  //    val mockPage = mock(PdfRenderer.Page::class.java)
+  //    val fakeBitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888)
+  //
+  //    `when`(mockPdfFile.canRead()).thenReturn(true)
+  //    mockStatic(ParcelFileDescriptor::class.java).use { pfdMock ->
+  //      pfdMock.`when`<ParcelFileDescriptor> {
+  //        ParcelFileDescriptor.open(mockPdfFile, ParcelFileDescriptor.MODE_READ_ONLY)
+  //      }.thenReturn(mockParcelFileDescriptor) }
+  //    `when`(PdfRenderer(mockParcelFileDescriptor)).thenReturn(mockPdfRenderer)
+  //    `when`(mockPdfRenderer.pageCount).thenReturn(1)
+  //    `when`(mockPdfRenderer.openPage(0)).thenReturn(mockPage)
+  //    `when`(mockPage.width).thenReturn(100)
+  //    `when`(mockPage.height).thenReturn(100)
+  //    `when`(Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888)).thenReturn(fakeBitmap)
+  //
+  //    val bitmaps = textExtractor.convertPdfToBitmap(mockPdfFile)
+  //
+  //    assert(bitmaps.size == 1) { "Expected one bitmap" }
+  //    assert(bitmaps[0] == fakeBitmap) { "Expected the bitmap to be the same" }
+  //  }
 
-    // Create a task that simulates a successful recognition
+  @Test
+  fun extractTextFromBitmapsSuccessTest() {
+    val onSuccess: (String) -> Unit = mock()
+    val text = mock(Text::class.java)
+    `when`(text.text).thenReturn("Hello world")
+
     val successfulTask = mock(Task::class.java) as Task<Text>
     `when`(successfulTask.addOnSuccessListener(any())).thenAnswer {
       val listener = it.arguments[0] as OnSuccessListener<Text>
-      listener.onSuccess(mockText)
+      listener.onSuccess(text)
       successfulTask
     }
+    `when`(mockTextRecognizer.process(any(InputImage::class.java))).thenReturn(successfulTask)
 
-    // Mock the text recognizer's processing result
-    `when`(mockTextRecognizer.process(mockInputImage)).thenReturn(successfulTask)
+    textExtractor.extractTextFromBitmaps(listOf(mockBitmap), onSuccess)
 
-    // Mock the InputImage creation
-    mockStatic(InputImage::class.java).use { inputImageMock ->
-      inputImageMock
-          .`when`<InputImage> { InputImage.fromFilePath(any(), eq(mockUri)) }
-          .thenReturn(mockInputImage)
-
-      // Trigger the text extraction process
-      textExtractor.init()
-      textExtractor.scanImage()
-
-      // Simulate the image selection callback
-      val captor =
-          ArgumentCaptor.forClass(ActivityResultCallback::class.java)
-              as ArgumentCaptor<ActivityResultCallback<Uri?>>
-      verify(mockActivity)
-          .registerForActivityResult(any<ActivityResultContracts.GetContent>(), capture(captor))
-      captor.value.onActivityResult(mockUri)
-
-      // Verify that the text processing was triggered
-      verify(mockTextRecognizer).process(mockInputImage)
-    }
+    verify(onSuccess).invoke("Hello world\n")
   }
 
   @Test
-  fun extractTextFromImageIOExceptionTest() {
-    val mockUri = mock(Uri::class.java)
+  fun extractTextFromBitmapsSuccessNoTextTest() {
+    val onSuccess: (String) -> Unit = mock()
+    val text = mock(Text::class.java)
+    `when`(text.text).thenReturn("")
 
-    // Mock the InputImage creation to throw an IOException
-    mockStatic(InputImage::class.java).use { inputImageMock ->
-      inputImageMock
-          .`when`<InputImage> { InputImage.fromFilePath(any(), eq(mockUri)) }
-          .thenThrow(IOException("Test IO Exception"))
-
-      mockStatic(Toast::class.java).use { toastMock ->
-        val mockToast = mock(Toast::class.java)
-        toastMock
-            .`when`<Toast> { Toast.makeText(any<Context>(), any<String>(), any()) }
-            .thenReturn(mockToast)
-
-        // Trigger the text extraction process
-        textExtractor.init()
-        textExtractor.scanImage()
-
-        // Simulate the image selection callback
-        val captor =
-            ArgumentCaptor.forClass(ActivityResultCallback::class.java)
-                as ArgumentCaptor<ActivityResultCallback<Uri?>>
-        verify(mockActivity)
-            .registerForActivityResult(any<ActivityResultContracts.GetContent>(), capture(captor))
-        captor.value.onActivityResult(mockUri)
-
-        // Get all the logs
-        val logs = ShadowLog.getLogs()
-
-        // Check for the error log that should be generated
-        val errorLog =
-            logs.find {
-              it.type == Log.ERROR && it.tag == TextExtractor.TAG && it.msg == "Error reading image"
-            }
-        assert(errorLog != null) { "Expected error log was not found!" }
-
-        // Verify that Toast.makeText() was called with the appropriate arguments
-        toastMock.verify {
-          Toast.makeText(
-              eq(mockActivity), eq("Error reading image: Test IO Exception"), eq(Toast.LENGTH_LONG))
-        }
-
-        // Verify that Toast.show() was called on the returned Toast object
-        verify(mockToast).show()
-      }
-    }
-  }
-
-  @Test
-  fun extractTextFromImageNoTextFoundTest() {
-    val mockUri = mock(Uri::class.java)
-    val mockInputImage = mock(InputImage::class.java)
-    val mockText = mock(Text::class.java)
-    `when`(mockText.text).thenReturn("")
-
-    // Create a task that simulates a successful recognition
     val successfulTask = mock(Task::class.java) as Task<Text>
     `when`(successfulTask.addOnSuccessListener(any())).thenAnswer {
       val listener = it.arguments[0] as OnSuccessListener<Text>
-      listener.onSuccess(mockText)
+      listener.onSuccess(text)
       successfulTask
     }
+    `when`(mockTextRecognizer.process(any(InputImage::class.java))).thenReturn(successfulTask)
 
-    // Mock the text recognizer's processing result
-    `when`(mockTextRecognizer.process(mockInputImage)).thenReturn(successfulTask)
+    textExtractor.extractTextFromBitmaps(listOf(mockBitmap), onSuccess)
 
-    // Mock the InputImage creation
-    mockStatic(InputImage::class.java).use { inputImageMock ->
-      inputImageMock
-          .`when`<InputImage> { InputImage.fromFilePath(any(), eq(mockUri)) }
-          .thenReturn(mockInputImage)
-
-      mockStatic(Toast::class.java).use { toastMock ->
-        val mockToast = mock(Toast::class.java)
-        toastMock
-            .`when`<Toast> { Toast.makeText(any<Context>(), any<String>(), any()) }
-            .thenReturn(mockToast)
-
-        // Trigger the text extraction process
-        textExtractor.init()
-        textExtractor.scanImage()
-
-        // Simulate the image selection callback
-        val captor =
-            ArgumentCaptor.forClass(ActivityResultCallback::class.java)
-                as ArgumentCaptor<ActivityResultCallback<Uri?>>
-        verify(mockActivity)
-            .registerForActivityResult(any<ActivityResultContracts.GetContent>(), capture(captor))
-        captor.value.onActivityResult(mockUri)
-
-        // Get all the logs
-        val logs = ShadowLog.getLogs()
-
-        // Check for the debug log that should be generated
-        val debugLog =
-            logs.find {
-              it.type == Log.DEBUG &&
-                  it.tag == TextExtractor.TAG &&
-                  it.msg == "No text found in the image"
-            }
-        assert(debugLog != null) { "Expected warning log was not found!" }
-
-        // Verify that Toast.makeText() was called with the appropriate arguments
-        toastMock.verify {
-          Toast.makeText(eq(mockActivity), eq("No text found in the image"), eq(Toast.LENGTH_LONG))
-        }
-
-        // Verify that Toast.show() was called on the returned Toast object
-        verify(mockToast).show()
-      }
-    }
+    verify(onSuccess).invoke("")
   }
 
   @Test
-  fun extractTextFromImageFailureRecognitionTest() {
-    val mockUri = mock(Uri::class.java)
-    val mockInputImage = mock(InputImage::class.java)
+  fun extractTextFromBitmapsFails() {
+    val onSuccess: (String) -> Unit = mock()
 
-    // Create a task that simulates a failed recognition
     val failedTask = mock(Task::class.java) as Task<Text>
     `when`(failedTask.addOnSuccessListener(any())).thenReturn(failedTask) // No success listener
     `when`(failedTask.addOnFailureListener(any())).thenAnswer {
@@ -300,58 +187,33 @@ class TextExtractorTest {
       listener.onFailure(Exception("Recognition failed"))
       failedTask
     }
+    `when`(mockTextRecognizer.process(any(InputImage::class.java))).thenReturn(failedTask)
 
-    // Mock the text recognizer's processing result
-    `when`(mockTextRecognizer.process(mockInputImage)).thenReturn(failedTask)
+    mockStatic(Toast::class.java).use { toastMock ->
+      val mockToast = mock(Toast::class.java)
+      toastMock
+          .`when`<Toast> { Toast.makeText(any<Context>(), any<String>(), any()) }
+          .thenReturn(mockToast)
 
-    // Mock the InputImage creation
-    mockStatic(InputImage::class.java).use { inputImageMock ->
-      inputImageMock
-          .`when`<InputImage> { InputImage.fromFilePath(any(), eq(mockUri)) }
-          .thenReturn(mockInputImage)
+      textExtractor.extractTextFromBitmaps(listOf(mockBitmap), onSuccess)
 
-      mockStatic(Toast::class.java).use { toastMock ->
-        val mockToast = mock(Toast::class.java)
+      // log shows
+      val logs = ShadowLog.getLogs()
+      val errorLog =
+          logs.find {
+            it.type == Log.ERROR &&
+                it.tag == TextExtractor.TAG &&
+                it.msg == "Text recognition failed" &&
+                it.throwable.message == "Recognition failed"
+          }
+      assert(errorLog != null) { "Expected error log was not found!" }
 
-        toastMock
-            .`when`<Toast> { Toast.makeText(any<Context>(), any<String>(), any()) }
-            .thenReturn(mockToast)
-
-        // Trigger the text extraction process
-        textExtractor.init()
-        textExtractor.scanImage()
-
-        // Simulate the image selection callback
-        val captor =
-            ArgumentCaptor.forClass(ActivityResultCallback::class.java)
-                as ArgumentCaptor<ActivityResultCallback<Uri?>>
-        verify(mockActivity)
-            .registerForActivityResult(any<ActivityResultContracts.GetContent>(), capture(captor))
-        captor.value.onActivityResult(mockUri)
-
-        // Get all the logs
-        val logs = ShadowLog.getLogs()
-
-        // Check for the error log that should be generated
-        val errorLog =
-            logs.find {
-              it.type == Log.ERROR &&
-                  it.tag == TextExtractor.TAG &&
-                  it.msg == "Text recognition failed"
-            }
-        assert(errorLog != null) { "Expected error log was not found!" }
-
-        // Verify that Toast.makeText() was called with the appropriate arguments
-        toastMock.verify {
-          Toast.makeText(
-              eq(mockActivity),
-              eq("Text recognition failed: Recognition failed"),
-              eq(Toast.LENGTH_LONG))
-        }
-
-        // Verify that Toast.show() was called on the returned Toast object
-        verify(mockToast).show()
+      // toast shows
+      toastMock.verify {
+        Toast.makeText(
+            eq(mockActivity), eq("Error: text recognition failed"), eq(Toast.LENGTH_SHORT))
       }
+      verify(mockToast).show()
     }
   }
 }
