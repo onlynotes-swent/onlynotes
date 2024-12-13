@@ -426,7 +426,8 @@ fun FolderContentTopBar(
               onMoveHere = { selectedFolder ->
                 if (selectedFolder != folder) {
                   if (selectedFolder != null) {
-                    folderViewModel.updateFolderNoStateUpdate(folder.copy(parentFolderId = selectedFolder.id))
+                    folderViewModel.updateFolderNoStateUpdate(
+                        folder.copy(parentFolderId = selectedFolder.id))
                     // prevents a cycle to be formed
                     if (selectedFolder.parentFolderId == folder.id) {
                       folderViewModel.updateFolderNoStateUpdate(
