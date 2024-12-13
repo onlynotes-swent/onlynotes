@@ -165,15 +165,14 @@ fun NoteItem(
 }
 
 /**
- * Displays a bottom sheet with options to move or delete a note.
- * The bottom sheet is displayed when the user clicks on the more options icon in the note card.
+ * Displays a bottom sheet with options to move or delete a note. The bottom sheet is displayed when
+ * the user clicks on the more options icon in the note card.
  *
  * @param note The note data that will be displayed in this card.
  * @param noteViewModel The ViewModel that provides the list of notes to display.
  * @param folderViewModel the folderViewModel used here to move the note.
  * @param navigationActions The navigation instance used to transition between different screens.
  * @param onDismiss The callback to be invoked when the bottom sheet is dismissed.
- *
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -186,7 +185,6 @@ fun NoteOptionsBottomSheet(
 ) {
   var showFileSystemPopup by remember { mutableStateOf(false) } // State to show FileSystemPopup
   var showDeletePopup by remember { mutableStateOf(false) }
-
 
   if (showFileSystemPopup) {
     FileSystemPopup(
@@ -215,7 +213,6 @@ fun NoteOptionsBottomSheet(
         })
   }
 
-
   ModalBottomSheet(
       modifier = Modifier.testTag("noteModalBottomSheet"),
       onDismissRequest = onDismiss,
@@ -225,7 +222,8 @@ fun NoteOptionsBottomSheet(
               modifier =
                   Modifier.fillMaxWidth()
                       .clickable { showFileSystemPopup = true }
-                      .padding(vertical = 8.dp).testTag("moveNoteBottomSheet"),
+                      .padding(vertical = 8.dp)
+                      .testTag("moveNoteBottomSheet"),
               verticalAlignment = Alignment.CenterVertically) {
                 Icon(
                     imageVector = Icons.Default.FolderOpen,
@@ -238,12 +236,12 @@ fun NoteOptionsBottomSheet(
 
           HorizontalDivider(Modifier.padding(vertical = 10.dp), 1.dp)
 
-
           Row(
               modifier =
                   Modifier.fillMaxWidth()
                       .clickable { showDeletePopup = true }
-                      .padding(vertical = 8.dp).testTag("deleteNoteBottomSheet"),
+                      .padding(vertical = 8.dp)
+                      .testTag("deleteNoteBottomSheet"),
               verticalAlignment = Alignment.CenterVertically) {
                 Icon(
                     imageVector = Icons.Default.Delete, // Replace with the appropriate icon
