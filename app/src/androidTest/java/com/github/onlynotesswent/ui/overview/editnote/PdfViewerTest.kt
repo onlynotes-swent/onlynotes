@@ -175,7 +175,8 @@ class PdfViewerTest {
     `when`(fileRepository.deleteFile(any(), any(), any(), any(), any())).thenAnswer {}
 
     // Delete PDF
-    composeTestRule.onNodeWithTag("deletePdfButton").performClick()
+    composeTestRule.onNodeWithTag("moreOptionsPdfButton").performClick()
+    composeTestRule.onNodeWithTag("deletePdfMenuItem").performClick()
     composeTestRule.onNodeWithTag("popup").assertIsDisplayed()
     composeTestRule.onNodeWithTag("confirmButton").performClick()
     verify(fileRepository).deleteFile(any(), any(), any(), any(), any())
