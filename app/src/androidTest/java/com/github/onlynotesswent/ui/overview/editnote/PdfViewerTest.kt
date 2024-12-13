@@ -101,7 +101,13 @@ class PdfViewerTest {
     }
 
     composeTestRule.setContent {
-      PdfViewerScreen(navigationActions, noteViewModel, fileViewModel, userViewModel, mockScanner, mockTextExtractor)
+      PdfViewerScreen(
+          navigationActions,
+          noteViewModel,
+          fileViewModel,
+          userViewModel,
+          mockScanner,
+          mockTextExtractor)
     }
   }
 
