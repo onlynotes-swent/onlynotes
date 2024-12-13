@@ -126,4 +126,7 @@
     <string name="edit_maj">Edit\n</string>
     <string name="delete">Delete</string>
     <string name="mcq">MCQ</string>
+    <string name="delete_pdf_no_question">Delete PDF</string>
+    <string name="convert_to_text">Convert to text</string>
+    <string name="re_scan_pdf">Re-scan PDF</string>
 </resources>

@@ -154,7 +154,7 @@ fun PdfViewerScreen(
   @Composable
   fun rowItemConvertToText() {
     RowItemPdfViewer(
-        buttonText = "Convert to text",
+        buttonText = stringResource(R.string.convert_to_text),
         testTag = "convertPdfToTextMenuItem",
         onClick = {
           textExtractor.processPdfFile(
@@ -180,7 +180,7 @@ fun PdfViewerScreen(
   @Composable
   fun rowItemRescanPdf() {
     RowItemPdfViewer(
-        buttonText = "Re-scan PDF",
+        buttonText = stringResource(R.string.re_scan_pdf),
         testTag = "rescanPdfMenuItem",
         onClick = {
           scanner.scan {
@@ -205,7 +205,7 @@ fun PdfViewerScreen(
   @Composable
   fun rowItemDeletePdf() {
     RowItemPdfViewer(
-        buttonText = "Delete PDF",
+        buttonText = stringResource(R.string.delete_pdf_no_question),
         textColor = MaterialTheme.colorScheme.error,
         testTag = "deletePdfMenuItem",
         onClick = {
