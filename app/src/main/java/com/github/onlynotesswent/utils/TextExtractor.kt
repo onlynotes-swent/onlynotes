@@ -19,7 +19,7 @@ import java.io.File
  * @param activity the ComponentActivity that will use the TextExtractor
  * @param textRecognizer the text recognizer object, initialized by default with the default options
  */
-class TextExtractor(
+open class TextExtractor(
     private val activity: ComponentActivity,
     private val textRecognizer: TextRecognizer =
         TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
