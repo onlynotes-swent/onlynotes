@@ -361,6 +361,7 @@ class OverviewTest {
       val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(1)
       onSuccess(userRootFoldersFlow)
     }
+    noteViewModel.getRootNotesFromUid("1")
     folderViewModel.getRootNoteFoldersFromUserId("1")
 
     val subFolderList =
