@@ -1,6 +1,7 @@
 package com.github.onlynotesswent.model.note
 
 import android.content.Context
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -17,8 +18,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
-
-    class NoteNotFoundException : Exception()
 
   private val _publicNotes = MutableStateFlow<List<Note>>(emptyList())
   val publicNotes: StateFlow<List<Note>> = _publicNotes.asStateFlow()
@@ -372,7 +371,7 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
         userViewModel: UserViewModel,
         onSuccess: (List<Note>) -> Unit = {},
         onFailure: (Exception) -> Unit = {},
-        useCache: Boolean
+        useCache: Boolean = true
     ) {
         // Get the list of saved document IDs of type NOTE for the current user from the userViewModel, and retrieve them
         userViewModel.getSavedDocumentIdsOfType(
@@ -383,6 +382,7 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
                         savedNotesIds = documentIds,
                         friends = userViewModel.currentUser.value!!.friends,
                         onSuccess = { savedNotes, nonSaveableNotesIds ->
+                            Log.d("NoteViewModel", "Saved notes: $savedNotes, non-saveable notes: $nonSaveableNotesIds")
                             _userSavedNotes.value = savedNotes
 
                                 // Delete the no longer saveable (deleted or privated) notes from

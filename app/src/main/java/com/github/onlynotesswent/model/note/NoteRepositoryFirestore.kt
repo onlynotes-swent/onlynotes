@@ -399,8 +399,10 @@ class NoteRepositoryFirestore(
             if(useCache) {
                 // Update cache with newest saved data, to ensure that the cache is up to date and
                 // that non available saved notes are deleted
-                cache.noteDao().addNotes(firestoreNotes)
-                cache.noteDao().deleteNotesByIds(missingNotes)
+                withContext(Dispatchers.IO) {
+                    cache.noteDao().addNotes(firestoreNotes)
+                    cache.noteDao().deleteNotesByIds(missingNotes)
+                }
             }
 
             // Return the list of notes and the list of missing notes. Cached notes will be at this

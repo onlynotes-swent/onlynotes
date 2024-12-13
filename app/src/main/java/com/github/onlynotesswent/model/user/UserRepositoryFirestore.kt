@@ -416,14 +416,14 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore) : UserRepositor
     db.collection(collectionPath)
         .document(currentUserID)
         .collection(savedDocumentLevelSubcollection)
-        .document(documentType.name)
+        .document(documentType.firebaseDocumentName)
         .get()
         .addOnSuccessListener { document ->
           if (document.exists()) {
             onSuccess(documentSnapshotToSavedDocumentsId(document))
           } else {
             onFailure(Exception("Document does not exist"))
-            Log.e(TAG, "The firebase document ${documentType.firebaseDocumentName} doesn't exist")
+            Log.e(TAG, "The firebase document ${document.id} doesn't exist")
           }
         }
         .addOnFailureListener { exception ->

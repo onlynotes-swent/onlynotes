@@ -644,8 +644,8 @@ class UserViewModel(
      */
     fun getSavedDocumentIdsOfType(
         documentType: SavedDocumentType,
-        onSuccess: (List<String>) -> Unit,
-        onFailure: (Exception) -> Unit) {
+        onSuccess: (List<String>) -> Unit = {},
+        onFailure: (Exception) -> Unit = {}) {
         _currentUser.value?.let {
             repository.getSavedDocumentsIdOfType(
                 it.uid,
