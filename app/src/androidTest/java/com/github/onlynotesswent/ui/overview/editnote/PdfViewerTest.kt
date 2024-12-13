@@ -17,6 +17,7 @@ import com.github.onlynotesswent.model.user.UserViewModel
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
 import com.github.onlynotesswent.utils.Scanner
+import com.github.onlynotesswent.utils.TextExtractor
 import com.google.firebase.Timestamp
 import java.io.File
 import java.io.IOException
@@ -39,6 +40,7 @@ class PdfViewerTest {
   @Mock private lateinit var userRepository: UserRepository
   @Mock private lateinit var navigationActions: NavigationActions
   @Mock private lateinit var mockScanner: Scanner
+  @Mock private lateinit var mockTextExtractor: TextExtractor
   private lateinit var noteViewModel: NoteViewModel
   private lateinit var fileViewModel: FileViewModel
   private lateinit var userViewModel: UserViewModel
@@ -99,7 +101,7 @@ class PdfViewerTest {
     }
 
     composeTestRule.setContent {
-      PdfViewerScreen(noteViewModel, fileViewModel, userViewModel, mockScanner, navigationActions)
+      PdfViewerScreen(navigationActions, noteViewModel, fileViewModel, userViewModel, mockScanner, mockTextExtractor)
     }
   }
 
@@ -133,16 +135,25 @@ class PdfViewerTest {
   fun displayBaseComponents() {
     // Top bar buttons
     composeTestRule.onNodeWithTag("closeButton").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("moreOptionsPdfButton").assertIsDisplayed()
 
     // PDF viewer components
     composeTestRule.onNodeWithTag("PDFViewer").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("deletePdfButton").assertIsDisplayed()
 
     // Navigation bar
     composeTestRule.onNodeWithTag("Detail").assertIsDisplayed()
     composeTestRule.onNodeWithTag("Comments").assertIsDisplayed()
     composeTestRule.onNodeWithTag("PDF").assertIsDisplayed()
     composeTestRule.onNodeWithTag("Content").assertIsDisplayed()
+  }
+
+  @Test
+  fun clickMoreOptionsButton() {
+    composeTestRule.onNodeWithTag("moreOptionsPdfButton").performClick()
+    composeTestRule.onNodeWithTag("pdfOptionsMenu").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("convertPdfToTextMenuItem").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("rescanPdfMenuItem").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("deletePdfMenuItem").assertIsDisplayed()
   }
 
   @Test
