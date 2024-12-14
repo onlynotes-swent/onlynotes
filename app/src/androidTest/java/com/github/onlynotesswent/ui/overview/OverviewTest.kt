@@ -384,6 +384,11 @@ class OverviewTest {
           val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(1)
           onSuccess(subFolderList)
         }
+    `when`(noteRepository.deleteNoteById(eq("noteId"), any(), any(), eq(true))).thenAnswer {
+        invocation ->
+      val onSuccess = invocation.getArgument<() -> Unit>(1)
+      onSuccess()
+    }
     composeTestRule.onNodeWithTag("noteModalBottomSheet").assertIsNotDisplayed()
     composeTestRule.onNodeWithTag("showBottomSheetButton").assertIsDisplayed()
     composeTestRule.onNodeWithTag("showBottomSheetButton").performClick()
@@ -391,6 +396,10 @@ class OverviewTest {
     composeTestRule.onNodeWithTag("deleteNoteBottomSheet").assertIsDisplayed()
     composeTestRule.onNodeWithTag("deleteNoteBottomSheet").performClick()
     composeTestRule.onNodeWithTag("popup").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("popup").performClick()
+    composeTestRule.onNodeWithTag("confirmButton").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("confirmButton").performClick()
+    verify(noteRepository).deleteNoteById(any(), any(), any(), any())
   }
 
   @Test
