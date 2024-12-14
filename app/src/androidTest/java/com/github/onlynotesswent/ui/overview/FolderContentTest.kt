@@ -294,8 +294,6 @@ class FolderContentTest {
     composeTestRule.onNodeWithTag("moveFolderButton").assertIsDisplayed()
     composeTestRule.onNodeWithTag("moveFolderButton").performClick()
     composeTestRule.onNodeWithTag("FileSystemPopup").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("MoveHereButton").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("MoveHereButton").performClick()
     composeTestRule.onNodeWithTag("goBackFileSystemPopup").assertIsDisplayed()
     composeTestRule.onNodeWithTag("goBackFileSystemPopup").performClick()
     composeTestRule.onNodeWithTag("MoveHereButton").assertIsDisplayed()
