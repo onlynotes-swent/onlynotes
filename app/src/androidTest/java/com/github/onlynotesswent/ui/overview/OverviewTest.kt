@@ -336,6 +336,64 @@ class OverviewTest {
   }
 
   @Test
+  fun deleteNote() = runTest {
+    `when`(noteRepository.getRootNotesFromUid(eq("1"), any(), any(), any())).then { invocation ->
+      val onSuccess = invocation.getArgument<(List<Note>) -> Unit>(1)
+      onSuccess(noteList)
+    }
+    val userRootFoldersFlow =
+        listOf(
+            Folder(
+                id = "8",
+                name = "Root Folder 1",
+                userId = "1",
+                parentFolderId = "1",
+                lastModified = Timestamp.now()),
+            Folder(
+                id = "9",
+                name = "Root Folder 2",
+                userId = "1",
+                parentFolderId = "1",
+                lastModified = Timestamp.now()))
+
+    `when`(folderRepository.getRootNoteFoldersFromUserId(eq("1"), any(), any(), any())).then {
+        invocation ->
+      val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(1)
+      onSuccess(userRootFoldersFlow)
+    }
+    noteViewModel.getRootNotesFromUid("1")
+    folderViewModel.getRootNoteFoldersFromUserId("1")
+
+    val subFolderList =
+        listOf(
+            Folder(
+                id = "10",
+                name = "SubFolder1",
+                userId = "1",
+                parentFolderId = "8",
+                lastModified = Timestamp.now()),
+            Folder(
+                id = "11",
+                name = "SubFolder2",
+                userId = "1",
+                parentFolderId = "8",
+                lastModified = Timestamp.now()))
+
+    `when`(folderRepository.getSubFoldersOf(eq("8"), any<(List<Folder>) -> Unit>(), any(), any()))
+        .thenAnswer { invocation ->
+          val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(1)
+          onSuccess(subFolderList)
+        }
+    composeTestRule.onNodeWithTag("noteModalBottomSheet").assertIsNotDisplayed()
+    composeTestRule.onNodeWithTag("showBottomSheetButton").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("showBottomSheetButton").performClick()
+    composeTestRule.onNodeWithTag("noteModalBottomSheet").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("deleteNoteBottomSheet").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("deleteNoteBottomSheet").performClick()
+    composeTestRule.onNodeWithTag("popup").assertIsDisplayed()
+  }
+
+  @Test
   fun navigateFileSystem() = runTest {
     `when`(noteRepository.getRootNotesFromUid(eq("1"), any(), any(), any())).then { invocation ->
       val onSuccess = invocation.getArgument<(List<Note>) -> Unit>(1)
