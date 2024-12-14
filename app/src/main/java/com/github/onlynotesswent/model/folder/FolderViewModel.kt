@@ -332,15 +332,7 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
           useCache = useCache)
     }
   }
-  /**
-   * Retrieves a folder by its ID, do not update the state of the viewModel.
-   *
-   * @param folderId The ID of the folder to retrieve.
-   * @param onSuccess The function to call when the folder is retrieved successfully.
-   * @param onFailure The function to call when the folder fails to be retrieved.
-   * @param useCache Whether to update data from cache. Should be true only if userId of the folder
-   *   is the current user.
-   */
+
   fun getFolderByIdNoStateUpdate(
       folderId: String,
       onSuccess: (Folder) -> Unit = {},
@@ -401,7 +393,8 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
       folder: Folder,
       onSuccess: () -> Unit = {},
       onFailure: (Exception) -> Unit = {},
-      useCache: Boolean = false
+      useCache: Boolean = false,
+      isDeckView: Boolean = false
   ) {
     viewModelScope.launch {
       repository.updateFolder(
@@ -444,7 +437,7 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
    * @param onFailure A callback that receives an `Exception` in case of a failure. Defaults to an
    *   empty lambda if not provided.
    */
-  fun getSubFoldersOfFolderIdNoStateUpdate(
+  fun getSubFoldersOfNoStateUpdate(
       parentFolderId: String,
       onSuccess: (List<Folder>) -> Unit,
       onFailure: (Exception) -> Unit = {},

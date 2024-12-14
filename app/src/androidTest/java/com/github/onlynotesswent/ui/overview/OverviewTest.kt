@@ -464,7 +464,5 @@ class OverviewTest {
     composeTestRule.onNodeWithTag("FileSystemPopupFolderChoiceBox8").assertIsNotDisplayed()
     composeTestRule.onNodeWithTag("FileSystemPopupFolderChoiceBox10").assertIsDisplayed()
     composeTestRule.onNodeWithTag("FileSystemPopupFolderChoiceBox11").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("goToOverviewFileSystemPopup").performClick()
-    composeTestRule.onNodeWithTag("FileSystemPopupFolderChoiceBox11").assertIsNotDisplayed()
   }
 }

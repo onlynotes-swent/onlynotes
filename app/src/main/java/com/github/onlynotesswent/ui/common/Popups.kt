@@ -186,7 +186,7 @@ fun FileSystemPopup(
   // on the internet speed of the user.
   LaunchedEffect(selectedFolder) {
     if (selectedFolder != null) {
-      folderViewModel.getSubFoldersOfFolderIdNoStateUpdate(
+      folderViewModel.getSubFoldersOfNoStateUpdate(
           selectedFolder!!.id, onSuccess = { subFolders -> folderSubFolders = subFolders })
     }
   }
@@ -262,7 +262,7 @@ fun FileSystemPopup(
                                       color = MaterialTheme.colorScheme.surface,
                                       shape = RoundedCornerShape(8.dp))
                                   .clickable {
-                                    folderViewModel.getSubFoldersOfFolderIdNoStateUpdate(
+                                    folderViewModel.getSubFoldersOfNoStateUpdate(
                                         folder.id,
                                         onSuccess = { subFolders -> folderSubFolders = subFolders })
                                     selectedFolder = folder
@@ -285,7 +285,7 @@ fun FileSystemPopup(
                                       color = MaterialTheme.colorScheme.surface,
                                       shape = RoundedCornerShape(8.dp))
                                   .clickable {
-                                    folderViewModel.getSubFoldersOfFolderIdNoStateUpdate(
+                                    folderViewModel.getSubFoldersOfNoStateUpdate(
                                         subFolder.id,
                                         onSuccess = { subFolders -> folderSubFolders = subFolders })
                                     selectedFolder = subFolder
