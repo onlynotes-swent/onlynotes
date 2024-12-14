@@ -50,7 +50,6 @@ import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.model.user.User
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
-import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -86,8 +85,8 @@ fun NoteItem(
     NoteOptionsBottomSheet(
         note = note,
         noteViewModel = noteViewModel,
-        folderViewModel,
-        navigationActions,
+        folderViewModel = folderViewModel,
+        navigationActions = navigationActions,
         onDismiss = { showBottomSheet = false })
   }
 
@@ -183,7 +182,7 @@ fun NoteOptionsBottomSheet(
     navigationActions: NavigationActions,
     onDismiss: () -> Unit
 ) {
-  var showFileSystemPopup by remember { mutableStateOf(false) } // State to show FileSystemPopup
+  var showFileSystemPopup by remember { mutableStateOf(false) }
   var showDeletePopup by remember { mutableStateOf(false) }
 
   if (showFileSystemPopup) {
@@ -193,7 +192,7 @@ fun NoteOptionsBottomSheet(
         onMoveHere = { selectedFolder ->
           noteViewModel.updateNote(note.copy(folderId = selectedFolder?.id))
           showFileSystemPopup = false
-          // this is needed to recompose the screen
+          // this is needed to update the displayed notes
           noteViewModel.getNotesFromFolder(folderViewModel.selectedFolder.value?.id ?: "")
           folderViewModel.selectedFolder.value?.let { folderViewModel.getFolderById(it.id) }
           onDismiss() // Dismiss the bottom sheet after moving the note
@@ -204,10 +203,7 @@ fun NoteOptionsBottomSheet(
     ConfirmationPopup(
         title = stringResource(R.string.delete_note),
         text = stringResource(R.string.delete_note_text),
-        onConfirm = {
-          noteViewModel.deleteNoteById(note.id, note.userId)
-          navigationActions.navigateTo(TopLevelDestinations.OVERVIEW) // Navigate to overview
-        },
+        onConfirm = { noteViewModel.deleteNoteById(note.id, note.userId) },
         onDismiss = {
           showDeletePopup = false // Close the dialog without deleting
         })
@@ -244,7 +240,7 @@ fun NoteOptionsBottomSheet(
                       .testTag("deleteNoteBottomSheet"),
               verticalAlignment = Alignment.CenterVertically) {
                 Icon(
-                    imageVector = Icons.Default.Delete, // Replace with the appropriate icon
+                    imageVector = Icons.Default.Delete,
                     contentDescription = stringResource(R.string.delete_note),
                     tint = MaterialTheme.colorScheme.error)
                 Spacer(modifier = Modifier.width(16.dp))

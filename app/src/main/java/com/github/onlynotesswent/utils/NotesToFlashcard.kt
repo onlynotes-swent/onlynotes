@@ -282,7 +282,7 @@ class NotesToFlashcard(
         }
 
     val subfolders = suspendCoroutine { continuation ->
-      folderViewModel.getSubFoldersOfNoStateUpdate(
+      folderViewModel.getSubFoldersOfFolderIdNoStateUpdate(
           parentFolderId = folder.id,
           onSuccess = { continuation.resume(it) },
           onFailure = { continuation.resumeWithException(it) })
