@@ -1,5 +1,6 @@
 package com.github.onlynotesswent.ui.common
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
@@ -29,11 +30,15 @@ import androidx.compose.material.icons.filled.ImageSearch
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardElevation
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -62,6 +67,7 @@ import com.github.onlynotesswent.model.flashcard.Flashcard
 import com.github.onlynotesswent.model.flashcard.FlashcardViewModel
 import com.github.onlynotesswent.model.flashcard.deck.Deck
 import com.github.onlynotesswent.model.flashcard.deck.DeckViewModel
+import com.github.onlynotesswent.model.user.UserViewModel
 import com.github.onlynotesswent.ui.theme.Typography
 import com.github.onlynotesswent.utils.PictureTaker
 
@@ -529,4 +535,146 @@ fun FlashcardItemDropdownMenu(
               dropdownMenuExpanded.value = false
             })
       }
+}
+
+
+@Composable
+fun FlashcardPlayItem(
+    flashcard: Flashcard,
+    userViewModel: UserViewModel,
+    deckViewModel: DeckViewModel,
+    flashcardViewModel: FlashcardViewModel,
+    fileViewModel: FileViewModel,
+    onCorrect: () -> Unit = {},
+    onIncorrect: () -> Unit = {},
+){
+    when {
+        flashcard.isMCQ() -> {
+            McqPlayItem(flashcard, userViewModel, deckViewModel, flashcardViewModel, fileViewModel, onCorrect, onIncorrect)
+        }
+        else -> {
+            NormalFlashcardPlayItem(flashcard,userViewModel, deckViewModel, flashcardViewModel, fileViewModel)
+        }
+    }
+
+}
+
+@Composable
+fun NormalFlashcardPlayItem(
+    flashcard: Flashcard,
+    userViewModel: UserViewModel,
+    deckViewModel: DeckViewModel,
+    flashcardViewModel: FlashcardViewModel,
+    fileViewModel: FileViewModel,
+){
+    val frontShown = remember { mutableStateOf(true) }
+    val front = flashcard.front
+    val back = flashcard.back
+    val imageUri: MutableState<String?> = remember { mutableStateOf(null) }
+    if (imageUri.value == null) {
+        fileViewModel.downloadFile(
+            flashcard.id,
+            FileType.FLASHCARD_IMAGE,
+            context = LocalContext.current,
+            onSuccess = { file -> imageUri.value = file.absolutePath })
+    }
+    AnimatedContent(targetState = frontShown.value, label = "") {
+        ElevatedCard(modifier = Modifier.fillMaxWidth().padding(5.dp))
+        {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+                modifier = Modifier.fillMaxWidth()
+                    .padding(vertical=30.dp)
+                    .heightIn(min = 200.dp, max = 400.dp)
+                    .clickable(onClick = { frontShown.value = !frontShown.value })
+            ) {
+                Text(
+                    if (it) front else back,
+                    style = Typography.bodyMedium,
+                    modifier = Modifier.testTag("flashcardFront--${flashcard.id}")
+                )
+                if (it) {
+                    if (imageUri.value != null) {
+                        Image(
+                            painter = rememberAsyncImagePainter(imageUri.value!!),
+                            contentDescription = "Flashcard image",
+                            modifier = Modifier.height(100.dp)
+                                .testTag("flashcardImage--${flashcard.id}")
+                        )
+                    }
+                    else {
+                        LoadingIndicator(
+                            stringResource(R.string.image_is_being_downloaded),
+                            modifier =
+                            Modifier.fillMaxWidth().testTag("flashcardImageLoading--${flashcard.id}"),
+                            loadingIndicatorSize = 24.dp,
+                            spacerHeight = 5.dp,
+                            style = MaterialTheme.typography.bodySmall)
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+@Composable
+fun McqPlayItem(
+    flashcard: Flashcard,
+    userViewModel: UserViewModel,
+    deckViewModel: DeckViewModel,
+    flashcardViewModel: FlashcardViewModel,
+    fileViewModel: FileViewModel,
+    onCorrect: () -> Unit,
+    onIncorrect: () -> Unit,
+){
+    var choice: MutableState<Int?> = remember { mutableStateOf(null) }
+    val backs = listOf(flashcard.back) + flashcard.fakeBacks.filter { it != flashcard.back && it.isNotBlank() }
+    val shuffledIndexes = backs.indices.shuffled()
+
+    ElevatedCard {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(20.dp),
+            modifier = Modifier.fillMaxWidth().padding(vertical = 30.dp).heightIn(min = 200.dp, max = 600.dp)
+        ) {
+            Text(
+                flashcard.front,
+                style = Typography.bodyMedium,
+                modifier = Modifier.testTag("flashcardFront--${flashcard.id}")
+            )
+            HorizontalDivider(modifier = Modifier.height(5.dp))
+            shuffledIndexes.forEach{ index ->
+                val color = remember { mutableStateOf(Color.Gray) }
+                if (choice.value != null) {
+                    if (index == 0) {
+                        color.value = Color.Green.copy(alpha = 0.9f, green = 0.8f, blue = 0.2f)
+                    } else {
+                        color.value = if (choice.value == index) Color.Red.copy(alpha = 0.9f, red = 0.8f, green = 0.2f) else MaterialTheme.colorScheme.onSurface
+                    }
+                } else {
+                    color.value = MaterialTheme.colorScheme.onSurface
+                }
+
+                ListItem(
+                    { Text(backs[index]) },
+                    modifier = Modifier.clickable {
+                        if (choice.value == null) {
+                            choice.value = index
+                        }
+                        if (index == 0) {
+                            onCorrect()
+                        } else {
+                            onIncorrect()
+                        }
+                    }.fillMaxWidth(0.8f).padding(5.dp),
+                    colors = ListItemDefaults.colors(
+                        headlineColor = color.value,
+                    )
+                )
+            }
+        }
+    }
+
 }
