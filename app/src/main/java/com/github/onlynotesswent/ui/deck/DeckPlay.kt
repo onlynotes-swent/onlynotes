@@ -15,10 +15,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.MutableState
@@ -27,9 +23,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.flashcard.Flashcard
@@ -41,13 +36,8 @@ import com.github.onlynotesswent.model.user.UserViewModel
 import com.github.onlynotesswent.ui.common.ScreenTopBar
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
-import com.github.onlynotesswent.model.file.FileViewModel
-import com.github.onlynotesswent.model.flashcard.FlashcardViewModel
-import com.github.onlynotesswent.model.flashcard.deck.DeckViewModel
-import com.github.onlynotesswent.model.user.UserViewModel
 import com.github.onlynotesswent.ui.common.FlashcardPlayItem
-import com.github.onlynotesswent.ui.navigation.NavigationActions
+import com.github.onlynotesswent.ui.common.LoadingIndicator
 
 @Composable
 fun DeckPlayScreen(
@@ -74,7 +64,6 @@ fun DeckPlayScreen(
                 for (flashcard in flashcards) {
                     if(userViewModel.deckUserFlashcards.value[flashcard.id] == null){
                         userViewModel.addUserFlashcard(UserFlashcard(flashcard.id))
-                        Log.e("DeckPlayScreen", "UserFlashcard added")
                     }
                 }
                 userViewModel.getUserFlashcardFromDeck(it, onSuccess = {
@@ -112,18 +101,18 @@ fun DeckPlayScreen(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        if(deck.value==null){
+           LoadingIndicator("Loading deck...")
+        }
+        else{
+            val answers: Map<String, MutableState<Int?>> = remember(deck.value?.flashcardIds) {
+                deck.value!!.flashcardIds.associateWith { mutableStateOf<Int?>(null) }
+            }
+        val score = remember { mutableIntStateOf(0) }
         if(!isFinished.value){
-          Box(
-              contentAlignment = Alignment.Center,
-              modifier = Modifier
-                  .height(200.dp)
-                  .fillMaxWidth()
-          ) {
-              Column {
-                Text(text = selectedFlashcard.value?.front ?: "rien",)
-                Text(text = selectedFlashcard.value?.let { userFlashcards.value[it.id]?.level.toString() } ?: "")
-              }
-          }
+            selectedFlashcard.value?.let {
+            FlashcardPlayItem(it, fileViewModel,
+                onCorrect = {score.value+=1})}
         }
 
         if(playMode.value== Deck.PlayMode.REVIEW){
@@ -133,10 +122,10 @@ fun DeckPlayScreen(
                 userViewModel,
                 userViewModelFlashcards,
                 selectedFlashcard,
-                userFlashcardList
+                userFlashcardList,
+                answers
             )
         }else{
-            val score = remember { mutableIntStateOf(0) }
             if(isFinished.value){
                     Box(
                         contentAlignment = Alignment.Center,
@@ -172,9 +161,11 @@ fun DeckPlayScreen(
                 userViewModelFlashcards,
                 selectedFlashcard,
                 score,
-                isFinished
+                isFinished,
+                answers
             )
             }
+        }
         }
 
 
@@ -189,7 +180,8 @@ fun ReviewMode(
     userViewModel: UserViewModel,
     userViewModelFlashcards: State<Map<String, UserFlashcard>>,
     selectedFlashcard: State<Flashcard?>,
-    userFlashcardList: MutableState<List<UserFlashcard>>
+    userFlashcardList: MutableState<List<UserFlashcard>>,
+    answers: Map<String, MutableState<Int?>>
 
 ) {
     val maxListSize=100
@@ -298,7 +290,8 @@ private fun TestMode(
     userViewModelFlashcards: State<Map<String, UserFlashcard>>,
     selectedFlashcard: State<Flashcard?>,
     score: MutableIntState,
-    isFinished: MutableState<Boolean>
+    isFinished: MutableState<Boolean>,
+    answers: Map<String, MutableState<Int?>>
 ) {
     val currentFlashcardIndex = remember { mutableIntStateOf(0) }
     Column {
@@ -348,27 +341,46 @@ private fun TestMode(
                 }
             }
         }
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .align(Alignment.CenterHorizontally)
-        )
-        {
-            Button(
-                onClick = {
-                    score.value+=1;
-                },
-                modifier = Modifier.padding(16.dp)
-            ) {
-                Text("I got it right")
-            }
-            Button(
-                onClick = {
-                },
-                modifier = Modifier.padding(16.dp)
-            ) {
-                Text("I got it wrong")
-            }
+
+        if(selectedFlashcard.value?.isMCQ() == false) {
+            SelectWrongRight(score,answers,selectedFlashcard)
+        }
+    }
+}
+
+@Composable
+private fun SelectWrongRight(
+    score: MutableIntState,
+    answers: Map<String, MutableState<Int?>>,
+    selectedFlashcard: State<Flashcard?>,) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+    )
+    {
+        Button(
+            onClick = {
+                score.value += 1;
+                answers[selectedFlashcard.value!!.id]!!.value = 0
+                Log.e("enableF", answers.toString())
+                Log.e("enableF", selectedFlashcard.value!!.id)
+            },
+            modifier = Modifier.padding(16.dp),
+            enabled = answers[selectedFlashcard.value!!.id]!!.value == null
+        ) {
+            Text("I got it right")
+        }
+        Button(
+            onClick = {
+                answers[selectedFlashcard.value!!.id]!!.value =1
+                Log.e("enableF", answers.toString())
+                Log.e("enableF", selectedFlashcard.value!!.id)
+
+            },
+            modifier = Modifier.padding(16.dp),
+            enabled = answers[selectedFlashcard.value!!.id]!!.value == null
+        ) {
+            Text("I got it wrong")
         }
     }
 }
