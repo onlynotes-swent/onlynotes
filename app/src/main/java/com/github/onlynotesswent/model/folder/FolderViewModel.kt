@@ -468,11 +468,14 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
    * @param onSuccess The function to call when the public folders are retrieved successfully.
    * @param onFailure The function to call when the public folders fail to be retrieved.
    */
-  fun getPublicFolders(onSuccess: () -> Unit = {}, onFailure: (Exception) -> Unit = {}) {
+  fun getPublicFolders(
+      onSuccess: (List<Folder>) -> Unit = {},
+      onFailure: (Exception) -> Unit = {}
+  ) {
     repository.getPublicFolders(
         onSuccess = {
           _publicFolders.value = it
-          onSuccess()
+          onSuccess(it)
         },
         onFailure = onFailure)
   }
@@ -486,14 +489,14 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
    */
   fun getFoldersFromFollowingList(
       followingListIds: List<String>,
-      onSuccess: () -> Unit = {},
+      onSuccess: (List<Folder>) -> Unit = {},
       onFailure: (Exception) -> Unit = {}
   ) {
     repository.getFoldersFromFollowingList(
         followingListIds = followingListIds,
         onSuccess = {
           _friendsFolders.value = it
-          onSuccess()
+          onSuccess(it)
         },
         onFailure = onFailure)
   }

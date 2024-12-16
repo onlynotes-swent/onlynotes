@@ -317,27 +317,13 @@ fun SearchScreen(
 
         val displayLoader: Boolean =
             searchQuery.value.isNotBlank() &&
-                listOf(
-                        searchType.value == SearchType.USERS && filteredUsers.value.isEmpty(),
-                        searchType.value == SearchType.NOTES &&
-                            additionalFilter.value == AdditionalFilterType.PUBLIC &&
-                            filteredPublicNotes.value.isEmpty(),
-                        searchType.value == SearchType.NOTES &&
-                            additionalFilter.value == AdditionalFilterType.FRIENDS &&
-                            filteredFriendsNotes.value.isEmpty(),
-                        searchType.value == SearchType.FOLDERS &&
-                            additionalFilter.value == AdditionalFilterType.PUBLIC &&
-                            filteredPublicFolders.value.isEmpty(),
-                        searchType.value == SearchType.FOLDERS &&
-                            additionalFilter.value == AdditionalFilterType.FRIENDS &&
-                            filteredFriendsFolders.value.isEmpty(),
-                        searchType.value == SearchType.DECKS &&
-                            additionalFilter.value == AdditionalFilterType.PUBLIC &&
-                            filteredPublicDecks.value.isEmpty(),
-                        searchType.value == SearchType.DECKS &&
-                            additionalFilter.value == AdditionalFilterType.FRIENDS &&
-                            filteredFriendsDecks.value.isEmpty())
-                    .any { it }
+                !(displayUsers ||
+                    displayPublicNotes ||
+                    displayFriendsNotes ||
+                    displayPublicFolders ||
+                    displayFriendsFolders ||
+                    displayPublicDecks ||
+                    displayFriendsDecks)
 
         if (displayPublicNotes) {
           LazyColumn(
