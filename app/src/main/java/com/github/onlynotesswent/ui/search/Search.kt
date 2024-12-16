@@ -127,12 +127,13 @@ fun SearchScreen(
   // typically when reloading the screen.
   if (searchQuery.value.isBlank()) {
     noteViewModel.getPublicNotes()
-    noteViewModel.getNotesFromFollowingList(currentUser.value?.friends?.following)
+    noteViewModel.getNotesFromFollowingList(currentUser.value?.friends?.following ?: emptyList())
     userViewModel.getAllUsers()
     folderViewModel.getPublicFolders()
-    folderViewModel.getFoldersFromFollowingList(currentUser.value?.friends?.following)
+    folderViewModel.getFoldersFromFollowingList(
+        currentUser.value?.friends?.following ?: emptyList())
     deckViewModel.getPublicDecks()
-    deckViewModel.getDecksFromFollowingList(currentUser.value?.friends?.following)
+    deckViewModel.getDecksFromFollowingList(currentUser.value?.friends?.following ?: emptyList())
   }
 
   Scaffold(
@@ -187,8 +188,7 @@ fun SearchScreen(
                   searchType.value == SearchType.NOTES,
                   label = { Text(stringResource(R.string.notes_maj), maxLines = 1) },
                   onClick = {
-                    if ((searchType.value != SearchType.NOTES && !showAdditionalFilters.value) ||
-                        searchType.value == SearchType.NOTES) {
+                    if (searchType.value == SearchType.NOTES || !showAdditionalFilters.value) {
                       showAdditionalFilters.value = !showAdditionalFilters.value
                     }
                     searchType.value = SearchType.NOTES
@@ -214,8 +214,7 @@ fun SearchScreen(
                   searchType.value == SearchType.FOLDERS,
                   label = { Text(stringResource(R.string.folders_maj), maxLines = 1) },
                   onClick = {
-                    if ((searchType.value != SearchType.FOLDERS && !showAdditionalFilters.value) ||
-                        searchType.value == SearchType.FOLDERS) {
+                    if (searchType.value == SearchType.FOLDERS || !showAdditionalFilters.value) {
                       showAdditionalFilters.value = !showAdditionalFilters.value
                     }
                     searchType.value = SearchType.FOLDERS
@@ -241,8 +240,7 @@ fun SearchScreen(
                   searchType.value == SearchType.DECKS,
                   label = { Text(stringResource(R.string.decks_maj), maxLines = 1) },
                   onClick = {
-                    if (searchType.value != SearchType.DECKS && !showAdditionalFilters.value ||
-                        searchType.value == SearchType.DECKS) {
+                    if (searchType.value == SearchType.DECKS || !showAdditionalFilters.value) {
                       showAdditionalFilters.value = !showAdditionalFilters.value
                     }
                     searchType.value = SearchType.DECKS
@@ -319,25 +317,27 @@ fun SearchScreen(
 
         val displayLoader: Boolean =
             searchQuery.value.isNotBlank() &&
-                ((searchType.value == SearchType.USERS && filteredUsers.value.isEmpty()) ||
-                    (searchType.value == SearchType.NOTES &&
-                        additionalFilter.value == AdditionalFilterType.PUBLIC &&
-                        filteredPublicNotes.value.isEmpty()) ||
-                    (searchType.value == SearchType.NOTES &&
-                        additionalFilter.value == AdditionalFilterType.FRIENDS &&
-                        filteredFriendsNotes.value.isEmpty()) ||
-                    (searchType.value == SearchType.FOLDERS &&
-                        additionalFilter.value == AdditionalFilterType.PUBLIC &&
-                        filteredPublicFolders.value.isEmpty()) ||
-                    (searchType.value == SearchType.FOLDERS &&
-                        additionalFilter.value == AdditionalFilterType.FRIENDS &&
-                        filteredFriendsFolders.value.isEmpty()) ||
-                    (searchType.value == SearchType.DECKS &&
-                        additionalFilter.value == AdditionalFilterType.PUBLIC &&
-                        filteredPublicDecks.value.isEmpty()) ||
-                    (searchType.value == SearchType.DECKS &&
-                        additionalFilter.value == AdditionalFilterType.FRIENDS &&
-                        filteredFriendsDecks.value.isEmpty()))
+                listOf(
+                        searchType.value == SearchType.USERS && filteredUsers.value.isEmpty(),
+                        searchType.value == SearchType.NOTES &&
+                            additionalFilter.value == AdditionalFilterType.PUBLIC &&
+                            filteredPublicNotes.value.isEmpty(),
+                        searchType.value == SearchType.NOTES &&
+                            additionalFilter.value == AdditionalFilterType.FRIENDS &&
+                            filteredFriendsNotes.value.isEmpty(),
+                        searchType.value == SearchType.FOLDERS &&
+                            additionalFilter.value == AdditionalFilterType.PUBLIC &&
+                            filteredPublicFolders.value.isEmpty(),
+                        searchType.value == SearchType.FOLDERS &&
+                            additionalFilter.value == AdditionalFilterType.FRIENDS &&
+                            filteredFriendsFolders.value.isEmpty(),
+                        searchType.value == SearchType.DECKS &&
+                            additionalFilter.value == AdditionalFilterType.PUBLIC &&
+                            filteredPublicDecks.value.isEmpty(),
+                        searchType.value == SearchType.DECKS &&
+                            additionalFilter.value == AdditionalFilterType.FRIENDS &&
+                            filteredFriendsDecks.value.isEmpty())
+                    .any { it }
 
         if (displayPublicNotes) {
           LazyColumn(
@@ -527,12 +527,13 @@ private fun RefreshPeriodically(
     while (searchQuery.value.isNotBlank()) {
       delay(3000)
       noteViewModel.getPublicNotes()
-      noteViewModel.getNotesFromFollowingList(currentUser.value?.friends?.following)
+      noteViewModel.getNotesFromFollowingList(currentUser.value?.friends?.following ?: emptyList())
       userViewModel.getAllUsers()
       folderViewModel.getPublicFolders()
-      folderViewModel.getFoldersFromFollowingList(currentUser.value?.friends?.following)
+      folderViewModel.getFoldersFromFollowingList(
+          currentUser.value?.friends?.following ?: emptyList())
       deckViewModel.getPublicDecks()
-      deckViewModel.getDecksFromFollowingList(currentUser.value?.friends?.following)
+      deckViewModel.getDecksFromFollowingList(currentUser.value?.friends?.following ?: emptyList())
     }
   }
 }
@@ -648,15 +649,15 @@ private fun applyFilter(
       when (itemType) {
         SearchType.NOTES -> {
           noteViewModel.getNotesFromFollowingList(
-              userViewModel.currentUser.value?.friends?.following)
+              userViewModel.currentUser.value?.friends?.following ?: emptyList())
         }
         SearchType.FOLDERS -> {
           folderViewModel.getFoldersFromFollowingList(
-              userViewModel.currentUser.value?.friends?.following)
+              userViewModel.currentUser.value?.friends?.following ?: emptyList())
         }
         else -> {
           deckViewModel.getDecksFromFollowingList(
-              userViewModel.currentUser.value?.friends?.following)
+              userViewModel.currentUser.value?.friends?.following ?: emptyList())
         }
       }
     }

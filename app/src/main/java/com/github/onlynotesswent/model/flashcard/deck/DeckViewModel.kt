@@ -92,20 +92,19 @@ class DeckViewModel(private val repository: DeckRepository) : ViewModel() {
   }
 
   /**
-   * Retrieves all friends only decks from a list of following users. If the list is null, an empty
-   * list is used.
+   * Retrieves all friends only decks from a list of following users.
    *
    * @param followingListIds The list of users to retrieve decks from.
    * @param onSuccess The callback to be executed when the decks are retrieved.
    * @param onFailure The callback to be executed when an error occurs.
    */
   fun getDecksFromFollowingList(
-      followingListIds: List<String>?,
+      followingListIds: List<String>,
       onSuccess: (List<Deck>) -> Unit = {},
       onFailure: (Exception) -> Unit = {}
   ) {
     repository.getDecksFromFollowingList(
-        followingListIds ?: emptyList(),
+        followingListIds,
         { decks ->
           _friendsDecks.value = decks
           onSuccess(decks)
