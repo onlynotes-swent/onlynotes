@@ -160,14 +160,14 @@ fun FlashcardViewItem(
                 Text(
                     flashcard.front,
                     style = Typography.bodyMedium,
-                    modifier = Modifier.testTag("flashcardFront--${flashcard.id}").padding(5.dp))
+                    modifier = Modifier.testTag("flashcardFront--${flashcard.id}").padding(10.dp))
                 FlashcardImage(flashcard, fileViewModel)
                 HorizontalDivider(modifier = Modifier.height(5.dp).padding(5.dp))
                 // Show back
                 Text(
                     flashcard.back,
                     style = Typography.bodyMedium,
-                    modifier = Modifier.testTag("flashcardBack--${flashcard.id}").padding(5.dp))
+                    modifier = Modifier.testTag("flashcardBack--${flashcard.id}").padding(20.dp))
               }
         }
       }
