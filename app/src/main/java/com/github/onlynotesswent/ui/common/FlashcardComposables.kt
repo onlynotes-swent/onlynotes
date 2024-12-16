@@ -58,7 +58,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
@@ -715,9 +717,7 @@ fun FlashcardImage(
     imageUri: MutableState<String?> = remember { mutableStateOf(null) },
     padding: Dp = 10.dp,
 ) {
-
-  if (extractUID(imageUri.value) == flashcard.value.id) {
-    Log.d("FlashcardImage", "Image URI: ${imageUri.value}")
+  if (compareUID(imageUri.value,flashcard.value.id, FileType.FLASHCARD_IMAGE.fileExtension)) {
     Image(
         painter = rememberAsyncImagePainter(imageUri.value!!),
         contentDescription = "Flashcard image",

@@ -29,12 +29,25 @@ import com.github.onlynotesswent.model.user.User
  * Extracts the UID from the URI.
  *
  * @param uri The URI from which the UID is to be extracted.
+ * @param extension The extension of the file in the URI.
  * @return The UID extracted from the URI.
  */
-fun extractUID(uri: String?): String? {
+fun extractUID(uri: String?, extension:String = FileType.FLASHCARD_IMAGE.fileExtension): String? {
   val parts = uri?.split("/") ?: return null
   val fileName = parts.lastOrNull() ?: return null
-  return fileName.substringBeforeLast(".jpg")
+  return fileName.substringBeforeLast(extension)
+}
+
+/**
+ * Compares the UID extracted from the URI with the given UID.
+ *
+ * @param uri The URI from which the UID is to be extracted.
+ * @param uid The UID to compare with the extracted UID.
+ * @param extension The extension of the file in the URI.
+ * @return True if the extracted UID matches the given UID, false otherwise.
+ */
+fun compareUID(uri: String?, uid: String?, extension: String = FileType.FLASHCARD_IMAGE.fileExtension): Boolean {
+  return uid?.let { extractUID(uri, extension)?.take(it.length) == it } == true
 }
 
 private val doesNothing = {}
