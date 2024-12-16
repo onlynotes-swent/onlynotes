@@ -126,4 +126,6 @@
     <string name="edit_maj">Edit\n</string>
     <string name="delete">Delete</string>
     <string name="mcq">MCQ</string>
+    <string name="review_the_flashcards">Review the flashcards</string>
+    <string name="test_your_knowledge">Test your knowledge</string>
 </resources>

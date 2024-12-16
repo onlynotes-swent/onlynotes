@@ -154,11 +154,12 @@ fun DeckScreen(
         } else {
           Column(
               modifier =
-                  Modifier.fillMaxWidth()
-                      .testTag("deckScreenColumn")
-                      .padding(innerPadding)
-                      .padding(start = 15.dp, top = 10.dp, end = 10.dp)
-                      .verticalScroll(rememberScrollState()),
+              Modifier
+                  .fillMaxWidth()
+                  .testTag("deckScreenColumn")
+                  .padding(innerPadding)
+                  .padding(start = 15.dp, top = 10.dp, end = 10.dp)
+                  .verticalScroll(rememberScrollState()),
               horizontalAlignment = Alignment.CenterHorizontally) {
                 // Dialogs:
                 if (addCardDialogExpanded.value) {
@@ -176,7 +177,9 @@ fun DeckScreen(
                   Dialog(onDismissRequest = { importDialogExpanded.value = false }) {
                     Card {
                       Column(
-                          modifier = Modifier.padding(10.dp).testTag("importDeckDialog"),
+                          modifier = Modifier
+                              .padding(10.dp)
+                              .testTag("importDeckDialog"),
                           horizontalAlignment = Alignment.CenterHorizontally,
                           verticalArrangement = Arrangement.spacedBy(10.dp)) {
                             Text(
@@ -209,17 +212,23 @@ fun DeckScreen(
                 Text(
                     selectedDeck.value!!.name,
                     style = Typography.displayMedium,
-                    modifier = Modifier.padding(vertical = 10.dp).testTag("deckTitle"))
+                    modifier = Modifier
+                        .padding(vertical = 10.dp)
+                        .testTag("deckTitle"))
                 // Deck description
                 Text(
                     selectedDeck.value!!.description,
                     style = Typography.bodyMedium,
-                    modifier = Modifier.padding(10.dp).testTag("deckDescription"))
+                    modifier = Modifier
+                        .padding(10.dp)
+                        .testTag("deckDescription"))
 
                 // Deck play mode buttons
                 FilledTonalButton(
                     onClick = { playModesShown.value = !playModesShown.value },
-                    modifier = Modifier.padding(vertical = 15.dp).testTag("deckPlayButton")) {
+                    modifier = Modifier
+                        .padding(vertical = 15.dp)
+                        .testTag("deckPlayButton")) {
                       Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
                             stringResource(R.string.play_button_text),
@@ -234,10 +243,11 @@ fun DeckScreen(
                 // Deck cards lazy column
                 LazyColumn(
                     modifier =
-                        Modifier.fillMaxWidth(0.9f)
-                            .testTag("deckFlashcardsList")
-                            .heightIn(max = 600.dp)
-                            .padding(horizontal = 10.dp),
+                    Modifier
+                        .fillMaxWidth(0.9f)
+                        .testTag("deckFlashcardsList")
+                        .heightIn(max = 600.dp)
+                        .padding(horizontal = 10.dp),
                     verticalArrangement = Arrangement.spacedBy(10.dp),
                     horizontalAlignment = Alignment.CenterHorizontally) {
                       items(sortedFlashcards.value.size) { index ->
@@ -473,7 +483,10 @@ private fun PlayModesBottomSheet(
 ) {
   ModalBottomSheet(onDismissRequest = { playModesShown.value = false }) {
     Column(
-        modifier = Modifier.fillMaxWidth().padding(20.dp).testTag("playModesBottomSheet"),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(20.dp)
+            .testTag("playModesBottomSheet"),
         horizontalAlignment = Alignment.CenterHorizontally) {
           Text(
               stringResource(R.string.choose_your_play_mode),
@@ -495,25 +508,29 @@ private fun PlayModesBottomSheet(
                               disabledContentColor =
                                   MaterialTheme.colorScheme.onSurfaceVariant), // Custom colors
                       modifier =
-                          Modifier.fillMaxWidth(0.8f).testTag("playMode--$playMode").clickable {
-                            playModesShown.value = false
-                            navigationActions.navigateTo(
-                                Screen.DECK_PLAY.replace(
-                                        "{deckId}", deckViewModel.selectedDeck.value!!.id)
-                                    .replace("{mode}", playMode.name))
+                      Modifier
+                          .fillMaxWidth(0.8f)
+                          .testTag("playMode--$playMode")
+                          .clickable {
+                              playModesShown.value = false
+                              navigationActions.navigateTo(
+                                  Screen.DECK_PLAY
+                                      .replace(
+                                          "{deckId}", deckViewModel.selectedDeck.value!!.id
+                                      )
+                                      .replace("{mode}", playMode.name)
+                              )
                           }) {
                         ListItem(
                             modifier = Modifier.padding(1.dp),
                             headlineContent = {
                               Text(
                                   when (playMode) {
-                                    Deck.PlayMode.FLASHCARD ->
-                                        stringResource(R.string.play_mode_flashcards)
-                                    Deck.PlayMode.MATCH ->
-                                        stringResource(R.string.play_mode_match_cards)
-                                    Deck.PlayMode.MCQ -> stringResource(R.string.play_mode_mcq)
-                                    Deck.PlayMode.ALL ->
-                                        stringResource(R.string.play_mode_all_combined)
+                                    Deck.PlayMode.REVIEW ->
+                                        stringResource(R.string.review_the_flashcards)
+                                    Deck.PlayMode.TEST ->
+                                        stringResource(R.string.test_your_knowledge)
+
                                   },
                                   style = MaterialTheme.typography.bodyLarge)
                             },

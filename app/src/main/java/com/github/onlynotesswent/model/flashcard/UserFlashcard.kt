@@ -1,6 +1,9 @@
 package com.github.onlynotesswent.model.flashcard
 
+import android.util.Log
 import com.google.firebase.Timestamp
+import kotlin.math.abs
+import kotlin.random.Random
 
 /**
  * Represents a user flashcard.
@@ -18,6 +21,65 @@ data class UserFlashcard(
     const val MAX_FLASHCARD_LEVEL = 5
     const val MIN_FLASHCARD_LEVEL = 0
     const val DEFAULT_FLASHCARD_LEVEL = 1
+
+    private fun totalWeight(flashcards: List<UserFlashcard>): Int{
+        var total=0
+        for (flashcard in flashcards){
+            total+=flashcard.fromLevelToWeight()
+        }
+        return total
+    }
+
+    /**
+     * Selects a random flashcard from the list of flashcards.
+     * The probability of selecting a flashcard is based on the level of the flashcard.
+     * Also this code run O(n) time bases on the number of flashcards
+     * use in case of small number of flashcards
+     *
+     * @param flashcards The list of flashcards to select from.
+     * @return The selected flashcard.
+     */
+    fun selectRandomFlashcardLinear(flashcards: List<UserFlashcard>): UserFlashcard{
+
+      if(flashcards.isEmpty()){
+        throw IllegalArgumentException("The list of flashcards is empty")
+      }
+      val totalWeight= totalWeight(flashcards)
+        val random= Random.nextInt(totalWeight)
+        var currentWeight=0
+        for (flashcard in flashcards){
+            currentWeight+=flashcard.fromLevelToWeight()
+            if (currentWeight>=random){
+                return flashcard
+            }
+        }
+        return flashcards[0]
+    }
+
+    /**
+     * Selects a random flashcard from the list of flashcards.
+     * The probability of selecting a flashcard is based on the level of the flashcard.
+     * Also this code run in O(log(n)) time bases on the number of flashcards
+     * use in case of large number of flashcards
+     *
+     * @param flashcards The list of flashcards to select from.
+     * @return The selected flashcard.
+     */
+    fun selectRandomFlashcardBinary(flashcards: List<UserFlashcard>): UserFlashcard{
+
+      if (flashcards.isEmpty())  {
+        throw IllegalArgumentException("The list of flashcards is empty")
+      }
+      val cumulativeWeights = flashcards.runningFold(0) { acc, item -> acc + item.fromLevelToWeight() }.drop(1)
+
+      val randomWeight = Random.nextInt(1, totalWeight(flashcards) + 1)
+
+      val index = cumulativeWeights.binarySearch(randomWeight)
+      val actualIndex = if (index >= 0) index else abs(index) - 1
+
+      return flashcards[actualIndex]
+    }
+
   }
 
   /**
@@ -65,4 +127,31 @@ data class UserFlashcard(
   fun updateLastReviewed(): UserFlashcard {
     return this.copy(lastReviewed = Timestamp.now())
   }
+
+  /**
+   * Converts the level of the flashcard to a frequency value.
+   * The frequency represent how often the flashcard should be reviewed.
+   *
+   * @return The frequency value.
+   */
+  @Deprecated("This function is not used anymore")
+  fun  fromLevelToFrequency(): Double {
+     val reverseOrder= (MAX_FLASHCARD_LEVEL - level+1)
+     val total=  (MAX_FLASHCARD_LEVEL+1)*(MAX_FLASHCARD_LEVEL+2)/2
+     return reverseOrder.toDouble()/total.toDouble()
+  }
+
+
+  /**
+   * Converts the level of the flashcard to a weight value.
+   * The weight represent how often the flashcard should be reviewed.
+   * The higher the weight the more often the flashcard should be reviewed.
+   * The weight is calculated as the reverse order of the level.
+   *
+   * @return The weight value.
+   */
+  fun fromLevelToWeight(): Int {
+    return MAX_FLASHCARD_LEVEL-level+1
+  }
+
 }
