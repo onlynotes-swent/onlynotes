@@ -13,11 +13,17 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.Card
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
@@ -44,7 +50,6 @@ import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.model.user.User
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
-import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -74,25 +79,15 @@ fun NoteItem(
     navigationActions: NavigationActions,
     onClick: () -> Unit
 ) {
-  var showMoveOutDialog by remember { mutableStateOf(showDialog) }
+  var showBottomSheet by remember { mutableStateOf(false) }
 
-  if (showMoveOutDialog && note.folderId != null) {
-    ConfirmationPopup(
-        title = stringResource(R.string.move_note_out_of_folder),
-        text = stringResource(R.string.move_note_out_of_folder_confirmation),
-        onConfirm = {
-          val parentFolderId = folderViewModel.parentFolderId.value
-          if (parentFolderId != null) {
-            noteViewModel.updateNote(note.copy(folderId = parentFolderId))
-            navigationActions.navigateTo(
-                Screen.FOLDER_CONTENTS.replace(oldValue = "{folderId}", newValue = parentFolderId))
-          } else {
-            noteViewModel.updateNote(note.copy(folderId = null))
-            navigationActions.navigateTo(TopLevelDestinations.NOTE_OVERVIEW)
-          }
-          showMoveOutDialog = false
-        },
-        onDismiss = { showMoveOutDialog = false })
+  if (showBottomSheet) {
+    NoteOptionsBottomSheet(
+        note = note,
+        noteViewModel = noteViewModel,
+        folderViewModel = folderViewModel,
+        navigationActions = navigationActions,
+        onDismiss = { showBottomSheet = false })
   }
 
   Card(
@@ -130,10 +125,9 @@ fun NoteItem(
                     navigationActions.currentRoute() != Screen.SEARCH) {
                   Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
-                        // Show move out menu when clicking on the Icon
                         modifier =
-                            Modifier.testTag("MoveOutButton").size(24.dp).clickable {
-                              showMoveOutDialog = true
+                            Modifier.testTag("showBottomSheetButton").size(24.dp).clickable {
+                              showBottomSheet = true
                             },
                         imageVector = Icons.Filled.MoreVert,
                         contentDescription = null,
@@ -167,6 +161,96 @@ fun NoteItem(
           }
         }
       }
+}
+
+/**
+ * Displays a bottom sheet with options to move or delete a note. The bottom sheet is displayed when
+ * the user clicks on the more options icon in the note card.
+ *
+ * @param note The note data that will be displayed in this card.
+ * @param noteViewModel The ViewModel that provides the list of notes to display.
+ * @param folderViewModel the folderViewModel used here to move the note.
+ * @param navigationActions The navigation instance used to transition between different screens.
+ * @param onDismiss The callback to be invoked when the bottom sheet is dismissed.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun NoteOptionsBottomSheet(
+    note: Note,
+    noteViewModel: NoteViewModel,
+    folderViewModel: FolderViewModel,
+    navigationActions: NavigationActions,
+    onDismiss: () -> Unit
+) {
+  var showFileSystemPopup by remember { mutableStateOf(false) }
+  var showDeletePopup by remember { mutableStateOf(false) }
+
+  if (showFileSystemPopup) {
+    FileSystemPopup(
+        onDismiss = { showFileSystemPopup = false },
+        folderViewModel = folderViewModel,
+        onMoveHere = { selectedFolder ->
+          noteViewModel.updateNote(note.copy(folderId = selectedFolder?.id))
+          showFileSystemPopup = false
+          // this is needed to update the displayed notes
+          noteViewModel.getNotesFromFolder(folderViewModel.selectedFolder.value?.id ?: "")
+          folderViewModel.selectedFolder.value?.let { folderViewModel.getFolderById(it.id) }
+          onDismiss() // Dismiss the bottom sheet after moving the note
+        })
+  }
+
+  if (showDeletePopup) {
+    ConfirmationPopup(
+        title = stringResource(R.string.delete_note),
+        text = stringResource(R.string.delete_note_text),
+        onConfirm = { noteViewModel.deleteNoteById(note.id, note.userId) },
+        onDismiss = {
+          showDeletePopup = false // Close the dialog without deleting
+        })
+  }
+
+  ModalBottomSheet(
+      modifier = Modifier.testTag("noteModalBottomSheet"),
+      onDismissRequest = onDismiss,
+      content = {
+        Column(modifier = Modifier.padding(16.dp)) {
+          Row(
+              modifier =
+                  Modifier.fillMaxWidth()
+                      .clickable { showFileSystemPopup = true }
+                      .padding(vertical = 8.dp)
+                      .testTag("moveNoteBottomSheet"),
+              verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = Icons.Default.FolderOpen,
+                    contentDescription = stringResource(R.string.move_note))
+                Spacer(modifier = Modifier.width(16.dp))
+                Text(
+                    text = stringResource(R.string.move_note),
+                    style = MaterialTheme.typography.bodyLarge)
+              }
+
+          HorizontalDivider(Modifier.padding(vertical = 10.dp), 1.dp)
+
+          Row(
+              modifier =
+                  Modifier.fillMaxWidth()
+                      .clickable { showDeletePopup = true }
+                      .padding(vertical = 8.dp)
+                      .testTag("deleteNoteBottomSheet"),
+              verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = Icons.Default.Delete,
+                    contentDescription = stringResource(R.string.delete_note),
+                    tint = MaterialTheme.colorScheme.error)
+                Spacer(modifier = Modifier.width(16.dp))
+                Text(
+                    text = stringResource(R.string.delete_note),
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.error)
+              }
+        }
+      })
 }
 
 /**

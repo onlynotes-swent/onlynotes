@@ -2,6 +2,7 @@ package com.github.onlynotesswent.ui.overview
 
 import android.content.Context
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -15,6 +16,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -51,6 +53,7 @@ import com.github.onlynotesswent.ui.common.ConfirmationPopup
 import com.github.onlynotesswent.ui.common.CustomDropDownMenu
 import com.github.onlynotesswent.ui.common.CustomDropDownMenuItem
 import com.github.onlynotesswent.ui.common.CustomSeparatedLazyGrid
+import com.github.onlynotesswent.ui.common.FileSystemPopup
 import com.github.onlynotesswent.ui.common.FolderDialog
 import com.github.onlynotesswent.ui.common.NoteDialog
 import com.github.onlynotesswent.ui.navigation.NavigationActions
@@ -275,6 +278,7 @@ fun FolderContentTopBar(
 ) {
   var showDeleteFolderConfirmation by remember { mutableStateOf(false) }
   var showDeleteFolderContentsConfirmation by remember { mutableStateOf(false) }
+  var showFileSystemPopup by remember { mutableStateOf(false) }
   TopAppBar(
       colors =
           TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface),
@@ -330,6 +334,18 @@ fun FolderContentTopBar(
                             showUpdateDialog(true)
                           },
                           modifier = Modifier.testTag("updateFolderButton")),
+                      CustomDropDownMenuItem(
+                          text = { Text("Move Folder") },
+                          icon = {
+                            Icon(
+                                imageVector = Icons.Default.FolderOpen,
+                                contentDescription = "moveFolder")
+                          },
+                          onClick = {
+                            onExpandedChange(false)
+                            showFileSystemPopup = true
+                          },
+                          modifier = Modifier.testTag("moveFolderButton")),
                       CustomDropDownMenuItem(
                           text = { Text(stringResource(R.string.delete_folder)) },
                           icon = {
@@ -403,6 +419,33 @@ fun FolderContentTopBar(
               },
               onDismiss = { showDeleteFolderContentsConfirmation = false })
         }
+        // Show the FileSystemPopup if requested
+        if (showFileSystemPopup) {
+          FileSystemPopup(
+              onDismiss = { showFileSystemPopup = false },
+              folderViewModel = folderViewModel,
+              onMoveHere = { selectedFolder ->
+                if (selectedFolder == folder) {
+                  return@FileSystemPopup
+                }
+
+                if (selectedFolder != null &&
+                    folderViewModel.isSubFolder(selectedFolder, folder.id)) {
+                  Toast.makeText(
+                          context,
+                          context.getString(R.string.folder_cannot_be_moved_to_subfolder),
+                          Toast.LENGTH_SHORT)
+                      .show()
+                  return@FileSystemPopup
+                }
+
+                folderViewModel.updateFolderNoStateUpdate(
+                    folder.copy(parentFolderId = selectedFolder?.id))
+
+                navigationActions.navigateTo(
+                    Screen.FOLDER_CONTENTS.replace(oldValue = "{folderId}", newValue = folder.id))
+              })
+        }
       })
 }
 
@@ -424,19 +467,11 @@ fun handleSubFoldersAndNotes(
 ) {
   // If folder is subfolder, set parent Id and folder Id of sub
   // elements to parent folder id
-  if (folder.parentFolderId != null) {
-    userFolderSubFolders.forEach { subFolder ->
-      folderViewModel.updateFolder(subFolder.copy(parentFolderId = folder.parentFolderId))
-    }
-    userFolderNotes.forEach { note ->
-      noteViewModel.updateNote(note.copy(folderId = folder.parentFolderId))
-    }
-  } else {
-    // Folder is root folder
-    userFolderSubFolders.forEach { subFolder ->
-      folderViewModel.updateFolder(subFolder.copy(parentFolderId = null))
-    }
-    userFolderNotes.forEach { note -> noteViewModel.updateNote(note.copy(folderId = null)) }
+  userFolderSubFolders.forEach { subFolder ->
+    folderViewModel.updateFolder(subFolder.copy(parentFolderId = folder.parentFolderId))
+  }
+  userFolderNotes.forEach { note ->
+    noteViewModel.updateNote(note.copy(folderId = folder.parentFolderId))
   }
 }
 

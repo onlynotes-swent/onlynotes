@@ -22,13 +22,17 @@ import com.google.firebase.Timestamp
 import com.google.gson.JsonSyntaxException
 import java.io.File
 import java.io.IOException
+import java.util.Collections
 import java.util.concurrent.atomic.AtomicInteger
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
+import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
@@ -176,19 +180,26 @@ class NotesToFlashcardTest {
 
   @Mock private lateinit var mockContext: Context
 
-  private val savedFlashcards = mutableListOf<Flashcard>()
+  // Saved objects, use synchronizedList to avoid concurrent modification exceptions
+  private val savedFlashcards = Collections.synchronizedList(mutableListOf<Flashcard>())
 
-  private val savedDecks = mutableListOf<Deck>()
+  private val savedDecks = Collections.synchronizedList(mutableListOf<Deck>())
 
-  private val savedFolders = mutableListOf<Folder>()
+  private val savedFolders = Collections.synchronizedList(mutableListOf<Folder>())
 
   private val flashcardId = AtomicInteger(0)
 
   private val folderId = AtomicInteger(3)
 
+  private val testDispatcher = StandardTestDispatcher()
+
+  private val testScope = TestScope(testDispatcher)
+
+  @OptIn(ExperimentalCoroutinesApi::class)
   @Before
   fun setup() {
     MockitoAnnotations.openMocks(this)
+    Dispatchers.setMain(testDispatcher)
 
     // Initialize FirebaseApp with Robolectric context
     FirebaseApp.initializeApp(org.robolectric.RuntimeEnvironment.getApplication())
@@ -208,6 +219,8 @@ class NotesToFlashcardTest {
             folderViewModel,
             mockOpenAI,
             mockContext)
+
+    folderViewModel.selectedFolder(testFolder)
 
     val testFile = File.createTempFile("test", ".md")
     testFile.deleteOnExit()
@@ -239,6 +252,18 @@ class NotesToFlashcardTest {
     }
   }
 
+  @OptIn(ExperimentalCoroutinesApi::class)
+  @After
+  fun resetDispatcher() {
+    savedFlashcards.clear()
+    savedDecks.clear()
+    savedFolders.clear()
+    flashcardId.set(0)
+    folderId.set(3)
+
+    Dispatchers.resetMain()
+  }
+
   private fun convertFolderToDecksChecks(expectedAddedFolderSize: Int) {
     // Check 4 decks were created
     assertEquals(4, savedDecks.size)
@@ -263,12 +288,7 @@ class NotesToFlashcardTest {
   }
 
   private fun convertFolderToDecksCommonMocks() = runTest {
-    // Initialize the view models, repositories and saved objects
-    savedFlashcards.clear()
-    savedDecks.clear()
-    savedFolders.clear()
-    folderViewModel.selectedFolder(testFolder)
-
+    // Initialize the view models, repositories
     `when`(mockFolderRepository.addFolder(any(), any(), any(), any())).thenAnswer { invocation ->
       savedFolders.add(invocation.getArgument(0))
       val onSuccess = invocation.getArgument<() -> Unit>(1)
@@ -313,8 +333,6 @@ class NotesToFlashcardTest {
   @OptIn(ExperimentalCoroutinesApi::class)
   @Test
   fun `convertFolderToDecks with existing deck folders`() = runTest {
-    // Override Dispatchers.IO with TestDispatcher in your test setup
-    Dispatchers.setMain(StandardTestDispatcher(testScheduler))
     convertFolderToDecksCommonMocks()
 
     `when`(mockFolderRepository.getDeckFoldersByName(any(), any(), any(), any(), any(), any()))
@@ -339,16 +357,15 @@ class NotesToFlashcardTest {
         onSuccess = {},
         onFailure = { fail("Conversion failed with exception: $it") })
 
+    // Wait for the coroutine to finish
+    testScope.advanceUntilIdle()
+
     convertFolderToDecksChecks(0)
-    // close the dispatcher
-    Dispatchers.resetMain()
   }
 
   @OptIn(ExperimentalCoroutinesApi::class)
   @Test
   fun `convertFolderToDecks with no existing deck folders`() = runTest {
-    // Override Dispatchers.IO with TestDispatcher in your test setup
-    Dispatchers.setMain(StandardTestDispatcher(testScheduler))
     convertFolderToDecksCommonMocks()
 
     `when`(mockFolderRepository.getDeckFoldersByName(any(), any(), any(), any(), any(), any()))
@@ -362,10 +379,10 @@ class NotesToFlashcardTest {
         onSuccess = {},
         onFailure = { fail("Conversion failed with exception: $it") })
 
-    convertFolderToDecksChecks(2)
+    // Wait for the coroutine to finish
+    testScope.advanceUntilIdle()
 
-    // close the dispatcher
-    Dispatchers.resetMain()
+    convertFolderToDecksChecks(2)
   }
 
   @Test

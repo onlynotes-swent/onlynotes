@@ -3,11 +3,7 @@ package com.github.onlynotesswent.ui.overview
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotDisplayed
-import androidx.compose.ui.test.filter
-import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
-import androidx.compose.ui.test.onAllNodesWithTag
-import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
@@ -288,61 +284,23 @@ class FolderContentTest {
   }
 
   @Test
-  fun moveOutSameUserDoesMoveNote() = runTest {
-    init(folder)
-
-    `when`(mockNoteRepository.getNotesFromFolder(eq("1"), any(), any(), any())).then { invocation ->
-      val onSuccess = invocation.getArgument<(List<Note>) -> Unit>(1)
-      onSuccess(subNoteList2)
-    }
-
-    noteViewModel.getNotesFromFolder("1")
-
-    composeTestRule.onNodeWithTag("noteCard").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("MoveOutButton").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("MoveOutButton").performClick()
-    composeTestRule.onNodeWithTag("popup").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("confirmButton").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("confirmButton").performClick()
-    composeTestRule
-        .onAllNodesWithTag("noteCard")
-        .filter(hasText("Sample Sub Note3"))
-        .onFirst()
-        .assertIsDisplayed()
-  }
-
-  @Test
-  fun moveOutMovesNoteToParentFolder() = runTest {
-    init(folder)
-
-    `when`(mockFolderRepository.getSubFoldersOf(eq("1"), any(), any(), any())).then { invocation ->
+  fun moveFolder() = runTest {
+    init(subfolder)
+    `when`(mockFolderRepository.getSubFoldersOf(eq("3"), any(), any(), any())).then { invocation ->
       val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(1)
-      onSuccess(subFolderListSameUser)
+      onSuccess(emptyList())
     }
-
-    folderViewModel.getSubFoldersOf("1")
-
-    composeTestRule.onNodeWithTag("folderCard").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("folderCard").performClick()
-
-    `when`(mockNoteRepository.getNotesFromFolder(eq("4"), any(), any(), any())).then { invocation ->
-      val onSuccess = invocation.getArgument<(List<Note>) -> Unit>(1)
-      onSuccess(subNoteList3)
+    composeTestRule.onNodeWithTag("folderSettingsButton").performClick()
+    composeTestRule.onNodeWithTag("moveFolderButton").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("moveFolderButton").performClick()
+    composeTestRule.onNodeWithTag("FileSystemPopup").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("goBackFileSystemPopup").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("goBackFileSystemPopup").performClick()
+    composeTestRule.onNodeWithTag("MoveHereButton").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("MoveHereButton").performClick()
+    assert(folderViewModel.parentFolderId.value == null) {
+      "Expected parentFolderId to be overview so null"
     }
-    noteViewModel.getNotesFromFolder("4")
-
-    composeTestRule.onNodeWithTag("noteCard").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("MoveOutButton").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("MoveOutButton").performClick()
-    composeTestRule.onNodeWithTag("popup").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("confirmButton").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("confirmButton").performClick()
-    verify(mockNavigationActions).navigateTo(Screen.FOLDER_CONTENTS.replace("{folderId}", "1"))
-    composeTestRule
-        .onAllNodesWithTag("noteCard")
-        .filter(hasText("Sample Sub Note4"))
-        .onFirst()
-        .assertIsDisplayed()
   }
 
   @Test

@@ -7,8 +7,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -23,7 +21,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.github.onlynotesswent.MainActivity
@@ -34,7 +31,6 @@ import com.github.onlynotesswent.model.note.Note
 import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.model.user.UserViewModel
 import com.github.onlynotesswent.ui.common.CustomSeparatedLazyGrid
-import com.github.onlynotesswent.ui.common.FileSystemPopup
 import com.github.onlynotesswent.ui.common.FolderDialog
 import com.github.onlynotesswent.ui.common.NoteDialog
 import com.github.onlynotesswent.ui.navigation.BottomNavigationMenu
@@ -77,7 +73,6 @@ fun NoteOverviewScreen(
   var expanded by remember { mutableStateOf(false) }
   var showCreateFolderDialog by remember { mutableStateOf(false) }
   var showCreateNoteDialog by remember { mutableStateOf(false) }
-  var showFilePopup by remember { mutableStateOf(false) } // State to control the popup visibility
 
   // Handle back press
   BackHandler {
@@ -96,15 +91,6 @@ fun NoteOverviewScreen(
                   onExpandedFabChange = { expanded = it },
                   showCreateFolderDialog = { showCreateFolderDialog = it },
                   showCreateItemDialog = { showCreateNoteDialog = it })
-              FloatingActionButton(
-                  modifier = Modifier.testTag("showFileSystemButton"),
-                  onClick = { showFilePopup = true },
-                  containerColor = MaterialTheme.colorScheme.primary,
-                  contentColor = MaterialTheme.colorScheme.onPrimary) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.open_folder_icon),
-                        contentDescription = "Open File Manager")
-                  }
             }
       },
       bottomBar = {
@@ -141,10 +127,6 @@ fun NoteOverviewScreen(
                 navigationActions.navigateTo(Screen.EDIT_NOTE)
               },
               action = stringResource(R.string.create))
-        }
-
-        if (showFilePopup) {
-          FileSystemPopup(onDismiss = { showFilePopup = false }, folderViewModel = folderViewModel)
         }
 
         // Logic to show the dialog to create a folder
