@@ -6,23 +6,31 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.ElevatedButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -153,44 +161,89 @@ fun CreationDialog(
             }
       })
 }
+
 /**
- * Displays a popup dialog to browse and navigate the file system.
+ * A composable function that displays a popup dialog for moving a specific item in the file system.
  *
- * This popup allows users to view folders in a hierarchical structure. Users can navigate into
- * subfolders, view folder contents, and return to the root folder.
- *
- * @param onDismiss Callback invoked when the popup is dismissed.
- * @param folderViewModel The ViewModel that provides the folder data.
+ * @param onDismiss A callback triggered to dismiss the popup dialog.
+ * @param folderViewModel The ViewModel managing folder-related data and operations.
+ * @param onMoveHere A callback triggered when the "Move Here" button is clicked, designed to move
+ *   the selected item in a specific folder.
  */
 @Composable
-fun FileSystemPopup(onDismiss: () -> Unit, folderViewModel: FolderViewModel) {
+fun FileSystemPopup(
+    onDismiss: () -> Unit,
+    folderViewModel: FolderViewModel,
+    onMoveHere: (Folder?) -> Unit = {}
+) {
   var selectedFolder by remember { mutableStateOf<Folder?>(folderViewModel.selectedFolder.value) }
   var folderSubFolders by remember { mutableStateOf<List<Folder>>(emptyList()) }
   val userRootFolders = folderViewModel.userRootFolders.collectAsState()
 
+  // Modify the subfolder when selected Folder changes, best way I found how to do it as when done
+  // sequentially it takes a bit of time for the selected Folder to change which causes a bug
+  // where the subfolders don't update. Could fix this problem using a wait but that would depend
+  // on the internet speed of the user.
+  LaunchedEffect(selectedFolder) {
+    if (selectedFolder != null) {
+      folderViewModel.getSubFoldersOfNoStateUpdate(
+          selectedFolder!!.id, onSuccess = { subFolders -> folderSubFolders = subFolders })
+    }
+  }
   Dialog(onDismissRequest = { onDismiss() }) {
     Box(
         modifier =
             Modifier.testTag("FileSystemPopup")
-                .fillMaxWidth(0.9f) // Adjust the popup width
-                .fillMaxHeight(0.5f)
+                .fillMaxWidth(0.95f) // Adjust the popup width
+                .fillMaxHeight(0.7f)
                 .padding(16.dp)
                 .background(
                     color = MaterialTheme.colorScheme.background,
                     shape = RoundedCornerShape(12.dp))) {
-          Column(modifier = Modifier.fillMaxWidth().fillMaxHeight()) {
+          Column(modifier = Modifier.fillMaxSize()) {
             Box(
                 modifier =
                     Modifier.fillMaxWidth()
                         .background(MaterialTheme.colorScheme.primary)
                         .padding(vertical = 12.dp, horizontal = 16.dp)) {
-                  Text(
-                      text =
-                          if (selectedFolder == null)
-                              stringResource(R.string.file_system_folders_in_root)
-                          else "Folders in: ${selectedFolder!!.name}",
-                      style = MaterialTheme.typography.bodyMedium,
-                      color = MaterialTheme.colorScheme.onPrimary)
+                  Row(
+                      modifier = Modifier.fillMaxWidth(),
+                      verticalAlignment = Alignment.CenterVertically) {
+                        IconButton(
+                            modifier = Modifier.testTag("goBackFileSystemPopup"),
+                            onClick = {
+                              if (selectedFolder != null) {
+                                if (selectedFolder!!.parentFolderId != null) {
+                                  folderViewModel.getFolderByIdNoStateUpdate(
+                                      selectedFolder!!.parentFolderId!!,
+                                      onSuccess = { parentFolder -> selectedFolder = parentFolder })
+                                } else {
+                                  selectedFolder = null
+                                }
+                              }
+                            }) {
+                              Icon(
+                                  imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                  contentDescription = "Back")
+                            }
+                        Spacer(modifier = Modifier.weight(1f))
+                        Text(
+                            text =
+                                if (selectedFolder == null)
+                                    stringResource(R.string.file_system_folders_in_root)
+                                else "Folders in: ${selectedFolder!!.name}",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onPrimary)
+
+                        Spacer(modifier = Modifier.weight(1f))
+
+                        // Home button at the top right
+                        IconButton(
+                            modifier = Modifier.testTag("goToOverviewFileSystemPopup"),
+                            onClick = { selectedFolder = null }) {
+                              Icon(imageVector = Icons.Default.Home, contentDescription = "Home")
+                            }
+                      }
                 }
 
             Column(
@@ -246,13 +299,18 @@ fun FileSystemPopup(onDismiss: () -> Unit, folderViewModel: FolderViewModel) {
                     }
                   }
                 }
-
-            Box(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
-              ElevatedButton(
-                  onClick = { selectedFolder = null }, modifier = Modifier.fillMaxWidth()) {
-                    Text(stringResource(R.string.file_system_back_to_root))
-                  }
-            }
+            Box(
+                modifier = Modifier.fillMaxWidth().padding(16.dp),
+                contentAlignment = Alignment.Center) {
+                  Button(
+                      onClick = {
+                        onMoveHere(selectedFolder)
+                        onDismiss()
+                      },
+                      modifier = Modifier.testTag("MoveHereButton")) {
+                        Text(text = stringResource(R.string.move_here))
+                      }
+                }
           }
         }
   }

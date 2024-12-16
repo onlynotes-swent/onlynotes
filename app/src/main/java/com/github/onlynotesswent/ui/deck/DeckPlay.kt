@@ -15,6 +15,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.MutableState
@@ -23,9 +27,11 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.flashcard.Flashcard
 import com.github.onlynotesswent.model.flashcard.FlashcardViewModel
 import com.github.onlynotesswent.model.flashcard.UserFlashcard
@@ -34,13 +40,22 @@ import com.github.onlynotesswent.model.flashcard.deck.DeckViewModel
 import com.github.onlynotesswent.model.user.UserViewModel
 import com.github.onlynotesswent.ui.common.ScreenTopBar
 import com.github.onlynotesswent.ui.navigation.NavigationActions
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import com.github.onlynotesswent.model.file.FileViewModel
+import com.github.onlynotesswent.model.flashcard.FlashcardViewModel
+import com.github.onlynotesswent.model.flashcard.deck.DeckViewModel
+import com.github.onlynotesswent.model.user.UserViewModel
+import com.github.onlynotesswent.ui.common.FlashcardPlayItem
+import com.github.onlynotesswent.ui.navigation.NavigationActions
 
 @Composable
 fun DeckPlayScreen(
     navigationActions: NavigationActions,
     userViewModel: UserViewModel,
     deckViewModel: DeckViewModel,
-    flashcardViewModel: FlashcardViewModel
+    flashcardViewModel: FlashcardViewModel,
+    fileViewModel: FileViewModel
 ) {
 
     val deck = deckViewModel.selectedDeck.collectAsState()
@@ -77,7 +92,7 @@ fun DeckPlayScreen(
 
     val flashcardList = flashcardViewModel.deckFlashcards.collectAsState()
     val userViewModelFlashcards = userViewModel.deckUserFlashcards.collectAsState()
-    
+
     //deckViewModel.selectedDeck.value?.let { userViewModel.getUserFlashcardFromDeck(it) }
    // val flashcardUserInfo= userViewModel.deckUserFlashcards
   Scaffold(

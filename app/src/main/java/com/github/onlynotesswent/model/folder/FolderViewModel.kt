@@ -332,6 +332,29 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
           useCache = useCache)
     }
   }
+  /**
+   * Retrieves a folder by its ID, do not update the state of the viewModel.
+   *
+   * @param folderId The ID of the folder to retrieve.
+   * @param onSuccess The function to call when the folder is retrieved successfully.
+   * @param onFailure The function to call when the folder fails to be retrieved.
+   * @param useCache Whether to update data from cache. Should be true only if userId of the folder
+   *   is the current user.
+   */
+  fun getFolderByIdNoStateUpdate(
+      folderId: String,
+      onSuccess: (Folder) -> Unit = {},
+      onFailure: (Exception) -> Unit = {},
+      useCache: Boolean = false
+  ) {
+    viewModelScope.launch {
+      repository.getFolderById(
+          folderId = folderId,
+          onSuccess = { onSuccess(it) },
+          onFailure = onFailure,
+          useCache = useCache)
+    }
+  }
 
   /**
    * Updates an existing folder.
@@ -362,6 +385,27 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
           },
           onFailure = onFailure,
           useCache = useCache)
+    }
+  }
+  /**
+   * Updates an existing folder without changing the state of the ViewModel.
+   *
+   * @param folder The folder with updated information.
+   * @param onSuccess The function to call when the folder is updated successfully.
+   * @param onFailure The function to call when the folder fails to be updated.
+   * @param useCache Whether to update data from cache. Should be true only if userId of the folder
+   *   is the current user.
+   * @param isDeckView A flag indicating if the folder is a deck view.
+   */
+  fun updateFolderNoStateUpdate(
+      folder: Folder,
+      onSuccess: () -> Unit = {},
+      onFailure: (Exception) -> Unit = {},
+      useCache: Boolean = false
+  ) {
+    viewModelScope.launch {
+      repository.updateFolder(
+          folder = folder, onSuccess = { onSuccess() }, onFailure = onFailure, useCache = useCache)
     }
   }
 

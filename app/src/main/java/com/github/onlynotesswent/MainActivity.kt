@@ -176,7 +176,8 @@ fun OnlyNotesApp(
               deckViewModel.getDeckById(
                   deckId, { deckViewModel.playDeckWithMode(it, Deck.PlayMode.fromString(mode)) })
         }
-        DeckPlayScreen(navigationActions,userViewModel, deckViewModel, flashcardViewModel)
+        DeckPlayScreen(
+            navigationActions, userViewModel, deckViewModel, flashcardViewModel, fileViewModel)
       }
     }
 
