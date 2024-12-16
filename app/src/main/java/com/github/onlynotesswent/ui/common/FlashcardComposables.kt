@@ -1,6 +1,5 @@
 package com.github.onlynotesswent.ui.common
 
-import android.util.Log
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.FastOutSlowInEasing
@@ -58,9 +57,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
@@ -656,7 +653,10 @@ fun McqPlayItem(
                   MaterialTheme.colorScheme.onSurface
                 }
             ElevatedCard(
-                modifier = Modifier.fillMaxWidth(0.7f).padding(horizontal = 10.dp).testTag("flashcardChoice"),
+                modifier =
+                    Modifier.fillMaxWidth(0.7f)
+                        .padding(horizontal = 10.dp)
+                        .testTag("flashcardChoice"),
                 onClick = {
                   if (choice.value == null) {
                     choice.value = index
@@ -717,7 +717,7 @@ fun FlashcardImage(
     imageUri: MutableState<String?> = remember { mutableStateOf(null) },
     padding: Dp = 10.dp,
 ) {
-  if (compareUID(imageUri.value,flashcard.value.id, FileType.FLASHCARD_IMAGE.fileExtension)) {
+  if (compareUID(imageUri.value, flashcard.value.id, FileType.FLASHCARD_IMAGE.fileExtension)) {
     Image(
         painter = rememberAsyncImagePainter(imageUri.value!!),
         contentDescription = "Flashcard image",

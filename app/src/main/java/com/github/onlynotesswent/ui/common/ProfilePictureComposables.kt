@@ -32,7 +32,7 @@ import com.github.onlynotesswent.model.user.User
  * @param extension The extension of the file in the URI.
  * @return The UID extracted from the URI.
  */
-fun extractUID(uri: String?, extension:String = FileType.FLASHCARD_IMAGE.fileExtension): String? {
+fun extractUID(uri: String?, extension: String = FileType.FLASHCARD_IMAGE.fileExtension): String? {
   val parts = uri?.split("/") ?: return null
   val fileName = parts.lastOrNull() ?: return null
   return fileName.substringBeforeLast(extension)
@@ -46,7 +46,11 @@ fun extractUID(uri: String?, extension:String = FileType.FLASHCARD_IMAGE.fileExt
  * @param extension The extension of the file in the URI.
  * @return True if the extracted UID matches the given UID, false otherwise.
  */
-fun compareUID(uri: String?, uid: String?, extension: String = FileType.FLASHCARD_IMAGE.fileExtension): Boolean {
+fun compareUID(
+    uri: String?,
+    uid: String?,
+    extension: String = FileType.FLASHCARD_IMAGE.fileExtension
+): Boolean {
   return uid?.let { extractUID(uri, extension)?.take(it.length) == it } == true
 }
 
