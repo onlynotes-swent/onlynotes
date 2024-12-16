@@ -251,8 +251,11 @@ fun DeckScreen(
                     verticalArrangement = Arrangement.spacedBy(10.dp),
                     horizontalAlignment = Alignment.CenterHorizontally) {
                       items(sortedFlashcards.value.size) { index ->
+                        val flashcardState = remember {
+                          derivedStateOf { sortedFlashcards.value[index] }
+                        }
                         FlashcardViewItem(
-                            flashcard = sortedFlashcards.value[index],
+                            flashcard = flashcardState,
                             deckViewModel = deckViewModel,
                             flashcardViewModel = flashcardViewModel,
                             fileViewModel = fileViewModel,

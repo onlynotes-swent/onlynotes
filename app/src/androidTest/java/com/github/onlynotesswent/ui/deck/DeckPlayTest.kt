@@ -1,7 +1,13 @@
 package com.github.onlynotesswent.ui.deck
 
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.test.assert
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertTextEquals
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -27,7 +33,6 @@ import org.mockito.Mock
 import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
-import org.mockito.kotlin.times
 
 @RunWith(AndroidJUnit4::class)
 class DeckPlayTest {
@@ -124,7 +129,7 @@ class DeckPlayTest {
 
     composeTestRule.setContent {
       FlashcardPlayItem(
-          flashcard = testFlashcard1,
+          flashcard = remember { mutableStateOf(testFlashcard1) },
           fileViewModel = fileViewModel,
           onCorrect = { onCorrectCalled = true },
           onIncorrect = { onIncorrectCalled = true })
@@ -136,5 +141,44 @@ class DeckPlayTest {
     composeTestRule.onNodeWithTag("flashcard").performClick()
     // Test that the back of the flashcard is displayed
     composeTestRule.onNodeWithTag("flashcardBack", true).assertTextEquals("testBack1")
+  }
+
+  @Test
+  fun mcqFlashcardPlayItem() {
+    var onCorrectCalled = false
+    var onIncorrectCalled = false
+
+    composeTestRule.setContent {
+      FlashcardPlayItem(
+          flashcard = remember { mutableStateOf(testFlashcard2) },
+          fileViewModel = fileViewModel,
+          onCorrect = { onCorrectCalled = true },
+          onIncorrect = { onIncorrectCalled = true })
+    }
+
+    // Test that the front of the flashcard is displayed
+    composeTestRule.onNodeWithTag("flashcardFront", true).assertTextEquals("testFront2")
+    // Flip the flashcard
+    composeTestRule.onNodeWithTag("flashcard").performClick()
+    // Test that the fake backs are displayed
+    composeTestRule.onAllNodesWithTag("flashcardChoice").assertCountEquals(3)
+    composeTestRule.onAllNodesWithTag("flashcardChoiceIcon", true).assertCountEquals(3)
+    composeTestRule.onNodeWithTag("flashcardChoice--0", true).assert(hasText("testBack2"))
+    composeTestRule.onNodeWithTag("flashcardChoice--1", true).assert(hasText("fakeBack1"))
+    composeTestRule.onNodeWithTag("flashcardChoice--2", true).assert(hasText("fakeBack2"))
+
+    // Select the correct answer
+    composeTestRule
+        .onNodeWithTag("flashcardChoice--0", true)
+        .assert(hasText("testBack2"))
+        .performClick()
+
+    // Test that the onCorrect callback is called
+    assert(onCorrectCalled)
+
+    // Test icons are displayed:
+    composeTestRule.onNodeWithTag("flashcardCheckIcon", true).assertExists()
+    composeTestRule.onAllNodesWithTag("flashcardWrongIcon", true).assertCountEquals(2)
+    composeTestRule.onNodeWithTag("flashcardChoiceIcon", true).assertDoesNotExist()
   }
 }
