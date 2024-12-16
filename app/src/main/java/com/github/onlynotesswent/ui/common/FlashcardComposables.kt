@@ -654,7 +654,7 @@ fun McqPlayItem(
                   MaterialTheme.colorScheme.onSurface
                 }
             ElevatedCard(
-                modifier = Modifier.fillMaxWidth(0.7f).padding(10.dp).testTag("flashcardChoice"),
+                modifier = Modifier.fillMaxWidth(0.7f).padding(horizontal = 10.dp).testTag("flashcardChoice"),
                 onClick = {
                   if (choice.value == null) {
                     choice.value = index
