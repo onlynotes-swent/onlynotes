@@ -54,7 +54,6 @@ fun compareUID(
   return uid?.let { extractUID(uri, extension)?.take(it.length) == it } == true
 }
 
-private val doesNothing = {}
 /**
  * Displays the user's thumbnail profile picture, by wrapping the NonModifiableProfilePicture
  * composable.
@@ -83,7 +82,7 @@ fun ThumbnailPic(user: User?, fileViewModel: FileViewModel, size: Int = 40) {
 fun ThumbnailDynamicPic(
     user: State<User?>,
     fileViewModel: FileViewModel,
-    onClick: () -> Unit = doesNothing,
+    onClick: (() -> Unit)? = null,
     size: Int = 40,
 ) {
   val profilePictureUri = remember { mutableStateOf("") }
@@ -93,7 +92,7 @@ fun ThumbnailDynamicPic(
       fileViewModel,
       size,
       "thumbnail--${user.value?.uid?:"default"}",
-      onClick = { onClick() })
+      onClick)
 }
 
 /**
@@ -112,41 +111,32 @@ fun NonModifiableProfilePicture(
     fileViewModel: FileViewModel,
     size: Int = 150,
     testTag: String = "profilePicture",
-    onClick: () -> Unit = doesNothing
+    onClick: (() -> Unit)? = null
 ) {
-  val boxModifier =
-      if (onClick === doesNothing) Modifier.size(size.dp)
-      else Modifier.size(size.dp).clickable { onClick() }
-  Box(modifier = boxModifier) {
-
-    // Download the profile picture from Firebase Storage if it hasn't been downloaded yet
-    if (user.value != null && user.value!!.hasProfilePicture && profilePictureUri.value.isBlank()) {
-      fileViewModel.downloadFile(
-          user.value!!.uid,
-          FileType.PROFILE_PIC_JPEG,
-          context = LocalContext.current,
-          onSuccess = { file -> profilePictureUri.value = file.absolutePath },
-          onFileNotFound = { Log.e("ProfilePicture", "Profile picture not found") },
-          onFailure = { e -> Log.e("ProfilePicture", "Error downloading profile picture", e) })
-    }
-
-    // Profile Picture Painter
-    val painter =
-        if (user.value != null &&
-            user.value!!.hasProfilePicture &&
-            profilePictureUri.value.isNotBlank()) {
-          // Load the profile picture if it exists
-          rememberAsyncImagePainter(profilePictureUri.value)
+  val boxModifier = Modifier.size(size.dp)
+  Box(modifier = onClick?.let { boxModifier.clickable { onClick() } } ?: boxModifier) {
+      val painter = if (compareUID(profilePictureUri.value, user.value?.uid, FileType.PROFILE_PIC_JPEG.fileExtension)) {
+         rememberAsyncImagePainter(profilePictureUri.value)
         } else {
-          // Load the default profile picture if it doesn't exist
+          // Load the default profile picture if no picture was found
+          // and download the profile picture if it should exist
+          if (user.value!!.hasProfilePicture) {
+              fileViewModel.downloadFile(
+                  user.value!!.uid,
+                  FileType.PROFILE_PIC_JPEG,
+                  context = LocalContext.current,
+                  onSuccess = { file -> profilePictureUri.value = file.absolutePath },
+                  onFileNotFound = { Log.e("ProfilePicture", "Profile picture not found") },
+                  onFailure = { e -> Log.e("ProfilePicture", "Error downloading profile picture", e) })
+          }
           rememberVectorPainter(Icons.Default.AccountCircle)
         }
 
-    // Profile Picture
-    Image(
-        painter = painter,
-        contentDescription = "Profile Picture",
-        modifier = Modifier.testTag(testTag).size(size.dp).clip(CircleShape),
-        contentScale = ContentScale.Crop)
+      // Profile Picture
+      Image(
+          painter = painter,
+          contentDescription = "Profile Picture",
+          modifier = Modifier.testTag(testTag).size(size.dp).clip(CircleShape),
+          contentScale = ContentScale.Crop)
   }
 }

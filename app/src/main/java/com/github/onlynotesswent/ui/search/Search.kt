@@ -22,6 +22,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -254,8 +255,9 @@ fun SearchScreen(
               contentPadding = PaddingValues(horizontal = 16.dp),
               modifier = Modifier.fillMaxWidth().padding(padding).testTag("filteredUserList")) {
                 items(filteredUsers.value.size) { index ->
+                  val userState = remember { derivedStateOf { filteredUsers.value[index] } }
                   UserItem(
-                      filteredUsers.value[index],
+                      userState,
                       userViewModel,
                       fileViewModel,
                       onClick = {
