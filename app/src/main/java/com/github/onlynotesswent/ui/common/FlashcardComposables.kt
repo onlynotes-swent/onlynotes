@@ -160,14 +160,14 @@ fun FlashcardViewItem(
                 Text(
                     flashcard.front,
                     style = Typography.bodyMedium,
-                    modifier = Modifier.testTag("flashcardFront--${flashcard.id}").padding(20.dp))
-                FlashcardImage(flashcard, fileViewModel, padding = 10.dp)
-                HorizontalDivider(modifier = Modifier.height(5.dp).padding(10.dp))
+                    modifier = Modifier.testTag("flashcardFront--${flashcard.id}").padding(5.dp))
+                FlashcardImage(flashcard, fileViewModel)
+                HorizontalDivider(modifier = Modifier.height(5.dp).padding(5.dp))
                 // Show back
                 Text(
                     flashcard.back,
                     style = Typography.bodyMedium,
-                    modifier = Modifier.testTag("flashcardBack--${flashcard.id}").padding(20.dp))
+                    modifier = Modifier.testTag("flashcardBack--${flashcard.id}").padding(5.dp))
               }
         }
       }
@@ -411,6 +411,9 @@ fun FlashcardDialog(
                     val newHasImage: Boolean =
                         if (hasImageBeenChanged.value) imageUri.value != null
                         else flashcard.value?.hasImage == true
+
+                    // Remove empty fake backs
+                    fakeBacks.value = fakeBacks.value.filter { it.isNotBlank() }
 
                     val newFlashcard: Flashcard =
                         flashcard.value?.copy(
