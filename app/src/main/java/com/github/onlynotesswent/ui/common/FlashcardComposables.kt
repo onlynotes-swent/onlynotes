@@ -44,6 +44,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
@@ -625,9 +626,7 @@ fun McqPlayItem(
           flashcard.fakeBacks.filter { it != flashcard.back && it.isNotBlank() }
   val shuffledIndexes = backs.indices.shuffled()
 
-  ElevatedCard(
-      modifier = Modifier.fillMaxWidth(0.9f).padding(5.dp),
-      elevation = CardDefaults.elevatedCardElevation(defaultElevation = 4.dp)) {
+  ElevatedCard(modifier = Modifier.fillMaxWidth(0.9f).padding(5.dp)) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(20.dp),
@@ -666,13 +665,13 @@ fun McqPlayItem(
                     },
                     elevation =
                         if (choice.value == index)
-                            CardDefaults.elevatedCardElevation(defaultElevation = 5.dp)
-                        else CardDefaults.elevatedCardElevation(defaultElevation = 3.dp)) {
+                            CardDefaults.elevatedCardElevation(defaultElevation = 4.dp)
+                        else CardDefaults.elevatedCardElevation(defaultElevation = 2.dp)) {
                       Row(
                           modifier = Modifier.fillMaxWidth().padding(5.dp),
                           horizontalArrangement = Arrangement.spacedBy(10.dp),
                           verticalAlignment = Alignment.CenterVertically) {
-                            AnimatedContent(choice.value?.let { it == index }, label = "") {
+                            AnimatedContent(choice.value?.let { index == 0 }, label = "") {
                               when (it) {
                                 null ->
                                     Icon(
