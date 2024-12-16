@@ -71,6 +71,31 @@ class DeckRepositoryFirestore(private val db: FirebaseFirestore) : DeckRepositor
         }
   }
 
+  override fun getDecksFromFollowingList(
+      followingListIds: List<String>,
+      onSuccess: (List<Deck>) -> Unit,
+      onFailure: (Exception) -> Unit
+  ) {
+    // The current user is not following anyone
+    if (followingListIds.isEmpty()) {
+      onSuccess(emptyList())
+      return
+    }
+
+    db.collection(collectionPath)
+        .whereIn("userId", followingListIds)
+        .whereEqualTo("visibility", Visibility.FRIENDS.toString())
+        .get()
+        .addOnSuccessListener { querySnapshot ->
+          val decks = querySnapshot.documents.mapNotNull { documentSnapshotToDeck(it) }
+          onSuccess(decks)
+        }
+        .addOnFailureListener { exception ->
+          onFailure(exception)
+          Log.e(TAG, "Error getting decks from following list", exception)
+        }
+  }
+
   override fun getDecksFrom(
       userId: String,
       onSuccess: (List<Deck>) -> Unit,
