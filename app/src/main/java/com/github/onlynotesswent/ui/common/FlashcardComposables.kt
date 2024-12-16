@@ -44,7 +44,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
@@ -575,6 +574,7 @@ fun NormalFlashcardPlayItem(
   ElevatedCard(
       modifier =
           Modifier.fillMaxWidth(0.9f)
+              .testTag("flashcard")
               .padding(5.dp)
               .graphicsLayer {
                 rotationY =
@@ -597,17 +597,14 @@ fun NormalFlashcardPlayItem(
                     flashcard.front,
                     style = Typography.bodyLarge,
                     fontWeight = FontWeight(450),
-                    modifier = Modifier.testTag("flashcardFront--${flashcard.id}"))
+                    modifier = Modifier.testTag("flashcardFront"))
                 FlashcardImage(flashcard, fileViewModel)
               } else {
                 Text(
                     flashcard.back,
                     style = Typography.bodyLarge,
                     fontWeight = FontWeight(450),
-                    modifier =
-                        Modifier.testTag("flashcardBack--${flashcard.id}").graphicsLayer {
-                          rotationY = 180f
-                        })
+                    modifier = Modifier.testTag("flashcardBack").graphicsLayer { rotationY = 180f })
               }
             }
       }
@@ -626,83 +623,83 @@ fun McqPlayItem(
           flashcard.fakeBacks.filter { it != flashcard.back && it.isNotBlank() }
   val shuffledIndexes = backs.indices.shuffled()
 
-  ElevatedCard(modifier = Modifier.fillMaxWidth(0.9f).padding(5.dp)) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(20.dp),
-            modifier =
-                Modifier.fillMaxWidth()
-                    .padding(vertical = 30.dp, horizontal = 10.dp)
-                    .heightIn(min = 200.dp, max = 600.dp)) {
-              Text(
-                  flashcard.front,
-                  style = Typography.bodyLarge,
-                  fontWeight = FontWeight(550),
-                  modifier = Modifier.testTag("flashcardFront--${flashcard.id}"))
-              FlashcardImage(flashcard, fileViewModel)
-              HorizontalDivider(modifier = Modifier.height(5.dp).fillMaxWidth().padding(8.dp))
-              shuffledIndexes.forEach { index ->
-                val color = remember { mutableStateOf(Color.Gray) }
-                color.value =
-                    if (choice.value != null && index == 0) {
-                      Color.Green.copy(green = 0.6f, blue = 0.3f, red = 0.3f)
-                    } else if (choice.value == index) {
-                      Color.Red.copy(red = 0.7f, blue = 0.3f)
+  ElevatedCard(modifier = Modifier.fillMaxWidth(0.9f).padding(5.dp).testTag("flashcard")) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(20.dp),
+        modifier =
+            Modifier.fillMaxWidth()
+                .padding(vertical = 30.dp, horizontal = 10.dp)
+                .heightIn(min = 200.dp, max = 600.dp)) {
+          Text(
+              flashcard.front,
+              style = Typography.bodyLarge,
+              fontWeight = FontWeight(550),
+              modifier = Modifier.testTag("flashcardFront"))
+          FlashcardImage(flashcard, fileViewModel)
+          HorizontalDivider(modifier = Modifier.height(5.dp).fillMaxWidth().padding(8.dp))
+          shuffledIndexes.forEach { index ->
+            val color = remember { mutableStateOf(Color.Gray) }
+            color.value =
+                if (choice.value != null && index == 0) {
+                  Color.Green.copy(green = 0.6f, blue = 0.3f, red = 0.3f)
+                } else if (choice.value == index) {
+                  Color.Red.copy(red = 0.7f, blue = 0.3f)
+                } else {
+                  MaterialTheme.colorScheme.onSurface
+                }
+            ElevatedCard(
+                modifier = Modifier.fillMaxWidth(0.7f).padding(10.dp),
+                onClick = {
+                  if (choice.value == null) {
+                    choice.value = index
+                    if (index == 0) {
+                      onCorrect()
                     } else {
-                      MaterialTheme.colorScheme.onSurface
+                      onIncorrect()
                     }
-                ElevatedCard(
-                    modifier = Modifier.fillMaxWidth(0.7f).padding(10.dp),
-                    onClick = {
-                      if (choice.value == null) {
-                        choice.value = index
-                        if (index == 0) {
-                          onCorrect()
-                        } else {
-                          onIncorrect()
-                        }
-                      }
-                    },
-                    elevation =
-                        if (choice.value == index)
-                            CardDefaults.elevatedCardElevation(defaultElevation = 4.dp)
-                        else CardDefaults.elevatedCardElevation(defaultElevation = 2.dp)) {
-                      Row(
-                          modifier = Modifier.fillMaxWidth().padding(5.dp),
-                          horizontalArrangement = Arrangement.spacedBy(10.dp),
-                          verticalAlignment = Alignment.CenterVertically) {
-                            AnimatedContent(choice.value?.let { index == 0 }, label = "") {
-                              when (it) {
-                                null ->
-                                    Icon(
-                                        imageVector = Icons.Default.CheckBoxOutlineBlank,
-                                        contentDescription = null,
-                                        tint = color.value,
-                                        modifier = Modifier.padding(5.dp))
-                                true ->
-                                    Icon(
-                                        imageVector = Icons.Default.Check,
-                                        contentDescription = null,
-                                        tint = color.value,
-                                        modifier = Modifier.padding(5.dp))
-                                false ->
-                                    Icon(
-                                        imageVector = Icons.Default.Close,
-                                        contentDescription = null,
-                                        tint = color.value,
-                                        modifier = Modifier.padding(5.dp))
-                              }
-                            }
-                            Text(
-                                backs[index],
-                                style = Typography.bodyMedium,
-                                color = color.value,
-                                modifier = Modifier.testTag("flashcardBack--${flashcard.id}"))
+                  }
+                },
+                elevation =
+                    if (choice.value == index)
+                        CardDefaults.elevatedCardElevation(defaultElevation = 4.dp)
+                    else CardDefaults.elevatedCardElevation(defaultElevation = 2.dp)) {
+                  Row(
+                      modifier = Modifier.fillMaxWidth().padding(5.dp),
+                      horizontalArrangement = Arrangement.spacedBy(10.dp),
+                      verticalAlignment = Alignment.CenterVertically) {
+                        AnimatedContent(choice.value?.let { index == 0 }, label = "") {
+                          when (it) {
+                            null ->
+                                Icon(
+                                    imageVector = Icons.Default.CheckBoxOutlineBlank,
+                                    contentDescription = null,
+                                    tint = color.value,
+                                    modifier = Modifier.padding(5.dp))
+                            true ->
+                                Icon(
+                                    imageVector = Icons.Default.Check,
+                                    contentDescription = null,
+                                    tint = color.value,
+                                    modifier = Modifier.padding(5.dp))
+                            false ->
+                                Icon(
+                                    imageVector = Icons.Default.Close,
+                                    contentDescription = null,
+                                    tint = color.value,
+                                    modifier = Modifier.padding(5.dp))
                           }
-                    }
-              }
-            }
-      }
+                        }
+                        Text(
+                            backs[index],
+                            style = Typography.bodyMedium,
+                            color = color.value,
+                            modifier = Modifier.testTag("flashcardBack--${flashcard.id}"))
+                      }
+                }
+          }
+        }
+  }
 }
 
 @Composable
