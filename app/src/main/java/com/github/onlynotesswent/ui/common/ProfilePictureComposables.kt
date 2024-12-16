@@ -25,6 +25,18 @@ import com.github.onlynotesswent.model.file.FileType
 import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.user.User
 
+/**
+ * Extracts the UID from the URI.
+ *
+ * @param uri The URI from which the UID is to be extracted.
+ * @return The UID extracted from the URI.
+ */
+fun extractUID(uri: String?): String? {
+  val parts = uri?.split("/") ?: return null
+  val fileName = parts.lastOrNull() ?: return null
+  return fileName.substringBeforeLast(".jpg")
+}
+
 private val doesNothing = {}
 /**
  * Displays the user's thumbnail profile picture, by wrapping the NonModifiableProfilePicture

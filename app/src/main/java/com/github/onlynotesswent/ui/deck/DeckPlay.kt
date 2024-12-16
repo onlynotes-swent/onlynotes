@@ -8,6 +8,8 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -31,14 +33,14 @@ fun DeckPlayScreen(
 
   val flashcards = flashcardViewModel.deckFlashcards.collectAsState().value
   val pagerState = rememberPagerState { flashcards.size }
-
   HorizontalPager(pagerState) { pageIndex ->
     Column(
         modifier = Modifier.fillMaxWidth().padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp)) {
+          val flashcardState = remember { derivedStateOf { flashcards[pageIndex] } }
           FlashcardPlayItem(
-              flashcard = flashcards[pageIndex],
+              flashcard = flashcardState,
               fileViewModel = fileViewModel,
           )
         }
