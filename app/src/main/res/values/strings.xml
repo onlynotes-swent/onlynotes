@@ -21,7 +21,7 @@
     <string name="enter_comment_here">Enter comment here</string>
     <string name="content">Content</string>
     <string name="no_note_is_selected">No note is selected</string>
-    <string name="delete_note">Delete Note?</string>
+    <string name="delete_note">Delete Note</string>
     <string name="delete_note_text">Are you sure you want to delete this note? This action cannot be undone.</string>
     <string name="discard_changes">Discard Changes?</string>
     <string name="discard_changes_text">You have unsaved changes. Are you sure you want to discard them?</string>
@@ -126,4 +126,7 @@
     <string name="edit_maj">Edit\n</string>
     <string name="delete">Delete</string>
     <string name="mcq">MCQ</string>
+    <string name="move_here">Move item here</string>
+    <string name="edit_note">Edit note</string>
+    <string name="move_note">Move note</string>
 </resources>
