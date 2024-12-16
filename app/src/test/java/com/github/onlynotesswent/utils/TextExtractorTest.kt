@@ -27,14 +27,11 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.shadows.ShadowLog
 
 @RunWith(RobolectricTestRunner::class)
-@Suppress("UNCHECKED_CAST")
 class TextExtractorTest {
 
   @Mock private lateinit var mockTextRecognizer: TextRecognizer
   @Mock private lateinit var mockPdfFile: File
   @Mock private lateinit var mockBitmap: Bitmap
-  //  @Mock private lateinit var mockPdfRenderer: PdfRenderer
-  //  @Mock private lateinit var mockParcelFileDescriptor: ParcelFileDescriptor
 
   private lateinit var textExtractor: TextExtractor
   private lateinit var mockActivity: ComponentActivity
@@ -51,51 +48,6 @@ class TextExtractorTest {
 
     textExtractor = TextExtractor(mockActivity, mockTextRecognizer)
   }
-
-  //  @Test
-  //  fun processPdfFileCatchesExceptionTest() {
-  //    `when`(textExtractor.convertPdfToBitmap(mockPdfFile)).thenThrow(Exception("Test Exception"))
-  //    val onSuccess: (String) -> Unit = mock()
-  //
-  //    mockStatic(Toast::class.java).use { toastMock ->
-  //      val mockToast = mock(Toast::class.java)
-  //      toastMock.`when`<Toast> { Toast.makeText(any<Context>(), any<String>(), any()) }
-  //        .thenReturn(mockToast)
-  //
-  //      textExtractor.processPdfFile(mockPdfFile, onSuccess)
-  //
-  //      // log shows
-  //      val logs = ShadowLog.getLogs()
-  //      println(logs)
-  //      val errorLog =
-  //        logs.find {
-  //          it.type == Log.ERROR &&
-  //                  it.tag == TextExtractor.TAG &&
-  //                  it.msg == "Error while converting PDF to bitmap"
-  //        }
-  //      assert(errorLog != null) { "Expected error log was not found!" }
-  //
-  //      // toast shows
-  //      toastMock.verify {
-  //        Toast.makeText(
-  //          eq(mockActivity), eq("Error: text recognition failed"), eq(Toast.LENGTH_SHORT)
-  //        )
-  //      }
-  //      verify(mockToast).show()
-  //    }
-  //  }
-  //
-  //  @Test
-  //  fun processPdfFileCallsCorrectFunctionsTest() {
-  //    `when`(textExtractor.convertPdfToBitmap(mockPdfFile)).thenReturn(listOf(mockBitmap))
-  //    val onSuccess: (String) -> Unit = mock()
-  //
-  //    textExtractor.processPdfFile(mockPdfFile, onSuccess)
-  //
-  //    // Verify the methods were called
-  //    verify(textExtractor).convertPdfToBitmap(mockPdfFile)
-  //    verify(textExtractor).extractTextFromBitmaps(any(), any())
-  //  }
 
   @Test
   fun convertPdfToBitmapThrowsException1Test() {
@@ -114,29 +66,6 @@ class TextExtractorTest {
 
     assertThrows(RuntimeException::class.java) { textExtractor.convertPdfToBitmap(mockPdfFile) }
   }
-
-  //  @Test
-  //  fun convertPdfToBitmapSuccessTest() {
-  //    val mockPage = mock(PdfRenderer.Page::class.java)
-  //    val fakeBitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888)
-  //
-  //    `when`(mockPdfFile.canRead()).thenReturn(true)
-  //    mockStatic(ParcelFileDescriptor::class.java).use { pfdMock ->
-  //      pfdMock.`when`<ParcelFileDescriptor> {
-  //        ParcelFileDescriptor.open(mockPdfFile, ParcelFileDescriptor.MODE_READ_ONLY)
-  //      }.thenReturn(mockParcelFileDescriptor) }
-  //    `when`(PdfRenderer(mockParcelFileDescriptor)).thenReturn(mockPdfRenderer)
-  //    `when`(mockPdfRenderer.pageCount).thenReturn(1)
-  //    `when`(mockPdfRenderer.openPage(0)).thenReturn(mockPage)
-  //    `when`(mockPage.width).thenReturn(100)
-  //    `when`(mockPage.height).thenReturn(100)
-  //    `when`(Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888)).thenReturn(fakeBitmap)
-  //
-  //    val bitmaps = textExtractor.convertPdfToBitmap(mockPdfFile)
-  //
-  //    assert(bitmaps.size == 1) { "Expected one bitmap" }
-  //    assert(bitmaps[0] == fakeBitmap) { "Expected the bitmap to be the same" }
-  //  }
 
   @Test
   fun extractTextFromBitmapsSuccessTest() {
