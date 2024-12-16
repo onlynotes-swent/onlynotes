@@ -560,9 +560,9 @@ fun UserBottomSheet(
                 Column(
                     modifier = Modifier.fillMaxWidth().padding(start = 30.dp, end = 10.dp),
                     horizontalAlignment = Alignment.Start) {
-                      users.value.forEach { user ->
+                      users.value.forEachIndexed { index, user ->
                         UserItem(
-                            remember { derivedStateOf { user } },
+                            remember { derivedStateOf { users.value[index] } },
                             userViewModel,
                             fileViewModel,
                             isFollowerSheetOfCurrentUser,

@@ -120,7 +120,7 @@ fun NonModifiableProfilePicture(
         } else {
           // Load the default profile picture if no picture was found
           // and download the profile picture if it should exist
-          if (user.value!!.hasProfilePicture) {
+          if (user.value?.hasProfilePicture == true) {
               fileViewModel.downloadFile(
                   user.value!!.uid,
                   FileType.PROFILE_PIC_JPEG,
