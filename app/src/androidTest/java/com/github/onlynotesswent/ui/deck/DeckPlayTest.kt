@@ -129,7 +129,7 @@ class DeckPlayTest {
 
     composeTestRule.setContent {
       FlashcardPlayItem(
-          flashcard = remember { mutableStateOf(testFlashcard1) },
+          flashcardState = remember { mutableStateOf(testFlashcard1) },
           fileViewModel = fileViewModel,
           onCorrect = { onCorrectCalled = true },
           onIncorrect = { onIncorrectCalled = true })
@@ -150,7 +150,7 @@ class DeckPlayTest {
 
     composeTestRule.setContent {
       FlashcardPlayItem(
-          flashcard = remember { mutableStateOf(testFlashcard2) },
+          flashcardState = remember { mutableStateOf(testFlashcard2) },
           fileViewModel = fileViewModel,
           onCorrect = { onCorrectCalled = true },
           onIncorrect = { onIncorrectCalled = true })

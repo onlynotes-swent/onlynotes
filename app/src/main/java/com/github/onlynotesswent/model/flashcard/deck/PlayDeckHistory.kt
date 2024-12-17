@@ -7,7 +7,7 @@ data class PlayDeckHistory(
     val currentFlashcardId: String
 ){
     companion object{
-        private const val MAX_LIST_LENGTH = 100
+        const val MAX_LIST_LENGTH = 10
     }
 
     /**
