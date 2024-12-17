@@ -32,7 +32,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.github.onlynotesswent.MainActivity
+import com.github.onlynotesswent.OnlyNotes
 import com.github.onlynotesswent.R
 import com.github.onlynotesswent.model.folder.Folder
 import com.github.onlynotesswent.model.folder.FolderViewModel
@@ -88,7 +88,7 @@ fun OverviewScreen(
   // Handle back press
   BackHandler {
     // Move the app to background
-    (context as MainActivity).moveTaskToBack(true)
+    (context as OnlyNotes).moveTaskToBack(true)
   }
 
   Scaffold(

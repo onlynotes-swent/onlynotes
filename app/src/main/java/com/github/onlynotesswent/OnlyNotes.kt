@@ -54,7 +54,7 @@ import com.github.onlynotesswent.ui.user.UserProfileScreen
 import com.github.onlynotesswent.utils.PictureTaker
 import com.github.onlynotesswent.utils.Scanner
 
-class MainActivity : ComponentActivity() {
+class OnlyNotes : ComponentActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
 
