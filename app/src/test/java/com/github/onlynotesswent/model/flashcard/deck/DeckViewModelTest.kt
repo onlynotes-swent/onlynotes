@@ -31,6 +31,16 @@ class DeckViewModelTest {
           lastModified = Timestamp.now(),
           flashcardIds = listOf("4", "5"))
 
+  private val testDeckFriends: Deck =
+      Deck(
+          id = "2",
+          name = "Deck2",
+          userId = "3",
+          folderId = "4",
+          visibility = Visibility.FRIENDS,
+          lastModified = Timestamp.now(),
+          flashcardIds = listOf("6", "7"))
+
   @Before
   fun setUp() {
     MockitoAnnotations.openMocks(this)
@@ -42,6 +52,10 @@ class DeckViewModelTest {
     `when`(mockDeckRepository.getDecksFrom(any(), any(), any())).thenAnswer {
       val onSuccess: (List<Deck>) -> Unit = it.getArgument(1)
       onSuccess(listOf(testDeck))
+    }
+    `when`(mockDeckRepository.getDecksFromFollowingList(any(), any(), any())).thenAnswer {
+      val onSuccess: (List<Deck>) -> Unit = it.getArgument(1)
+      onSuccess(listOf(testDeckFriends))
     }
     `when`(mockDeckRepository.getDecksByFolder(any(), any(), any())).thenAnswer {
       val onSuccess: (List<Deck>) -> Unit = it.getArgument(1)
@@ -85,6 +99,30 @@ class DeckViewModelTest {
     deckViewModel.getDecksFrom(testDeck.userId, { wasCalled = true }, { fail("Should not fail") })
     verify(mockDeckRepository).getDecksFrom(eq(testDeck.userId), any(), any())
     assert(wasCalled)
+  }
+
+  @Test
+  fun `getDecksFromFollowingList calls repository`() {
+    var wasCalled = false
+    deckViewModel.getDecksFromFollowingList(
+        listOf(testDeckFriends.userId), { wasCalled = true }, { fail("Should not fail") })
+    verify(mockDeckRepository)
+        .getDecksFromFollowingList(eq(listOf(testDeckFriends.userId)), any(), any())
+    assert(wasCalled)
+  }
+
+  @Test
+  fun `getDecksFromFollowingList fails`() {
+    val testException = Exception("Test exception")
+    var exceptionThrown: Exception? = null
+    `when`(mockDeckRepository.getDecksFromFollowingList(any(), any(), any())).thenAnswer {
+      val onFailure: (Exception) -> Unit = it.getArgument(2)
+      onFailure(testException)
+    }
+    deckViewModel.getDecksFromFollowingList(
+        listOf(testDeck.userId), { fail("Should not succeed") }, { exceptionThrown = it })
+    verify(mockDeckRepository).getDecksFromFollowingList(eq(listOf(testDeck.userId)), any(), any())
+    assertEquals(testException, exceptionThrown)
   }
 
   @Test
