@@ -48,6 +48,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
@@ -541,14 +542,13 @@ fun FlashcardPlayItem(
     fileViewModel: FileViewModel,
     onCorrect: () -> Unit = {},
     onIncorrect: () -> Unit = {},
+    choice: MutableState<Int?> = remember { mutableStateOf(null) },
+    isReview: Boolean = false
 ) {
-  when {
-    flashcard.value.isMCQ() -> {
-      McqPlayItem(flashcard, fileViewModel, onCorrect, onIncorrect)
-    }
-    else -> {
-      NormalFlashcardPlayItem(flashcard, fileViewModel)
-    }
+  if (flashcard.value.isMCQ() && !isReview) {
+    McqPlayItem(flashcard, fileViewModel, onCorrect, onIncorrect, choice = choice)
+  } else {
+    NormalFlashcardPlayItem(flashcard, fileViewModel)
   }
 }
 
@@ -570,11 +570,15 @@ fun NormalFlashcardPlayItem(
     fileViewModel: FileViewModel,
 ) {
   val flipState = remember { mutableStateOf(FlipState.FRONT) }
+
+  // Reset flipState whenever flashcard changes
+
   val rotation =
       animateFloatAsState(
           targetValue = flipState.value.angle,
           animationSpec = tween(durationMillis = 600, easing = FastOutSlowInEasing),
           label = "rotationFloatState")
+  LaunchedEffect(flashcard.value) { flipState.value = FlipState.FRONT }
   ElevatedCard(
       modifier =
           Modifier.fillMaxWidth(0.9f)

@@ -71,17 +71,17 @@ class FlashcardTest {
     assert(userFlashcard.level == UserFlashcard.MAX_FLASHCARD_LEVEL - 1)
   }
 
-    @Test
-    fun `fromLevelToFrequency function work properly`(){
-        var total=0.0
-        val epsilon= 1e-3
-        for (i in 0..UserFlashcard.MAX_FLASHCARD_LEVEL){
-            val userFlashcard = UserFlashcard(id = "1", lastReviewed = Timestamp.now(), level = i)
-            val frequency = userFlashcard.fromLevelToFrequency()
-            total+=frequency
-            assert(frequency >= 0.0)
-            assert(frequency <= 1.0)
-        }
-        assert(total<=1+epsilon&&total>=1-epsilon)
+  @Test
+  fun `fromLevelToFrequency function work properly`() {
+    var total = 0.0
+    val epsilon = 1e-3
+    for (i in 0..UserFlashcard.MAX_FLASHCARD_LEVEL) {
+      val userFlashcard = UserFlashcard(id = "1", lastReviewed = Timestamp.now(), level = i)
+      val frequency = userFlashcard.fromLevelToFrequency()
+      total += frequency
+      assert(frequency >= 0.0)
+      assert(frequency <= 1.0)
     }
+    assert(total <= 1 + epsilon && total >= 1 - epsilon)
+  }
 }

@@ -352,8 +352,7 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore) : UserRepositor
       onSuccess: (Map<String, UserFlashcard>) -> Unit,
       onFailure: (Exception) -> Unit
   ) {
-      Log.e("DeckPlayScreen", "Flashcards fetched in firebase {${deck.flashcardIds}}")
-      db.collection(collectionPath)
+    db.collection(collectionPath)
         .document(userID)
         .collection(flashcardLevelSubcollection)
         .whereIn("id", deck.flashcardIds)

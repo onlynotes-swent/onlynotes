@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
@@ -20,11 +21,12 @@ import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.flashcard.Flashcard
@@ -32,12 +34,12 @@ import com.github.onlynotesswent.model.flashcard.FlashcardViewModel
 import com.github.onlynotesswent.model.flashcard.UserFlashcard
 import com.github.onlynotesswent.model.flashcard.deck.Deck
 import com.github.onlynotesswent.model.flashcard.deck.DeckViewModel
+import com.github.onlynotesswent.model.flashcard.deck.PlayDeckHistory
 import com.github.onlynotesswent.model.user.UserViewModel
-import com.github.onlynotesswent.ui.common.ScreenTopBar
-import com.github.onlynotesswent.ui.navigation.NavigationActions
-import androidx.compose.ui.Modifier
 import com.github.onlynotesswent.ui.common.FlashcardPlayItem
 import com.github.onlynotesswent.ui.common.LoadingIndicator
+import com.github.onlynotesswent.ui.common.ScreenTopBar
+import com.github.onlynotesswent.ui.navigation.NavigationActions
 
 @Composable
 fun DeckPlayScreen(
@@ -48,341 +50,416 @@ fun DeckPlayScreen(
     fileViewModel: FileViewModel
 ) {
 
-    val deck = deckViewModel.selectedDeck.collectAsState()
-    val selectedFlashcard = flashcardViewModel.selectedFlashcard.collectAsState()
-    val userFlashcards = userViewModel.deckUserFlashcards.collectAsState()
-    val playMode=deckViewModel.selectedPlayMode.collectAsState()
-    val isFinished= remember{ mutableStateOf(false) }
+  val deck = deckViewModel.selectedDeck.collectAsState()
+  val selectedFlashcard = flashcardViewModel.selectedFlashcard.collectAsState()
+  val playMode = deckViewModel.selectedPlayMode.collectAsState()
+  val isFinished = remember { mutableStateOf(false) }
+  val currentFlashcardIndex = remember { mutableIntStateOf(0) }
+  val userFlashcardList: MutableState<List<UserFlashcard>> = remember { mutableStateOf(listOf()) }
+  val flashcardList = flashcardViewModel.deckFlashcards.collectAsState()
+  val userViewModelFlashcards = userViewModel.deckUserFlashcards.collectAsState()
+   deck.value?.let{
+       flashcardViewModel.fetchFlashcardsFromDeck(
+        it,
+        onSuccess = { flashcards ->
+            flashcardViewModel.selectFlashcard(flashcards.first())
+        })
+       userViewModel.getUserFlashcardFromDeck(
+           it,
+           onSuccess = {
+               for (id in it.flashcardIds) {
+                   if (userViewModel.deckUserFlashcards.value[id] == null) {
+                       val userFlashcard= UserFlashcard(id)
+                       userViewModel.addUserFlashcard(userFlashcard)
+                       userFlashcardList.value += userFlashcard
+                   }else{
+                          userFlashcardList.value += userViewModel.deckUserFlashcards.value[id]!!
+                   }
+               }
 
-    val userFlashcardList: MutableState<List<UserFlashcard>> = remember{ mutableStateOf(listOf()) }
+           })
+   }
 
-    deck.value?.let {
-        flashcardViewModel.fetchFlashcardsFromDeck(it,
-            onSuccess = {
-                flashcards ->
-                flashcardViewModel.selectFlashcard(flashcards.firstOrNull()!!)
-                for (flashcard in flashcards) {
-                    if(userViewModel.deckUserFlashcards.value[flashcard.id] == null){
-                        userViewModel.addUserFlashcard(UserFlashcard(flashcard.id))
-                    }
-                }
-                userViewModel.getUserFlashcardFromDeck(it, onSuccess = {
-                    if(playMode.value== Deck.PlayMode.REVIEW){
-                        userFlashcardList.value= flashcards.mapNotNull { fc-> userViewModel.deckUserFlashcards.value[fc.id] }
-                        val selectedUserFlashcard = UserFlashcard.selectRandomFlashcardLinear(userFlashcardList.value)
-                        flashcardViewModel.selectFlashcard(flashcards.first {fc-> fc.id==selectedUserFlashcard.id })
-                    }
-                })
 
-            }
-        )
-    }
-    flashcardViewModel.fetchFlashcardsFromDeck(deck.value!!)
 
-    val flashcardList = flashcardViewModel.deckFlashcards.collectAsState()
-    val userViewModelFlashcards = userViewModel.deckUserFlashcards.collectAsState()
 
-    //deckViewModel.selectedDeck.value?.let { userViewModel.getUserFlashcardFromDeck(it) }
-   // val flashcardUserInfo= userViewModel.deckUserFlashcards
+  // deckViewModel.selectedDeck.value?.let { userViewModel.getUserFlashcardFromDeck(it) }
+  // val flashcardUserInfo= userViewModel.deckUserFlashcards
   Scaffold(
-        topBar = {
-            ScreenTopBar(playMode.value?.let{"Deck $it"}?:"Deck: No mode selected", "DeckPlayScreen",
-                { navigationActions.goBack() },
-                {
-                    Icon(
-                        imageVector = Icons.Filled.Close,
-                        contentDescription = "Exit Play Deck",
-                        tint = MaterialTheme.colorScheme.onSurface)
-                },"DeckPlayIcon")
-        }
-  ) { innerPadding ->
-    Column(
-        modifier =Modifier.padding(innerPadding),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        if(deck.value==null){
-           LoadingIndicator("Loading deck...")
-        }
-        else{
-            val answers: Map<String, MutableState<Int?>> = remember(deck.value?.flashcardIds) {
-                deck.value!!.flashcardIds.associateWith { mutableStateOf<Int?>(null) }
+      topBar = {
+        ScreenTopBar(
+            playMode.value?.toString() ?: "No mode selected",
+            "DeckPlayScreen",
+            { navigationActions.goBack() },
+            {
+              Icon(
+                  imageVector = Icons.Filled.Close,
+                  contentDescription = "Exit Play Deck",
+                  tint = MaterialTheme.colorScheme.onSurface)
+            },
+            "DeckPlayIcon")
+      }) { innerPadding ->
+        Column(
+            modifier = Modifier.padding(innerPadding),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally) {
+              if (deck.value == null || selectedFlashcard.value == null || userFlashcardList.value.isEmpty()) {
+                LoadingIndicator("Loading deck...")
+              }
+              else {
+                  val score = remember { mutableIntStateOf(0) }
+                  val answers: Map<String, MutableState<Int?>> =
+                      remember(deck.value?.flashcardIds) {
+                          deck.value!!.flashcardIds.associateWith { mutableStateOf(null) }
+                      }
+
+                  if(isFinished.value){
+                      FinishedScreen(
+                          score,
+                          flashcardList,
+                          isFinished,
+                          currentFlashcardIndex,
+                          userViewModel,
+                          deck,
+                          userFlashcardList,
+                          flashcardViewModel,
+                          answers
+                      )
+                  }else {
+                      if (selectedFlashcard.value != null) {
+                          val nonNullableFlashcard: State<Flashcard> =
+                              remember(selectedFlashcard) { derivedStateOf { selectedFlashcard.value!! } }
+                          FlashcardPlayItem(
+                              nonNullableFlashcard,
+                              fileViewModel,
+                              onCorrect = { score.value += 1 },
+                              choice = answers[selectedFlashcard.value!!.id]!!,
+                              isReview = playMode.value == Deck.PlayMode.REVIEW
+                          )
+
+
+                          if (playMode.value == Deck.PlayMode.REVIEW) {
+                              ReviewMode(
+                                  flashcardViewModel,
+                                  flashcardList,
+                                  userViewModel,
+                                  userViewModelFlashcards,
+                                  nonNullableFlashcard,
+                                  userFlashcardList,
+                                  answers
+                              )
+                          } else {
+                              TestMode(
+                                  flashcardViewModel,
+                                  flashcardList,
+                                  nonNullableFlashcard,
+                                  score,
+                                  isFinished,
+                                  answers,
+                                  currentFlashcardIndex
+                              )
+                          }
+                      }
+                  }
+              }
             }
-        val score = remember { mutableIntStateOf(0) }
-        if(!isFinished.value){
-            selectedFlashcard.value?.let {
-            FlashcardPlayItem(it, fileViewModel,
-                onCorrect = {score.value+=1})}
-        }
-
-        if(playMode.value== Deck.PlayMode.REVIEW){
-            ReviewMode(
-                flashcardViewModel,
-                flashcardList,
-                userViewModel,
-                userViewModelFlashcards,
-                selectedFlashcard,
-                userFlashcardList,
-                answers
-            )
-        }else{
-            if(isFinished.value){
-                    Box(
-                        contentAlignment = Alignment.Center,
-                        modifier = Modifier
-                            .height(200.dp)
-                            .fillMaxWidth()
-                    ) {
-                        val scorePercent= score.intValue*100/flashcardList.value.size
-                        Column {
-                            Text("You have finished the deck")
-                            Text("Your score is $scorePercent%")
-                            Button(
-                                onClick = {
-                                    isFinished.value=false
-                                    score.intValue=0
-                                    userViewModel.getUserFlashcardFromDeck(deck.value!!, onSuccess = {
-                                        userFlashcardList.value= flashcardList.value.mapNotNull { fc-> userViewModel.deckUserFlashcards.value[fc.id] }
-                                        val selectedUserFlashcard = UserFlashcard.selectRandomFlashcardLinear(userFlashcardList.value)
-                                        flashcardViewModel.selectFlashcard(flashcardList.value.first {fc-> fc.id==selectedUserFlashcard.id })
-                                    })
-                                },
-                                modifier = Modifier.padding(16.dp)
-                            ) {
-                                Text("test again")
-                            }
-                        }
-                    }
-            }else{
-            TestMode(
-                flashcardViewModel,
-                flashcardList,
-                userViewModel,
-                userViewModelFlashcards,
-                selectedFlashcard,
-                score,
-                isFinished,
-                answers
-            )
-            }
-        }
-        }
-
-
-    }
-  }
+      }
 }
 
+
+/**
+ * This composable is used to handle the logic for the review mode of the deck play screen.
+ *
+ * @param flashcardViewModel The view model for flashcards.
+ * @param flashcardList The list of flashcards in the deck.
+ * @param userViewModel The view model for the user.
+ * @param userViewModelFlashcards The user flashcards.
+ * @param selectedFlashcard The selected flashcard.
+ * @param userFlashcardList The list of user flashcards.
+ * @param answers The answers for the flashcards.
+ */
 @Composable
 fun ReviewMode(
     flashcardViewModel: FlashcardViewModel,
     flashcardList: State<List<Flashcard>>,
     userViewModel: UserViewModel,
     userViewModelFlashcards: State<Map<String, UserFlashcard>>,
-    selectedFlashcard: State<Flashcard?>,
+    selectedFlashcard: State<Flashcard>,
     userFlashcardList: MutableState<List<UserFlashcard>>,
     answers: Map<String, MutableState<Int?>>
-
 ) {
-    val maxListSize=100
-    val listOfPreviousFlashcardsId= remember{mutableStateOf(listOf<String>())}
-    val listOfNextFlashcardsId=remember{mutableStateOf(listOf<String>())}
-    Column {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .align(Alignment.CenterHorizontally)
-        ) {
-            Button(
-                onClick = {
-                    if(listOfNextFlashcardsId.value.size>maxListSize){
-                        listOfNextFlashcardsId.value= listOfNextFlashcardsId.value.drop(1)
+  val playDeckHistory = remember { mutableStateOf(PlayDeckHistory(
+        currentFlashcardId =selectedFlashcard.value.id
+  )) }
+  Column {
+     PreviousNextButton(
+        onNext = {
+           if(playDeckHistory.value.canGoForward()){
+               playDeckHistory.value=playDeckHistory.value.goForward()
+                flashcardViewModel.selectFlashcard(
+                     flashcardList.value.first { it.id == playDeckHistory.value.currentFlashcardId }
+                )
+           }else{
+                val withoutCurrent = userFlashcardList.value.filter { it.id != selectedFlashcard.value!!.id }
+                val selectedUserFlashcard = UserFlashcard.selectRandomFlashcardLinear(withoutCurrent)
+                answers[selectedUserFlashcard.id]!!.value = null
+               playDeckHistory.value = playDeckHistory.value.goForwardWithNewFlashcard(selectedUserFlashcard.id)
+               flashcardViewModel.selectFlashcard(
+                   flashcardList.value.first { it.id == playDeckHistory.value.currentFlashcardId })
+           }
+        },
+        onPrevious = {
+            playDeckHistory.value=playDeckHistory.value.goBack()
+              flashcardViewModel.selectFlashcard(
+                  flashcardList.value.first { it.id == playDeckHistory.value.currentFlashcardId }
+              )
+        },
+        enabledPrevious = playDeckHistory.value.canGoBack(),
+        enabledNext = userFlashcardList.value.size > 1
+     )
+    SelectWrongRight(
+        answers,
+        selectedFlashcard,
+        onCorrect = {
+          userViewModel.updateUserFlashcard(
+              userViewModelFlashcards.value[selectedFlashcard.value!!.id]!!.increaseLevel(),
+              onSuccess = {
+                  answers[selectedFlashcard.value!!.id]!!.value = 0
+                userFlashcardList.value =
+                    userFlashcardList.value.map { userFlashcard ->
+                      if (userFlashcard.id == selectedFlashcard.value!!.id) {
+                        userViewModelFlashcards.value[selectedFlashcard.value!!.id]!!
+                      } else {
+                        userFlashcard
+                      }
                     }
-                    listOfNextFlashcardsId.value +=  selectedFlashcard.value!!.id
-                    val previousFlashcardId= listOfPreviousFlashcardsId.value.last()
-                    listOfPreviousFlashcardsId.value= listOfPreviousFlashcardsId.value.dropLast(1)
-                    flashcardViewModel.selectFlashcard(flashcardList.value.first { it.id==previousFlashcardId })
-                },
-                enabled = listOfPreviousFlashcardsId.value.isNotEmpty(),
-                modifier = Modifier.padding(16.dp)
-            ) {
-                Text("Previous")
-            }
-            Button(
-                onClick = {
-                    if(listOfPreviousFlashcardsId.value.size>maxListSize){
-                        listOfPreviousFlashcardsId.value= listOfPreviousFlashcardsId.value.drop(1)
+              })
+        },
+        onIncorrect = {
+          userViewModel.updateUserFlashcard(
+              userViewModelFlashcards.value[selectedFlashcard.value!!.id]!!.decreaseLevel(),
+              onSuccess = {
+                  answers[selectedFlashcard.value!!.id]!!.value = 1
+                userFlashcardList.value =
+                    userFlashcardList.value.map { userFlashcard ->
+                      if (userFlashcard.id == selectedFlashcard.value!!.id) {
+                        userViewModelFlashcards.value[selectedFlashcard.value!!.id]!!
+                      } else {
+                        userFlashcard
+                      }
                     }
-                    listOfPreviousFlashcardsId.value += selectedFlashcard.value!!.id
-                    if(listOfNextFlashcardsId.value.isNotEmpty()){
-                        val nextFlashcardId= listOfNextFlashcardsId.value.last()
-                        listOfNextFlashcardsId.value= listOfNextFlashcardsId.value.dropLast(1)
-                        flashcardViewModel.selectFlashcard(flashcardList.value.first { it.id==nextFlashcardId })
-                    } else{
-                        val withoutCurrent=userFlashcardList.value.filter { it.id!=selectedFlashcard.value!!.id }
-                        val selectedUserFlashcard = UserFlashcard.selectRandomFlashcardLinear(withoutCurrent)
-                        flashcardViewModel.selectFlashcard(flashcardList.value.first { it.id==selectedUserFlashcard.id })
-                    }
-
-                },
-                enabled = userFlashcardList.value.size>1,
-                modifier = Modifier.padding(16.dp)
-            ) {
-                Text("next")
-            }
-        }
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .align(Alignment.CenterHorizontally)
-        )
-        {
-            Button(
-                onClick = {
-                    userViewModel.updateUserFlashcard(
-                        userViewModelFlashcards.value[selectedFlashcard.value!!.id]!!.increaseLevel(),
-                        onSuccess = {
-                            userFlashcardList.value= userFlashcardList.value.map { userFlashcard ->
-                                if(userFlashcard.id==selectedFlashcard.value!!.id){
-                                    userViewModelFlashcards.value[selectedFlashcard.value!!.id]!!
-                                }else{
-                                    userFlashcard
-                                }
-                            }
-                        }
-
-                    )
-                },
-                modifier = Modifier.padding(16.dp)
-            ) {
-                Text("I got it right")
-            }
-            Button(
-                onClick = {
-                    userViewModel.updateUserFlashcard(
-                        userViewModelFlashcards.value[selectedFlashcard.value!!.id]!!.decreaseLevel(),
-                        onSuccess =
-                        {
-                            userFlashcardList.value= userFlashcardList.value.map { userFlashcard ->
-                                if(userFlashcard.id==selectedFlashcard.value!!.id){
-                                    userViewModelFlashcards.value[selectedFlashcard.value!!.id]!!
-                                }else{
-                                    userFlashcard
-                                }
-                            }
-                        }
-                    )
-                },
-                modifier = Modifier.padding(16.dp)
-            ) {
-                Text("I got it wrong")
-            }
-        }
-    }
-
+              })
+        })
+  }
 }
 
+/**
+ * This composable is used to handle the logic for the test mode of the deck play screen.
+ *
+ * @param flashcardViewModel The view model for flashcards.
+ * @param flashcardList The list of flashcards in the deck.
+ * @param selectedFlashcard The selected flashcard.
+ * @param score The score of the user.
+ * @param isFinished The state of the test.
+ * @param answers The answers for the flashcards.
+ * @param currentFlashcardIndex The index of the current flashcard.
+ */
 @Composable
 private fun TestMode(
     flashcardViewModel: FlashcardViewModel,
     flashcardList: State<List<Flashcard>>,
-    userViewModel: UserViewModel,
-    userViewModelFlashcards: State<Map<String, UserFlashcard>>,
-    selectedFlashcard: State<Flashcard?>,
+    selectedFlashcard: State<Flashcard>,
     score: MutableIntState,
     isFinished: MutableState<Boolean>,
-    answers: Map<String, MutableState<Int?>>
+    answers: Map<String, MutableState<Int?>>,
+    currentFlashcardIndex: MutableIntState
 ) {
-    val currentFlashcardIndex = remember { mutableIntStateOf(0) }
-    Column {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .align(Alignment.CenterHorizontally)
-        ) {
-            Button(
-                onClick = {
-                    currentFlashcardIndex.intValue--
-                    if (currentFlashcardIndex.intValue < 0) {
-                        currentFlashcardIndex.intValue = 0
-                    } else {
-                        flashcardViewModel.selectFlashcard(flashcardList.value[currentFlashcardIndex.intValue])
-                    }
-                },
-                enabled = currentFlashcardIndex.intValue > 0,
-                modifier = Modifier.padding(16.dp)
-            ) {
-                Text("Previous")
-            }
-            Button(
-                onClick = {
-                    if(currentFlashcardIndex.intValue == flashcardList.value.size - 1
-                    ) {
-                        isFinished.value=true
-
-                    }else {
-                        currentFlashcardIndex.intValue++
-                        if (currentFlashcardIndex.intValue >= flashcardList.value.size) {
-                            currentFlashcardIndex.intValue = flashcardList.value.size - 1
-                        } else {
-                            flashcardViewModel.selectFlashcard(flashcardList.value[currentFlashcardIndex.intValue])
-                        }
-                    }
-                },
-                enabled = true,
-                modifier = Modifier.padding(16.dp)
-            ) {
-                if(
-                    currentFlashcardIndex.intValue == flashcardList.value.size - 1
-                ) {
-                    Text("Submit")
+  Column {
+      PreviousNextButton(
+            onNext = {
+                if (currentFlashcardIndex.intValue == flashcardList.value.size - 1) {
+                    isFinished.value = true
                 } else {
-                Text("next")
+                    currentFlashcardIndex.intValue++
+                    if (currentFlashcardIndex.intValue >= flashcardList.value.size) {
+                        currentFlashcardIndex.intValue = flashcardList.value.size - 1
+                    } else {
+                        flashcardViewModel.selectFlashcard(
+                            flashcardList.value[currentFlashcardIndex.intValue]
+                        )
+                    }
                 }
-            }
-        }
+            },
+            onPrevious = {
+                currentFlashcardIndex.intValue--
+                if (currentFlashcardIndex.intValue < 0) {
+                    currentFlashcardIndex.intValue = 0
+                } else {
+                    flashcardViewModel.selectFlashcard(
+                        flashcardList.value[currentFlashcardIndex.intValue]
+                    )
+                }
+            },
+            enabledPrevious = currentFlashcardIndex.intValue > 0,
+            nextBecomeSummit = currentFlashcardIndex.intValue == flashcardList.value.size - 1
+          )
 
-        if(selectedFlashcard.value?.isMCQ() == false) {
-            SelectWrongRight(score,answers,selectedFlashcard)
+    if (selectedFlashcard.value?.isMCQ() == false) {
+      SelectWrongRight(
+          answers,
+          selectedFlashcard,
+          onCorrect = {
+            score.value += 1
+            answers[selectedFlashcard.value!!.id]!!.value = 0
+          },
+          onIncorrect = { answers[selectedFlashcard.value!!.id]!!.value = 1 })
+    }
+  }
+}
+
+/**
+ * This composable is used to display the previous and next buttons.
+ *
+ * @param onNext The function to be called when the next button is clicked.
+ * @param onPrevious The function to be called when the previous button is clicked.
+ * @param enabledPrevious The state of the previous button.
+ * @param enabledNext The state of the next button.
+ * @param nextBecomeSummit The state of the next button.
+ */
+@Composable
+private fun PreviousNextButton(
+    onNext: () -> Unit,
+    onPrevious: () -> Unit,
+    enabledPrevious: Boolean,
+    enabledNext: Boolean = true,
+    nextBecomeSummit: Boolean = false,
+    ) {
+    Row(modifier = Modifier.fillMaxWidth()) {
+        Button(
+            onClick = onPrevious,
+            enabled = enabledPrevious,
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Text("Previous")
+        }
+        Button(
+            onClick = {
+                onNext()
+            },
+            enabled = enabledNext,
+            modifier = Modifier.padding(16.dp)
+        ) {
+            if ( nextBecomeSummit) {
+                Text("Submit")
+            } else {
+                Text("next")
+            }
         }
     }
 }
 
+/**
+ * This composable is used to display the wrong and right buttons.
+ *
+ * @param answers The answers for the flashcards.
+ * @param selectedFlashcard The selected flashcard.
+ * @param onCorrect The function to be called when the correct button is clicked.
+ * @param onIncorrect The function to be called when the incorrect button is clicked.
+ */
 @Composable
 private fun SelectWrongRight(
-    score: MutableIntState,
     answers: Map<String, MutableState<Int?>>,
-    selectedFlashcard: State<Flashcard?>,) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-    )
-    {
-        Button(
-            onClick = {
-                score.value += 1;
-                answers[selectedFlashcard.value!!.id]!!.value = 0
-                Log.e("enableF", answers.toString())
-                Log.e("enableF", selectedFlashcard.value!!.id)
-            },
-            modifier = Modifier.padding(16.dp),
-            enabled = answers[selectedFlashcard.value!!.id]!!.value == null
-        ) {
-            Text("I got it right")
-        }
-        Button(
-            onClick = {
-                answers[selectedFlashcard.value!!.id]!!.value =1
-                Log.e("enableF", answers.toString())
-                Log.e("enableF", selectedFlashcard.value!!.id)
-
-            },
-            modifier = Modifier.padding(16.dp),
-            enabled = answers[selectedFlashcard.value!!.id]!!.value == null
-        ) {
+    selectedFlashcard: State<Flashcard?>,
+    onCorrect: () -> Unit,
+    onIncorrect: () -> Unit,
+) {
+  Row(modifier = Modifier.fillMaxWidth()) {
+    Button(
+        onClick = { onIncorrect() },
+        modifier = Modifier.padding(16.dp),
+        enabled = answers[selectedFlashcard.value!!.id]!!.value == null) {
+          Row {
+            Icon(
+                imageVector = Icons.Default.Close,
+                contentDescription = "Close Icon",
+                tint = MaterialTheme.colorScheme.onSurface)
             Text("I got it wrong")
+          }
+        }
+    Button(
+        onClick = { onCorrect() },
+        modifier = Modifier.padding(16.dp),
+        enabled = answers[selectedFlashcard.value!!.id]!!.value == null) {
+          Row {
+            Icon(
+                imageVector = Icons.Default.Check,
+                contentDescription = "Close Icon",
+                tint = MaterialTheme.colorScheme.onSurface)
+            Text("I got it right")
+          }
+        }
+  }
+}
+
+/**
+ * This composable is used to display the finished screen.
+ *
+ * @param score The score of the user.
+ * @param flashcardList The list of flashcards in the deck.
+ * @param isFinished The state of the test.
+ * @param currentFlashcardIndex The index of the current flashcard.
+ * @param userViewModel The view model for the user.
+ * @param deck The selected deck.
+ * @param userFlashcardList The list of user flashcards.
+ * @param flashcardViewModel The view model for flashcards.
+ * @param answers The answers for the flashcards.
+ */
+@Composable
+private fun FinishedScreen(
+    score: MutableIntState,
+    flashcardList: State<List<Flashcard>>,
+    isFinished: MutableState<Boolean>,
+    currentFlashcardIndex: MutableIntState,
+    userViewModel: UserViewModel,
+    deck: State<Deck?>,
+    userFlashcardList: MutableState<List<UserFlashcard>>,
+    flashcardViewModel: FlashcardViewModel,
+    answers: Map<String, MutableState<Int?>>
+) {
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = Modifier
+            .height(200.dp)
+            .fillMaxWidth()
+    ) {
+        val scorePercent = score.intValue * 100 / flashcardList.value.size
+        Column {
+            Text("You have finished the deck")
+            Text("Your score is $scorePercent%")
+            Button(
+                onClick = {
+                    isFinished.value = false
+                    score.intValue = 0
+                    currentFlashcardIndex.intValue = 0
+                    userViewModel.getUserFlashcardFromDeck(
+                        deck.value!!,
+                        onSuccess = {
+                            userFlashcardList.value =
+                                flashcardList.value.mapNotNull { fc ->
+                                    userViewModel.deckUserFlashcards.value[fc.id]
+                                }
+                            flashcardViewModel.selectFlashcard(
+                                flashcardList.value.first()
+                            )
+                        })
+                    for (flashcard in flashcardList.value) {
+                        answers[flashcard.id]!!.value = null
+                    }
+                },
+                modifier = Modifier.padding(16.dp)
+            ) {
+                Text("test again")
+            }
         }
     }
 }
-
-
