@@ -80,12 +80,13 @@ fun OverviewScreen(
   val userRootNotes = noteViewModel.userRootNotes.collectAsState()
   val userSavedNotes = noteViewModel.userSavedNotes.collectAsState()
   val userRootFolders = folderViewModel.userRootFolders.collectAsState()
-  //    val userSavedFolders = folderViewModel.userRootFolders.collectAsState() Todo
+  val userSavedFolders = folderViewModel.userSavedFolders.collectAsState()
 
   userViewModel.currentUser.collectAsState().value?.let {
     noteViewModel.getRootNotesFromUid(it.uid)
     noteViewModel.getCurrentUserSavedNotes(userViewModel)
     folderViewModel.getRootFoldersFromUserId(it.uid)
+    folderViewModel.getCurrentUserSavedFolders(userViewModel)
   }
 
   val parentFolderId = folderViewModel.parentFolderId.collectAsState()
@@ -212,11 +213,11 @@ fun OverviewScreen(
                 }
               }
               1 -> {
-                // Our page content
+                // Saved documents page
                 OverviewScreenGrid(
                     paddingValues = paddingValues,
                     userRootNotes = userSavedNotes,
-                    userRootFolders = userRootFolders,
+                    userRootFolders = userSavedFolders,
                     folderViewModel = folderViewModel,
                     noteViewModel = noteViewModel,
                     userViewModel = userViewModel,

@@ -15,6 +15,9 @@ interface FolderDao {
   @Query("SELECT * FROM folder WHERE parentFolderId IS NULL AND isDeckFolder = 0")
   fun getRootNoteFoldersFromUserId(): List<Folder>
 
+  @Query("SELECT * FROM folder WHERE id IN(:folderIds)")
+  fun getFoldersByIds(folderIds: List<String>): List<Folder>
+
   @Query("SELECT * FROM folder WHERE parentFolderId IS NULL AND isDeckFolder = 1")
   fun getRootDeckFoldersFromUserId(): List<Folder>
 
@@ -29,6 +32,9 @@ interface FolderDao {
   @Insert(onConflict = OnConflictStrategy.REPLACE) fun addFolders(folders: List<Folder>)
 
   @Query("DELETE FROM folder WHERE id = :folderId") fun deleteFolderById(folderId: String)
+
+  @Query("DELETE FROM folder WHERE id IN(:folderIds)")
+  fun deleteFoldersByIds(folderIds: List<String>)
 
   @Query("DELETE FROM folder") fun deleteFoldersFromUid()
 }

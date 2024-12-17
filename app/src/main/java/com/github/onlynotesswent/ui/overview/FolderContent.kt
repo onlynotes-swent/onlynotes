@@ -2,6 +2,7 @@ package com.github.onlynotesswent.ui.overview
 
 import android.content.Context
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -41,6 +42,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.github.onlynotesswent.R
 import com.github.onlynotesswent.model.common.Course
+import com.github.onlynotesswent.model.common.Visibility
 import com.github.onlynotesswent.model.folder.Folder
 import com.github.onlynotesswent.model.folder.FolderViewModel
 import com.github.onlynotesswent.model.note.Note
@@ -53,6 +55,7 @@ import com.github.onlynotesswent.ui.common.CustomDropDownMenuItem
 import com.github.onlynotesswent.ui.common.CustomSeparatedLazyGrid
 import com.github.onlynotesswent.ui.common.FolderDialog
 import com.github.onlynotesswent.ui.common.NoteDialog
+import com.github.onlynotesswent.ui.common.SavedDocumentButton
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
 import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
@@ -238,6 +241,46 @@ fun UserNotFoundFolderContentScreen() {
 }
 
 /**
+ * Displays a button that adds or removes the folder to the user's saved folders.
+ *
+ * @param folder The folder to be saved or removed.
+ * @param userViewModel The ViewModel that provides the current user.
+ * @param folderViewModel The ViewModel that provides the current folder to be edited and handles
+ *   folder updates.
+ */
+@Composable
+fun SavedFoldersButton(
+    folder: Folder,
+    userViewModel: UserViewModel,
+    folderViewModel: FolderViewModel
+) {
+  val savedFolders by folderViewModel.userSavedFolders.collectAsState()
+
+  val context = LocalContext.current
+
+  SavedDocumentButton(
+      isSaved = folder.id in savedFolders.map { it.id },
+      onSave = {
+        folderViewModel.addCurrentUserSavedFolder(
+            folder,
+            userViewModel,
+            onFailure = {
+              Toast.makeText(context, "Failed to save folder", Toast.LENGTH_SHORT).show()
+            })
+      },
+      onDelete = {
+        folderViewModel.deleteCurrentUserSavedFolder(
+            folder.id,
+            userViewModel,
+            onFailure = {
+              Toast.makeText(
+                      context, "Failed to remove folder from saved folders", Toast.LENGTH_SHORT)
+                  .show()
+            })
+      })
+}
+
+/**
  * Display the top bar of the folder content screen.
  *
  * @param folder the folder to display
@@ -360,7 +403,14 @@ fun FolderContentTopBar(
               expanded = expanded,
               onFabClick = { onExpandedChange(true) },
               onDismissRequest = { onExpandedChange(false) })
+        } else if (folder.visibility == Visibility.PUBLIC ||
+            (folder.visibility == Visibility.FRIENDS &&
+                folder.userId in currentUser.value!!.friends.following)) {
+          // Display the saved folders button if the folder is public or the user is following the
+          // owner, and the user is not the owner
+          SavedFoldersButton(folder, userViewModel, folderViewModel)
         }
+
         // Popup for delete folder confirmation
         if (showDeleteFolderConfirmation) {
           ConfirmationPopup(

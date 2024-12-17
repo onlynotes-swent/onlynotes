@@ -5,6 +5,7 @@ import android.util.Log
 import com.github.onlynotesswent.model.cache.CacheDatabase
 import com.github.onlynotesswent.model.common.Visibility
 import com.github.onlynotesswent.model.note.NoteViewModel
+import com.github.onlynotesswent.model.user.Friends
 import com.github.onlynotesswent.utils.NetworkUtils
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
@@ -485,6 +486,67 @@ class FolderRepositoryFirestore(
           onFailure(e)
         },
         useCache = useCache)
+  }
+
+  override suspend fun getSavedFoldersByIds(
+      savedFoldersIds: List<String>,
+      friends: Friends,
+      onSuccess: (List<Folder>, List<String>) -> Unit,
+      onFailure: (Exception) -> Unit,
+      useCache: Boolean
+  ) {
+    try {
+      val cachedFolders: List<Folder> =
+          if (useCache) withContext(Dispatchers.IO) { folderDao.getFoldersByIds(savedFoldersIds) }
+          else emptyList()
+
+      // If device is offline, fetch from local database
+      if (!NetworkUtils.isInternetAvailable(context)) {
+        onSuccess(cachedFolders, emptyList())
+        return
+      }
+
+      // If device is online, fetch from Firestore
+      val saveableIdList = mutableListOf<String>()
+      val firestoreFolders =
+          withContext(Dispatchers.IO) {
+            db.collection(folderCollectionPath)
+                .get()
+                .await()
+                .documents
+                .mapNotNull { documentSnapshotToFolder(it) }
+                .filter {
+                  // If the folder is saved and is public or if the current user follows
+                  // the owner it can be saved, otherwise it can't
+                  if (it.id in savedFoldersIds &&
+                      (it.visibility == Visibility.PUBLIC || it.userId in friends.following)) {
+                    saveableIdList.add(it.id)
+                    true
+                  } else {
+                    false
+                  }
+                }
+          }
+
+      // If some folders are not found in Firestore, also return the list of missing folders
+      val missingFolders = savedFoldersIds.filter { it !in saveableIdList }
+
+      if (useCache) {
+        // Update cache with newest saved data, to ensure that the cache is up to date and
+        // that non available saved folders are deleted
+        withContext(Dispatchers.IO) {
+          cache.folderDao().addFolders(firestoreFolders)
+          cache.folderDao().deleteFoldersByIds(missingFolders)
+        }
+      }
+
+      // Return the list of folders and the list of missing folders. Cached folders will be at this
+      // point the same as firestoreFolders if useCache is true
+      onSuccess(firestoreFolders, missingFolders)
+    } catch (e: Exception) {
+      Log.e(TAG, "Error getting folders from list", e)
+      onFailure(e)
+    }
   }
 
   /**
