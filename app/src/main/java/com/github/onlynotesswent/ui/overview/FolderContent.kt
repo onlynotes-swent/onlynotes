@@ -16,6 +16,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -53,6 +54,7 @@ import com.github.onlynotesswent.ui.common.ConfirmationPopup
 import com.github.onlynotesswent.ui.common.CustomDropDownMenu
 import com.github.onlynotesswent.ui.common.CustomDropDownMenuItem
 import com.github.onlynotesswent.ui.common.CustomSeparatedLazyGrid
+import com.github.onlynotesswent.ui.common.FileSystemPopup
 import com.github.onlynotesswent.ui.common.FolderDialog
 import com.github.onlynotesswent.ui.common.NoteDialog
 import com.github.onlynotesswent.ui.common.SavedDocumentButton
@@ -318,6 +320,7 @@ fun FolderContentTopBar(
 ) {
   var showDeleteFolderConfirmation by remember { mutableStateOf(false) }
   var showDeleteFolderContentsConfirmation by remember { mutableStateOf(false) }
+  var showFileSystemPopup by remember { mutableStateOf(false) }
   TopAppBar(
       colors =
           TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface),
@@ -373,6 +376,18 @@ fun FolderContentTopBar(
                             showUpdateDialog(true)
                           },
                           modifier = Modifier.testTag("updateFolderButton")),
+                      CustomDropDownMenuItem(
+                          text = { Text("Move Folder") },
+                          icon = {
+                            Icon(
+                                imageVector = Icons.Default.FolderOpen,
+                                contentDescription = "moveFolder")
+                          },
+                          onClick = {
+                            onExpandedChange(false)
+                            showFileSystemPopup = true
+                          },
+                          modifier = Modifier.testTag("moveFolderButton")),
                       CustomDropDownMenuItem(
                           text = { Text(stringResource(R.string.delete_folder)) },
                           icon = {
@@ -452,6 +467,27 @@ fun FolderContentTopBar(
                 showDeleteFolderContentsConfirmation = false
               },
               onDismiss = { showDeleteFolderContentsConfirmation = false })
+        }
+        // Show the FileSystemPopup if requested
+        if (showFileSystemPopup) {
+          FileSystemPopup(
+              onDismiss = { showFileSystemPopup = false },
+              folderViewModel = folderViewModel,
+              onMoveHere = { selectedFolder ->
+                if (selectedFolder != folder) {
+                  if (selectedFolder != null) {
+                    folderViewModel.updateFolderNoStateUpdate(
+                        folder.copy(parentFolderId = selectedFolder.id))
+                    // prevents a cycle to be formed
+                    if (selectedFolder.parentFolderId == folder.id) {
+                      folderViewModel.updateFolderNoStateUpdate(
+                          selectedFolder.copy(parentFolderId = folder.parentFolderId))
+                    }
+                  } else {
+                    folderViewModel.updateFolder(folder.copy(parentFolderId = null))
+                  }
+                }
+              })
         }
       })
 }

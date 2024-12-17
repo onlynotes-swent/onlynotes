@@ -46,6 +46,7 @@ class NoteRepositoryFirestoreTest {
   @Mock private lateinit var mockDocumentSnapshot2: DocumentSnapshot
   @Mock private lateinit var mockDocumentSnapshot3: DocumentSnapshot
   @Mock private lateinit var mockDocumentSnapshot4: DocumentSnapshot
+  @Mock private lateinit var mockDocumentSnapshot5: DocumentSnapshot
   @Mock private lateinit var mockQuerySnapshot: QuerySnapshot
   @Mock private lateinit var mockQuerySnapshotTask: Task<QuerySnapshot>
 
@@ -70,6 +71,19 @@ class NoteRepositoryFirestoreTest {
           date = Timestamp.now(),
           lastModified = Timestamp.now(),
           visibility = Visibility.PRIVATE,
+          userId = "1",
+          noteCourse = Course("CS-100", "Sample Course", 2024, "path"),
+          comments =
+              Note.CommentCollection(
+                  listOf(Note.Comment("1", "1", "bob", "1", Timestamp.now(), Timestamp.now()))))
+
+  private val testNoteFriend =
+      Note(
+          id = "3",
+          title = "title",
+          date = Timestamp.now(),
+          lastModified = Timestamp.now(),
+          visibility = Visibility.FRIENDS,
           userId = "1",
           noteCourse = Course("CS-100", "Sample Course", 2024, "path"),
           comments =
@@ -137,7 +151,8 @@ class NoteRepositoryFirestoreTest {
                 mockDocumentSnapshot,
                 mockDocumentSnapshot2,
                 mockDocumentSnapshot3,
-                mockDocumentSnapshot4))
+                mockDocumentSnapshot4,
+                mockDocumentSnapshot5))
 
     `when`(mockDocumentSnapshot.id).thenReturn(testNotePublic.id)
     `when`(mockDocumentSnapshot.getString("title")).thenReturn(testNotePublic.title)
@@ -221,6 +236,26 @@ class NoteRepositoryFirestoreTest {
     `when`(mockDocumentSnapshot4.get("commentsList"))
         .thenReturn(
             noteRepositoryFirestore.convertCommentsList(testSubNotePublic.comments.commentsList))
+
+    `when`(mockDocumentSnapshot5.id).thenReturn(testNoteFriend.id)
+    `when`(mockDocumentSnapshot5.getString("title")).thenReturn(testNoteFriend.title)
+    `when`(mockDocumentSnapshot5.getTimestamp("date")).thenReturn(testNoteFriend.date)
+    `when`(mockDocumentSnapshot5.getTimestamp("lastModified"))
+        .thenReturn(testNoteFriend.lastModified)
+    `when`(mockDocumentSnapshot5.getString("visibility"))
+        .thenReturn(testNoteFriend.visibility.toString())
+    `when`(mockDocumentSnapshot5.getString("courseCode"))
+        .thenReturn(testNoteFriend.noteCourse?.courseCode)
+    `when`(mockDocumentSnapshot5.getString("courseName"))
+        .thenReturn(testNoteFriend.noteCourse?.courseName)
+    `when`(mockDocumentSnapshot5.getLong("courseYear"))
+        .thenReturn(testNoteFriend.noteCourse?.courseYear?.toLong())
+    `when`(mockDocumentSnapshot5.getString("publicPath"))
+        .thenReturn(testNoteFriend.noteCourse?.publicPath)
+    `when`(mockDocumentSnapshot5.getString("userId")).thenReturn(testNoteFriend.userId)
+    `when`(mockDocumentSnapshot5.get("commentsList"))
+        .thenReturn(
+            noteRepositoryFirestore.convertCommentsList(testNoteFriend.comments.commentsList))
   }
 
   private fun compareNotes(testNote: Note?, expectedNote: Note) {
@@ -257,7 +292,7 @@ class NoteRepositoryFirestoreTest {
   fun getPublicNotes_callsDocuments() {
 
     `when`(mockQuerySnapshot.documents)
-        .thenReturn(listOf(mockDocumentSnapshot, mockDocumentSnapshot2))
+        .thenReturn(listOf(mockDocumentSnapshot, mockDocumentSnapshot2, mockDocumentSnapshot5))
 
     var receivedNotes: List<Note>? = null
     noteRepositoryFirestore.getPublicNotes({ receivedNotes = it }, { assert(false) })
@@ -269,10 +304,45 @@ class NoteRepositoryFirestoreTest {
   }
 
   @Test
+  fun getNotesFromFollowingList_callsDocuments() {
+    `when`(mockQuerySnapshot.documents)
+        .thenReturn(listOf(mockDocumentSnapshot, mockDocumentSnapshot2, mockDocumentSnapshot5))
+
+    var receivedNotes: List<Note>? = null
+    noteRepositoryFirestore.getNotesFromFollowingList(
+        listOf("1"), { receivedNotes = it }, { assert(false) })
+    assertNotNull(receivedNotes)
+    assert(receivedNotes!!.size == 1)
+    compareNotes(receivedNotes!![0], testNoteFriend)
+
+    verify(timeout(100)) { (mockQuerySnapshot).documents }
+  }
+
+  @Test
+  fun getNotesFromFollowingList_fails() = runTest {
+    val errorMessage = "TestError"
+    `when`(mockQuerySnapshotTask.isSuccessful).thenReturn(false)
+    `when`(mockQuerySnapshotTask.exception).thenReturn(Exception(errorMessage))
+    `when`(mockQuerySnapshotTask.addOnCompleteListener(any())).thenAnswer { invocation ->
+      val listener = invocation.getArgument<OnCompleteListener<QuerySnapshot>>(0)
+      // Simulate a result being passed to the listener
+      listener.onComplete(mockQuerySnapshotTask)
+      mockQuerySnapshotTask
+    }
+    `when`(mockQuerySnapshot.documents)
+        .thenReturn(listOf(mockDocumentSnapshot, mockDocumentSnapshot2, mockDocumentSnapshot5))
+    var exceptionThrown: Exception? = null
+    noteRepositoryFirestore.getNotesFromFollowingList(
+        listOf("1"), { assert(false) }, { e -> exceptionThrown = e })
+    assertNotNull(exceptionThrown)
+    assertEquals(errorMessage, exceptionThrown?.message)
+  }
+
+  @Test
   fun getNotesFromUid_callsDocuments() = runTest {
     // Ensure the QuerySnapshot returns a list of mock DocumentSnapshots
     `when`(mockQuerySnapshot.documents)
-        .thenReturn(listOf(mockDocumentSnapshot, mockDocumentSnapshot2))
+        .thenReturn(listOf(mockDocumentSnapshot, mockDocumentSnapshot2, mockDocumentSnapshot5))
 
     var receivedNotes: List<Note>? = null
     noteRepositoryFirestore.getNotesFromUid(
@@ -286,7 +356,7 @@ class NoteRepositoryFirestoreTest {
   @Test
   fun getRootNotesFromUid_callsDocuments() = runTest {
     `when`(mockQuerySnapshot.documents)
-        .thenReturn(listOf(mockDocumentSnapshot, mockDocumentSnapshot2))
+        .thenReturn(listOf(mockDocumentSnapshot, mockDocumentSnapshot2, mockDocumentSnapshot5))
 
     var receivedNotes: List<Note>? = null
     noteRepositoryFirestore.getRootNotesFromUid(

@@ -23,6 +23,9 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
   private val _publicFolders = MutableStateFlow<List<Folder>>(emptyList())
   val publicFolders: StateFlow<List<Folder>> = _publicFolders.asStateFlow()
 
+  private val _friendsFolders = MutableStateFlow<List<Folder>>(emptyList())
+  val friendsFolders: StateFlow<List<Folder>> = _friendsFolders.asStateFlow()
+
   private val _userFolders = MutableStateFlow<List<Folder>>(emptyList())
   val userFolders: StateFlow<List<Folder>> = _userFolders.asStateFlow()
 
@@ -339,6 +342,29 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
           useCache = useCache)
     }
   }
+  /**
+   * Retrieves a folder by its ID, do not update the state of the viewModel.
+   *
+   * @param folderId The ID of the folder to retrieve.
+   * @param onSuccess The function to call when the folder is retrieved successfully.
+   * @param onFailure The function to call when the folder fails to be retrieved.
+   * @param useCache Whether to update data from cache. Should be true only if userId of the folder
+   *   is the current user.
+   */
+  fun getFolderByIdNoStateUpdate(
+      folderId: String,
+      onSuccess: (Folder) -> Unit = {},
+      onFailure: (Exception) -> Unit = {},
+      useCache: Boolean = false
+  ) {
+    viewModelScope.launch {
+      repository.getFolderById(
+          folderId = folderId,
+          onSuccess = { onSuccess(it) },
+          onFailure = onFailure,
+          useCache = useCache)
+    }
+  }
 
   /**
    * Updates an existing folder.
@@ -369,6 +395,27 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
           },
           onFailure = onFailure,
           useCache = useCache)
+    }
+  }
+  /**
+   * Updates an existing folder without changing the state of the ViewModel.
+   *
+   * @param folder The folder with updated information.
+   * @param onSuccess The function to call when the folder is updated successfully.
+   * @param onFailure The function to call when the folder fails to be updated.
+   * @param useCache Whether to update data from cache. Should be true only if userId of the folder
+   *   is the current user.
+   * @param isDeckView A flag indicating if the folder is a deck view.
+   */
+  fun updateFolderNoStateUpdate(
+      folder: Folder,
+      onSuccess: () -> Unit = {},
+      onFailure: (Exception) -> Unit = {},
+      useCache: Boolean = false
+  ) {
+    viewModelScope.launch {
+      repository.updateFolder(
+          folder = folder, onSuccess = { onSuccess() }, onFailure = onFailure, useCache = useCache)
     }
   }
 
@@ -436,11 +483,35 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
    * @param onSuccess The function to call when the public folders are retrieved successfully.
    * @param onFailure The function to call when the public folders fail to be retrieved.
    */
-  fun getPublicFolders(onSuccess: () -> Unit = {}, onFailure: (Exception) -> Unit = {}) {
+  fun getPublicFolders(
+      onSuccess: (List<Folder>) -> Unit = {},
+      onFailure: (Exception) -> Unit = {}
+  ) {
     repository.getPublicFolders(
         onSuccess = {
           _publicFolders.value = it
-          onSuccess()
+          onSuccess(it)
+        },
+        onFailure = onFailure)
+  }
+
+  /**
+   * Retrieves all friends only folders from a list of following users.
+   *
+   * @param followingListIds The list of users IDs to retrieve friends only folders from.
+   * @param onSuccess The function to call when the friends folders are retrieved successfully.
+   * @param onFailure The function to call when the friends folders fail to be retrieved.
+   */
+  fun getFoldersFromFollowingList(
+      followingListIds: List<String>,
+      onSuccess: (List<Folder>) -> Unit = {},
+      onFailure: (Exception) -> Unit = {}
+  ) {
+    repository.getFoldersFromFollowingList(
+        followingListIds = followingListIds,
+        onSuccess = {
+          _friendsFolders.value = it
+          onSuccess(it)
         },
         onFailure = onFailure)
   }
