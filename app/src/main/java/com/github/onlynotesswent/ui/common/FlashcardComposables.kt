@@ -51,6 +51,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -535,27 +536,44 @@ fun FlashcardItemDropdownMenu(
       }
 }
 
+/**
+ * Composable function that displays a flashcard item for playing. The flashcard can be either a
+ * normal flashcard or a multiple choice question (MCQ). If the flashcard is null, a loading
+ * indicator is displayed.
+ *
+ * @param flashcardState The state of the flashcard to be displayed.
+ * @param fileViewModel The ViewModel for file-related data.
+ * @param onCorrect The callback to be invoked when the correct choice is selected (for MCQ).
+ * @param onIncorrect The callback to be invoked when an incorrect choice is selected (for MCQ).
+ */
 @Composable
 fun FlashcardPlayItem(
-    flashcard: State<Flashcard>,
+    flashcardState: State<Flashcard?>,
     fileViewModel: FileViewModel,
     onCorrect: () -> Unit = {},
     onIncorrect: () -> Unit = {},
 ) {
-  when {
-    flashcard.value.isMCQ() -> {
+  if (flashcardState.value == null) {
+    LoadingIndicator(stringResource(R.string.loading_flashcard))
+  } else {
+    val flashcard = remember { derivedStateOf { flashcardState.value!! } }
+    if (flashcard.value.isMCQ()) {
       McqPlayItem(flashcard, fileViewModel, onCorrect, onIncorrect)
-    }
-    else -> {
+    } else {
       NormalFlashcardPlayItem(flashcard, fileViewModel)
     }
   }
 }
 
+/**
+ * Enum class representing the flip state of a flashcard.
+ *
+ * @property angle The angle of rotation for the flip state.
+ */
 enum class FlipState(val angle: Float) {
   FRONT(0f),
   BACK(180f);
-
+  /** Gets the next flip state. */
   val next: FlipState
     get() =
         when (this) {
@@ -564,6 +582,13 @@ enum class FlipState(val angle: Float) {
         }
 }
 
+/**
+ * Composable function that displays a normal flashcard item for playing. The flashcard can be
+ * flipped to show the front and back sides.
+ *
+ * @param flashcard The flashcard to be displayed.
+ * @param fileViewModel The ViewModel for file-related data.
+ */
 @Composable
 fun NormalFlashcardPlayItem(
     flashcard: State<Flashcard>,
@@ -572,9 +597,11 @@ fun NormalFlashcardPlayItem(
   val flipState = remember { mutableStateOf(FlipState.FRONT) }
   val rotation =
       animateFloatAsState(
-          targetValue = flipState.value.angle,
-          animationSpec = tween(durationMillis = 600, easing = FastOutSlowInEasing),
-          label = "rotationFloatState")
+              targetValue = flipState.value.angle,
+              animationSpec = tween(durationMillis = 600, easing = FastOutSlowInEasing),
+              label = "rotationFloatState")
+          .value
+
   ElevatedCard(
       modifier =
           Modifier.fillMaxWidth(0.9f)
@@ -583,8 +610,8 @@ fun NormalFlashcardPlayItem(
               .graphicsLayer {
                 rotationY =
                     when (flipState.value) {
-                      FlipState.FRONT -> 360f - rotation.value // same rotation for both sides
-                      FlipState.BACK -> rotation.value
+                      FlipState.FRONT -> 360f - rotation // same rotation for both sides
+                      FlipState.BACK -> rotation
                     }
                 cameraDistance = 15 * density
               }
@@ -596,7 +623,7 @@ fun NormalFlashcardPlayItem(
                 Modifier.fillMaxWidth()
                     .padding(vertical = 30.dp)
                     .heightIn(min = 200.dp, max = 400.dp)) {
-              if (rotation.value <= 90f || rotation.value >= 270f) {
+              if (rotation <= 90f || rotation >= 270f) {
                 Text(
                     flashcard.value.front,
                     style = Typography.bodyLarge,
@@ -614,6 +641,18 @@ fun NormalFlashcardPlayItem(
       }
 }
 
+/**
+ * Composable function that displays a multiple choice question (MCQ) flashcard item. The flashcard
+ * item includes the front of the flashcard, and multiple choices for the back, randomly shuffled.
+ * The user can select one of the choices, and the item will display whether the choice was correct
+ * or incorrect.
+ *
+ * @param flashcard The flashcard to be displayed.
+ * @param fileViewModel The ViewModel for file-related data.
+ * @param onCorrect The callback to be invoked when the correct choice is selected.
+ * @param onIncorrect The callback to be invoked when an incorrect choice is selected.
+ * @param choice The state for the selected choice.
+ */
 @Composable
 fun McqPlayItem(
     flashcard: State<Flashcard>,
@@ -710,6 +749,15 @@ fun McqPlayItem(
   }
 }
 
+/**
+ * Composable function that displays an image for a flashcard. The image is downloaded from Firebase
+ * Storage if it hasn't been downloaded yet.
+ *
+ * @param flashcard The flashcard to display the image for.
+ * @param fileViewModel The ViewModel for file-related data.
+ * @param imageUri The URI of the image.
+ * @param padding The padding around the image.
+ */
 @Composable
 fun FlashcardImage(
     flashcard: State<Flashcard>,
