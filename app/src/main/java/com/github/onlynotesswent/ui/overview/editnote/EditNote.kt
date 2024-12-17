@@ -126,6 +126,13 @@ fun EditNoteScreen(
                     courseName = courseName,
                     courseYear = courseYear,
                     noteViewModel = noteViewModel)
+                // todo Additional check might be useless if checking is done before
+              } else if (note != null &&
+                  (note!!.visibility == Visibility.PUBLIC ||
+                      (note!!.visibility == Visibility.FRIENDS &&
+                          note!!.userId in currentUser!!.friends.following))) {
+                SavedNotesButton(
+                    note = note!!, userViewModel = userViewModel, noteViewModel = noteViewModel)
               }
             },
             isModified = isModified)
@@ -454,6 +461,69 @@ fun SaveButton(
             contentDescription = "Save Note",
             tint = MaterialTheme.colorScheme.onSurface)
       }
+}
+
+/**
+ * Displays a button that saves the updated note. The button is enabled only if the note title is
+ * not empty. When clicked, the button updates the note in the ViewModel and navigates back to the
+ * overview screen.
+ *
+ * @param noteTitle The updated title of the note.
+ * @param note The note to be updated.
+ * @param visibility The updated visibility of the note.
+ * @param courseCode The updated course code of the note.
+ * @param courseName The updated course name of the note.
+ * @param courseYear The updated course year of the note.
+ * @param noteViewModel The ViewModel that provides the current note to be edited and handles note
+ *   updates.
+ */
+@Composable
+fun SavedNotesButton(note: Note, userViewModel: UserViewModel, noteViewModel: NoteViewModel) {
+  val savedNotes by noteViewModel.userSavedNotes.collectAsState()
+
+  val context = LocalContext.current
+
+  // If the note is already saved, display a button to remove it from saved notes, if not,
+  // display a button to save it
+  if (note.id in savedNotes.map { it.id }) {
+    IconButton(
+        onClick = {
+          noteViewModel.deleteCurrentUserSavedNote(
+              note.id,
+              userViewModel,
+              onSuccess = {
+                Toast.makeText(context, "Note removed from saved notes", Toast.LENGTH_SHORT).show()
+              },
+              onFailure = {
+                Toast.makeText(
+                        context, "Failed to remove note from saved notes", Toast.LENGTH_SHORT)
+                    .show()
+              })
+        },
+        modifier = Modifier.testTag("removeSavedNoteButton")) {
+          Icon(
+              imageVector = Icons.Default.Delete,
+              contentDescription = "Remove Note",
+              tint = MaterialTheme.colorScheme.onSurface)
+        }
+  } else {
+    IconButton(
+        onClick = {
+          noteViewModel.addCurrentUserSavedNote(
+              note,
+              userViewModel,
+              onSuccess = { Toast.makeText(context, "Note saved", Toast.LENGTH_SHORT).show() },
+              onFailure = {
+                Toast.makeText(context, "Failed to save note", Toast.LENGTH_SHORT).show()
+              })
+        },
+        modifier = Modifier.testTag("saveNoteButton")) {
+          Icon(
+              imageVector = Icons.Default.Check,
+              contentDescription = "Save Note",
+              tint = MaterialTheme.colorScheme.onSurface)
+        }
+  }
 }
 
 /**

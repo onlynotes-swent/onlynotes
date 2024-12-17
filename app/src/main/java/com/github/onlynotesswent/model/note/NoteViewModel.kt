@@ -1,7 +1,6 @@
 package com.github.onlynotesswent.model.note
 
 import android.content.Context
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -29,9 +28,9 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
   private val _userRootNotes = MutableStateFlow<List<Note>>(emptyList())
   val userRootNotes: StateFlow<List<Note>> = _userRootNotes.asStateFlow()
 
-    // Saved notes from a user
-    private val _userSavedNotes = MutableStateFlow<List<Note>>(emptyList())
-    val userSavedNotes: StateFlow<List<Note>> = _userSavedNotes.asStateFlow()
+  // Saved notes from a user
+  private val _userSavedNotes = MutableStateFlow<List<Note>>(emptyList())
+  val userSavedNotes: StateFlow<List<Note>> = _userSavedNotes.asStateFlow()
 
   // Notes belonging to a folder
   private val _folderNotes = MutableStateFlow<List<Note>>(emptyList())
@@ -359,49 +358,131 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
     }
   }
 
-    /**
-     * Retrieves the list of saved notes of the current user.
-     *
-     * @param userViewModel The userViewModel to use for retrieving the saved notes.
-     * @param onSuccess The function to call when the retrieval is successful.
-     * @param onFailure The function to call when the retrieval fails.
-     * @param useCache Whether to update data from cache.
-     */
-    fun getCurrentUserSavedNotes(
-        userViewModel: UserViewModel,
-        onSuccess: (List<Note>) -> Unit = {},
-        onFailure: (Exception) -> Unit = {},
-        useCache: Boolean = true
-    ) {
-        // Get the list of saved document IDs of type NOTE for the current user from the userViewModel, and retrieve them
-        userViewModel.getSavedDocumentIdsOfType(
-            documentType = UserRepositoryFirestore.SavedDocumentType.NOTE,
-            onSuccess = { documentIds ->
-                viewModelScope.launch {
-                    repository.getSavedNotesByIds(
-                        savedNotesIds = documentIds,
-                        friends = userViewModel.currentUser.value!!.friends,
-                        onSuccess = { savedNotes, nonSaveableNotesIds ->
-                            Log.d("NoteViewModel", "Saved notes: $savedNotes, non-saveable notes: $nonSaveableNotesIds")
-                            _userSavedNotes.value = savedNotes
-
-                                // Delete the no longer saveable (deleted or privated) notes from
-                            // the user's saved notes list
-                            for (noteId in nonSaveableNotesIds) {
-                                userViewModel.deleteSavedDocumentIdOfType(
-                                    documentType = UserRepositoryFirestore.SavedDocumentType.NOTE,
-                                    documentId = noteId
-                                )
-                            }
-
-                            onSuccess(savedNotes)
-                        },
-                        onFailure = onFailure,
-                        useCache = useCache
-                    )
-                }
-            },
-            onFailure = onFailure
-        )
+  /**
+   * Adds a new note to the userSavedNotes list. This note must not already be on the list.
+   *
+   * @param note The note to add to the user's saved notes list.
+   * @param userViewModel The userViewModel to use for adding the note's id to the user's saved
+   *   notes list in cloud.
+   * @param onSuccess The function to call when the addition is successful.
+   * @param onFailure The function to call when the addition fails.
+   */
+  fun addCurrentUserSavedNote(
+      note: Note,
+      userViewModel: UserViewModel,
+      onSuccess: () -> Unit = {},
+      onFailure: (Exception) -> Unit = {}
+  ) {
+    // If the user's saved notes list is empty, retrieve it from the userViewModel to avoid
+    // overriding it (in case the user hasn't tried viewing his saved notes yet, and so the list
+    // is not yet fetched). Otherwise, use the saved notes list already in the viewModel.
+    if (_userSavedNotes.value.isEmpty()) {
+      getCurrentUserSavedNotes(
+          userViewModel,
+          onSuccess = { setCurrentUserSavedNotes(userViewModel, it + note, onSuccess, onFailure) },
+          onFailure = onFailure)
+    } else {
+      setCurrentUserSavedNotes(userViewModel, _userSavedNotes.value + note, onSuccess, onFailure)
     }
+  }
+
+  /**
+   * Deletes a note from the userSavedNotes list.
+   *
+   * @param noteId The id of the note to delete from the user's saved notes list.
+   * @param userViewModel The userViewModel to use for deleting the note's id from the user's saved
+   *   notes list in cloud.
+   * @param onSuccess The function to call when the deletion is successful.
+   * @param onFailure The function to call when the deletion fails.
+   */
+  fun deleteCurrentUserSavedNote(
+      noteId: String,
+      userViewModel: UserViewModel,
+      onSuccess: () -> Unit = {},
+      onFailure: (Exception) -> Unit = {}
+  ) {
+    // If the user's saved notes list is empty, retrieve it from the userViewModel to avoid
+    // overriding it (in case the user hasn't tried viewing his saved notes yet, and so the list
+    // is not yet fetched). Otherwise, use the saved notes list already in the viewModel.
+    if (_userSavedNotes.value.isEmpty()) {
+      getCurrentUserSavedNotes(
+          userViewModel,
+          onSuccess = { savedNotes ->
+            setCurrentUserSavedNotes(
+                userViewModel, savedNotes.filter { it.id != noteId }, onSuccess, onFailure)
+          },
+          onFailure = onFailure)
+    } else {
+      setCurrentUserSavedNotes(
+          userViewModel, _userSavedNotes.value.filter { it.id != noteId }, onSuccess, onFailure)
+    }
+  }
+
+  /**
+   * Retrieves the list of saved notes of the current user.
+   *
+   * @param userViewModel The userViewModel to use for retrieving the saved notes.
+   * @param onSuccess The function to call when the retrieval is successful.
+   * @param onFailure The function to call when the retrieval fails.
+   * @param useCache Whether to update data from cache.
+   */
+  fun getCurrentUserSavedNotes(
+      userViewModel: UserViewModel,
+      onSuccess: (List<Note>) -> Unit = {},
+      onFailure: (Exception) -> Unit = {},
+      useCache: Boolean = true
+  ) {
+    // Get the list of saved document IDs of type NOTE for the current user from the userViewModel,
+    // and retrieve them
+    userViewModel.getSavedDocumentIdsOfType(
+        documentType = UserRepositoryFirestore.SavedDocumentType.NOTE,
+        onSuccess = { documentIds ->
+          viewModelScope.launch {
+            repository.getSavedNotesByIds(
+                savedNotesIds = documentIds,
+                friends = userViewModel.currentUser.value!!.friends,
+                onSuccess = { savedNotes, nonSaveableNotesIds ->
+                  _userSavedNotes.value = savedNotes
+
+                  // Delete the no longer saveable (deleted or privated) notes from
+                  // the user's saved notes list
+                  for (noteId in nonSaveableNotesIds) {
+                    userViewModel.deleteSavedDocumentIdOfType(
+                        documentType = UserRepositoryFirestore.SavedDocumentType.NOTE,
+                        documentId = noteId)
+                  }
+
+                  onSuccess(savedNotes)
+                },
+                onFailure = onFailure,
+                useCache = useCache)
+          }
+        },
+        onFailure = onFailure)
+  }
+
+  /**
+   * Sets the current user's saved notes list with the given list of notes.
+   *
+   * @param userViewModel The userViewModel to use for updating the user's saved notes list in
+   *   cloud.
+   * @param notes The new list of saved notes for the user.
+   * @param onSuccess The function to call when the addition is successful.
+   * @param onFailure The function to call when the addition fails.
+   */
+  private fun setCurrentUserSavedNotes(
+      userViewModel: UserViewModel,
+      notes: List<Note>,
+      onSuccess: () -> Unit = {},
+      onFailure: (Exception) -> Unit = {}
+  ) {
+    userViewModel.setSavedDocumentIdsOfType(
+        documentType = UserRepositoryFirestore.SavedDocumentType.NOTE,
+        documentIds = notes.map { it.id },
+        onSuccess = {
+          _userSavedNotes.value = notes
+          onSuccess()
+        },
+        onFailure = onFailure)
+  }
 }

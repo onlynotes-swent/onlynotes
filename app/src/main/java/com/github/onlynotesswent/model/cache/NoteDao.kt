@@ -14,7 +14,8 @@ interface NoteDao {
 
   @Query("SELECT * FROM note WHERE folderid IS NULL") fun getRootNotesFromUid(): List<Note>
 
-  @Query("SELECT * FROM note WHERE id IN(:noteIds)") fun getNotesByIds(noteIds: List<String>): List<Note>
+  @Query("SELECT * FROM note WHERE id IN(:noteIds)")
+  fun getNotesByIds(noteIds: List<String>): List<Note>
 
   @Query("SELECT * FROM note WHERE folderid = :folderId")
   fun getNotesFromFolder(folderId: String): List<Note>

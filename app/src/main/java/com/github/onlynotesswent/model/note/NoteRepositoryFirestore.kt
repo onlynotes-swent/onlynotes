@@ -353,67 +353,66 @@ class NoteRepositoryFirestore(
     }
   }
 
-    override suspend fun getSavedNotesByIds(
-        savedNotesIds: List<String>,
-        friends: Friends,
-        onSuccess: (List<Note>, List<String>) -> Unit,
-        onFailure: (Exception) -> Unit,
-        useCache: Boolean
-    ) {
-        try {
-            val cachedNotes: List<Note> =
-                if (useCache) withContext(Dispatchers.IO) { noteDao.getNotesByIds(savedNotesIds) }
-                else emptyList()
+  override suspend fun getSavedNotesByIds(
+      savedNotesIds: List<String>,
+      friends: Friends,
+      onSuccess: (List<Note>, List<String>) -> Unit,
+      onFailure: (Exception) -> Unit,
+      useCache: Boolean
+  ) {
+    try {
+      val cachedNotes: List<Note> =
+          if (useCache) withContext(Dispatchers.IO) { noteDao.getNotesByIds(savedNotesIds) }
+          else emptyList()
 
-            // If device is offline, fetch from local database
-            if (!NetworkUtils.isInternetAvailable(context)) {
-                onSuccess(cachedNotes, emptyList())
-                return
-            }
+      // If device is offline, fetch from local database
+      if (!NetworkUtils.isInternetAvailable(context)) {
+        onSuccess(cachedNotes, emptyList())
+        return
+      }
 
-            // If device is online, fetch from Firestore
-            val saveableIdList = mutableListOf<String>()
-            val firestoreNotes =
-                withContext(Dispatchers.IO) {
-                    db.collection(collectionPath)
-                        .get()
-                        .await()
-                        .documents
-                        .mapNotNull { documentSnapshotToNote(it) }
-                        .filter {
-                            //If the note is saved and is public or if the current user follows
-                            // the owner it can be saved, otherwise it can't
-                            if(it.id in savedNotesIds &&
-                                (it.visibility == Visibility.PUBLIC || it.userId in friends.following)) {
-                                saveableIdList.add(it.id)
-                                true
-                            } else {
-                                false
-                            }
-                        }
+      // If device is online, fetch from Firestore
+      val saveableIdList = mutableListOf<String>()
+      val firestoreNotes =
+          withContext(Dispatchers.IO) {
+            db.collection(collectionPath)
+                .get()
+                .await()
+                .documents
+                .mapNotNull { documentSnapshotToNote(it) }
+                .filter {
+                  // If the note is saved and is public or if the current user follows
+                  // the owner it can be saved, otherwise it can't
+                  if (it.id in savedNotesIds &&
+                      (it.visibility == Visibility.PUBLIC || it.userId in friends.following)) {
+                    saveableIdList.add(it.id)
+                    true
+                  } else {
+                    false
+                  }
                 }
+          }
 
-            //If some notes are not found in Firestore, also return the list of missing notes
-            val missingNotes = savedNotesIds.filter { it !in saveableIdList }
+      // If some notes are not found in Firestore, also return the list of missing notes
+      val missingNotes = savedNotesIds.filter { it !in saveableIdList }
 
-            if(useCache) {
-                // Update cache with newest saved data, to ensure that the cache is up to date and
-                // that non available saved notes are deleted
-                withContext(Dispatchers.IO) {
-                    cache.noteDao().addNotes(firestoreNotes)
-                    cache.noteDao().deleteNotesByIds(missingNotes)
-                }
-            }
-
-            // Return the list of notes and the list of missing notes. Cached notes will be at this
-            // point the same as firestoreNotes if useCache is true
-            onSuccess(firestoreNotes, missingNotes)
-        } catch (e: Exception) {
-            Log.e(TAG, "Error getting notes from list", e)
-            onFailure(e)
+      if (useCache) {
+        // Update cache with newest saved data, to ensure that the cache is up to date and
+        // that non available saved notes are deleted
+        withContext(Dispatchers.IO) {
+          cache.noteDao().addNotes(firestoreNotes)
+          cache.noteDao().deleteNotesByIds(missingNotes)
         }
-    }
+      }
 
+      // Return the list of notes and the list of missing notes. Cached notes will be at this
+      // point the same as firestoreNotes if useCache is true
+      onSuccess(firestoreNotes, missingNotes)
+    } catch (e: Exception) {
+      Log.e(TAG, "Error getting notes from list", e)
+      onFailure(e)
+    }
+  }
 
   /**
    * Performs a Firestore operation and calls the appropriate callback based on the result.
