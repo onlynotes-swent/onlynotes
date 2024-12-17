@@ -73,7 +73,6 @@ import com.github.onlynotesswent.model.user.UserViewModel
 import com.github.onlynotesswent.ui.common.EnterTextPopup
 import com.github.onlynotesswent.ui.common.NonModifiableProfilePicture
 import com.github.onlynotesswent.ui.common.ThumbnailDynamicPic
-import com.github.onlynotesswent.ui.common.ThumbnailPic
 import com.github.onlynotesswent.ui.navigation.BottomNavigationMenu
 import com.github.onlynotesswent.ui.navigation.LIST_TOP_LEVEL_DESTINATION
 import com.github.onlynotesswent.ui.navigation.NavigationActions
@@ -617,7 +616,10 @@ fun UserItem(
               modifier = Modifier.alpha(0.9f),
               maxLines = 1,
               overflow = TextOverflow.Ellipsis)
-          Text(user.value.userHandle(), style = Typography.bodyLarge, modifier = Modifier.alpha(0.7f))
+          Text(
+              user.value.userHandle(),
+              style = Typography.bodyLarge,
+              modifier = Modifier.alpha(0.7f))
         }
     if (isFollowerSheetOfCurrentUser) {
       RemoveFollowerButton(userViewModel, user.value.uid, onRemove)

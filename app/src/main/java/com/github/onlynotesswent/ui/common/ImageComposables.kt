@@ -115,28 +115,32 @@ fun NonModifiableProfilePicture(
 ) {
   val boxModifier = Modifier.size(size.dp)
   Box(modifier = onClick?.let { boxModifier.clickable { onClick() } } ?: boxModifier) {
-      val painter = if (compareUID(profilePictureUri.value, user.value?.uid, FileType.PROFILE_PIC_JPEG.fileExtension)) {
-         rememberAsyncImagePainter(profilePictureUri.value)
+    val painter =
+        if (compareUID(
+            profilePictureUri.value, user.value?.uid, FileType.PROFILE_PIC_JPEG.fileExtension)) {
+          rememberAsyncImagePainter(profilePictureUri.value)
         } else {
           // Load the default profile picture if no picture was found
           // and download the profile picture if it should exist
           if (user.value?.hasProfilePicture == true) {
-              fileViewModel.downloadFile(
-                  user.value!!.uid,
-                  FileType.PROFILE_PIC_JPEG,
-                  context = LocalContext.current,
-                  onSuccess = { file -> profilePictureUri.value = file.absolutePath },
-                  onFileNotFound = { Log.e("ProfilePicture", "Profile picture not found") },
-                  onFailure = { e -> Log.e("ProfilePicture", "Error downloading profile picture", e) })
+            fileViewModel.downloadFile(
+                user.value!!.uid,
+                FileType.PROFILE_PIC_JPEG,
+                context = LocalContext.current,
+                onSuccess = { file -> profilePictureUri.value = file.absolutePath },
+                onFileNotFound = { Log.e("ProfilePicture", "Profile picture not found") },
+                onFailure = { e ->
+                  Log.e("ProfilePicture", "Error downloading profile picture", e)
+                })
           }
           rememberVectorPainter(Icons.Default.AccountCircle)
         }
 
-      // Profile Picture
-      Image(
-          painter = painter,
-          contentDescription = "Profile Picture",
-          modifier = Modifier.testTag(testTag).size(size.dp).clip(CircleShape),
-          contentScale = ContentScale.Crop)
+    // Profile Picture
+    Image(
+        painter = painter,
+        contentDescription = "Profile Picture",
+        modifier = Modifier.testTag(testTag).size(size.dp).clip(CircleShape),
+        contentScale = ContentScale.Crop)
   }
 }
