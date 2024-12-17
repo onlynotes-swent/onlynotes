@@ -37,26 +37,27 @@ fun ScreenTopBar(
     icon: @Composable () -> Unit,
     iconTestTag: String
 ) {
-    Column {
-        TopAppBar(
-            colors =
+  Column {
+    TopAppBar(
+        colors =
             TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface),
-            title = {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center) {
-                    Spacer(modifier = Modifier.weight(1.4f))
-                    Text(
-                        title,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.testTag(titleTestTag))
-                    Spacer(modifier = Modifier.weight(2f))
-                }
-            },
-            navigationIcon = {
-                IconButton(onClick = onBackClick, Modifier.testTag(iconTestTag), content = icon)
-            })
-        HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f), thickness = 1.dp)
-    }
+        title = {
+          Row(
+              modifier = Modifier.fillMaxWidth(),
+              verticalAlignment = Alignment.CenterVertically,
+              horizontalArrangement = Arrangement.Center) {
+                Spacer(modifier = Modifier.weight(1.4f))
+                Text(
+                    title,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.testTag(titleTestTag))
+                Spacer(modifier = Modifier.weight(2f))
+              }
+        },
+        navigationIcon = {
+          IconButton(onClick = onBackClick, Modifier.testTag(iconTestTag), content = icon)
+        })
+    HorizontalDivider(
+        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f), thickness = 1.dp)
+  }
 }

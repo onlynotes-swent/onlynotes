@@ -112,8 +112,7 @@ fun NoteItem(
                     },
                 )
               },
-      colors = CardDefaults.cardColors(containerColor = Color.White)
-  ) {
+      colors = CardDefaults.cardColors(containerColor = Color.White)) {
         Column(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
           Row(
               modifier = Modifier.fillMaxWidth(),
@@ -215,6 +214,7 @@ fun NoteOptionsBottomSheet(
 
   ModalBottomSheet(
       modifier = Modifier.testTag("noteModalBottomSheet"),
+      containerColor = MaterialTheme.colorScheme.onPrimary,
       onDismissRequest = onDismiss,
       content = {
         Column(modifier = Modifier.padding(16.dp)) {

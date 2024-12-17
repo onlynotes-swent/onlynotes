@@ -13,7 +13,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Divider
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -109,14 +108,14 @@ fun OverviewScreen(
             }
       },
       bottomBar = {
-          Column {
-              HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f), thickness = 1.dp)
-              BottomNavigationMenu(
-                  onTabSelect = { route -> navigationActions.navigateTo(route) },
-                  tabList = LIST_TOP_LEVEL_DESTINATION,
-                  selectedItem = navigationActions.currentRoute())
-          }
-
+        Column {
+          HorizontalDivider(
+              color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f), thickness = 1.dp)
+          BottomNavigationMenu(
+              onTabSelect = { route -> navigationActions.navigateTo(route) },
+              tabList = LIST_TOP_LEVEL_DESTINATION,
+              selectedItem = navigationActions.currentRoute())
+        }
       }) { paddingValues ->
         OverviewScreenGrid(
             paddingValues = paddingValues,

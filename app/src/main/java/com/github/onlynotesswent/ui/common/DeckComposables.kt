@@ -49,13 +49,13 @@ import java.util.Locale
 @Composable
 fun DeckSearchItem(deck: Deck, author: String, onClick: () -> Unit) {
   Card(
-      modifier = Modifier.testTag("deckCard")
-          .padding(4.dp)
-          .semantics(mergeDescendants = true, properties = {})
-          .fillMaxWidth()
-          .clickable(onClick = onClick),
-      colors = CardDefaults.cardColors(containerColor = Color.White)
-  ) {
+      modifier =
+          Modifier.testTag("deckCard")
+              .padding(4.dp)
+              .semantics(mergeDescendants = true, properties = {})
+              .fillMaxWidth()
+              .clickable(onClick = onClick),
+      colors = CardDefaults.cardColors(containerColor = Color.White)) {
         Column(
             Modifier.testTag("deckColumn").padding(10.dp).fillMaxWidth(),
         ) {
