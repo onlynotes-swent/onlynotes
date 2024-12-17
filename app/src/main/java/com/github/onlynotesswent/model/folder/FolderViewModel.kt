@@ -363,7 +363,7 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
           onSuccess = {
             getRootFoldersFromUserId(folder.userId, isDeckView)
             if (folder.parentFolderId != null) {
-              getSubFoldersOf(folder.parentFolderId)
+              getSubFoldersOf(folder.parentFolderId, null)
             }
             onSuccess()
           },
@@ -376,6 +376,8 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
    * Retrieves all children folders of a parent folder.
    *
    * @param parentFolderId The ID of the parent folder.
+   * @param userViewModel The user view model. If the function can only be called by a user that is
+   *   the owner of the folder, this parameter should be null.
    * @param onSuccess The function to call when the children folders are retrieved successfully.
    * @param onFailure The function to call when the children folders fail to be retrieved.
    * @param useCache Whether to update data from cache. Should be true only if userId of the folder
@@ -383,6 +385,7 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
    */
   fun getSubFoldersOf(
       parentFolderId: String,
+      userViewModel: UserViewModel?,
       onSuccess: (List<Folder>) -> Unit = {},
       onFailure: (Exception) -> Unit = {},
       useCache: Boolean = false
@@ -390,6 +393,7 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
     viewModelScope.launch {
       repository.getSubFoldersOf(
           parentFolderId = parentFolderId,
+          userViewModel = userViewModel,
           onSuccess = {
             _folderSubFolders.value = it
             onSuccess(it)
@@ -403,12 +407,15 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
    * Retrieves the subfolders of a given parent folder without updating the state of the ViewModel.
    *
    * @param parentFolderId The unique ID of the parent folder whose subfolders are to be retrieved.
+   * @param userViewModel The user view model. If the function can only be called by a user that is
+   *   the owner of the folder, this parameter should be null.
    * @param onSuccess A callback that receives a list of `Folder` objects on successful retrieval.
    * @param onFailure A callback that receives an `Exception` in case of a failure. Defaults to an
    *   empty lambda if not provided.
    */
   fun getSubFoldersOfNoStateUpdate(
       parentFolderId: String,
+      userViewModel: UserViewModel?,
       onSuccess: (List<Folder>) -> Unit,
       onFailure: (Exception) -> Unit = {},
       useCache: Boolean = false
@@ -416,6 +423,7 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
     viewModelScope.launch {
       repository.getSubFoldersOf(
           parentFolderId = parentFolderId,
+          userViewModel = userViewModel,
           onSuccess = { onSuccess(it) },
           onFailure = onFailure,
           useCache = useCache)
@@ -459,7 +467,7 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
           folder = folder,
           noteViewModel = noteViewModel,
           onSuccess = {
-            getSubFoldersOf(folder.id)
+            getSubFoldersOf(folder.id, null)
             onSuccess()
           },
           onFailure = onFailure,

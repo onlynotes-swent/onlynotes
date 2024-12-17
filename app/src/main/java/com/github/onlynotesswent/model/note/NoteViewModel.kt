@@ -241,7 +241,7 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
           onSuccess = {
             getRootNotesFromUid(note.userId)
             if (note.folderId != null) {
-              getNotesFromFolder(note.folderId)
+              getNotesFromFolder(note.folderId, null)
             }
             onSuccess()
           },
@@ -308,6 +308,8 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
    * Retrieves all notes from a folder.
    *
    * @param folderId The ID of the folder to retrieve notes from.
+   * @param userViewModel The user view model. If the function can only be called by a user that is
+   *   the owner of the note/folder, this parameter should be null.
    * @param onSuccess The function to call when the retrieval is successful.
    * @param onFailure The function to call when the retrieval fails.
    * @param useCache Whether to update data from cache. Should be true only if userId of the folder
@@ -315,6 +317,7 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
    */
   fun getNotesFromFolder(
       folderId: String,
+      userViewModel: UserViewModel?,
       onSuccess: (List<Note>) -> Unit = {},
       onFailure: (Exception) -> Unit = {},
       useCache: Boolean = false
@@ -322,6 +325,7 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
     viewModelScope.launch {
       repository.getNotesFromFolder(
           folderId = folderId,
+          userViewModel = userViewModel,
           onSuccess = {
             _folderNotes.value = it
             onSuccess(it)
@@ -350,7 +354,7 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
       repository.deleteNotesFromFolder(
           folderId = folderId,
           onSuccess = {
-            getNotesFromFolder(folderId)
+            getNotesFromFolder(folderId, null)
             onSuccess()
           },
           onFailure = onFailure,

@@ -6,6 +6,7 @@ import com.github.onlynotesswent.model.cache.CacheDatabase
 import com.github.onlynotesswent.model.common.Visibility
 import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.model.user.Friends
+import com.github.onlynotesswent.model.user.UserViewModel
 import com.github.onlynotesswent.utils.NetworkUtils
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
@@ -385,6 +386,7 @@ class FolderRepositoryFirestore(
 
   override suspend fun getSubFoldersOf(
       parentFolderId: String,
+      userViewModel: UserViewModel?,
       onSuccess: (List<Folder>) -> Unit,
       onFailure: (Exception) -> Unit,
       useCache: Boolean
@@ -412,9 +414,22 @@ class FolderRepositoryFirestore(
           }
 
       // Sync Firestore with cache
-      val updatedFolders =
+      var updatedFolders =
           if (useCache) syncFoldersFirestoreWithCache(firestoreFolders, cachedFolders)
           else firestoreFolders
+
+      // If you are not the owner of the folder, only return public notes or notes from people
+      // you follow
+      if (userViewModel != null) {
+        updatedFolders =
+            updatedFolders.filter { folder ->
+              val currentUser = userViewModel.currentUser.value!!
+              folder.isOwner(currentUser.uid) ||
+                  folder.visibility == Visibility.PUBLIC ||
+                  (folder.visibility == Visibility.FRIENDS &&
+                      currentUser.friends.following.contains(folder.userId))
+            }
+      }
 
       onSuccess(updatedFolders)
     } catch (e: Exception) {
@@ -449,6 +464,7 @@ class FolderRepositoryFirestore(
   ) {
     getSubFoldersOf(
         parentFolderId = folder.id,
+        userViewModel = null,
         onSuccess = { subFolders ->
           subFolders.forEach { subFolder ->
             CoroutineScope(Dispatchers.IO).launch {

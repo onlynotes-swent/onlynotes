@@ -275,35 +275,35 @@ class NotesToFlashcardTest {
       onSuccess()
     }
 
-    `when`(mockFolderRepository.getSubFoldersOf(any(), any(), any(), any())).thenAnswer { invocation
-      ->
-      val parentFolderId = invocation.getArgument<String>(0)
-      val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(1)
-      if (parentFolderId == testFolder.id) {
-        onSuccess(listOf(testSubfolder))
-      } else {
-        onSuccess(emptyList())
-      }
-    }
-    folderViewModel.getSubFoldersOf(testFolder.id)
+    `when`(mockFolderRepository.getSubFoldersOf(any(), anyOrNull(), any(), any(), any()))
+        .thenAnswer { invocation ->
+          val parentFolderId = invocation.getArgument<String>(0)
+          val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(1)
+          if (parentFolderId == testFolder.id) {
+            onSuccess(listOf(testSubfolder))
+          } else {
+            onSuccess(emptyList())
+          }
+        }
+    folderViewModel.getSubFoldersOf(testFolder.id, null)
 
-    `when`(mockNoteRepository.getNotesFromFolder(any(), any(), any(), any())).thenAnswer {
-        invocation ->
-      val folderId = invocation.getArgument<String>(0)
-      val onSuccess = invocation.getArgument<(List<Note>) -> Unit>(1)
-      when (folderId) {
-        testFolder.id -> {
-          onSuccess(listOf(testNote1, testNote2))
+    `when`(mockNoteRepository.getNotesFromFolder(any(), anyOrNull(), any(), any(), any()))
+        .thenAnswer { invocation ->
+          val folderId = invocation.getArgument<String>(0)
+          val onSuccess = invocation.getArgument<(List<Note>) -> Unit>(1)
+          when (folderId) {
+            testFolder.id -> {
+              onSuccess(listOf(testNote1, testNote2))
+            }
+            testSubfolder.id -> {
+              onSuccess(listOf(testNote3))
+            }
+            else -> {
+              onSuccess(emptyList())
+            }
+          }
         }
-        testSubfolder.id -> {
-          onSuccess(listOf(testNote3))
-        }
-        else -> {
-          onSuccess(emptyList())
-        }
-      }
-    }
-    noteViewModel.getNotesFromFolder(testFolder.id)
+    noteViewModel.getNotesFromFolder(testFolder.id, null)
 
     `when`(mockFolderRepository.getNewFolderId()).thenAnswer {
       folderId.getAndIncrement().toString()

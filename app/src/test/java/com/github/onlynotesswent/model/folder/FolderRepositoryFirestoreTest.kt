@@ -344,7 +344,7 @@ class FolderRepositoryFirestoreTest {
   fun getSubFoldersOf_callsCollection() = runTest {
     `when`(mockDocumentReference.get()).thenReturn(Tasks.forResult(mockDocumentSnapshot2))
 
-    folderRepositoryFirestore.getSubFoldersOf("1", {}, {}, false)
+    folderRepositoryFirestore.getSubFoldersOf("1", null, {}, {}, false)
 
     shadowOf(Looper.getMainLooper()).idle()
 

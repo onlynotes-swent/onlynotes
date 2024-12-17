@@ -15,6 +15,7 @@ import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.eq
 import org.robolectric.RobolectricTestRunner
 
@@ -183,11 +184,12 @@ class FolderViewModelTest {
 
   @Test
   fun getSubFoldersOfCallsRepository() = runTest {
-    `when`(mockFolderRepository.getSubFoldersOf(any(), any(), any(), any())).thenAnswer {
-      val onSuccess: (List<Folder>) -> Unit = it.getArgument(1)
-      onSuccess(listOf(testFolder))
-    }
-    folderViewModel.getSubFoldersOf(testFolder.parentFolderId!!, { assert(true) })
+    `when`(mockFolderRepository.getSubFoldersOf(any(), anyOrNull(), any(), any(), any()))
+        .thenAnswer {
+          val onSuccess: (List<Folder>) -> Unit = it.getArgument(1)
+          onSuccess(listOf(testFolder))
+        }
+    folderViewModel.getSubFoldersOf(testFolder.parentFolderId!!, null, { assert(true) })
     assertEquals(folderViewModel.folderSubFolders.value, listOf(testFolder))
   }
 
@@ -219,6 +221,6 @@ class FolderViewModelTest {
 
     verify(mockFolderRepository).updateFolder(eq(testFolder), any(), any(), any())
     verify(mockFolderRepository).getRootNoteFoldersFromUserId(eq("1"), any(), any(), any())
-    verify(mockFolderRepository).getSubFoldersOf(eq("pid"), any(), any(), any())
+    verify(mockFolderRepository).getSubFoldersOf(eq("pid"), anyOrNull(), any(), any(), any())
   }
 }

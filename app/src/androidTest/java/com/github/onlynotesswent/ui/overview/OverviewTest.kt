@@ -37,6 +37,7 @@ import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.eq
 
 class OverviewTest {
@@ -359,7 +360,9 @@ class OverviewTest {
                 parentFolderId = "8",
                 lastModified = Timestamp.now()))
 
-    `when`(folderRepository.getSubFoldersOf(eq("8"), any<(List<Folder>) -> Unit>(), any(), any()))
+    `when`(
+            folderRepository.getSubFoldersOf(
+                eq("8"), anyOrNull(), any<(List<Folder>) -> Unit>(), any(), any()))
         .thenAnswer { invocation ->
           val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(1)
           onSuccess(subFolderList)

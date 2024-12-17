@@ -6,6 +6,7 @@ import com.github.onlynotesswent.model.cache.CacheDatabase
 import com.github.onlynotesswent.model.common.Course
 import com.github.onlynotesswent.model.common.Visibility
 import com.github.onlynotesswent.model.user.Friends
+import com.github.onlynotesswent.model.user.UserViewModel
 import com.github.onlynotesswent.utils.NetworkUtils
 import com.google.android.gms.tasks.Task
 import com.google.firebase.Firebase
@@ -287,6 +288,7 @@ class NoteRepositoryFirestore(
 
   override suspend fun getNotesFromFolder(
       folderId: String,
+      userViewModel: UserViewModel?,
       onSuccess: (List<Note>) -> Unit,
       onFailure: (Exception) -> Unit,
       useCache: Boolean
@@ -314,8 +316,21 @@ class NoteRepositoryFirestore(
           }
 
       // Sync Firestore with cache
-      val updatedNotes =
+      var updatedNotes =
           if (useCache) syncNotesFirestoreWithCache(firestoreNotes, cachedNotes) else firestoreNotes
+
+      if (userViewModel != null) {
+        // If you are not the owner of the folder, only return public notes or notes from people
+        // you follow
+        updatedNotes =
+            updatedNotes.filter { note ->
+              val currentUser = userViewModel.currentUser.value!!
+              note.isOwner(currentUser.uid) ||
+                  note.visibility == Visibility.PUBLIC ||
+                  (note.visibility == Visibility.FRIENDS &&
+                      currentUser.friends.following.contains(note.userId))
+            }
+      }
 
       onSuccess(updatedNotes)
     } catch (e: Exception) {

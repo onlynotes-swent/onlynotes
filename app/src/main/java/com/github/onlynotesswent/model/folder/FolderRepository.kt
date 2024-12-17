@@ -2,6 +2,7 @@ package com.github.onlynotesswent.model.folder
 
 import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.model.user.Friends
+import com.github.onlynotesswent.model.user.UserViewModel
 
 interface FolderRepository {
 
@@ -187,6 +188,8 @@ interface FolderRepository {
    * Retrieves all folders that are children of a parent folder.
    *
    * @param parentFolderId The ID of the parent folder.
+   * @param userViewModel The user view model. If the function can only be called by a user that is
+   *   the owner of the folder, this parameter should be null.
    * @param onSuccess Callback to be invoked with the retrieved folders.
    * @param onFailure Callback to be invoked if an error occurs.
    * @param useCache Whether to update data from cache. Should be true only if userId of the folder
@@ -194,6 +197,7 @@ interface FolderRepository {
    */
   suspend fun getSubFoldersOf(
       parentFolderId: String,
+      userViewModel: UserViewModel?,
       onSuccess: (List<Folder>) -> Unit,
       onFailure: (Exception) -> Unit,
       useCache: Boolean

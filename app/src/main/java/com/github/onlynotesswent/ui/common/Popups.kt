@@ -211,6 +211,7 @@ fun FileSystemPopup(onDismiss: () -> Unit, folderViewModel: FolderViewModel) {
                                   .clickable {
                                     folderViewModel.getSubFoldersOfNoStateUpdate(
                                         folder.id,
+                                        null,
                                         onSuccess = { subFolders -> folderSubFolders = subFolders })
                                     selectedFolder = folder
                                   }
@@ -234,6 +235,7 @@ fun FileSystemPopup(onDismiss: () -> Unit, folderViewModel: FolderViewModel) {
                                   .clickable {
                                     folderViewModel.getSubFoldersOfNoStateUpdate(
                                         subFolder.id,
+                                        null,
                                         onSuccess = { subFolders -> folderSubFolders = subFolders })
                                     selectedFolder = subFolder
                                   }

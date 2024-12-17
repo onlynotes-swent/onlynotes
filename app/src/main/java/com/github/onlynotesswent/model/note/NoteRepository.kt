@@ -1,6 +1,7 @@
 package com.github.onlynotesswent.model.note
 
 import com.github.onlynotesswent.model.user.Friends
+import com.github.onlynotesswent.model.user.UserViewModel
 
 interface NoteRepository {
 
@@ -158,6 +159,8 @@ interface NoteRepository {
    * Retrieves all notes from a folder.
    *
    * @param folderId The ID of the folder to retrieve notes for.
+   * @param userViewModel The user view model. If the function can only be called by a user that is
+   *   the owner of the note/folder, this parameter should be null.
    * @param onSuccess Callback to be invoked with the retrieved notes.
    * @param onFailure Callback to be invoked if an error occurs.
    * @param useCache Whether to update data from cache. Should be true only if userId of the folder
@@ -165,6 +168,7 @@ interface NoteRepository {
    */
   suspend fun getNotesFromFolder(
       folderId: String,
+      userViewModel: UserViewModel?,
       onSuccess: (List<Note>) -> Unit,
       onFailure: (Exception) -> Unit,
       useCache: Boolean

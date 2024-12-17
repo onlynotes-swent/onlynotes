@@ -14,6 +14,7 @@ import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.times
 import org.robolectric.RobolectricTestRunner
@@ -158,11 +159,12 @@ class NoteViewModelTest {
 
   @Test
   fun getNotesFromUidFolderCallsRepository() = runTest {
-    `when`(mockNoteRepository.getNotesFromFolder(any(), any(), any(), any())).thenAnswer {
-      val onSuccess: (List<Note>) -> Unit = it.getArgument(1)
-      onSuccess(listOf(testNote))
-    }
-    noteViewModel.getNotesFromFolder(testNote.folderId!!)
+    `when`(mockNoteRepository.getNotesFromFolder(any(), anyOrNull(), any(), any(), any()))
+        .thenAnswer {
+          val onSuccess: (List<Note>) -> Unit = it.getArgument(1)
+          onSuccess(listOf(testNote))
+        }
+    noteViewModel.getNotesFromFolder(testNote.folderId!!, null)
     assertEquals(noteViewModel.folderNotes.value, listOf(testNote))
   }
 
@@ -183,7 +185,7 @@ class NoteViewModelTest {
 
     verify(mockNoteRepository).updateNote(eq(testNote), any(), any(), any())
     verify(mockNoteRepository).getRootNotesFromUid(eq("1"), any(), any(), any())
-    verify(mockNoteRepository).getNotesFromFolder(eq("1"), any(), any(), any())
+    verify(mockNoteRepository).getNotesFromFolder(eq("1"), anyOrNull(), any(), any(), any())
   }
 
   @Test

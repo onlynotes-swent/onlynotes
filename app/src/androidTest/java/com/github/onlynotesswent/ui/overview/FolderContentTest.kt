@@ -37,6 +37,7 @@ import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
 import org.mockito.junit.MockitoJUnitRunner
 import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.eq
 
 @RunWith(MockitoJUnitRunner::class)
@@ -270,12 +271,13 @@ class FolderContentTest {
   fun deleteSubFolder() = runTest {
     init(subfolder)
 
-    `when`(mockFolderRepository.getSubFoldersOf(eq("3"), any(), any(), any())).then { invocation ->
+    `when`(mockFolderRepository.getSubFoldersOf(eq("3"), anyOrNull(), any(), any(), any())).then {
+        invocation ->
       val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(1)
       onSuccess(emptyList())
     }
 
-    folderViewModel.getSubFoldersOf(subfolder.id)
+    folderViewModel.getSubFoldersOf(subfolder.id, null)
 
     composeTestRule.onNodeWithTag("folderSettingsButton").performClick()
     composeTestRule.onNodeWithTag("deleteFolderButton").assertIsDisplayed()
@@ -291,12 +293,13 @@ class FolderContentTest {
   fun moveOutSameUserDoesMoveNote() = runTest {
     init(folder)
 
-    `when`(mockNoteRepository.getNotesFromFolder(eq("1"), any(), any(), any())).then { invocation ->
+    `when`(mockNoteRepository.getNotesFromFolder(eq("1"), anyOrNull(), any(), any(), any())).then {
+        invocation ->
       val onSuccess = invocation.getArgument<(List<Note>) -> Unit>(1)
       onSuccess(subNoteList2)
     }
 
-    noteViewModel.getNotesFromFolder("1")
+    noteViewModel.getNotesFromFolder("1", null)
 
     composeTestRule.onNodeWithTag("noteCard").assertIsDisplayed()
     composeTestRule.onNodeWithTag("MoveOutButton").assertIsDisplayed()
@@ -315,21 +318,23 @@ class FolderContentTest {
   fun moveOutMovesNoteToParentFolder() = runTest {
     init(folder)
 
-    `when`(mockFolderRepository.getSubFoldersOf(eq("1"), any(), any(), any())).then { invocation ->
+    `when`(mockFolderRepository.getSubFoldersOf(eq("1"), anyOrNull(), any(), any(), any())).then {
+        invocation ->
       val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(1)
       onSuccess(subFolderListSameUser)
     }
 
-    folderViewModel.getSubFoldersOf("1")
+    folderViewModel.getSubFoldersOf("1", null)
 
     composeTestRule.onNodeWithTag("folderCard").assertIsDisplayed()
     composeTestRule.onNodeWithTag("folderCard").performClick()
 
-    `when`(mockNoteRepository.getNotesFromFolder(eq("4"), any(), any(), any())).then { invocation ->
+    `when`(mockNoteRepository.getNotesFromFolder(eq("4"), anyOrNull(), any(), any(), any())).then {
+        invocation ->
       val onSuccess = invocation.getArgument<(List<Note>) -> Unit>(1)
       onSuccess(subNoteList3)
     }
-    noteViewModel.getNotesFromFolder("4")
+    noteViewModel.getNotesFromFolder("4", null)
 
     composeTestRule.onNodeWithTag("noteCard").assertIsDisplayed()
     composeTestRule.onNodeWithTag("MoveOutButton").assertIsDisplayed()
