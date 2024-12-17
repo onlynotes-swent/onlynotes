@@ -1,6 +1,5 @@
 package com.github.onlynotesswent.ui.deck
 
-import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -200,7 +199,7 @@ fun ReviewMode(
                      flashcardList.value.first { it.id == playDeckHistory.value.currentFlashcardId }
                 )
            }else{
-                val withoutCurrent = userFlashcardList.value.filter { it.id != selectedFlashcard.value!!.id }
+                val withoutCurrent = userFlashcardList.value.filter { it.id != selectedFlashcard.value.id }
                 val selectedUserFlashcard = UserFlashcard.selectRandomFlashcardLinear(withoutCurrent)
                 answers[selectedUserFlashcard.id]!!.value = null
                playDeckHistory.value = playDeckHistory.value.goForwardWithNewFlashcard(selectedUserFlashcard.id)
@@ -222,13 +221,13 @@ fun ReviewMode(
         selectedFlashcard,
         onCorrect = {
           userViewModel.updateUserFlashcard(
-              userViewModelFlashcards.value[selectedFlashcard.value!!.id]!!.increaseLevel(),
+              userViewModelFlashcards.value[selectedFlashcard.value.id]!!.increaseLevel(),
               onSuccess = {
-                  answers[selectedFlashcard.value!!.id]!!.value = 0
+                  answers[selectedFlashcard.value.id]!!.value = 0
                 userFlashcardList.value =
                     userFlashcardList.value.map { userFlashcard ->
-                      if (userFlashcard.id == selectedFlashcard.value!!.id) {
-                        userViewModelFlashcards.value[selectedFlashcard.value!!.id]!!
+                      if (userFlashcard.id == selectedFlashcard.value.id) {
+                        userViewModelFlashcards.value[selectedFlashcard.value.id]!!
                       } else {
                         userFlashcard
                       }
@@ -237,13 +236,13 @@ fun ReviewMode(
         },
         onIncorrect = {
           userViewModel.updateUserFlashcard(
-              userViewModelFlashcards.value[selectedFlashcard.value!!.id]!!.decreaseLevel(),
+              userViewModelFlashcards.value[selectedFlashcard.value.id]!!.decreaseLevel(),
               onSuccess = {
-                  answers[selectedFlashcard.value!!.id]!!.value = 1
+                  answers[selectedFlashcard.value.id]!!.value = 1
                 userFlashcardList.value =
                     userFlashcardList.value.map { userFlashcard ->
-                      if (userFlashcard.id == selectedFlashcard.value!!.id) {
-                        userViewModelFlashcards.value[selectedFlashcard.value!!.id]!!
+                      if (userFlashcard.id == selectedFlashcard.value.id) {
+                        userViewModelFlashcards.value[selectedFlashcard.value.id]!!
                       } else {
                         userFlashcard
                       }
@@ -304,15 +303,15 @@ private fun TestMode(
             nextBecomeSummit = currentFlashcardIndex.intValue == flashcardList.value.size - 1
           )
 
-    if (selectedFlashcard.value?.isMCQ() == false) {
+    if (!selectedFlashcard.value.isMCQ()) {
       SelectWrongRight(
           answers,
           selectedFlashcard,
           onCorrect = {
             score.value += 1
-            answers[selectedFlashcard.value!!.id]!!.value = 0
+            answers[selectedFlashcard.value.id]!!.value = 0
           },
-          onIncorrect = { answers[selectedFlashcard.value!!.id]!!.value = 1 })
+          onIncorrect = { answers[selectedFlashcard.value.id]!!.value = 1 })
     }
   }
 }

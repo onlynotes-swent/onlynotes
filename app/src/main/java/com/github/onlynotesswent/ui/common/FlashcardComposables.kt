@@ -203,7 +203,7 @@ fun FlashcardDialog(
   val front = remember { mutableStateOf(flashcard.value?.front ?: "") }
   val back = remember { mutableStateOf(flashcard.value?.back ?: "") }
   val fakeBacks = remember { mutableStateOf(flashcard.value?.fakeBacks ?: listOf()) }
-  var showFakeBacksDetails = remember { mutableStateOf(false) }
+  val showFakeBacksDetails = remember { mutableStateOf(false) }
 
   Dialog(onDismissRequest = onDismissRequest) {
     Card(modifier = Modifier.testTag("flashcardDialog--$mode").padding(5.dp)) {
