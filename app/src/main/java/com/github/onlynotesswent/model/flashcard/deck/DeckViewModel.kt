@@ -35,6 +35,10 @@ class DeckViewModel(private val repository: DeckRepository) : ViewModel() {
   private val _publicDecks = MutableStateFlow<List<Deck>>(emptyList())
   val publicDecks: StateFlow<List<Deck>> = _publicDecks.asStateFlow()
 
+  // The friends only decks
+  private val _friendsDecks = MutableStateFlow<List<Deck>>(emptyList())
+  val friendsDecks: StateFlow<List<Deck>> = _friendsDecks.asStateFlow()
+
   // Dragged deck
   private val _draggedDeck = MutableStateFlow<Deck?>(null)
   val draggedDeck: StateFlow<Deck?> = _draggedDeck.asStateFlow()
@@ -98,6 +102,27 @@ class DeckViewModel(private val repository: DeckRepository) : ViewModel() {
     repository.getPublicDecks(
         { decks ->
           _publicDecks.value = decks
+          onSuccess(decks)
+        },
+        { onFailure(it) })
+  }
+
+  /**
+   * Retrieves all friends only decks from a list of following users.
+   *
+   * @param followingListIds The list of users to retrieve decks from.
+   * @param onSuccess The callback to be executed when the decks are retrieved.
+   * @param onFailure The callback to be executed when an error occurs.
+   */
+  fun getDecksFromFollowingList(
+      followingListIds: List<String>,
+      onSuccess: (List<Deck>) -> Unit = {},
+      onFailure: (Exception) -> Unit = {}
+  ) {
+    repository.getDecksFromFollowingList(
+        followingListIds,
+        { decks ->
+          _friendsDecks.value = decks
           onSuccess(decks)
         },
         { onFailure(it) })

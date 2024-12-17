@@ -20,6 +20,9 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
   private val _publicFolders = MutableStateFlow<List<Folder>>(emptyList())
   val publicFolders: StateFlow<List<Folder>> = _publicFolders.asStateFlow()
 
+  private val _friendsFolders = MutableStateFlow<List<Folder>>(emptyList())
+  val friendsFolders: StateFlow<List<Folder>> = _friendsFolders.asStateFlow()
+
   private val _userFolders = MutableStateFlow<List<Folder>>(emptyList())
   val userFolders: StateFlow<List<Folder>> = _userFolders.asStateFlow()
 
@@ -463,11 +466,35 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
    * @param onSuccess The function to call when the public folders are retrieved successfully.
    * @param onFailure The function to call when the public folders fail to be retrieved.
    */
-  fun getPublicFolders(onSuccess: () -> Unit = {}, onFailure: (Exception) -> Unit = {}) {
+  fun getPublicFolders(
+      onSuccess: (List<Folder>) -> Unit = {},
+      onFailure: (Exception) -> Unit = {}
+  ) {
     repository.getPublicFolders(
         onSuccess = {
           _publicFolders.value = it
-          onSuccess()
+          onSuccess(it)
+        },
+        onFailure = onFailure)
+  }
+
+  /**
+   * Retrieves all friends only folders from a list of following users.
+   *
+   * @param followingListIds The list of users IDs to retrieve friends only folders from.
+   * @param onSuccess The function to call when the friends folders are retrieved successfully.
+   * @param onFailure The function to call when the friends folders fail to be retrieved.
+   */
+  fun getFoldersFromFollowingList(
+      followingListIds: List<String>,
+      onSuccess: (List<Folder>) -> Unit = {},
+      onFailure: (Exception) -> Unit = {}
+  ) {
+    repository.getFoldersFromFollowingList(
+        followingListIds = followingListIds,
+        onSuccess = {
+          _friendsFolders.value = it
+          onSuccess(it)
         },
         onFailure = onFailure)
   }
