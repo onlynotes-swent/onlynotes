@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -20,6 +21,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
@@ -47,11 +49,13 @@ import java.util.Locale
 @Composable
 fun DeckSearchItem(deck: Deck, author: String, onClick: () -> Unit) {
   Card(
-      Modifier.testTag("deckCard")
+      modifier = Modifier.testTag("deckCard")
           .padding(4.dp)
           .semantics(mergeDescendants = true, properties = {})
           .fillMaxWidth()
-          .clickable(onClick = onClick)) {
+          .clickable(onClick = onClick),
+      colors = CardDefaults.cardColors(containerColor = Color.White)
+  ) {
         Column(
             Modifier.testTag("deckColumn").padding(10.dp).fillMaxWidth(),
         ) {

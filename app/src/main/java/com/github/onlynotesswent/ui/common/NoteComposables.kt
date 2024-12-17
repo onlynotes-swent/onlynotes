@@ -19,6 +19,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -36,6 +37,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draganddrop.DragAndDropTransferData
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
@@ -109,7 +111,9 @@ fun NoteItem(
                           DragAndDropTransferData(ClipData.newPlainText("Note", note.id)))
                     },
                 )
-              }) {
+              },
+      colors = CardDefaults.cardColors(containerColor = Color.White)
+  ) {
         Column(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
           Row(
               modifier = Modifier.fillMaxWidth(),

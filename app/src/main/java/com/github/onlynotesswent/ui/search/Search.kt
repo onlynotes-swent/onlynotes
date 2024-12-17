@@ -1,6 +1,7 @@
 package com.github.onlynotesswent.ui.search
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -17,6 +18,7 @@ import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -140,7 +142,8 @@ fun SearchScreen(
       modifier = Modifier.testTag("searchScreen"),
       topBar = {
         Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.background(MaterialTheme.colorScheme.onPrimary),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
           OutlinedTextField(
               value = searchQuery.value,
@@ -271,13 +274,18 @@ fun SearchScreen(
               folderViewModel = folderViewModel,
               deckViewModel = deckViewModel,
               userViewModel = userViewModel)
+          HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f), thickness = 1.dp)
         }
       },
       bottomBar = {
-        BottomNavigationMenu(
-            onTabSelect = { route -> navigationActions.navigateTo(route) },
-            tabList = LIST_TOP_LEVEL_DESTINATION,
-            selectedItem = navigationActions.currentRoute())
+          Column {
+              HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f), thickness = 1.dp)
+              BottomNavigationMenu(
+                  onTabSelect = { route -> navigationActions.navigateTo(route) },
+                  tabList = LIST_TOP_LEVEL_DESTINATION,
+                  selectedItem = navigationActions.currentRoute())
+          }
+
       }) { padding ->
 
         // To skip large nested if-else blocks, we can use a boolean to determine which list to
