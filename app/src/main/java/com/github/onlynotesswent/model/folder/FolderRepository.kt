@@ -207,6 +207,19 @@ interface FolderRepository {
   fun getPublicFolders(onSuccess: (List<Folder>) -> Unit, onFailure: (Exception) -> Unit)
 
   /**
+   * Retrieves all friends only folders from a list of following users.
+   *
+   * @param followingListIds The list of users Ids to retrieve friends only folders from.
+   * @param onSuccess Callback to be invoked with the retrieved folders.
+   * @param onFailure Callback to be invoked if an error occurs.
+   */
+  fun getFoldersFromFollowingList(
+      followingListIds: List<String>,
+      onSuccess: (List<Folder>) -> Unit,
+      onFailure: (Exception) -> Unit
+  )
+
+  /**
    * Deletes all elements of a folder.
    *
    * @param folder The folder to delete elements from.
