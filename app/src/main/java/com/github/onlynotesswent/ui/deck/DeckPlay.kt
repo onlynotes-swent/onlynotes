@@ -39,10 +39,7 @@ fun DeckPlayScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp)) {
           val flashcardState = remember { derivedStateOf { flashcards[pageIndex] } }
-          FlashcardPlayItem(
-              flashcard = flashcardState,
-              fileViewModel = fileViewModel,
-          )
+          FlashcardPlayItem(flashcardState, fileViewModel)
         }
   }
 }
