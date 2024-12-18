@@ -25,7 +25,7 @@ data class PlayDeckHistory(
       size = 1)
 
   companion object {
-    const val MAX_LIST_LENGTH = 12
+    const val MAX_LIST_LENGTH = 100
     // because the first and last element are always null  and
     // one null element witch limit the next and previous flashcard
     const val MAX_SIZE = MAX_LIST_LENGTH - 3

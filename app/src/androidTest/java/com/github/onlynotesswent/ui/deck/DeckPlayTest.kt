@@ -6,6 +6,7 @@ import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
+import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
@@ -103,6 +104,13 @@ class DeckPlayTest {
           folderId = null,
           noteId = null)
 
+  private val userFlashcard3 =
+      UserFlashcard(
+          id = testFlashcard3.id,
+          level = 4,
+          lastReviewed = Timestamp.now(),
+      )
+
   private val testDeck =
       Deck(
           id = "testDeck",
@@ -135,7 +143,7 @@ class DeckPlayTest {
             when (id) {
               "testFlashcard1" -> testFlashcard1
               "testFlashcard2" -> testFlashcard2
-              "testFlashcard3" -> testFlashcard2
+              "testFlashcard3" -> testFlashcard3
               else -> null
             }
           })
@@ -152,7 +160,11 @@ class DeckPlayTest {
 
     `when`(userRepository.getUserFlashcardFromDeck(any(), any(), any(), any())).thenAnswer {
       val onSuccess = it.getArgument<(Map<String, UserFlashcard>) -> Unit>(2)
-      onSuccess(mapOf("testFlashcard1" to userFlashcard1, "testFlashcard2" to userFlashcard2))
+      onSuccess(
+          mapOf(
+              "testFlashcard1" to userFlashcard1,
+              "testFlashcard2" to userFlashcard2,
+              "testFlashcard3" to userFlashcard3))
     }
     userViewModel.addUser(testUser)
     deckViewModel.playDeckWithMode(testDeck, Deck.PlayMode.REVIEW)
@@ -242,8 +254,8 @@ class DeckPlayTest {
     composeTestRule.onNodeWithTag("correctButton").assertIsEnabled()
     composeTestRule.onNodeWithTag("incorrectButton").assertIsEnabled()
     composeTestRule.onNodeWithTag("correctButton").performClick()
-    // composeTestRule.onNodeWithTag("incorrectButton").assertIsNotEnabled()
-    // composeTestRule.onNodeWithTag("correctButton").assertIsNotEnabled()
+    composeTestRule.onNodeWithTag("incorrectButton").assertIsNotEnabled()
+    composeTestRule.onNodeWithTag("correctButton").assertIsNotEnabled()
   }
 
   @Test
@@ -276,7 +288,11 @@ class DeckPlayTest {
     composeTestRule.onNodeWithTag("flashcardColumn").assertIsDisplayed()
     composeTestRule.onNodeWithTag("incorrectButton").assertExists()
     composeTestRule.onNodeWithTag("correctButton").assertExists()
+    composeTestRule.onNodeWithTag("correctButton").assertIsEnabled()
+    composeTestRule.onNodeWithTag("incorrectButton").assertIsEnabled()
     composeTestRule.onNodeWithTag("correctButton").performClick()
+    composeTestRule.onNodeWithTag("incorrectButton").assertIsNotEnabled()
+    composeTestRule.onNodeWithTag("correctButton").assertIsNotEnabled()
   }
 
   @Test

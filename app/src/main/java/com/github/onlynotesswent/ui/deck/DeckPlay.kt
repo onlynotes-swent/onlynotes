@@ -243,9 +243,6 @@ fun ReviewMode(
           val nextFlashcardId = UserFlashcard.selectRandomFlashcardLinear(withoutCurrent).id
           playDeckHistory.value = playDeckHistory.value.stayWithNewFlashcard(nextFlashcardId)
         }
-        if (pagerState.settledPage == 0) {
-          pagerState.scrollToPage(playDeckHistory.value.indexOfCurrentFlashcard)
-        }
       }
     }
     SelectWrongRight(
