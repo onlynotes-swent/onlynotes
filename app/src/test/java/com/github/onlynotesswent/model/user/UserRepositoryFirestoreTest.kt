@@ -663,7 +663,7 @@ class UserRepositoryFirestoreTest {
   fun `getUserFlashcardFromDeck should call Firestore collection`() {
     // Mock the behavior of the QuerySnapshot task
     val deckList = listOf("flashcard_1", "2", "3")
-    `when`(mockCollectionReference.whereIn("uid", deckList)).thenReturn(mockQuery)
+    `when`(mockCollectionReference.whereIn("id", deckList)).thenReturn(mockQuery)
 
     `when`(mockQuerySnapshot.documents).thenReturn(listOf(mockDocumentSnapshot))
     `when`(mockQueryTask.addOnSuccessListener(any())).thenAnswer { invocation ->
