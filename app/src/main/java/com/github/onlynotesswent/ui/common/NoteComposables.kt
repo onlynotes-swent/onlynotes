@@ -209,7 +209,13 @@ fun NoteOptionsBottomSheet(
     ConfirmationPopup(
         title = stringResource(R.string.delete_note),
         text = stringResource(R.string.delete_note_text),
-        onConfirm = { noteViewModel.deleteNoteById(note.id, note.userId) },
+        onConfirm = {
+          noteViewModel.deleteNoteById(note.id, note.userId)
+          if (folderViewModel.selectedFolder.value != null) {
+            noteViewModel.getNotesFromFolder(folderViewModel.selectedFolder.value!!.id)
+          }
+          showDeletePopup = false // Close the dialog after deleting
+        },
         onDismiss = {
           showDeletePopup = false // Close the dialog without deleting
         })
