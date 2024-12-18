@@ -44,6 +44,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -71,7 +72,7 @@ import com.github.onlynotesswent.model.user.User
 import com.github.onlynotesswent.model.user.UserViewModel
 import com.github.onlynotesswent.ui.common.EnterTextPopup
 import com.github.onlynotesswent.ui.common.NonModifiableProfilePicture
-import com.github.onlynotesswent.ui.common.ThumbnailPic
+import com.github.onlynotesswent.ui.common.ThumbnailDynamicPic
 import com.github.onlynotesswent.ui.navigation.BottomNavigationMenu
 import com.github.onlynotesswent.ui.navigation.LIST_TOP_LEVEL_DESTINATION
 import com.github.onlynotesswent.ui.navigation.NavigationActions
@@ -558,9 +559,9 @@ fun UserBottomSheet(
                 Column(
                     modifier = Modifier.fillMaxWidth().padding(start = 30.dp, end = 10.dp),
                     horizontalAlignment = Alignment.Start) {
-                      users.value.forEach { user ->
+                      users.value.forEachIndexed { index, user ->
                         UserItem(
-                            user,
+                            remember { derivedStateOf { users.value[index] } },
                             userViewModel,
                             fileViewModel,
                             isFollowerSheetOfCurrentUser,
@@ -593,7 +594,7 @@ fun UserBottomSheet(
  */
 @Composable
 fun UserItem(
-    user: User,
+    user: State<User>,
     userViewModel: UserViewModel,
     fileViewModel: FileViewModel,
     isFollowerSheetOfCurrentUser: Boolean = false,
@@ -603,24 +604,27 @@ fun UserItem(
   Row(
       modifier = Modifier.padding(8.dp).testTag("userItem").clickable { onClick() },
   ) {
-    ThumbnailPic(user, fileViewModel)
+    ThumbnailDynamicPic(user, fileViewModel)
     Column(
         verticalArrangement = Arrangement.Center,
         modifier = Modifier.padding(horizontal = 10.dp).weight(1f)) {
           // Display the user's full name and handle (username)
           Text(
-              user.fullName(),
+              user.value.fullName(),
               style = Typography.bodyLarge,
               fontWeight = FontWeight(500),
               modifier = Modifier.alpha(0.9f),
               maxLines = 1,
               overflow = TextOverflow.Ellipsis)
-          Text(user.userHandle(), style = Typography.bodyLarge, modifier = Modifier.alpha(0.7f))
+          Text(
+              user.value.userHandle(),
+              style = Typography.bodyLarge,
+              modifier = Modifier.alpha(0.7f))
         }
     if (isFollowerSheetOfCurrentUser) {
-      RemoveFollowerButton(userViewModel, user.uid, onRemove)
-    } else if (user.uid != userViewModel.currentUser.collectAsState().value!!.uid) {
-      FollowUnfollowButton(userViewModel, user.uid)
+      RemoveFollowerButton(userViewModel, user.value.uid, onRemove)
+    } else if (user.value.uid != userViewModel.currentUser.collectAsState().value!!.uid) {
+      FollowUnfollowButton(userViewModel, user.value.uid)
     }
   }
 }
