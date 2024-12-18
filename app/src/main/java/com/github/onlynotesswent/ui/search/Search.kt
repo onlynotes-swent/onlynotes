@@ -340,7 +340,6 @@ fun SearchScreen(
                       currentUser = userViewModel.currentUser.collectAsState(),
                       noteViewModel = noteViewModel,
                       folderViewModel = folderViewModel,
-                      showDialog = false,
                       navigationActions = navigationActions,
                   ) {
                     noteViewModel.selectedNote(filteredPublicNotes.value[index])
@@ -365,7 +364,6 @@ fun SearchScreen(
                       currentUser = userViewModel.currentUser.collectAsState(),
                       noteViewModel = noteViewModel,
                       folderViewModel = folderViewModel,
-                      showDialog = false,
                       navigationActions = navigationActions,
                   ) {
                     noteViewModel.selectedNote(filteredFriendsNotes.value[index])

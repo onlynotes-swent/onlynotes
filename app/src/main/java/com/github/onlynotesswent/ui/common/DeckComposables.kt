@@ -1,6 +1,7 @@
 package com.github.onlynotesswent.ui.common
 
 import android.content.ClipData
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.draganddrop.dragAndDropSource
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -11,9 +12,11 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -30,13 +33,11 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
 import com.github.onlynotesswent.R
 import com.github.onlynotesswent.model.common.Visibility
 import com.github.onlynotesswent.model.flashcard.deck.Deck
 import com.github.onlynotesswent.model.flashcard.deck.DeckViewModel
 import com.github.onlynotesswent.model.user.UserViewModel
-import com.github.onlynotesswent.ui.theme.Typography
 import com.google.firebase.Timestamp
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -125,58 +126,70 @@ fun EditDeckDialog(
     userViewModel: UserViewModel,
     onDismissRequest: () -> Unit,
     onSave: (() -> Unit)? = null,
-    mode: String = stringResource(R.string.edit_maj),
+    mode: String = stringResource(R.string.update),
 ) {
   val deck: State<Deck?> = deckViewModel.selectedDeck.collectAsState()
   val deckTitle = remember { mutableStateOf(deck.value?.name ?: "") }
   val deckDescription = remember { mutableStateOf(deck.value?.description ?: "") }
   val deckVisibility = remember { mutableStateOf(deck.value?.visibility ?: Visibility.DEFAULT) }
 
-  Dialog(onDismissRequest = onDismissRequest) {
-    Card(modifier = Modifier.testTag("editDeckDialog").padding(5.dp)) {
-      Column(
-          modifier = Modifier.padding(10.dp),
-          horizontalAlignment = Alignment.CenterHorizontally,
-          verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            Text("$mode " + stringResource(R.string.deck_maj), style = Typography.headlineSmall)
-            OutlinedTextField(
-                value = deckTitle.value,
-                onValueChange = { deckTitle.value = Deck.formatTitle(it) },
-                maxLines = 1,
-                modifier = Modifier.testTag("deckTitleTextField"),
-            )
-            SelectVisibility(deckVisibility.value, true) { deckVisibility.value = it }
-            OutlinedTextField(
-                value = deckDescription.value,
-                onValueChange = { deckDescription.value = Deck.formatDescription(it) },
-                minLines = 2,
-                maxLines = 5,
-                modifier = Modifier.testTag("deckDescriptionTextField"))
-            // Save button
-            Button(
-                modifier = Modifier.testTag("saveDeckButton"),
-                onClick = {
-                  val newDeck =
-                      deck.value?.copy(
+  AlertDialog(
+      onDismissRequest = onDismissRequest,
+      title = { Text("$mode Deck") },
+      text = {
+        Column(
+            modifier = Modifier.padding(16.dp).testTag("DeckDialog"),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            horizontalAlignment = Alignment.CenterHorizontally) {
+              OutlinedTextField(
+                  value = deckTitle.value,
+                  onValueChange = { deckTitle.value = Deck.formatTitle(it) },
+                  label = { Text(stringResource(R.string.name)) },
+                  maxLines = 1,
+                  modifier = Modifier.testTag("deckTitleTextField"),
+              )
+              SelectVisibility(deckVisibility.value, true) { deckVisibility.value = it }
+              OutlinedTextField(
+                  value = deckDescription.value,
+                  onValueChange = { deckDescription.value = Deck.formatDescription(it) },
+                  label = { Text(stringResource(R.string.description)) },
+                  minLines = 2,
+                  maxLines = 5,
+                  modifier = Modifier.testTag("deckDescriptionTextField"))
+            }
+      },
+      confirmButton = {
+        Button(
+            enabled = deckTitle.value.isNotBlank(),
+            modifier = Modifier.testTag("saveDeckButton"),
+            onClick = {
+              val newDeck =
+                  deck.value?.copy(
+                      name = deckTitle.value,
+                      description = deckDescription.value,
+                      visibility = deckVisibility.value,
+                      lastModified = Timestamp.now())
+                      ?: Deck(
+                          id = deckViewModel.getNewUid(),
                           name = deckTitle.value,
-                          description = deckDescription.value,
+                          userId = userViewModel.currentUser.value!!.uid,
+                          folderId = null,
                           visibility = deckVisibility.value,
+                          description = deckDescription.value,
                           lastModified = Timestamp.now())
-                          ?: Deck(
-                              id = deckViewModel.getNewUid(),
-                              name = deckTitle.value,
-                              userId = userViewModel.currentUser.value!!.uid,
-                              folderId = null,
-                              visibility = deckVisibility.value,
-                              description = deckDescription.value,
-                              lastModified = Timestamp.now())
-                  deckViewModel.updateDeck(newDeck, { deckViewModel.selectDeck(newDeck) })
-                  onSave?.invoke()
-                  onDismissRequest()
-                }) {
-                  Text(stringResource(R.string.save))
-                }
-          }
-    }
-  }
+              deckViewModel.updateDeck(newDeck, { deckViewModel.selectDeck(newDeck) })
+              onSave?.invoke()
+              onDismissRequest()
+            }) {
+              Text(mode)
+            }
+      },
+      dismissButton = {
+        OutlinedButton(
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.error),
+            onClick = onDismissRequest,
+            modifier = Modifier.testTag("cancelButton")) {
+              Text(stringResource(R.string.cancel), color = MaterialTheme.colorScheme.error)
+            }
+      })
 }

@@ -127,7 +127,12 @@ fun DeckScreen(
   }
 
   Scaffold(
-      topBar = { DeckMenuTopAppBar { navigationActions.goBack() } },
+      topBar = {
+        DeckMenuTopAppBar {
+          navigationActions.goBack()
+          deckViewModel.selectDeck(null)
+        }
+      },
       floatingActionButton = {
         if (belongsToUser) {
           DeckFab(

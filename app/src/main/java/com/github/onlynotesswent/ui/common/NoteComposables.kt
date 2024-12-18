@@ -63,7 +63,6 @@ import java.util.Locale
  * @param currentUser The current user.
  * @param noteViewModel The ViewModel that provides the list of notes to display.
  * @param folderViewModel The ViewModel that provides the list of folders to display.
- * @param showDialog A boolean indicating whether the move out dialog should be displayed.
  * @param navigationActions The navigation instance used to transition between different screens.
  * @param onClick The lambda function to be invoked when the note card is clicked.
  */
@@ -75,7 +74,6 @@ fun NoteItem(
     currentUser: State<User?>,
     noteViewModel: NoteViewModel,
     folderViewModel: FolderViewModel,
-    showDialog: Boolean,
     navigationActions: NavigationActions,
     onClick: () -> Unit
 ) {
@@ -86,7 +84,6 @@ fun NoteItem(
         note = note,
         noteViewModel = noteViewModel,
         folderViewModel = folderViewModel,
-        navigationActions = navigationActions,
         onDismiss = { showBottomSheet = false })
   }
 
@@ -170,7 +167,6 @@ fun NoteItem(
  * @param note The note data that will be displayed in this card.
  * @param noteViewModel The ViewModel that provides the list of notes to display.
  * @param folderViewModel the folderViewModel used here to move the note.
- * @param navigationActions The navigation instance used to transition between different screens.
  * @param onDismiss The callback to be invoked when the bottom sheet is dismissed.
  */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -179,7 +175,6 @@ fun NoteOptionsBottomSheet(
     note: Note,
     noteViewModel: NoteViewModel,
     folderViewModel: FolderViewModel,
-    navigationActions: NavigationActions,
     onDismiss: () -> Unit
 ) {
   var showFileSystemPopup by remember { mutableStateOf(false) }
@@ -268,10 +263,11 @@ fun NoteDialog(
     onDismiss: () -> Unit,
     onConfirm: (String, Visibility) -> Unit,
     action: String,
-    oldVisibility: Visibility = Visibility.PRIVATE,
+    oldVisibility: Visibility = Visibility.DEFAULT,
     oldName: String = ""
 ) {
-  CreationDialog(onDismiss, onConfirm, action, oldVisibility, oldName, "Note")
+  CreationDialog(
+      onDismiss, onConfirm, action, oldVisibility, oldName, stringResource(R.string.note))
 }
 
 /**
