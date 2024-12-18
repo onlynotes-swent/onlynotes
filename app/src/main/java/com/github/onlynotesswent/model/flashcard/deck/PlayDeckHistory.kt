@@ -1,33 +1,66 @@
 package com.github.onlynotesswent.model.flashcard.deck
 
+import android.util.Log
+
 
 data class PlayDeckHistory(
-    val listOfPreviousFlashcardsId: List<String> = emptyList(),
-    val listOfNextFlashcardsId: List<String> = emptyList(),
-    val currentFlashcardId: String
+    // The list of all flashcards in the deck.
+    //The fist element and last element will always be null
+    //to simply the logic of the circular list with the pager
+    val listOfAllFlashcard: List<String?>,
+    val currentFlashcardId: String,
+    val indexOfCurrentFlashcard: Int,
+    val size: Int,
 ){
+    constructor(currentFlashcardId: String) : this(
+        listOfAllFlashcard =List(MAX_LIST_LENGTH ){
+            if(it==1){
+                currentFlashcardId
+            }else{
+                null
+            }
+        },
+        currentFlashcardId = currentFlashcardId,
+        indexOfCurrentFlashcard = 1,
+        size=1
+    )
+
     companion object{
-        const val MAX_LIST_LENGTH = 10
+        const val MAX_LIST_LENGTH = 7
+        //because the first and last element are always null  and
+        //one null element witch limit the next and previous flashcard
+        const val MAX_SIZE = MAX_LIST_LENGTH-3
+
     }
 
     /**
-     * Adds a flashcard to the list of previous flashcards.
+     * epic
      *
      * @param flashcardId The ID of the flashcard to add.
      */
     fun goForwardWithNewFlashcard(flashcardId: String): PlayDeckHistory {
-        if (listOfPreviousFlashcardsId.size >= MAX_LIST_LENGTH) {
+        val index= getIndexForward()
+        Log.e("PlayDeckHistory", "goForwardWithNewFlashcard: $index")
+
+        val nextIndex=if(index==MAX_LIST_LENGTH-2) 1 else index+1
+
+        if(size==MAX_SIZE){
             return PlayDeckHistory(
-                listOfPreviousFlashcardsId.drop(1) + currentFlashcardId,
-                listOfNextFlashcardsId,
-                flashcardId
+                listOfAllFlashcard = listOfAllFlashcard.
+                replaceAt(index,flashcardId).
+                replaceAt(nextIndex,null),
+                currentFlashcardId = flashcardId,
+                indexOfCurrentFlashcard = index,
+                size = size
             )
         }
         return PlayDeckHistory(
-            listOfPreviousFlashcardsId + currentFlashcardId,
-            listOfNextFlashcardsId,
-            flashcardId
-        )
+                listOfAllFlashcard = listOfAllFlashcard.replaceAt(index,flashcardId),
+                currentFlashcardId = flashcardId,
+                indexOfCurrentFlashcard = index,
+                size = size+1
+            )
+
     }
 
     /**
@@ -36,23 +69,21 @@ data class PlayDeckHistory(
      * @return The updated PlayDeckHistory.
      */
     fun goBack(): PlayDeckHistory {
-        if (listOfPreviousFlashcardsId.isEmpty()) {
-            throw IllegalStateException("The list of previous flashcards is empty")
-        }
-        if (listOfNextFlashcardsId.size >= MAX_LIST_LENGTH) {
-            return PlayDeckHistory(
-                listOfPreviousFlashcardsId.dropLast(1),
-                listOf(currentFlashcardId) + listOfNextFlashcardsId.dropLast(1),
-                listOfPreviousFlashcardsId.last()
-            )
+        val index = getIndexBackward()
+        Log.e("PlayDeckHistory", "goBack: $index")
+        if(listOfAllFlashcard[index]==null){
+            throw IllegalStateException("you shouldn't go back to a null flashcard")
         }
         return PlayDeckHistory(
-            listOfPreviousFlashcardsId.dropLast(1),
-            listOf(currentFlashcardId) + listOfNextFlashcardsId,
-            listOfPreviousFlashcardsId.last()
+            listOfAllFlashcard = listOfAllFlashcard,
+            currentFlashcardId = listOfAllFlashcard[index]!!,
+            indexOfCurrentFlashcard = index,
+            size = size
         )
 
     }
+
+
 
     /**
      * Goes forward to the next flashcard.
@@ -60,22 +91,20 @@ data class PlayDeckHistory(
      * @return The updated PlayDeckHistory.
      */
     fun goForward(): PlayDeckHistory {
-        if (listOfNextFlashcardsId.isEmpty()) {
-           throw IllegalStateException("The list of next flashcards is empty")
-        }
-        if(listOfPreviousFlashcardsId.size >= MAX_LIST_LENGTH){
-            return PlayDeckHistory(
-                listOfPreviousFlashcardsId.drop(1) +listOf(currentFlashcardId),
-                listOfNextFlashcardsId.drop(1),
-                listOfNextFlashcardsId.first()
-            )
+        val index = getIndexForward()
+        Log.e("PlayDeckHistory", "goForward: $index")
+        if(listOfAllFlashcard[index]==null){
+            throw IllegalStateException("you shouldn't go forward to a null flashcard")
         }
         return PlayDeckHistory(
-            listOfPreviousFlashcardsId + listOf(currentFlashcardId),
-            listOfNextFlashcardsId.drop(1),
-            listOfNextFlashcardsId.first()
+            listOfAllFlashcard = listOfAllFlashcard,
+            currentFlashcardId = listOfAllFlashcard[index]!!,
+            indexOfCurrentFlashcard = index,
+            size = size
         )
+
     }
+
 
     /**
      * Checks if the user can go back to the previous flashcard.
@@ -83,14 +112,36 @@ data class PlayDeckHistory(
      * @return true if the user can go back, false otherwise.
      */
     fun canGoBack(): Boolean {
-        return listOfPreviousFlashcardsId.isNotEmpty()
+        val index=getIndexBackward()
+        Log.e("PlayDeckHistory", "can go back: $index")
+        return listOfAllFlashcard[index]!=null
+
     }
 
     /**
      * Checks if the user can go forward to the next flashcard.
      */
     fun canGoForward(): Boolean {
-        return listOfNextFlashcardsId.isNotEmpty()
+        val index=getIndexForward()
+        Log.e("PlayDeckHistory", "can go forward: $index")
+        return listOfAllFlashcard[index]!=null
     }
+
+    private fun getIndexForward() = if (indexOfCurrentFlashcard == MAX_LIST_LENGTH - 2)
+        1 else indexOfCurrentFlashcard + 1
+
+    private fun getIndexBackward() = if (indexOfCurrentFlashcard == 1)
+        MAX_LIST_LENGTH - 2 else indexOfCurrentFlashcard - 1
+}
+
+private fun <E> List<E>.replaceAt(i: Int, flashcardId: E): List<E?> {
+    return this.mapIndexed { index, e ->
+        if (index == i) {
+            flashcardId
+        } else {
+            e
+        }
+    }
+
 
 }

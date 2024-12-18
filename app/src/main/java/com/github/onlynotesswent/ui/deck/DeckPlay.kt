@@ -44,6 +44,7 @@ import com.github.onlynotesswent.ui.common.FlashcardPlayItem
 import com.github.onlynotesswent.ui.common.LoadingIndicator
 import com.github.onlynotesswent.ui.common.ScreenTopBar
 import com.github.onlynotesswent.ui.navigation.NavigationActions
+import kotlinx.coroutines.launch
 
 @Composable
 fun DeckPlayScreen(
@@ -62,6 +63,7 @@ fun DeckPlayScreen(
   val userFlashcardList: MutableState<List<UserFlashcard>> = remember { mutableStateOf(listOf()) }
   val flashcardList = flashcardViewModel.deckFlashcards.collectAsState()
   val userViewModelFlashcards = userViewModel.deckUserFlashcards.collectAsState()
+  val flashcardMap= flashcardList.value.associateBy { it.id }
 
 
 
@@ -138,7 +140,7 @@ fun DeckPlayScreen(
                               remember(selectedFlashcard) { derivedStateOf { selectedFlashcard.value!! } }
 
                           if (playMode.value == Deck.PlayMode.REVIEW) {
-                              FlashcardPlayItem(
+                            /*  FlashcardPlayItem(
                                   selectedFlashcard,
                                   fileViewModel,
                                   onCorrect = { score.value += 1 },
@@ -146,7 +148,7 @@ fun DeckPlayScreen(
                                   isReview = playMode.value == Deck.PlayMode.REVIEW
                               )
 
-
+                             */
                               ReviewMode(
                                   flashcardViewModel,
                                   fileViewModel,
@@ -155,7 +157,8 @@ fun DeckPlayScreen(
                                   userViewModelFlashcards,
                                   nonNullSelectedFlashcard,
                                   userFlashcardList,
-                                  answers
+                                  answers,
+                                  flashcardMap
                               )
                           } else {
 
@@ -195,38 +198,88 @@ fun ReviewMode(
     userViewModelFlashcards: State<Map<String, UserFlashcard>>,
     selectedFlashcard: State<Flashcard>,
     userFlashcardList: MutableState<List<UserFlashcard>>,
-    answers: Map<String, MutableState<Int?>>
+    answers: Map<String, MutableState<Int?>>,
+    flashcardMap: Map<String, Flashcard>
 ) {
   val playDeckHistory = remember { mutableStateOf(PlayDeckHistory(
         currentFlashcardId =selectedFlashcard.value.id
   )) }
   Column {
-      /*
-      val pagerState = rememberPagerState { flashcardList.value.size }
+      val listOfPagerFlashcards= remember{
+          mutableStateOf( playDeckHistory.value.listOfAllFlashcard)}
+      val pagerState = rememberPagerState { listOfPagerFlashcards.value.size }
       val currentPageState= remember { mutableIntStateOf(pagerState.currentPage) }
       HorizontalPager(pagerState) { pageIndex ->
+          /*LaunchedEffect(pagerState.currentPage) {
+
+          }
+
+           */
           Column(
               modifier = Modifier.fillMaxWidth().padding(16.dp),
               horizontalAlignment = Alignment.CenterHorizontally,
               verticalArrangement = Arrangement.spacedBy(16.dp)) {
-              val flashcardState = remember { derivedStateOf { flashcardList.value[pageIndex] } }
+              val flashcardState = remember { derivedStateOf { flashcardMap[listOfPagerFlashcards.value[pageIndex]] } }
               FlashcardPlayItem(flashcardState, fileViewModel)
           }
+
+
       }
-
-
       //this a listener for the pager state that will be triggered when the current page changes
       LaunchedEffect(pagerState) {
           snapshotFlow { pagerState.currentPage }
               .collect { currentPage ->
-                  Log.e("PagerStateD", "current page: $currentPage")
                   val diff = currentPage - currentPageState.intValue
-                  Log.e("PagerStateD", "diff$diff")
+                  Log.e("PagerStateD", "current page: $currentPage")
+                  Log.e("PagerStateD", "diff: $diff")
+                  Log.e("PagerStateD", "current page: ${listOfPagerFlashcards.value.toString()}")
                   currentPageState.intValue = currentPage
+                  if (diff > 0) {
+                        if(playDeckHistory.value.canGoForward()){
+                            playDeckHistory.value=playDeckHistory.value.goForward()
+                        }else{
+                            val withoutCurrent = userFlashcardList.value.filter { it.id != selectedFlashcard.value.id }
+                            val selectedUserFlashcard = UserFlashcard.selectRandomFlashcardLinear(withoutCurrent)
+                            answers[selectedUserFlashcard.id]!!.value = null
+                            playDeckHistory.value = playDeckHistory.value.goForwardWithNewFlashcard(selectedUserFlashcard.id)
+                        }
+                      listOfPagerFlashcards.value= playDeckHistory.value.listOfAllFlashcard
+                      if(currentPage==listOfPagerFlashcards.value.size-1){
+                          launch {
+                              pagerState.scrollToPage(1)
+                              Log.e("PagerStateD", "new current page: "+pagerState.currentPage.toString())
+                              Log.e("PagerStateD", "Calling scrollToPage to page 1")
+                              currentPageState.intValue = 1
+                          }
+                      }
+                    } else if (diff < 0) {
+                        if(playDeckHistory.value.canGoBack()){
+                            playDeckHistory.value=playDeckHistory.value.goBack()
+                        }
+                      listOfPagerFlashcards.value= playDeckHistory.value.listOfAllFlashcard
+                      if(currentPage==0){
+                          launch {
+                              pagerState.scrollToPage(listOfPagerFlashcards.value.size - 2)
+                          }
+                    }
+                    }
+
+                  else{
+                      if(currentPage==listOfPagerFlashcards.value.size-1){
+                          launch {
+                              pagerState.scrollToPage(1)
+                          }
+                      }
+                      if(currentPage==0){
+                          launch {
+                          pagerState.scrollToPage(1)
+                          }
+                      }
+                  }
+
               }
       }
-
-       */
+      /*
      PreviousNextButton(
          onNext = {
             if(playDeckHistory.value.canGoForward()){
@@ -252,6 +305,7 @@ fun ReviewMode(
          enabledPrevious = playDeckHistory.value.canGoBack(),
          enabledNext = userFlashcardList.value.size > 1
      )
+     */
     SelectWrongRight(
         answers,
         selectedFlashcard.value,
