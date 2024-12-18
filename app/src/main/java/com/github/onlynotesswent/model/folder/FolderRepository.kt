@@ -1,6 +1,8 @@
 package com.github.onlynotesswent.model.folder
 
 import com.github.onlynotesswent.model.note.NoteViewModel
+import com.github.onlynotesswent.model.user.Friends
+import com.github.onlynotesswent.model.user.UserViewModel
 
 interface FolderRepository {
 
@@ -186,6 +188,8 @@ interface FolderRepository {
    * Retrieves all folders that are children of a parent folder.
    *
    * @param parentFolderId The ID of the parent folder.
+   * @param userViewModel The user view model. If the function can only be called by a user that is
+   *   the owner of the folder, this parameter should be null.
    * @param onSuccess Callback to be invoked with the retrieved folders.
    * @param onFailure Callback to be invoked if an error occurs.
    * @param useCache Whether to update data from cache. Should be true only if userId of the folder
@@ -193,6 +197,7 @@ interface FolderRepository {
    */
   suspend fun getSubFoldersOf(
       parentFolderId: String,
+      userViewModel: UserViewModel?,
       onSuccess: (List<Folder>) -> Unit,
       onFailure: (Exception) -> Unit,
       useCache: Boolean
@@ -233,6 +238,27 @@ interface FolderRepository {
       folder: Folder,
       noteViewModel: NoteViewModel,
       onSuccess: () -> Unit,
+      onFailure: (Exception) -> Unit,
+      useCache: Boolean
+  )
+
+  /**
+   * Retrieves a list of saved folders by their IDs. This only returns folders that are saveable
+   * which means they are public or the user is following the folder's author. The list of currently
+   * saved folders that don't comply is also returned.
+   *
+   * @param savedFoldersIds The list of folder IDs to retrieve.
+   * @param friends The user's friends.
+   * @param onSuccess Callback to be invoked with the retrieved folders and the list of missing
+   *   folders.
+   * @param onFailure Callback to be invoked if an error occurs.
+   * @param useCache Whether to update data from cache. Should be true only if userId of the folders
+   *   is the current user.
+   */
+  suspend fun getSavedFoldersByIds(
+      savedFoldersIds: List<String>,
+      friends: Friends,
+      onSuccess: (List<Folder>, List<String>) -> Unit,
       onFailure: (Exception) -> Unit,
       useCache: Boolean
   )

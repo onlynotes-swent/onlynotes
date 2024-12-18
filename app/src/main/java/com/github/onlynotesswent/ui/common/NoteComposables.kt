@@ -97,16 +97,19 @@ fun NoteItem(
               .padding(4.dp)
               .semantics(mergeDescendants = true, properties = {})
               .fillMaxWidth()
-              // Enable drag and drop for the note card as a source
+              // Enable drag and drop for the note card as a source if the current user is the owner
               .dragAndDropSource {
                 detectTapGestures(
                     onTap = { onClick() },
                     onLongPress = {
-                      noteViewModel.draggedNote(note)
-                      // Start a drag-and-drop operation to transfer the data which is being dragged
-                      startTransfer(
-                          // Transfer the note Id as a ClipData object
-                          DragAndDropTransferData(ClipData.newPlainText("Note", note.id)))
+                      if (note.isOwner(currentUser.value!!.uid)) {
+                        noteViewModel.draggedNote(note)
+                        // Start a drag-and-drop operation to transfer the data which is being
+                        // dragged
+                        startTransfer(
+                            // Transfer the note Id as a ClipData object
+                            DragAndDropTransferData(ClipData.newPlainText("Note", note.id)))
+                      }
                     },
                 )
               }) {
@@ -193,7 +196,7 @@ fun NoteOptionsBottomSheet(
           noteViewModel.updateNote(note.copy(folderId = selectedFolder?.id))
           showFileSystemPopup = false
           // this is needed to update the displayed notes
-          noteViewModel.getNotesFromFolder(folderViewModel.selectedFolder.value?.id ?: "")
+          noteViewModel.getNotesFromFolder(folderViewModel.selectedFolder.value?.id ?: "", null)
           folderViewModel.selectedFolder.value?.let { folderViewModel.getFolderById(it.id) }
           onDismiss() // Dismiss the bottom sheet after moving the note
         })

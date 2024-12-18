@@ -1,5 +1,7 @@
 package com.github.onlynotesswent.ui.common
 
+// import
+// androidx.compose.foundation.lazy.grid.LazyGridSpanLayoutProvider.LazyGridItemSpanScopeImpl.maxLineSpan
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -69,9 +71,10 @@ fun CustomSeparatedLazyGrid(
           modifier = gridModifier) {
             // If the current user is not the owner of the folders (except for search screen),
             // only display the notes
-            if ((sortedFolders.isNotEmpty() &&
-                sortedFolders[0].isOwner(userViewModel.currentUser.value!!.uid)) ||
-                navigationActions.currentRoute() == Screen.SEARCH) {
+            if ((sortedFolders.isNotEmpty() // &&
+            //                sortedFolders[0].isOwner(userViewModel.currentUser.value!!.uid)) ||
+            //                navigationActions.currentRoute() == Screen.SEARCH
+            )) {
               items(sortedFolders, key = { it.id }, span = { GridItemSpan(2) }) { folder ->
                 FolderItem(
                     folder = folder,

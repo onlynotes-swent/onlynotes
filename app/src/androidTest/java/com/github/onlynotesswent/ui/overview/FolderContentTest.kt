@@ -33,6 +33,7 @@ import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
 import org.mockito.junit.MockitoJUnitRunner
 import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.eq
 
 @RunWith(MockitoJUnitRunner::class)
@@ -266,12 +267,13 @@ class FolderContentTest {
   fun deleteSubFolder() = runTest {
     init(subfolder)
 
-    `when`(mockFolderRepository.getSubFoldersOf(eq("3"), any(), any(), any())).then { invocation ->
-      val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(1)
+    `when`(mockFolderRepository.getSubFoldersOf(eq("3"), anyOrNull(), any(), any(), any())).then {
+        invocation ->
+      val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(2)
       onSuccess(emptyList())
     }
 
-    folderViewModel.getSubFoldersOf(subfolder.id)
+    folderViewModel.getSubFoldersOf(subfolder.id, null)
 
     composeTestRule.onNodeWithTag("folderSettingsButton").performClick()
     composeTestRule.onNodeWithTag("deleteFolderButton").assertIsDisplayed()
@@ -286,8 +288,9 @@ class FolderContentTest {
   @Test
   fun moveFolder() = runTest {
     init(subfolder)
-    `when`(mockFolderRepository.getSubFoldersOf(eq("3"), any(), any(), any())).then { invocation ->
-      val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(1)
+    `when`(mockFolderRepository.getSubFoldersOf(eq("3"), anyOrNull(), any(), any(), any())).then {
+        invocation ->
+      val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(2)
       onSuccess(emptyList())
     }
     composeTestRule.onNodeWithTag("folderSettingsButton").performClick()

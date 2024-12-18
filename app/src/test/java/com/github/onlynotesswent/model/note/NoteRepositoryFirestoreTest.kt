@@ -450,7 +450,7 @@ class NoteRepositoryFirestoreTest {
 
     var receivedNotes: List<Note>? = null
     noteRepositoryFirestore.getNotesFromFolder(
-        testSubNotePublic.folderId!!, { receivedNotes = it }, { assert(false) }, false)
+        testSubNotePublic.folderId!!, null, { receivedNotes = it }, { assert(false) }, false)
     assertNotNull(receivedNotes)
 
     verify(timeout(100)) { (mockQuerySnapshot).documents }
