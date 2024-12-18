@@ -198,14 +198,12 @@ fun FolderContentScreen(
           if (showCreateDialog && folder.value!!.isOwner(currentUser.value!!.uid)) {
 
             if (isDeckView) {
-                EditDeckDialog(
-                    deckViewModel = deckViewModel!!,
-                    userViewModel = userViewModel,
-                    onDismissRequest = { showCreateDialog = false },
-                    mode = stringResource(R.string.create),
-                    onSave = {
-                      navigationActions.navigateTo(Screen.DECK_MENU)
-                    })
+              EditDeckDialog(
+                  deckViewModel = deckViewModel!!,
+                  userViewModel = userViewModel,
+                  onDismissRequest = { showCreateDialog = false },
+                  mode = stringResource(R.string.create),
+                  onSave = { navigationActions.navigateTo(Screen.DECK_MENU) })
             } else {
               NoteDialog(
                   onDismiss = { showCreateDialog = false },

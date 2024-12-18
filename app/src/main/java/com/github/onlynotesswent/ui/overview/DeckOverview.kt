@@ -4,7 +4,6 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -102,14 +101,12 @@ fun DeckOverviewScreen(
             navigationActions = navigationActions)
 
         if (showCreateDeckDialog) {
-            EditDeckDialog(
-                deckViewModel = deckViewModel,
-                userViewModel = userViewModel,
-                onDismissRequest = { showCreateDeckDialog = false },
-                mode = stringResource(R.string.create),
-                onSave = {
-                    navigationActions.navigateTo(Screen.DECK_MENU)
-                })
+          EditDeckDialog(
+              deckViewModel = deckViewModel,
+              userViewModel = userViewModel,
+              onDismissRequest = { showCreateDeckDialog = false },
+              mode = stringResource(R.string.create),
+              onSave = { navigationActions.navigateTo(Screen.DECK_MENU) })
         }
 
         // Logic to show the dialog to create a folder

@@ -145,9 +145,7 @@ fun EditDeckDialog(
                 maxLines = 1,
                 modifier = Modifier.testTag("deckTitleTextField"),
             )
-            SelectVisibility(deckVisibility.value, true) {
-              deckVisibility.value = it
-            }
+            SelectVisibility(deckVisibility.value, true) { deckVisibility.value = it }
             OutlinedTextField(
                 value = deckDescription.value,
                 onValueChange = { deckDescription.value = Deck.formatDescription(it) },
