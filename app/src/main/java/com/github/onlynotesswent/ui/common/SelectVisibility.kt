@@ -35,15 +35,13 @@ import com.github.onlynotesswent.model.common.Visibility
  * visibility options by clicking the left and right arrows.
  *
  * @param visibility The current visibility option.
- * @param currentUserId The Id of the current user.
- * @param noteUserId The Id of the user who created the note.
+ * @param isOwner Whether the current user is the owner of the note.
  * @param onVisibilityChange The action to perform when the visibility option is changed.
  */
 @Composable
 fun SelectVisibility(
     visibility: Visibility?,
-    currentUserId: String,
-    noteUserId: String,
+    isOwner: Boolean,
     onVisibilityChange: (Visibility) -> Unit
 ) {
   var selectedIndex by remember {
@@ -57,9 +55,9 @@ fun SelectVisibility(
       modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
       verticalAlignment = Alignment.CenterVertically,
       horizontalArrangement =
-          if (currentUserId == noteUserId) Arrangement.SpaceBetween else Arrangement.Center) {
+        if (isOwner) Arrangement.SpaceBetween else Arrangement.Center) {
         // Left arrow to scroll backward
-        if (currentUserId == noteUserId) {
+        if (isOwner) {
           IconButton(
               onClick = {
                 selectedIndex =
@@ -99,7 +97,7 @@ fun SelectVisibility(
         }
 
         // Right arrow to scroll forward
-        if (currentUserId == noteUserId) {
+        if (isOwner) {
           IconButton(
               onClick = {
                 selectedIndex =

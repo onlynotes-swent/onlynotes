@@ -23,6 +23,7 @@ import com.github.onlynotesswent.model.flashcard.deck.DeckViewModel
 import com.github.onlynotesswent.model.folder.Folder
 import com.github.onlynotesswent.model.folder.FolderViewModel
 import com.github.onlynotesswent.model.user.UserViewModel
+import com.github.onlynotesswent.ui.common.EditDeckDialog
 import com.github.onlynotesswent.ui.common.FolderDialog
 import com.github.onlynotesswent.ui.navigation.BottomNavigationMenu
 import com.github.onlynotesswent.ui.navigation.LIST_TOP_LEVEL_DESTINATION
@@ -101,7 +102,14 @@ fun DeckOverviewScreen(
             navigationActions = navigationActions)
 
         if (showCreateDeckDialog) {
-          Text(stringResource(R.string.create))
+            EditDeckDialog(
+                deckViewModel = deckViewModel,
+                userViewModel = userViewModel,
+                onDismissRequest = { showCreateDeckDialog = false },
+                mode = stringResource(R.string.create),
+                onSave = {
+                    navigationActions.navigateTo(Screen.DECK_MENU)
+                })
         }
 
         // Logic to show the dialog to create a folder

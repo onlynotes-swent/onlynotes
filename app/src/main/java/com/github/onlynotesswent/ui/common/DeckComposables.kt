@@ -124,6 +124,7 @@ fun EditDeckDialog(
     deckViewModel: DeckViewModel,
     userViewModel: UserViewModel,
     onDismissRequest: () -> Unit,
+    onSave: (() -> Unit)? = null,
     mode: String = stringResource(R.string.edit_maj),
 ) {
   val deck: State<Deck?> = deckViewModel.selectedDeck.collectAsState()
@@ -145,7 +146,7 @@ fun EditDeckDialog(
                 maxLines = 1,
                 modifier = Modifier.testTag("deckTitleTextField"),
             )
-            SelectVisibility(deckVisibility.value, currentUser!!.uid, deck.value!!.userId) {
+            SelectVisibility(deckVisibility.value, currentUser!!.uid == (deck.value?.userId ?: "")) {
               deckVisibility.value = it
             }
             OutlinedTextField(
@@ -173,6 +174,7 @@ fun EditDeckDialog(
                               description = deckDescription.value,
                               lastModified = Timestamp.now())
                   deckViewModel.updateDeck(newDeck, { deckViewModel.selectDeck(newDeck) })
+                  onSave?.invoke()
                   onDismissRequest()
                 }) {
                   Text(stringResource(R.string.save))

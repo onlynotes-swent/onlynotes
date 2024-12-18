@@ -50,6 +50,7 @@ import com.github.onlynotesswent.model.user.UserViewModel
 import com.github.onlynotesswent.ui.common.ConfirmationPopup
 import com.github.onlynotesswent.ui.common.CustomDropDownMenu
 import com.github.onlynotesswent.ui.common.CustomDropDownMenuItem
+import com.github.onlynotesswent.ui.common.EditDeckDialog
 import com.github.onlynotesswent.ui.common.FileSystemPopup
 import com.github.onlynotesswent.ui.common.FolderDialog
 import com.github.onlynotesswent.ui.common.NoteDialog
@@ -196,7 +197,16 @@ fun FolderContentScreen(
           }
           if (showCreateDialog && folder.value!!.isOwner(currentUser.value!!.uid)) {
 
-            if (isDeckView) {} else {
+            if (isDeckView) {
+                EditDeckDialog(
+                    deckViewModel = deckViewModel!!,
+                    userViewModel = userViewModel,
+                    onDismissRequest = { showCreateDialog = false },
+                    mode = stringResource(R.string.create),
+                    onSave = {
+                      navigationActions.navigateTo(Screen.DECK_MENU)
+                    })
+            } else {
               NoteDialog(
                   onDismiss = { showCreateDialog = false },
                   onConfirm = { newName, visibility ->

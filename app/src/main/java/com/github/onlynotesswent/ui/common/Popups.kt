@@ -141,7 +141,7 @@ fun CreationDialog(
 
               // Spacing
               Spacer(modifier = Modifier.height(8.dp))
-              SelectVisibility(visibility, currentUserId, noteUserId) { visibility = it }
+              SelectVisibility(visibility, currentUserId == noteUserId) { visibility = it }
             }
       },
       confirmButton = {

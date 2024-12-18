@@ -309,7 +309,7 @@ fun NoteSection(
 
   Column(modifier = Modifier.fillMaxWidth()) {
     Text(text = "Visibility", style = MaterialTheme.typography.titleMedium)
-    SelectVisibility(visibility, currentUserId, note.userId) { onVisibilityChange(it) }
+    SelectVisibility(visibility, currentUserId == note.userId) { onVisibilityChange(it) }
   }
 
   Spacer(modifier = Modifier.height(8.dp))
