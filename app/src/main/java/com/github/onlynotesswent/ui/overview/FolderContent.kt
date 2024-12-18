@@ -199,7 +199,7 @@ fun FolderContentScreen(
                 oldName = updatedName,
                 oldVisibility = folder.value!!.visibility)
           }
-          if (showCreateDialog && folder.value!!.isOwner(currentUser.value!!.uid)) {
+          if (showCreateDialog) {
 
             if (isDeckView) {
               EditDeckDialog(
@@ -241,18 +241,13 @@ fun FolderContentScreen(
                           id = newFolderId,
                           name = name,
                           userId = currentUser.value!!.uid,
-                          parentFolderId = parentFolderId.value,
+                          parentFolderId = folder.value!!.id,
                           visibility = visibility,
                           lastModified = Timestamp.now(),
                           isDeckFolder = isDeckView))
-                  if (parentFolderId.value != null) {
-                    navigationActions.navigateTo(
-                        Screen.FOLDER_CONTENTS.replace(
-                            oldValue = "{folderId}", newValue = newFolderId))
-                  } else {
-                    folderViewModel.clearSelectedFolder()
-                    navigationActions.navigateTo(TopLevelDestinations.NOTE_OVERVIEW)
-                  }
+                navigationActions.navigateTo(
+                    Screen.FOLDER_CONTENTS.replace(
+                        oldValue = "{folderId}", newValue = newFolderId))
                   showCreateFolderDialog = false
                 },
                 action = stringResource(R.string.create))
