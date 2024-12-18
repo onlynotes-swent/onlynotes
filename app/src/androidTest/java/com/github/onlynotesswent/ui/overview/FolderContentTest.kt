@@ -269,7 +269,7 @@ class FolderContentTest {
 
     `when`(mockFolderRepository.getSubFoldersOf(eq("3"), anyOrNull(), any(), any(), any())).then {
         invocation ->
-      val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(1)
+      val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(2)
       onSuccess(emptyList())
     }
 
@@ -290,7 +290,7 @@ class FolderContentTest {
     init(subfolder)
     `when`(mockFolderRepository.getSubFoldersOf(eq("3"), anyOrNull(), any(), any(), any())).then {
         invocation ->
-      val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(1)
+      val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(2)
       onSuccess(emptyList())
     }
     composeTestRule.onNodeWithTag("folderSettingsButton").performClick()

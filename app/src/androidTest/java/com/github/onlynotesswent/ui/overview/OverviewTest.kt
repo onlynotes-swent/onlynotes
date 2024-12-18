@@ -453,7 +453,7 @@ class OverviewTest {
             folderRepository.getSubFoldersOf(
                 eq("8"), anyOrNull(), any<(List<Folder>) -> Unit>(), any(), any()))
         .thenAnswer { invocation ->
-          val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(1)
+          val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(2)
           onSuccess(subFolderList)
         }
     composeTestRule.onNodeWithTag("noteModalBottomSheet").assertIsNotDisplayed()
