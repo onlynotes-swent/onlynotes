@@ -193,6 +193,7 @@ fun NoteOptionsBottomSheet(
           noteViewModel.updateNote(
               note.copy(folderId = selectedFolder?.id, lastModified = Timestamp.now()))
           showFileSystemPopup = false
+          folderViewModel.clearSelectedFolder()
           if (selectedFolder != null) {
             navigationActions.navigateTo(
                 Screen.FOLDER_CONTENTS.replace(
