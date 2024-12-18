@@ -13,14 +13,17 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -186,7 +189,54 @@ fun FileSystemPopup(
   var selectedFolder by remember { mutableStateOf(folderViewModel.selectedFolder.value) }
   var folderSubFolders by remember { mutableStateOf<List<Folder>>(emptyList()) }
   val userRootFolders = folderViewModel.userRootFolders.collectAsState()
-
+    //local helper function for displaying the subfolders items
+    @Composable
+    fun subFolder(subFolder: Folder) =
+        Column {
+            Box(
+                modifier = Modifier
+                    .testTag("FileSystemPopupFolderChoiceBox" + subFolder.id)
+                    .fillMaxWidth()
+                    .background(
+                        color = MaterialTheme.colorScheme.background,
+                        shape = RoundedCornerShape(8.dp)
+                    )
+                    .clickable {
+                        folderViewModel.getSubFoldersOfNoStateUpdate(
+                            subFolder.id,
+                            null,
+                            onSuccess = { subFolders -> folderSubFolders = subFolders }
+                        )
+                        selectedFolder = subFolder
+                    }
+                    .padding(4.dp) // Adjust padding for better spacing
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Start
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Folder, // Use a folder icon
+                        contentDescription = "Folder Icon",
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier
+                            .size(50.dp) // Make the icon significantly larger
+                            .padding(end = 16.dp) // Move it slightly to the left
+                    )
+                    Text(
+                        text = subFolder.name,
+                        style = MaterialTheme.typography.bodyLarge.copy(fontSize = 20.sp), // Larger text
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.weight(1f) // Let text take up remaining space
+                    )
+                }
+            }
+            Divider(
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f), // Subtle divider color
+                thickness = 1.dp, // Thickness of the divider
+                modifier = Modifier.fillMaxWidth() // Ensure divider spans the full width
+            )
+        }
   // Modify the subfolder when selected Folder changes, best way I found how to do it as when done
   // sequentially it takes a bit of time for the selected Folder to change which causes a bug
   // where the subfolders don't update. Could fix this problem using a wait but that would depend
@@ -238,7 +288,7 @@ fun FileSystemPopup(
                             text =
                                 if (selectedFolder == null)
                                     stringResource(R.string.file_system_folders_in_root)
-                                else "Folders in: ${selectedFolder!!.name}",
+                                else selectedFolder!!.name,
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onPrimary)
 
@@ -260,52 +310,10 @@ fun FileSystemPopup(
                         .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(4.dp)) {
                   if (selectedFolder == null) {
-                    userRootFolders.value.forEach { folder ->
-                      Box(
-                          modifier =
-                              Modifier.testTag("FileSystemPopupFolderChoiceBox" + folder.id)
-                                  .fillMaxWidth()
-                                  .background(
-                                      color = MaterialTheme.colorScheme.surface,
-                                      shape = RoundedCornerShape(8.dp))
-                                  .clickable {
-                                    folderViewModel.getSubFoldersOfNoStateUpdate(
-                                        folder.id,
-                                        null,
-                                        onSuccess = { subFolders -> folderSubFolders = subFolders })
-                                    selectedFolder = folder
-                                  }
-                                  .padding(12.dp)) {
-                            Text(
-                                modifier = Modifier.testTag("FileSystemPopupFolderChoiceText"),
-                                text = folder.name,
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurface)
-                          }
-                    }
+                    userRootFolders.value.forEach { folder -> subFolder(folder) }
+
                   } else {
-                    folderSubFolders.forEach { subFolder ->
-                      Box(
-                          modifier =
-                              Modifier.testTag("FileSystemPopupFolderChoiceBox" + subFolder.id)
-                                  .fillMaxWidth()
-                                  .background(
-                                      color = MaterialTheme.colorScheme.surface,
-                                      shape = RoundedCornerShape(8.dp))
-                                  .clickable {
-                                    folderViewModel.getSubFoldersOfNoStateUpdate(
-                                        subFolder.id,
-                                        null,
-                                        onSuccess = { subFolders -> folderSubFolders = subFolders })
-                                    selectedFolder = subFolder
-                                  }
-                                  .padding(12.dp)) {
-                            Text(
-                                text = subFolder.name,
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurface)
-                          }
-                    }
+                    folderSubFolders.forEach { folder -> subFolder(folder) }
                   }
                 }
             Box(
