@@ -1,6 +1,7 @@
 package com.github.onlynotesswent.ui.common
 
 import android.content.ClipData
+import android.widget.Toast
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.draganddrop.dragAndDropSource
@@ -15,9 +16,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.LibraryBooks
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -36,6 +39,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draganddrop.DragAndDropTransferData
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
@@ -50,6 +54,7 @@ import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.model.user.User
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
+import com.github.onlynotesswent.utils.NotesToFlashcard
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -64,6 +69,7 @@ import java.util.Locale
  * @param noteViewModel The ViewModel that provides the list of notes to display.
  * @param folderViewModel The ViewModel that provides the list of folders to display.
  * @param showDialog A boolean indicating whether the move out dialog should be displayed.
+ * @param notesToFlashcard The notes to flashcard object to be passed to the note item.
  * @param navigationActions The navigation instance used to transition between different screens.
  * @param onClick The lambda function to be invoked when the note card is clicked.
  */
@@ -76,6 +82,7 @@ fun NoteItem(
     noteViewModel: NoteViewModel,
     folderViewModel: FolderViewModel,
     showDialog: Boolean,
+    notesToFlashcard: NotesToFlashcard? = null,
     navigationActions: NavigationActions,
     onClick: () -> Unit
 ) {
@@ -87,7 +94,8 @@ fun NoteItem(
         noteViewModel = noteViewModel,
         folderViewModel = folderViewModel,
         navigationActions = navigationActions,
-        onDismiss = { showBottomSheet = false })
+        onDismiss = { showBottomSheet = false },
+        notesToFlashcard = notesToFlashcard)
   }
 
   Card(
@@ -171,6 +179,7 @@ fun NoteItem(
  * @param noteViewModel The ViewModel that provides the list of notes to display.
  * @param folderViewModel the folderViewModel used here to move the note.
  * @param navigationActions The navigation instance used to transition between different screens.
+ * @param notesToFlashcard The notes to flashcard object to be passed to the note item.
  * @param onDismiss The callback to be invoked when the bottom sheet is dismissed.
  */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -180,10 +189,13 @@ fun NoteOptionsBottomSheet(
     noteViewModel: NoteViewModel,
     folderViewModel: FolderViewModel,
     navigationActions: NavigationActions,
+    notesToFlashcard: NotesToFlashcard?,
     onDismiss: () -> Unit
 ) {
   var showFileSystemPopup by remember { mutableStateOf(false) }
   var showDeletePopup by remember { mutableStateOf(false) }
+  var showFlashcardCreationPopup by remember { mutableStateOf(false) }
+  val context = LocalContext.current
 
   if (showFileSystemPopup) {
     FileSystemPopup(
@@ -209,6 +221,20 @@ fun NoteOptionsBottomSheet(
         })
   }
 
+    if (showFlashcardCreationPopup) {
+            AlertDialog(
+                modifier = Modifier.testTag("popup"),
+                onDismissRequest = {},
+                title = {},
+                text = {
+                    LoadingIndicator(
+                        text = stringResource(R.string.converting_note_to_flashcards),
+                        modifier = Modifier.padding(16.dp)
+                    )
+                },
+                confirmButton = {})
+    }
+
   ModalBottomSheet(
       modifier = Modifier.testTag("noteModalBottomSheet"),
       onDismissRequest = onDismiss,
@@ -229,6 +255,69 @@ fun NoteOptionsBottomSheet(
                     text = stringResource(R.string.move_note),
                     style = MaterialTheme.typography.bodyLarge)
               }
+
+            if (notesToFlashcard != null) {
+                Row(
+                    modifier =
+                    Modifier.fillMaxWidth()
+                        .clickable {
+                            showFlashcardCreationPopup = true
+                            notesToFlashcard.convertNoteToDeck(
+                                note,
+                                onSuccess = {
+                                    showFlashcardCreationPopup = false
+                                    onDismiss()
+                                    if (it != null) {
+                                        navigationActions.navigateTo(
+                                            Screen.DECK_MENU.replace(
+                                                oldValue = "{deckId}",
+                                                newValue = it.id
+                                            )
+                                        )
+                                    } else {
+                                        Toast.makeText(
+                                            context,
+                                            R.string.no_flashcards_created,
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    }
+                                },
+                                onFileNotFoundException = {
+                                    showFlashcardCreationPopup = false
+                                    onDismiss()
+                                    Toast.makeText(
+                                        context,
+                                        R.string.no_note_text_found,
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                },
+                                onFailure = {
+                                    showFlashcardCreationPopup = false
+                                    onDismiss()
+                                    Toast.makeText(
+                                        context,
+                                        R.string.error_creating_flashcards,
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                }
+                            )
+
+                        }
+                        .padding(vertical = 8.dp)
+                        .testTag("moveNoteBottomSheet"),
+                    verticalAlignment = Alignment.CenterVertically) {
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Text(
+                        text = stringResource(R.string.convert_note_to_flashcards),
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Outlined.LibraryBooks,
+                        contentDescription = stringResource(R.string.convert_note_to_flashcards)
+                    )
+                }
+            }
 
           HorizontalDivider(Modifier.padding(vertical = 10.dp), 1.dp)
 
