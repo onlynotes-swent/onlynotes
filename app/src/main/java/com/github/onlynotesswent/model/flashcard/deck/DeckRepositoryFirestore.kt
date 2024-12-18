@@ -239,4 +239,22 @@ class DeckRepositoryFirestore(private val db: FirebaseFirestore) : DeckRepositor
           Log.e(TAG, "Error deleting deck", exception)
         }
   }
+
+  override fun deleteDecksFromFolder(
+      folderId: String,
+      onSuccess: () -> Unit,
+      onFailure: (Exception) -> Unit
+  ) {
+    db.collection(collectionPath)
+        .whereEqualTo("folderId", folderId)
+        .get()
+        .addOnSuccessListener { querySnapshot ->
+          querySnapshot.documents.forEach { document -> document.reference.delete() }
+          onSuccess()
+        }
+        .addOnFailureListener { exception ->
+          onFailure(exception)
+          Log.e(TAG, "Error deleting decks from folder", exception)
+        }
+  }
 }

@@ -97,7 +97,6 @@ fun FolderContentScreen(
     folderViewModel.getSubFoldersOf(folderId)
   }
 
-  val parentFolderId = folderViewModel.parentFolderId.collectAsState()
   val context = LocalContext.current
 
   var expanded by remember { mutableStateOf(false) }
@@ -245,9 +244,9 @@ fun FolderContentScreen(
                           visibility = visibility,
                           lastModified = Timestamp.now(),
                           isDeckFolder = isDeckView))
-                navigationActions.navigateTo(
-                    Screen.FOLDER_CONTENTS.replace(
-                        oldValue = "{folderId}", newValue = newFolderId))
+                  navigationActions.navigateTo(
+                      Screen.FOLDER_CONTENTS.replace(
+                          oldValue = "{folderId}", newValue = newFolderId))
                   showCreateFolderDialog = false
                 },
                 action = stringResource(R.string.create))
@@ -450,7 +449,8 @@ fun FolderContentTopBar(
               text = stringResource(R.string.confirm_delete_folder_contents),
               onConfirm = {
                 if (isDeckView) {
-                  // TODO: Implement deck deletion
+                  deckViewModel!!.deleteDecksFromFolder(folder.id)
+                  folderViewModel.deleteFolderContents(folder, deckViewModel)
                 } else {
                   noteViewModel!!.deleteNotesFromFolder(folder.id)
                   folderViewModel.deleteFolderContents(folder, noteViewModel)

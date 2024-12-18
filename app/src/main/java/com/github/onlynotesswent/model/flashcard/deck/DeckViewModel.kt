@@ -224,4 +224,25 @@ class DeckViewModel(private val repository: DeckRepository) : ViewModel() {
   fun deleteDeck(deck: Deck, onSuccess: () -> Unit = {}, onFailure: (Exception) -> Unit = {}) {
     repository.deleteDeck(deck, { onSuccess() }, { onFailure(it) })
   }
+
+  /**
+   * Deletes all decks from a folder.
+   *
+   * @param folderId The ID of the folder to delete decks from.
+   * @param onSuccess The function to call when the deletion is successful.
+   * @param onFailure The function to call when the deletion fails.
+   */
+  fun deleteDecksFromFolder(
+      folderId: String,
+      onSuccess: () -> Unit = {},
+      onFailure: (Exception) -> Unit = {},
+  ) {
+    repository.deleteDecksFromFolder(
+        folderId = folderId,
+        onSuccess = {
+          getDecksByFolder(folderId)
+          onSuccess()
+        },
+        onFailure = onFailure)
+  }
 }
