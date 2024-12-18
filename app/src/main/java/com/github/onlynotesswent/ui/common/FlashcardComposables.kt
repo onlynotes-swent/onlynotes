@@ -48,7 +48,6 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
@@ -657,7 +656,7 @@ fun McqPlayItem(
   val backs =
       listOf(flashcard.value.back) +
           flashcard.value.fakeBacks.filter { it != flashcard.value.back && it.isNotBlank() }
-  val shuffledIndexes =remember{ backs.indices.shuffled()}
+  val shuffledIndexes = remember { backs.indices.shuffled() }
 
   ElevatedCard(modifier = Modifier.fillMaxWidth(0.9f).padding(5.dp).testTag("flashcard")) {
     Column(
