@@ -148,15 +148,20 @@ open class NavigationActions(
    *
    * @param folder The current folder to navigate back from
    * @param currentUser The current user
+   * @param isDeckView Whether the current view is a deck view
    */
-  open fun goBackFolderContents(folder: Folder, currentUser: User) {
+  open fun goBackFolderContents(folder: Folder, currentUser: User, isDeckView: Boolean = false) {
     if (!folder.isOwner(currentUser.uid)) {
       navigateTo(TopLevelDestinations.SEARCH)
     } else if (folder.parentFolderId != null) {
       navigateTo(
           Screen.FOLDER_CONTENTS.replace(oldValue = "{folderId}", newValue = folder.parentFolderId))
     } else {
-      navigateTo(TopLevelDestinations.NOTE_OVERVIEW)
+      if (isDeckView) {
+        navigateTo(TopLevelDestinations.DECK_OVERVIEW)
+      } else {
+        navigateTo(TopLevelDestinations.NOTE_OVERVIEW)
+      }
     }
   }
 

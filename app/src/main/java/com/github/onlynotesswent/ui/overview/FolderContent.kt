@@ -118,7 +118,11 @@ fun FolderContentScreen(
               oldValue = "{folderId}", newValue = folder.value!!.parentFolderId!!))
     } else {
       folderViewModel.clearSelectedFolder()
-      navigationActions.navigateTo(TopLevelDestinations.NOTE_OVERVIEW)
+      if (isDeckView) {
+        navigationActions.navigateTo(TopLevelDestinations.DECK_OVERVIEW)
+      } else {
+        navigationActions.navigateTo(TopLevelDestinations.NOTE_OVERVIEW)
+      }
     }
   }
 
@@ -339,7 +343,8 @@ fun FolderContentTopBar(
       navigationIcon = {
         IconButton(
             onClick = {
-              navigationActions.goBackFolderContents(folder!!, userViewModel.currentUser.value!!)
+              navigationActions.goBackFolderContents(
+                  folder!!, userViewModel.currentUser.value!!, isDeckView)
               if (folder.parentFolderId == null) {
                 folderViewModel.clearSelectedFolder()
               }
