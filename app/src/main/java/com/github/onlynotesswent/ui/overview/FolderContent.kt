@@ -56,6 +56,7 @@ import com.github.onlynotesswent.ui.common.FolderDialog
 import com.github.onlynotesswent.ui.common.NoteDialog
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
+import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
 import com.google.firebase.Timestamp
 
 /**
@@ -439,21 +440,29 @@ fun FolderContentTopBar(
                   return@FileSystemPopup
                 }
 
-                if (selectedFolder != null &&
-                    folderViewModel.isSubFolder(selectedFolder, folder.id)) {
-                  Toast.makeText(
-                          context,
-                          context.getString(R.string.folder_cannot_be_moved_to_subfolder),
-                          Toast.LENGTH_SHORT)
-                      .show()
-                  return@FileSystemPopup
-                }
+                folderViewModel.moveFolder(
+                    selectedFolder,
+                    onSubFolderError = {
+                      Toast.makeText(
+                              context,
+                              context.getString(R.string.folder_cannot_be_moved_to_subfolder),
+                              Toast.LENGTH_SHORT)
+                          .show()
+                    },
+                    onSuccess = {
+                      if (selectedFolder != null) {
+                        navigationActions.navigateTo(
+                            Screen.FOLDER_CONTENTS.replace(
+                                oldValue = "{folderId}", newValue = selectedFolder.id))
+                        return@moveFolder
+                      }
 
-                folderViewModel.updateFolderNoStateUpdate(
-                    folder.copy(parentFolderId = selectedFolder?.id))
-
-                navigationActions.navigateTo(
-                    Screen.FOLDER_CONTENTS.replace(oldValue = "{folderId}", newValue = folder.id))
+                      if (isDeckView) {
+                        navigationActions.navigateTo(TopLevelDestinations.DECK_OVERVIEW)
+                      } else {
+                        navigationActions.navigateTo(TopLevelDestinations.NOTE_OVERVIEW)
+                      }
+                    })
               })
         }
       })
