@@ -494,8 +494,15 @@ fun DeleteButton(
           text = stringResource(R.string.delete_note_text),
           onConfirm = {
             noteViewModel.deleteNoteById(note.id, note.userId)
+            if (noteViewModel.selectedNote.value?.folderId != null) {
+              navigationActions.navigateTo(
+                  Screen.FOLDER_CONTENTS.replace(
+                      oldValue = "{folderId}",
+                      newValue = noteViewModel.selectedNote.value?.folderId!!))
+            } else {
+              navigationActions.navigateTo(TopLevelDestinations.NOTE_OVERVIEW)
+            }
             noteViewModel.selectedNote(null)
-            navigationActions.navigateTo(TopLevelDestinations.NOTE_OVERVIEW)
           },
           onDismiss = {
             // Close the dialog without deleting

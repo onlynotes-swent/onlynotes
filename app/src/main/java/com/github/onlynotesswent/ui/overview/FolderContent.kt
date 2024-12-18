@@ -56,7 +56,6 @@ import com.github.onlynotesswent.ui.common.FolderDialog
 import com.github.onlynotesswent.ui.common.NoteDialog
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
-import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
 import com.google.firebase.Timestamp
 
 /**
@@ -109,20 +108,8 @@ fun FolderContentScreen(
 
   // Custom back handler to manage back navigation
   BackHandler {
-    if (!folder.value!!.isOwner(currentUser.value!!.uid)) {
-      navigationActions.navigateTo(TopLevelDestinations.SEARCH)
-    } else if (folder.value!!.parentFolderId != null) {
-      navigationActions.navigateTo(
-          Screen.FOLDER_CONTENTS.replace(
-              oldValue = "{folderId}", newValue = folder.value!!.parentFolderId!!))
-    } else {
-      folderViewModel.clearSelectedFolder()
-      if (isDeckView) {
-        navigationActions.navigateTo(TopLevelDestinations.DECK_OVERVIEW)
-      } else {
-        navigationActions.navigateTo(TopLevelDestinations.NOTE_OVERVIEW)
-      }
-    }
+    folderViewModel.clearSelectedFolder()
+    navigationActions.goBackFolderContents(folder.value!!, currentUser.value!!, isDeckView)
   }
 
   if (currentUser.value == null) {
@@ -414,18 +401,13 @@ fun FolderContentTopBar(
               title = stringResource(R.string.delete_folder),
               text = stringResource(R.string.confirm_delete_folder),
               onConfirm = {
-                // Retrieve parent folder id to navigate to the parent folder
-                val parentFolderId = folder.parentFolderId
                 folderViewModel.deleteFolderById(folder.id, folder.userId)
+                folderViewModel.clearSelectedFolder()
 
-                if (parentFolderId != null) {
-                  navigationActions.navigateTo(
-                      Screen.FOLDER_CONTENTS.replace(
-                          oldValue = "{folderId}", newValue = parentFolderId))
-                } else {
-                  folderViewModel.clearSelectedFolder()
-                  navigationActions.navigateTo(TopLevelDestinations.NOTE_OVERVIEW)
-                }
+                folderViewModel.getRootDeckFoldersFromUserId(currentUser.value!!.uid)
+                navigationActions.goBackFolderContents(
+                    folder, currentUser.value!!, isDeckView)
+
 
                 handleSubFoldersAndContent(
                     folder = folder,
