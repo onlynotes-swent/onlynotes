@@ -6,9 +6,10 @@ import androidx.compose.ui.graphics.Color
 val MainColor = Color(0xFF6894C4) // Blue gray
 val LightAccent = Color(0xFF84C4DA) // Sky blue
 val DarkAccent = Color(0xFF735D73)
-val LightShade = Color(0xFFF8F8F8) // Isabeline
+val LightShade = Color(0xFFF8F8F8) // Ghost white
 val DarkShade = Color(0xFF191925)
 val LightContainer = Color(0xFF76ACCF) // Carolina blue
 val DarkContainer = Color(0xFF02739A)
-
+val LightBackground = Color(0xFFF7F3EF) // Isabeline
+val DarkBackground = Color.Black
 val Danger = Color(0xFFF44336)
