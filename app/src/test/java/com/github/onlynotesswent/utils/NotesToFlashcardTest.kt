@@ -298,7 +298,7 @@ class NotesToFlashcardTest {
     `when`(mockFolderRepository.getSubFoldersOf(any(), anyOrNull(), any(), any(), any()))
         .thenAnswer { invocation ->
           val parentFolderId = invocation.getArgument<String>(0)
-          val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(1)
+          val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(2)
           if (parentFolderId == testFolder.id) {
             onSuccess(listOf(testSubfolder))
           } else {
@@ -310,7 +310,7 @@ class NotesToFlashcardTest {
     `when`(mockNoteRepository.getNotesFromFolder(any(), anyOrNull(), any(), any(), any()))
         .thenAnswer { invocation ->
           val folderId = invocation.getArgument<String>(0)
-          val onSuccess = invocation.getArgument<(List<Note>) -> Unit>(1)
+          val onSuccess = invocation.getArgument<(List<Note>) -> Unit>(2)
           when (folderId) {
             testFolder.id -> {
               onSuccess(listOf(testNote1, testNote2))

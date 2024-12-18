@@ -206,7 +206,7 @@ class FolderViewModelTest {
   fun getSubFoldersOfCallsRepository() = runTest {
     `when`(mockFolderRepository.getSubFoldersOf(any(), anyOrNull(), any(), any(), any()))
         .thenAnswer {
-          val onSuccess: (List<Folder>) -> Unit = it.getArgument(1)
+          val onSuccess: (List<Folder>) -> Unit = it.getArgument(2)
           onSuccess(listOf(testFolder))
         }
     folderViewModel.getSubFoldersOf(testFolder.parentFolderId!!, null, { assert(true) })

@@ -183,7 +183,7 @@ class NoteViewModelTest {
   fun getNotesFromUidFolderCallsRepository() = runTest {
     `when`(mockNoteRepository.getNotesFromFolder(any(), anyOrNull(), any(), any(), any()))
         .thenAnswer {
-          val onSuccess: (List<Note>) -> Unit = it.getArgument(1)
+          val onSuccess: (List<Note>) -> Unit = it.getArgument(2)
           onSuccess(listOf(testNote))
         }
     noteViewModel.getNotesFromFolder(testNote.folderId!!, null)
