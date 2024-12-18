@@ -25,7 +25,9 @@
     <string name="note">Note</string>
     <string name="folder">Folder</string>
     <string name="delete_note">Delete Note</string>
+    <string name="delete_deck">Delete Deck</string>
     <string name="delete_note_text">Are you sure you want to delete this note? This action cannot be undone.</string>
+    <string name="delete_deck_text">Are you sure you want to delete this deck? This action cannot be undone.</string>
     <string name="discard_changes">Discard Changes?</string>
     <string name="discard_changes_text">You have unsaved changes. Are you sure you want to discard them?</string>
     <string name="delete_pdf">Delete PDF?</string>
@@ -134,4 +136,5 @@
     <string name="folder_cannot_be_moved_to_subfolder">Folder cannot be moved to a subfolder</string>
     <string name="edit_note">Edit note</string>
     <string name="move_note">Move note</string>
+    <string name="move_deck">Move deck</string>
 </resources>

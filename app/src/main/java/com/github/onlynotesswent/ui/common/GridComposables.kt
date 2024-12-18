@@ -105,10 +105,16 @@ fun CustomSeparatedLazyGrid(
 
             if (isDeckView) {
               items(sortedDecks, key = { it.id }, span = { GridItemSpan(3) }) { deck ->
-                DeckItem(deck = deck, deckViewModel = deckViewModel!!) {
-                  deckViewModel.selectDeck(deck)
-                  navigationActions.navigateTo(Screen.DECK_MENU)
-                }
+                DeckItem(
+                    deck = deck,
+                    deckViewModel = deckViewModel!!,
+                    folderViewModel = folderViewModel,
+                    currentUser = userViewModel.currentUser.collectAsState().value!!,
+                    navigationActions = navigationActions,
+                    onClick = {
+                      deckViewModel.selectDeck(deck)
+                      navigationActions.navigateTo(Screen.DECK_MENU)
+                    })
               }
             } else {
               items(sortedNotes, key = { it.id }, span = { GridItemSpan(3) }) { note ->

@@ -437,11 +437,16 @@ fun SearchScreen(
                           users.value
                               .first { it.uid == filteredPublicDecks.value[index].userId }
                               .userHandle(),
-                  ) {
-                    deckViewModel.selectDeck(filteredPublicDecks.value[index])
-                    navigationActions.navigateTo(
-                        Screen.DECK_MENU.replace("{deckId}", filteredPublicDecks.value[index].id))
-                  }
+                      folderViewModel = folderViewModel,
+                      currentUser =
+                          users.value.first { it.uid == filteredPublicDecks.value[index].userId },
+                      navigationActions = navigationActions,
+                      onClick = {
+                        deckViewModel.selectDeck(filteredPublicDecks.value[index])
+                        navigationActions.navigateTo(
+                            Screen.DECK_MENU.replace(
+                                "{deckId}", filteredPublicDecks.value[index].id))
+                      })
                 }
               }
         }
@@ -458,11 +463,16 @@ fun SearchScreen(
                           users.value
                               .first { it.uid == filteredFriendsDecks.value[index].userId }
                               .userHandle(),
-                  ) {
-                    deckViewModel.selectDeck(filteredFriendsDecks.value[index])
-                    navigationActions.navigateTo(
-                        Screen.DECK_MENU.replace("{deckId}", filteredFriendsDecks.value[index].id))
-                  }
+                      folderViewModel = folderViewModel,
+                      currentUser =
+                          users.value.first { it.uid == filteredFriendsDecks.value[index].userId },
+                      navigationActions = navigationActions,
+                      onClick = {
+                        deckViewModel.selectDeck(filteredFriendsDecks.value[index])
+                        navigationActions.navigateTo(
+                            Screen.DECK_MENU.replace(
+                                "{deckId}", filteredFriendsDecks.value[index].id))
+                      })
                 }
               }
         }
