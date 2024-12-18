@@ -183,7 +183,7 @@ fun FileSystemPopup(
     folderViewModel: FolderViewModel,
     onMoveHere: (Folder?) -> Unit = {}
 ) {
-  var selectedFolder by remember { mutableStateOf<Folder?>(folderViewModel.selectedFolder.value) }
+  var selectedFolder by remember { mutableStateOf(folderViewModel.selectedFolder.value) }
   var folderSubFolders by remember { mutableStateOf<List<Folder>>(emptyList()) }
   val userRootFolders = folderViewModel.userRootFolders.collectAsState()
 
