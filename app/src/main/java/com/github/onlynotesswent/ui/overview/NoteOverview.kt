@@ -3,15 +3,8 @@ package com.github.onlynotesswent.ui.overview
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -30,7 +23,6 @@ import com.github.onlynotesswent.model.folder.FolderViewModel
 import com.github.onlynotesswent.model.note.Note
 import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.model.user.UserViewModel
-import com.github.onlynotesswent.ui.common.CustomSeparatedLazyGrid
 import com.github.onlynotesswent.ui.common.FolderDialog
 import com.github.onlynotesswent.ui.common.NoteDialog
 import com.github.onlynotesswent.ui.navigation.BottomNavigationMenu
@@ -101,8 +93,8 @@ fun NoteOverviewScreen(
       }) { paddingValues ->
         NoteOverviewScreenGrid(
             paddingValues = paddingValues,
-            userRootNotes = userRootNotes,
-            userRootFolders = userRootFolders,
+            userNotes = userRootNotes,
+            userFolders = userRootFolders,
             folderViewModel = folderViewModel,
             noteViewModel = noteViewModel,
             userViewModel = userViewModel,
@@ -151,49 +143,4 @@ fun NoteOverviewScreen(
               action = stringResource(R.string.create))
         }
       }
-}
-
-/**
- * Displays the overview screen in a grid layout. If there are no notes or folders, it shows a text
- * to the user indicating that there are no notes or folders. It also provides a button to refresh
- * the list of notes and folders.
- *
- * @param paddingValues The padding values to apply to the grid layout.
- * @param userRootNotes The list of notes to display.
- * @param userRootFolders The list of folders to display.
- * @param folderViewModel The ViewModel that provides the list of folders to display.
- * @param noteViewModel The ViewModel that provides the list of publicNotes to display.
- * @param userViewModel The ViewModel that provides the current user.
- * @param navigationActions The navigation view model used to transition between different screens.
- */
-@Composable
-fun NoteOverviewScreenGrid(
-    paddingValues: PaddingValues,
-    userRootNotes: State<List<Note>>,
-    userRootFolders: State<List<Folder>>,
-    folderViewModel: FolderViewModel,
-    noteViewModel: NoteViewModel,
-    userViewModel: UserViewModel,
-    navigationActions: NavigationActions
-) {
-  CustomSeparatedLazyGrid(
-      modifier = Modifier.fillMaxSize(),
-      notes = userRootNotes,
-      folders = userRootFolders,
-      gridModifier =
-          Modifier.fillMaxWidth()
-              .padding(horizontal = 20.dp)
-              .padding(paddingValues)
-              .testTag("noteAndFolderList"),
-      folderViewModel = folderViewModel,
-      noteViewModel = noteViewModel,
-      userViewModel = userViewModel,
-      navigationActions = navigationActions,
-      paddingValues = paddingValues,
-      columnContent = {
-        Text(
-            modifier = Modifier.testTag("emptyNoteAndFolderPrompt"),
-            text = stringResource(R.string.you_have_no_notes_or_folders_yet),
-            color = MaterialTheme.colorScheme.onBackground)
-      })
 }

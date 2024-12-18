@@ -3,15 +3,9 @@ package com.github.onlynotesswent.ui.overview
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -25,12 +19,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.github.onlynotesswent.MainActivity
 import com.github.onlynotesswent.R
-import com.github.onlynotesswent.model.flashcard.deck.Deck
 import com.github.onlynotesswent.model.flashcard.deck.DeckViewModel
 import com.github.onlynotesswent.model.folder.Folder
 import com.github.onlynotesswent.model.folder.FolderViewModel
 import com.github.onlynotesswent.model.user.UserViewModel
-import com.github.onlynotesswent.ui.common.CustomSeparatedLazyGrid
 import com.github.onlynotesswent.ui.common.FolderDialog
 import com.github.onlynotesswent.ui.navigation.BottomNavigationMenu
 import com.github.onlynotesswent.ui.navigation.LIST_TOP_LEVEL_DESTINATION
@@ -101,8 +93,8 @@ fun DeckOverviewScreen(
       }) { paddingValues ->
         DeckOverviewScreenGrid(
             paddingValues = paddingValues,
-            userRootDecks = userRootDecks,
-            userRootFolders = userRootFolders,
+            userDecks = userRootDecks,
+            userFolders = userRootFolders,
             folderViewModel = folderViewModel,
             deckViewModel = deckViewModel,
             userViewModel = userViewModel,
@@ -136,49 +128,4 @@ fun DeckOverviewScreen(
               action = stringResource(R.string.create))
         }
       }
-}
-
-/**
- * Displays the overview screen in a grid layout. If there are no decks or folders, it shows a text
- * to the user indicating that there are no decks or folders.
- *
- * @param paddingValues The padding values to apply to the grid layout.
- * @param userRootDecks The list of decks to display.
- * @param userRootFolders The list of folders to display.
- * @param folderViewModel The ViewModel that provides the list of folders to display.
- * @param deckViewModel The ViewModel that provides the list of decks to display.
- * @param userViewModel The ViewModel that provides the current user.
- * @param navigationActions The navigation view model used to transition between different screens.
- */
-@Composable
-fun DeckOverviewScreenGrid(
-    paddingValues: PaddingValues,
-    userRootDecks: State<List<Deck>>,
-    userRootFolders: State<List<Folder>>,
-    folderViewModel: FolderViewModel,
-    deckViewModel: DeckViewModel,
-    userViewModel: UserViewModel,
-    navigationActions: NavigationActions
-) {
-  CustomSeparatedLazyGrid(
-      modifier = Modifier.fillMaxSize(),
-      isDeckView = true,
-      decks = userRootDecks,
-      folders = userRootFolders,
-      gridModifier =
-          Modifier.fillMaxWidth()
-              .padding(horizontal = 20.dp)
-              .padding(paddingValues)
-              .testTag("deckAndFolderList"),
-      folderViewModel = folderViewModel,
-      deckViewModel = deckViewModel,
-      userViewModel = userViewModel,
-      navigationActions = navigationActions,
-      paddingValues = paddingValues,
-      columnContent = {
-        Text(
-            modifier = Modifier.testTag("emptyDeckAndFolderPrompt"),
-            text = stringResource(R.string.you_have_no_decks_or_folders_yet),
-            color = MaterialTheme.colorScheme.onBackground)
-      })
 }
