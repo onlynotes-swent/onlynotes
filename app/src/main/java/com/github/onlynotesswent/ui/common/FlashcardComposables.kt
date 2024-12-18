@@ -551,7 +551,7 @@ fun FlashcardPlayItem(
   } else {
     val flashcard = remember { derivedStateOf { flashcardState.value!! } }
     if (flashcard.value.isMCQ() && !isReview) {
-      McqPlayItem(flashcard, fileViewModel, onCorrect, onIncorrect)
+      McqPlayItem(flashcard, fileViewModel, onCorrect, onIncorrect, choice)
     } else {
       NormalFlashcardPlayItem(flashcard, fileViewModel)
     }
@@ -657,7 +657,7 @@ fun McqPlayItem(
   val backs =
       listOf(flashcard.value.back) +
           flashcard.value.fakeBacks.filter { it != flashcard.value.back && it.isNotBlank() }
-  val shuffledIndexes = backs.indices.shuffled()
+  val shuffledIndexes =remember{ backs.indices.shuffled()}
 
   ElevatedCard(modifier = Modifier.fillMaxWidth(0.9f).padding(5.dp).testTag("flashcard")) {
     Column(
