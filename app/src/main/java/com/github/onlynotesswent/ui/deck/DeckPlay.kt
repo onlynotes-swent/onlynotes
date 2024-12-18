@@ -195,38 +195,6 @@ fun ReviewMode(
             FlashcardPlayItem(
                 flashcardState,
                 fileViewModel,
-                onCorrect = {
-                  userViewModel.updateUserFlashcard(
-                      userViewModelFlashcards.value[playDeckHistory.value.currentFlashcardId]!!
-                          .increaseLevel(),
-                      onSuccess = {
-                        userFlashcardList.value =
-                            userFlashcardList.value.map { userFlashcard ->
-                              if (userFlashcard.id == playDeckHistory.value.currentFlashcardId) {
-                                userViewModelFlashcards.value[
-                                        playDeckHistory.value.currentFlashcardId]!!
-                              } else {
-                                userFlashcard
-                              }
-                            }
-                      })
-                },
-                onIncorrect = {
-                  userViewModel.updateUserFlashcard(
-                      userViewModelFlashcards.value[playDeckHistory.value.currentFlashcardId]!!
-                          .decreaseLevel(),
-                      onSuccess = {
-                        userFlashcardList.value =
-                            userFlashcardList.value.map { userFlashcard ->
-                              if (userFlashcard.id == playDeckHistory.value.currentFlashcardId) {
-                                userViewModelFlashcards.value[
-                                        playDeckHistory.value.currentFlashcardId]!!
-                              } else {
-                                userFlashcard
-                              }
-                            }
-                      })
-                },
                 choice = answers[playDeckHistory.value.currentFlashcardId]!!,
                 isReview = true)
           }
@@ -334,11 +302,13 @@ private fun TestMode(
     isFinished: MutableState<Boolean>,
     answers: Map<String, MutableState<Int?>>,
 ) {
-  Column {
+  Column(
+      modifier = Modifier.testTag("TestModeColumn"),
+  ) {
     val pagerState = rememberPagerState { flashcardList.value.size }
-    HorizontalPager(pagerState) { pageIndex ->
+    HorizontalPager(pagerState, modifier = Modifier.testTag("Pager")) { pageIndex ->
       Column(
-          modifier = Modifier.fillMaxWidth().padding(16.dp),
+          modifier = Modifier.fillMaxWidth().padding(16.dp).testTag("flashcardColumn"),
           horizontalAlignment = Alignment.CenterHorizontally,
           verticalArrangement = Arrangement.spacedBy(16.dp)) {
             val flashcardState = remember { derivedStateOf { flashcardList.value[pageIndex] } }
@@ -361,7 +331,7 @@ private fun TestMode(
           onIncorrect = { answers[flashcardList.value[pagerState.currentPage].id]!!.value = 1 })
     }
     Button(
-        modifier = Modifier.padding(16.dp),
+        modifier = Modifier.padding(16.dp).testTag("submitButton"),
         onClick = { isFinished.value = true },
         enabled = pagerState.currentPage == flashcardList.value.size - 1) {
           Text("Submit")
@@ -439,7 +409,9 @@ private fun FinishedScreen(
 ) {
   Box(contentAlignment = Alignment.Center, modifier = Modifier.height(200.dp).fillMaxWidth()) {
     val scorePercent = score.intValue * 100 / flashcardList.value.size
-    Column {
+    Column(
+        modifier = Modifier.testTag("FinishedScreenColumn"),
+    ) {
       Text("You have finished the deck")
       Text("Your score is $scorePercent%")
       Button(
@@ -460,7 +432,7 @@ private fun FinishedScreen(
               answers[flashcard.id]!!.value = null
             }
           },
-          modifier = Modifier.padding(16.dp)) {
+          modifier = Modifier.padding(16.dp).testTag("retryButton")) {
             Text("test again")
           }
     }

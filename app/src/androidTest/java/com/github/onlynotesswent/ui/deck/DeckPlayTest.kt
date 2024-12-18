@@ -244,6 +244,129 @@ class DeckPlayTest {
     composeTestRule.onNodeWithTag("correctButton").performClick()
     // composeTestRule.onNodeWithTag("incorrectButton").assertIsNotEnabled()
     // composeTestRule.onNodeWithTag("correctButton").assertIsNotEnabled()
+  }
 
+  @Test
+  fun testMode() {
+    val testDeck =
+        Deck(
+            id = "testDeck",
+            name = "testDeckName",
+            description = "testDeckDescription",
+            userId = "testUser",
+            visibility = Visibility.PUBLIC,
+            flashcardIds = listOf("testFlashcard1", "testFlashcard3"),
+            lastModified = Timestamp.now(),
+            folderId = null)
+    deckViewModel.playDeckWithMode(testDeck, Deck.PlayMode.TEST)
+
+    composeTestRule.setContent {
+      DeckPlayScreen(
+          userViewModel = userViewModel,
+          deckViewModel = deckViewModel,
+          flashcardViewModel = flashcardViewModel,
+          fileViewModel = fileViewModel,
+          navigationActions = navigationActions)
+    }
+
+    composeTestRule.onNodeWithTag("DeckPlayScreen").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("DeckPlayScreenTopBar").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("DeckPlayScreenColumn").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("TestModeColumn").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("flashcardColumn").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("incorrectButton").assertExists()
+    composeTestRule.onNodeWithTag("correctButton").assertExists()
+    composeTestRule.onNodeWithTag("correctButton").performClick()
+  }
+
+  @Test
+  fun testModeMCQ() {
+    val testDeck =
+        Deck(
+            id = "testDeck",
+            name = "testDeckName",
+            description = "testDeckDescription",
+            userId = "testUser",
+            visibility = Visibility.PUBLIC,
+            flashcardIds = listOf("testFlashcard2"),
+            lastModified = Timestamp.now(),
+            folderId = null)
+    deckViewModel.playDeckWithMode(testDeck, Deck.PlayMode.TEST)
+
+    composeTestRule.setContent {
+      DeckPlayScreen(
+          userViewModel = userViewModel,
+          deckViewModel = deckViewModel,
+          flashcardViewModel = flashcardViewModel,
+          fileViewModel = fileViewModel,
+          navigationActions = navigationActions)
+    }
+
+    composeTestRule.onNodeWithTag("DeckPlayScreen").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("DeckPlayScreenTopBar").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("DeckPlayScreenColumn").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("TestModeColumn").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("flashcardColumn").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("incorrectButton").assertDoesNotExist()
+    composeTestRule.onNodeWithTag("correctButton").assertDoesNotExist()
+
+    // Test that the front of the flashcard is displayed
+    composeTestRule.onNodeWithTag("flashcardFront", true).assertTextEquals("testFront2")
+    // Flip the flashcard
+    composeTestRule.onNodeWithTag("flashcard").performClick()
+    // Test that the fake backs are displayed
+    composeTestRule.onAllNodesWithTag("flashcardChoice").assertCountEquals(3)
+    composeTestRule.onAllNodesWithTag("flashcardChoiceIcon", true).assertCountEquals(3)
+    composeTestRule.onNodeWithTag("flashcardChoice--0", true).assert(hasText("testBack2"))
+    composeTestRule.onNodeWithTag("flashcardChoice--1", true).assert(hasText("fakeBack1"))
+    composeTestRule.onNodeWithTag("flashcardChoice--2", true).assert(hasText("fakeBack2"))
+
+    // Select the correct answer
+    composeTestRule
+        .onNodeWithTag("flashcardChoice--0", true)
+        .assert(hasText("testBack2"))
+        .performClick()
+  }
+
+  @Test
+  fun testFinishScreen() {
+
+    val testDeck =
+        Deck(
+            id = "testDeck",
+            name = "testDeckName",
+            description = "testDeckDescription",
+            userId = "testUser",
+            visibility = Visibility.PUBLIC,
+            flashcardIds = listOf("testFlashcard1"),
+            lastModified = Timestamp.now(),
+            folderId = null)
+    deckViewModel.playDeckWithMode(testDeck, Deck.PlayMode.TEST)
+
+    composeTestRule.setContent {
+      DeckPlayScreen(
+          userViewModel = userViewModel,
+          deckViewModel = deckViewModel,
+          flashcardViewModel = flashcardViewModel,
+          fileViewModel = fileViewModel,
+          navigationActions = navigationActions)
+    }
+
+    composeTestRule.onNodeWithTag("DeckPlayScreen").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("DeckPlayScreenTopBar").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("DeckPlayScreenColumn").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("TestModeColumn").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("flashcardColumn").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("incorrectButton").assertExists()
+    composeTestRule.onNodeWithTag("correctButton").assertExists()
+    composeTestRule.onNodeWithTag("correctButton").assertIsEnabled()
+    composeTestRule.onNodeWithTag("incorrectButton").assertIsEnabled()
+    composeTestRule.onNodeWithTag("correctButton").performClick()
+    composeTestRule.onNodeWithTag("submitButton").assertIsEnabled()
+    composeTestRule.onNodeWithTag("submitButton").performClick()
+    composeTestRule.onNodeWithTag("FinishedScreenColumn").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("retryButton").assertExists()
+    composeTestRule.onNodeWithTag("retryButton").performClick()
+    composeTestRule.onNodeWithTag("TestModeColumn").assertIsDisplayed()
   }
 }
