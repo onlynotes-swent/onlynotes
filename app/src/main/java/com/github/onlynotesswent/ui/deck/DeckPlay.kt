@@ -240,15 +240,6 @@ fun ReviewMode(
     // it will handle all the cases when the user goes back or forward
 
     LaunchedEffect(pagerState.settledPage) {
-      Log.d("ReviewMode", "------------------------------------------------------------------")
-      Log.d("ReviewMode", "pagerState.settledPage: ${pagerState.settledPage}")
-      Log.d(
-          "ReviewMode",
-          "playDeckHistory.value.indexOfCurrentFlashcard: ${playDeckHistory.value.indexOfCurrentFlashcard}")
-      Log.d(
-          "ReviewMode",
-          "playDeckHistory.value.listOfAllFlashcard: ${playDeckHistory.value.listOfAllFlashcard}")
-
       scrollScope.launch {
         val diff = pagerState.settledPage - playDeckHistory.value.indexOfCurrentFlashcard
         if (diff > 0) {
@@ -257,13 +248,6 @@ fun ReviewMode(
           } else {
             while (playDeckHistory.value.canGoForward() &&
                 pagerState.settledPage > playDeckHistory.value.indexOfCurrentFlashcard) {
-              Log.d(
-                  "ReviewMode",
-                  "in while | diff ${pagerState.settledPage - playDeckHistory.value.indexOfCurrentFlashcard}")
-              Log.d("ReviewMode", "in while | pagerState.settledPage ${pagerState.settledPage}")
-              Log.d(
-                  "ReviewMode",
-                  "in while | playDeckHistory.value.canGoForward() ${playDeckHistory.value.canGoForward()}")
               val nextCardId =
                   playDeckHistory.value.listOfAllFlashcard[playDeckHistory.value.getIndexForward()]
               val withoutNext = userFlashcardList.value.filter { it.id != nextCardId }
@@ -277,22 +261,16 @@ fun ReviewMode(
             }
           }
           if (pagerState.settledPage == PlayDeckHistory.MAX_LIST_LENGTH - 1) {
-            Log.d("ReviewMode", "start scroll A1")
             pagerState.scrollToPage(1)
-            Log.d("ReviewMode", "end scroll A1")
           }
         } else if (diff < 0) {
           if (playDeckHistory.value.canGoBack()) {
             playDeckHistory.value = playDeckHistory.value.goBack()
             if (pagerState.settledPage == 0) {
-              Log.d("ReviewMode", "start scroll B${listOfPagerFlashcards.value.size - 2}")
               pagerState.scrollToPage(listOfPagerFlashcards.value.size - 2)
-              Log.d("ReviewMode", "end scroll B${listOfPagerFlashcards.value.size - 2}")
             }
           } else {
-            Log.d("ReviewMode", "start scroll C${playDeckHistory.value.indexOfCurrentFlashcard}")
             pagerState.scrollToPage(playDeckHistory.value.indexOfCurrentFlashcard)
-            Log.d("ReviewMode", "end scroll C${playDeckHistory.value.indexOfCurrentFlashcard}")
           }
         } else if (!playDeckHistory.value.canGoForward()) {
           // this is the case when the user opens the deck and the user can't go forward
@@ -302,22 +280,9 @@ fun ReviewMode(
           playDeckHistory.value = playDeckHistory.value.stayWithNewFlashcard(nextFlashcardId)
         }
         if (pagerState.settledPage == 0) {
-          Log.d("ReviewMode", "SHOULD NEVER HAPPEN")
           pagerState.scrollToPage(playDeckHistory.value.indexOfCurrentFlashcard)
-          Log.d("ReviewMode", "end scroll that should never happen")
         }
-        Log.d("ReviewMode", "scope finished")
-        Log.d("ReviewMode", "after scope | pagerState.settledPage: ${pagerState.settledPage}")
-        Log.d(
-            "ReviewMode",
-            "after scope | playDeckHistory.value.indexOfCurrentFlashcard: ${playDeckHistory.value.indexOfCurrentFlashcard}")
-        Log.d(
-            "ReviewMode",
-            "after scope | playDeckHistory.value.listOfAllFlashcard: ${playDeckHistory.value.listOfAllFlashcard}")
-        Log.d(
-            "ReviewMode", "after scope | playDeckHistory.value.size: ${playDeckHistory.value.size}")
       }
-      Log.d("ReviewMode", "------------------------------------------------------------------")
     }
     SelectWrongRight(
         answers,

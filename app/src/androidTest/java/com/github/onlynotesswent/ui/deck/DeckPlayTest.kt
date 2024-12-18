@@ -24,6 +24,7 @@ import com.github.onlynotesswent.model.user.User
 import com.github.onlynotesswent.model.user.UserRepository
 import com.github.onlynotesswent.model.user.UserViewModel
 import com.github.onlynotesswent.ui.common.FlashcardPlayItem
+import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.google.firebase.Timestamp
 import org.junit.Before
 import org.junit.Rule
@@ -43,6 +44,7 @@ class DeckPlayTest {
   @Mock private lateinit var flashcardRepository: FlashcardRepository
   @Mock private lateinit var fileRepository: FileRepository
   @Mock private lateinit var userRepository: UserRepository
+  @Mock private lateinit var navigationActions: NavigationActions
   private lateinit var userViewModel: UserViewModel
   private lateinit var deckViewModel: DeckViewModel
   private lateinit var flashcardViewModel: FlashcardViewModel
@@ -180,5 +182,17 @@ class DeckPlayTest {
     composeTestRule.onNodeWithTag("flashcardCheckIcon", true).assertExists()
     composeTestRule.onAllNodesWithTag("flashcardWrongIcon", true).assertCountEquals(2)
     composeTestRule.onNodeWithTag("flashcardChoiceIcon", true).assertDoesNotExist()
+  }
+
+  @Test
+  fun reviewMode() {
+    composeTestRule.setContent {
+      DeckPlayScreen(
+          userViewModel = userViewModel,
+          deckViewModel = deckViewModel,
+          flashcardViewModel = flashcardViewModel,
+          fileViewModel = fileViewModel,
+          navigationActions = navigationActions)
+    }
   }
 }

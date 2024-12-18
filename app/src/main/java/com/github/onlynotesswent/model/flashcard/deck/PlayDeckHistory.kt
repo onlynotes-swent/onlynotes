@@ -1,7 +1,5 @@
 package com.github.onlynotesswent.model.flashcard.deck
 
-import android.util.Log
-
 data class PlayDeckHistory(
     // The list of all flashcards in the deck.
     // The fist element and last element will always be null
@@ -34,16 +32,13 @@ data class PlayDeckHistory(
   }
 
   /**
-   * epic
+   * Adds a new flashcard to the list and stays with the current flashcard.
    *
    * @param flashcardId The ID of the flashcard to add.
    */
   fun stayWithNewFlashcard(flashcardId: String): PlayDeckHistory {
     val nextIndex = getIndexForward()
-    Log.e("PlayDeckHistory", "goForwardWithNewFlashcard: $nextIndex")
-
     val twiceNextIndex = getIndexForward(nextIndex)
-
     if (size == MAX_SIZE) {
       return this.copy(
           listOfAllFlashcard =
@@ -56,7 +51,7 @@ data class PlayDeckHistory(
 
   /**
    * Moves forward to the next flashcard, adds the twice next flashcard to the list, and removes the
-   * thrice next flashcard.
+   * thrice next flashcard if the list is full.
    *
    * @param twiceNextId The ID of the flashcard to add.
    * @return The updated PlayDeckHistory.
@@ -92,7 +87,6 @@ data class PlayDeckHistory(
    */
   fun goBack(): PlayDeckHistory {
     val index = getIndexBackward()
-    Log.e("PlayDeckHistory", "goBack: $index")
     if (listOfAllFlashcard[index] == null) {
       throw IllegalStateException("you shouldn't go back to a null flashcard")
     }
@@ -110,7 +104,6 @@ data class PlayDeckHistory(
    */
   fun goForward(): PlayDeckHistory {
     val index = getIndexForward()
-    Log.e("PlayDeckHistory", "goForward: $index")
     if (listOfAllFlashcard[index] == null) {
       throw IllegalStateException("you shouldn't go forward to a null flashcard")
     }
@@ -128,30 +121,52 @@ data class PlayDeckHistory(
    */
   fun canGoBack(): Boolean {
     val index = getIndexBackward()
-    Log.e("PlayDeckHistory", "can go back: $index")
     return listOfAllFlashcard[index] != null
   }
 
-  /** Checks if the user can go forward to the next flashcard. */
+  /**
+   * Checks if the user can go forward to the next flashcard.
+   *
+   * @return true if the user can go forward, false otherwise.
+   */
   fun canGoForward(): Boolean {
     val index = getIndexForward()
-    Log.e("PlayDeckHistory", "can go forward: $index")
     return listOfAllFlashcard[index] != null
   }
 
+  /**
+   * Checks if the user can go forward to the twice next flashcard.
+   *
+   * @return true if the user can go forward, false otherwise.
+   */
   fun canGoTwiceForward(): Boolean {
     val index = getIndexForward(getIndexForward())
-    Log.e("PlayDeckHistory", "can go twice forward: $index")
     return canGoForward() && listOfAllFlashcard[index] != null
   }
 
+  /**
+   * Gets the index of the next flashcard.
+   *
+   * @param index The index of the current flashcard.
+   */
   fun getIndexForward(index: Int = indexOfCurrentFlashcard) =
       if (index == MAX_LIST_LENGTH - 2) 1 else index + 1
 
+  /**
+   * Gets the index of the previous flashcard.
+   *
+   * @param index The index of the current flashcard.
+   */
   private fun getIndexBackward(index: Int = indexOfCurrentFlashcard) =
       if (index == 1) MAX_LIST_LENGTH - 2 else index - 1
 }
 
+/**
+ * Replaces the element at the given index with the given flashcard ID.
+ *
+ * @param i The index of the element to replace.
+ * @param flashcardId The flashcard ID to replace the element with.
+ */
 private fun <E> List<E>.replaceAt(i: Int, flashcardId: E): List<E?> {
   return this.mapIndexed { index, e ->
     if (index == i) {

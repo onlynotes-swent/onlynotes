@@ -374,7 +374,7 @@ class DeckMenuTest {
       composeTestRule.onNodeWithTag("playMode--$it", useUnmergedTree = true).assertIsDisplayed()
     }
     // Click the flashcard play mode
-    val playMode = Deck.PlayMode.FLASHCARD
+    val playMode = Deck.PlayMode.REVIEW
     composeTestRule
         .onNodeWithTag("playMode--${playMode.name}", useUnmergedTree = true)
         .assertIsDisplayed()
