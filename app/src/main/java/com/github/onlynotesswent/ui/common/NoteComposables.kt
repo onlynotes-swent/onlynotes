@@ -49,7 +49,9 @@ import com.github.onlynotesswent.model.note.Note
 import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.model.user.User
 import com.github.onlynotesswent.ui.navigation.NavigationActions
+import com.github.onlynotesswent.ui.navigation.Route.NOTE_OVERVIEW
 import com.github.onlynotesswent.ui.navigation.Screen
+import com.google.firebase.Timestamp
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -84,7 +86,8 @@ fun NoteItem(
         note = note,
         noteViewModel = noteViewModel,
         folderViewModel = folderViewModel,
-        onDismiss = { showBottomSheet = false })
+        onDismiss = { showBottomSheet = false },
+        navigationActions = navigationActions)
   }
 
   Card(
@@ -168,6 +171,7 @@ fun NoteItem(
  * @param noteViewModel The ViewModel that provides the list of notes to display.
  * @param folderViewModel the folderViewModel used here to move the note.
  * @param onDismiss The callback to be invoked when the bottom sheet is dismissed.
+ * @param navigationActions The navigation instance used to transition between different screens.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -175,7 +179,8 @@ fun NoteOptionsBottomSheet(
     note: Note,
     noteViewModel: NoteViewModel,
     folderViewModel: FolderViewModel,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    navigationActions: NavigationActions
 ) {
   var showFileSystemPopup by remember { mutableStateOf(false) }
   var showDeletePopup by remember { mutableStateOf(false) }
@@ -185,11 +190,17 @@ fun NoteOptionsBottomSheet(
         onDismiss = { showFileSystemPopup = false },
         folderViewModel = folderViewModel,
         onMoveHere = { selectedFolder ->
-          noteViewModel.updateNote(note.copy(folderId = selectedFolder?.id))
+          noteViewModel.updateNote(
+              note.copy(folderId = selectedFolder?.id, lastModified = Timestamp.now()))
           showFileSystemPopup = false
-          // this is needed to update the displayed notes
-          noteViewModel.getNotesFromFolder(folderViewModel.selectedFolder.value?.id ?: "")
-          folderViewModel.selectedFolder.value?.let { folderViewModel.getFolderById(it.id) }
+          if (selectedFolder != null) {
+            navigationActions.navigateTo(
+                Screen.FOLDER_CONTENTS.replace(
+                    oldValue = "{folderId}", newValue = selectedFolder.id))
+          } else {
+            navigationActions.navigateTo(NOTE_OVERVIEW)
+          }
+
           onDismiss() // Dismiss the bottom sheet after moving the note
         })
   }
