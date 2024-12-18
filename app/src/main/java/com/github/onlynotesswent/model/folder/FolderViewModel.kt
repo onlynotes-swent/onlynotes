@@ -578,7 +578,7 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
    * @param parentFolderId The ID of the parent folder.
    * @return True if the folder is a subfolder, false otherwise.
    */
-  suspend fun isSubFolder(folder: Folder, parentFolderId: String): Boolean {
+  private suspend fun isSubFolder(folder: Folder, parentFolderId: String): Boolean {
     var currentFolder = folder
     while (currentFolder.parentFolderId != null) {
       if (currentFolder.parentFolderId == parentFolderId) {
