@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.github.onlynotesswent.model.cache.CacheDatabase
+import com.github.onlynotesswent.model.flashcard.deck.DeckViewModel
 import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.model.user.UserRepositoryFirestore
 import com.github.onlynotesswent.model.user.UserViewModel
@@ -404,8 +405,6 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
    * @param onSuccess The function to call when the folder is updated successfully.
    * @param onFailure The function to call when the folder fails to be updated.
    * @param useCache Whether to update data from cache. Should be true only if userId of the folder
-   *   is the current user.
-   * @param isDeckView A flag indicating if the folder is a deck view.
    */
   fun updateFolderNoStateUpdate(
       folder: Folder,
@@ -544,6 +543,55 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
           onFailure = onFailure,
           useCache = useCache)
     }
+  }
+
+  /**
+   * Deletes all elements from a folder.
+   *
+   * @param folder The folder to delete notes from.
+   * @param deckViewModel The Deck view model used to delete the folder decks.
+   * @param onSuccess The function to call when the folder contents are deleted successfully.
+   * @param onFailure The function to call when the folder contents fail to be deleted.
+   * @param useCache Whether to update data from cache. Should be true only if userId of the folder
+   *   is the current user.
+   */
+  fun deleteFolderContents(
+      folder: Folder,
+      deckViewModel: DeckViewModel,
+      onSuccess: () -> Unit = {},
+      onFailure: (Exception) -> Unit = {},
+      useCache: Boolean = false
+  ) {
+    viewModelScope.launch {
+      repository.deleteFolderContents(
+          folder = folder,
+          deckViewModel = deckViewModel,
+          onSuccess = {
+            getSubFoldersOf(folder.id, null)
+            onSuccess()
+          },
+          onFailure = onFailure,
+          useCache = useCache)
+    }
+  }
+
+  /**
+   * Function checks if the folder is a subfolder of another folder.
+   *
+   * @param folder The folder to check if it is a subfolder.
+   * @param parentFolderId The ID of the parent folder.
+   * @return True if the folder is a subfolder, false otherwise.
+   */
+  fun isSubFolder(folder: Folder, parentFolderId: String): Boolean {
+    var currentFolder = folder
+    while (currentFolder.parentFolderId != null) {
+      if (currentFolder.parentFolderId == parentFolderId) {
+        return true
+      }
+      getFolderByIdNoStateUpdate(
+          folderId = currentFolder.parentFolderId!!, onSuccess = { currentFolder = it })
+    }
+    return false
   }
 
   /**

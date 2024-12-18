@@ -40,7 +40,7 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.eq
 
-class OverviewTest {
+class NoteOverviewTest {
   private lateinit var userRepository: UserRepository
   private lateinit var userViewModel: UserViewModel
   private lateinit var navigationActions: NavigationActions
@@ -109,9 +109,9 @@ class OverviewTest {
     userViewModel.addUser(testUser, {}, {})
 
     // Mock the current route to be the user create screen
-    `when`(navigationActions.currentRoute()).thenReturn(Screen.OVERVIEW)
+    `when`(navigationActions.currentRoute()).thenReturn(Screen.NOTE_OVERVIEW)
     composeTestRule.setContent {
-      OverviewScreen(navigationActions, noteViewModel, userViewModel, folderViewModel)
+      NoteOverviewScreen(navigationActions, noteViewModel, userViewModel, folderViewModel)
     }
   }
 

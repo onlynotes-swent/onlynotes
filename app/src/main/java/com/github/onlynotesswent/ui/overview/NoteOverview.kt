@@ -3,28 +3,17 @@ package com.github.onlynotesswent.ui.overview
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.ElevatedButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -35,7 +24,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.github.onlynotesswent.MainActivity
@@ -45,9 +33,6 @@ import com.github.onlynotesswent.model.folder.FolderViewModel
 import com.github.onlynotesswent.model.note.Note
 import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.model.user.UserViewModel
-import com.github.onlynotesswent.ui.common.CustomDropDownMenu
-import com.github.onlynotesswent.ui.common.CustomDropDownMenuItem
-import com.github.onlynotesswent.ui.common.CustomSeparatedLazyGrid
 import com.github.onlynotesswent.ui.common.FolderDialog
 import com.github.onlynotesswent.ui.common.NoteDialog
 import com.github.onlynotesswent.ui.navigation.BottomNavigationMenu
@@ -58,9 +43,9 @@ import com.google.firebase.Timestamp
 import kotlinx.coroutines.launch
 
 /**
- * Displays the overview screen which contains a list of publicNotes retrieved from the ViewModel.
- * If there are no publicNotes, it shows a text to the user indicating no publicNotes are available.
- * It also provides a floating action button to add a new note.
+ * Displays the overview screen which contains a list of the user's notes and folders. The user can
+ * create new notes and folders from this screen. If there are no notes or folders, it shows a text
+ * to the user indicating that there are no notes or folders.
  *
  * @param navigationActions The navigationActions instance used to transition between different
  *   screens.
@@ -69,7 +54,7 @@ import kotlinx.coroutines.launch
  * @param folderViewModel The ViewModel that provides the list of folders to display.
  */
 @Composable
-fun OverviewScreen(
+fun NoteOverviewScreen(
     navigationActions: NavigationActions,
     noteViewModel: NoteViewModel,
     userViewModel: UserViewModel,
@@ -79,13 +64,6 @@ fun OverviewScreen(
   val userSavedNotes = noteViewModel.userSavedNotes.collectAsState()
   val userRootFolders = folderViewModel.userRootFolders.collectAsState()
   val userSavedFolders = folderViewModel.userSavedFolders.collectAsState()
-
-  userViewModel.currentUser.collectAsState().value?.let {
-    noteViewModel.getRootNotesFromUid(it.uid)
-    noteViewModel.getCurrentUserSavedNotes(userViewModel)
-    folderViewModel.getRootFoldersFromUserId(it.uid)
-    folderViewModel.getCurrentUserSavedFolders(userViewModel)
-  }
 
   val parentFolderId = folderViewModel.parentFolderId.collectAsState()
   val context = LocalContext.current
@@ -114,9 +92,7 @@ fun OverviewScreen(
                   expandedFab = expanded,
                   onExpandedFabChange = { expanded = it },
                   showCreateFolderDialog = { showCreateFolderDialog = it },
-                  showCreateNoteDialog = { showCreateNoteDialog = it },
-                  noteViewModel = noteViewModel,
-                  folderViewModel = folderViewModel)
+                  showCreateItemDialog = { showCreateNoteDialog = it })
             }
       },
       bottomBar = {
@@ -138,14 +114,13 @@ fun OverviewScreen(
                   })
             }
           }
-
           HorizontalPager(state = pagerState, modifier = Modifier.fillMaxSize()) {
             when (it) {
               0 -> {
-                OverviewScreenGrid(
+                NoteOverviewScreenGrid(
                     paddingValues = paddingValues,
-                    userRootNotes = userRootNotes,
-                    userRootFolders = userRootFolders,
+                    userNotes = userRootNotes,
+                    userFolders = userRootFolders,
                     folderViewModel = folderViewModel,
                     noteViewModel = noteViewModel,
                     userViewModel = userViewModel,
@@ -197,10 +172,10 @@ fun OverviewScreen(
               }
               1 -> {
                 // Saved documents page
-                OverviewScreenGrid(
+                NoteOverviewScreenGrid(
                     paddingValues = paddingValues,
-                    userRootNotes = userSavedNotes,
-                    userRootFolders = userSavedFolders,
+                    userNotes = userSavedNotes,
+                    userFolders = userSavedFolders,
                     folderViewModel = folderViewModel,
                     noteViewModel = noteViewModel,
                     userViewModel = userViewModel,
@@ -209,132 +184,5 @@ fun OverviewScreen(
             }
           }
         }
-      }
-}
-
-/**
- * Displays a floating action button that expands to show options to create a note or a folder.
- *
- * @param expandedFab The state of the floating action button. True if the button is expanded, false
- *   otherwise.
- * @param onExpandedFabChange The callback to change the state of the floating action button.
- * @param showCreateFolderDialog The callback to show the dialog to create a folder.
- * @param noteViewModel The ViewModel that provides the list of publicNotes to display.
- * @param folderViewModel The ViewModel that provides the list of folders to display.
- */
-@Composable
-fun CreateItemFab(
-    expandedFab: Boolean,
-    onExpandedFabChange: (Boolean) -> Unit,
-    showCreateFolderDialog: (Boolean) -> Unit,
-    showCreateNoteDialog: (Boolean) -> Unit,
-    noteViewModel: NoteViewModel,
-    folderViewModel: FolderViewModel,
-) {
-  CustomDropDownMenu(
-      modifier = Modifier.testTag("createNoteOrFolder"),
-      menuItems =
-          listOf(
-              CustomDropDownMenuItem(
-                  text = { Text(stringResource(R.string.create_note)) },
-                  icon = {
-                    Icon(
-                        painter = painterResource(id = R.drawable.add_note_icon),
-                        contentDescription = "AddNote")
-                  },
-                  onClick = {
-                    onExpandedFabChange(false)
-                    showCreateNoteDialog(true)
-                    noteViewModel.selectedFolderId(null)
-                  },
-                  modifier = Modifier.testTag("createNote")),
-              CustomDropDownMenuItem(
-                  text = { Text(stringResource(R.string.create_folder)) },
-                  icon = {
-                    Icon(
-                        painter = painterResource(id = R.drawable.folder_create_icon),
-                        contentDescription = "createFolder")
-                  },
-                  onClick = {
-                    onExpandedFabChange(false)
-                    showCreateFolderDialog(true)
-                    folderViewModel.selectedParentFolderId(null)
-                  },
-                  modifier = Modifier.testTag("createFolder"))),
-      fabIcon = { Icon(imageVector = Icons.Default.Add, contentDescription = "AddNote") },
-      expanded = expandedFab,
-      onFabClick = { onExpandedFabChange(true) },
-      onDismissRequest = { onExpandedFabChange(false) })
-}
-
-/**
- * Displays the overview screen in a grid layout. If there are no notes or folders, it shows a text
- * to the user indicating that there are no notes or folders. It also provides a button to refresh
- * the list of notes and folders.
- *
- * @param paddingValues The padding values to apply to the grid layout.
- * @param userRootNotes The list of notes to display.
- * @param userRootFolders The list of folders to display.
- * @param folderViewModel The ViewModel that provides the list of folders to display.
- * @param noteViewModel The ViewModel that provides the list of publicNotes to display.
- * @param userViewModel The ViewModel that provides the current user.
- * @param navigationActions The navigation view model used to transition between different screens.
- */
-@Composable
-fun OverviewScreenGrid(
-    paddingValues: PaddingValues,
-    userRootNotes: State<List<Note>>,
-    userRootFolders: State<List<Folder>>,
-    folderViewModel: FolderViewModel,
-    noteViewModel: NoteViewModel,
-    userViewModel: UserViewModel,
-    navigationActions: NavigationActions
-) {
-  CustomSeparatedLazyGrid(
-      modifier = Modifier.fillMaxSize(),
-      notes = userRootNotes,
-      folders = userRootFolders,
-      gridModifier =
-          Modifier.fillMaxWidth()
-              .padding(horizontal = 20.dp)
-              .padding(paddingValues)
-              .testTag("noteAndFolderList"),
-      folderViewModel = folderViewModel,
-      noteViewModel = noteViewModel,
-      userViewModel = userViewModel,
-      navigationActions = navigationActions,
-      paddingValues = paddingValues,
-      columnContent = {
-        Text(
-            modifier = Modifier.testTag("emptyNoteAndFolderPrompt"),
-            text = stringResource(R.string.you_have_no_notes_or_folders_yet),
-            color = MaterialTheme.colorScheme.onBackground)
-        Spacer(modifier = Modifier.height(50.dp))
-        RefreshButton {
-          userViewModel.currentUser.value?.let { noteViewModel.getRootNotesFromUid(it.uid) }
-          userViewModel.currentUser.value?.let {
-            folderViewModel.getRootNoteFoldersFromUserId(it.uid)
-          }
-        }
-        Spacer(modifier = Modifier.height(20.dp))
-      })
-}
-
-/**
- * A composable function that displays a refresh button.
- *
- * @param onClick A lambda function to be invoked when the button is clicked.
- */
-@Composable
-fun RefreshButton(onClick: () -> Unit) {
-  ElevatedButton(
-      onClick = onClick,
-      colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surface),
-      modifier = Modifier.testTag("refreshButton")) {
-        Text(stringResource(R.string.refresh), color = MaterialTheme.colorScheme.onSurface)
-        Icon(
-            imageVector = Icons.Default.Refresh,
-            contentDescription = "Refresh",
-            tint = MaterialTheme.colorScheme.onSurface)
       }
 }
