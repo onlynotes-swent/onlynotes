@@ -25,6 +25,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navigation
 import androidx.test.espresso.intent.Intents
 import com.github.onlynotesswent.model.authentication.Authenticator
+import com.github.onlynotesswent.model.common.Visibility
 import com.github.onlynotesswent.model.file.FileRepository
 import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.flashcard.deck.DeckRepository
@@ -70,21 +71,21 @@ class EndToEndTest {
 
   // Mock repositories, view models, and other dependencies
 
-  @Mock private lateinit var userRepository: UserRepository
-  @Mock private lateinit var noteRepository: NoteRepository
-  @Mock private lateinit var folderRepository: FolderRepository
-  @Mock private lateinit var deckRepository: DeckRepository
-  @Mock private lateinit var fileRepository: FileRepository
-  @Mock private lateinit var pictureTaker: PictureTaker
+  @Mock private lateinit var mockUserRepository: UserRepository
+  @Mock private lateinit var mockNoteRepository: NoteRepository
+  @Mock private lateinit var mockFolderRepository: FolderRepository
+  @Mock private lateinit var mockDeckRepository: DeckRepository
+  @Mock private lateinit var mockFileRepository: FileRepository
+  @Mock private lateinit var mockNotificationRepository: NotificationRepository
+  @Mock private lateinit var mockPictureTaker: PictureTaker
   private lateinit var userViewModel: UserViewModel
   private lateinit var noteViewModel: NoteViewModel
   private lateinit var folderViewModel: FolderViewModel
   private lateinit var deckViewModel: DeckViewModel
   private lateinit var fileViewModel: FileViewModel
-  @Mock private lateinit var mockNotificationRepository: NotificationRepository
   private lateinit var notificationViewModel: NotificationViewModel
 
-  @Mock private lateinit var authenticator: Authenticator
+  @Mock private lateinit var mockAuthenticator: Authenticator
 
   private lateinit var navController: NavHostController
   private lateinit var navigationActions: NavigationActions
@@ -129,6 +130,15 @@ class EndToEndTest {
           userId = testUid,
           lastModified = Timestamp.now())
 
+  private var testNoteUser2 =
+      Note(
+          id = "2",
+          title = "sampleTitle",
+          date = Timestamp.now(),
+          userId = testUser2.uid,
+          lastModified = Timestamp.now(),
+          visibility = Visibility.PUBLIC)
+
   private val newTitle = "New Title"
 
   // Setup Compose test rule for UI testing
@@ -139,11 +149,11 @@ class EndToEndTest {
     // Mock objects for dependencies
     MockitoAnnotations.openMocks(this)
 
-    userViewModel = UserViewModel(userRepository, mockNotificationRepository)
-    noteViewModel = NoteViewModel(noteRepository)
-    folderViewModel = FolderViewModel(folderRepository)
-    deckViewModel = DeckViewModel(deckRepository)
-    fileViewModel = FileViewModel(fileRepository)
+    userViewModel = UserViewModel(mockUserRepository, mockNotificationRepository)
+    noteViewModel = NoteViewModel(mockNoteRepository)
+    folderViewModel = FolderViewModel(mockFolderRepository)
+    deckViewModel = DeckViewModel(mockDeckRepository)
+    fileViewModel = FileViewModel(mockFileRepository)
     notificationViewModel = NotificationViewModel(mockNotificationRepository)
 
     // Initialize Intents for handling navigation intents in the test
@@ -212,7 +222,7 @@ class EndToEndTest {
                         userViewModel,
                         fileViewModel,
                         notificationViewModel,
-                        authenticator)
+                        mockAuthenticator)
                   }
                   composable(Screen.PUBLIC_PROFILE) {
                     PublicProfileScreen(
@@ -220,13 +230,13 @@ class EndToEndTest {
                         userViewModel,
                         fileViewModel,
                         notificationViewModel,
-                        authenticator)
+                        mockAuthenticator)
                   }
                   composable(Screen.EDIT_PROFILE) {
                     EditProfileScreen(
                         navigationActions,
                         userViewModel,
-                        pictureTaker,
+                        mockPictureTaker,
                         fileViewModel,
                         noteViewModel,
                         folderViewModel)
@@ -250,15 +260,15 @@ class EndToEndTest {
     // Set up mock behavior for user and note repository methods
     `when`(userViewModel.getNewUid()).thenReturn(testUid)
 
-    `when`(userRepository.addUser(any(), any(), any())).thenAnswer { invocation ->
+    `when`(mockUserRepository.addUser(any(), any(), any())).thenAnswer { invocation ->
       val onSuccess = invocation.getArgument<() -> Unit>(1)
       onSuccess()
     }
 
-    `when`(noteRepository.getNewUid()).thenReturn(testNote.id)
+    `when`(mockNoteRepository.getNewUid()).thenReturn(testNote.id)
 
     // Mock the note repository update
-    `when`(noteRepository.updateNote(any(), any(), any(), any())).thenAnswer {
+    `when`(mockNoteRepository.updateNote(any(), any(), any(), any())).thenAnswer {
       testNote = it.arguments[0] as Note
       noteViewModel.selectedNote(testNote)
       val onSuccess = it.getArgument<() -> Unit>(1)
@@ -266,17 +276,17 @@ class EndToEndTest {
     }
 
     // Mock get note by id
-    `when`(noteRepository.getNoteById(any(), any(), any(), any())).thenAnswer {
+    `when`(mockNoteRepository.getNoteById(any(), any(), any(), any())).thenAnswer {
       val onSuccess = it.getArgument<(Note) -> Unit>(1)
       onSuccess(testNote)
     }
 
     // Mock retrieval of notes
-    `when`(noteRepository.getRootNotesFromUid(eq(testUser1.uid), any(), any(), any())).thenAnswer {
-        invocation ->
-      val onSuccess = invocation.getArgument<(List<Note>) -> Unit>(1)
-      onSuccess(listOf(testNote))
-    }
+    `when`(mockNoteRepository.getRootNotesFromUid(eq(testUser1.uid), any(), any(), any()))
+        .thenAnswer { invocation ->
+          val onSuccess = invocation.getArgument<(List<Note>) -> Unit>(1)
+          onSuccess(listOf(testNote))
+        }
   }
 
   // Test the end-to-end flow of creating a user, adding a note, and editing the note
@@ -331,13 +341,13 @@ class EndToEndTest {
   // their profile and following them and then going to profile screen to unfollow and modify
   // profile
   private fun testEndToEndFlow2_init() {
-    `when`(userRepository.getAllUsers(any(), any())).thenAnswer { invocation ->
+    `when`(mockUserRepository.getAllUsers(any(), any())).thenAnswer { invocation ->
       val onSuccess = invocation.getArgument<(List<User>) -> Unit>(0)
       onSuccess(testUsers)
     }
 
     // Mock the user repository to return the specified user
-    `when`(userRepository.getUserById(any(), any(), any(), any())).thenAnswer {
+    `when`(mockUserRepository.getUserById(any(), any(), any(), any())).thenAnswer {
       val onSuccess = it.getArgument<(User) -> Unit>(1)
       val onNotFound = it.getArgument<() -> Unit>(2)
       val uid = it.arguments[0] as String
@@ -345,7 +355,7 @@ class EndToEndTest {
       uidToUser(uid)?.let { it1 -> onSuccess(it1) } ?: onNotFound()
     }
 
-    `when`(userRepository.getUsersById(any(), any(), any())).thenAnswer {
+    `when`(mockUserRepository.getUsersById(any(), any(), any())).thenAnswer {
       val onSuccess = it.getArgument<(List<User>) -> Unit>(1)
       val userIds = it.getArgument<List<String>>(0)
 
@@ -353,14 +363,14 @@ class EndToEndTest {
     }
 
     // Mock add user to initialize current user
-    `when`(userRepository.addUser(any(), any(), any())).thenAnswer {
+    `when`(mockUserRepository.addUser(any(), any(), any())).thenAnswer {
       val onSuccess = it.getArgument<() -> Unit>(1)
       onSuccess()
     }
     // Initialize current user
     userViewModel.addUser(testUser1, {}, {})
 
-    `when`(userRepository.addFollowerTo(any(), any(), any(), any(), any())).thenAnswer {
+    `when`(mockUserRepository.addFollowerTo(any(), any(), any(), any(), any())).thenAnswer {
       val onSuccess = it.getArgument<() -> Unit>(3)
       val userId = it.arguments[0] as String // testUser2
       val followerId = it.arguments[1] as String // testUser
@@ -377,7 +387,7 @@ class EndToEndTest {
       onSuccess()
     }
 
-    `when`(userRepository.removeFollowerFrom(any(), any(), any(), any(), any())).thenAnswer {
+    `when`(mockUserRepository.removeFollowerFrom(any(), any(), any(), any(), any())).thenAnswer {
       val onSuccess = it.getArgument<() -> Unit>(3)
       val userId = it.arguments[0] as String // testUser2
       val followerId = it.arguments[1] as String // testUser
@@ -393,7 +403,7 @@ class EndToEndTest {
       onSuccess()
     }
 
-    `when`(userRepository.updateUser(any(), any(), any())).thenAnswer {
+    `when`(mockUserRepository.updateUser(any(), any(), any())).thenAnswer {
       val onSuccess = it.getArgument<() -> Unit>(1)
       onSuccess()
     }
@@ -511,5 +521,166 @@ class EndToEndTest {
     assert(userViewModel.currentUser.value?.lastName == testUser1.lastName)
     composeTestRule.onNodeWithTag("saveButton").performClick()
     assert(userViewModel.currentUser.value?.lastName == "New Last Name")
+  }
+
+  private fun testEndToEndFlow3_init() = runTest {
+    `when`(mockUserRepository.getAllUsers(any(), any())).thenAnswer { invocation ->
+      val onSuccess = invocation.getArgument<(List<User>) -> Unit>(0)
+      onSuccess(testUsers)
+    }
+
+    // Mock the user repository to return the specified user
+    `when`(mockUserRepository.getUserById(any(), any(), any(), any())).thenAnswer {
+      val onSuccess = it.getArgument<(User) -> Unit>(1)
+      val onNotFound = it.getArgument<() -> Unit>(2)
+      val uid = it.arguments[0] as String
+
+      uidToUser(uid)?.let { it1 -> onSuccess(it1) } ?: onNotFound()
+    }
+
+    `when`(mockUserRepository.getUsersById(any(), any(), any())).thenAnswer {
+      val onSuccess = it.getArgument<(List<User>) -> Unit>(1)
+      val userIds = it.getArgument<List<String>>(0)
+
+      onSuccess(userIds.mapNotNull(uidToUser))
+    }
+
+    // Mock add user to initialize current user
+    `when`(mockUserRepository.addUser(any(), any(), any())).thenAnswer {
+      val onSuccess = it.getArgument<() -> Unit>(1)
+      onSuccess()
+    }
+    // Initialize current user
+    userViewModel.addUser(testUser1, {}, {})
+
+    `when`(mockNoteRepository.getNewUid()).thenReturn(testNote.id)
+
+    // Mock the note repository update
+    `when`(mockNoteRepository.updateNote(any(), any(), any(), any())).thenAnswer {
+      testNote = it.arguments[0] as Note
+      noteViewModel.selectedNote(testNote)
+      val onSuccess = it.getArgument<() -> Unit>(1)
+      onSuccess()
+    }
+
+    // Mock get note by id
+    `when`(mockNoteRepository.getNoteById(any(), any(), any(), any())).thenAnswer {
+      val onSuccess = it.getArgument<(Note) -> Unit>(1)
+      onSuccess(testNote)
+    }
+
+    // Mock retrieval of notes
+    `when`(mockNoteRepository.getRootNotesFromUid(eq(testUser1.uid), any(), any(), any()))
+        .thenAnswer { invocation ->
+          val onSuccess = invocation.getArgument<(List<Note>) -> Unit>(1)
+          onSuccess(listOf(testNote))
+        }
+
+    // Start at overview screen
+    composeTestRule.runOnUiThread { navController.navigate(Route.OVERVIEW) }
+  }
+
+  @Test
+  fun testEndToEndFlow3() {
+    testEndToEndFlow3_init()
+
+    // create a root note
+    composeTestRule.onNodeWithTag("createNoteOrFolder").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("createNoteOrFolder").performClick()
+    composeTestRule.onNodeWithTag("createNote").performClick()
+    composeTestRule.onNodeWithTag("confirmNoteAction").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("inputNoteName").performTextInput(testNote.title)
+    composeTestRule.onNodeWithTag("currentVisibilityOption").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("previousVisibility").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("nextVisibility").performClick()
+    composeTestRule.onNodeWithTag("confirmNoteAction").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("confirmNoteAction").performClick()
+
+    // Go to screen with button to create flashcard, click on it and then ...
+
+    // It is either move to other destinations inside edit note or the button is in the main edit
+    // note screen
+
+  }
+
+  private fun testEndToEndFlow4_init() {
+
+    `when`(mockUserRepository.getAllUsers(any(), any())).thenAnswer { invocation ->
+      val onSuccess = invocation.getArgument<(List<User>) -> Unit>(0)
+      onSuccess(testUsers)
+    }
+
+    // Mock the user repository to return the specified user
+    `when`(mockUserRepository.getUserById(any(), any(), any(), any())).thenAnswer {
+      val onSuccess = it.getArgument<(User) -> Unit>(1)
+      val onNotFound = it.getArgument<() -> Unit>(2)
+      val uid = it.arguments[0] as String
+
+      uidToUser(uid)?.let { it1 -> onSuccess(it1) } ?: onNotFound()
+    }
+
+    `when`(mockUserRepository.getUsersById(any(), any(), any())).thenAnswer {
+      val onSuccess = it.getArgument<(List<User>) -> Unit>(1)
+      val userIds = it.getArgument<List<String>>(0)
+
+      onSuccess(userIds.mapNotNull(uidToUser))
+    }
+
+    // Mock add user to initialize current user
+    `when`(mockUserRepository.addUser(any(), any(), any())).thenAnswer {
+      val onSuccess = it.getArgument<() -> Unit>(1)
+      onSuccess()
+    }
+    // Initialize current user
+    userViewModel.addUser(testUser1, {}, {})
+
+    `when`(mockNoteRepository.getPublicNotes(any(), any())).thenAnswer {
+      val onSuccess = it.getArgument<(List<Note>) -> Unit>(1)
+      onSuccess(listOf(testNoteUser2))
+    }
+
+    // mock the note repository method called when going into the saved notes screen
+    // `when`(mockNoteRepository.)
+
+    // potentially alwo mock update note if we modify the saved note
+
+    // Start at overview screen
+    composeTestRule.runOnUiThread { navController.navigate(Route.OVERVIEW) }
+  }
+
+  @Test
+  fun testEndToEndFlow4() {
+    testEndToEndFlow4_init()
+
+    // Go to search screen
+    composeTestRule.onNodeWithTag("Search").performClick()
+
+    // Search for a note from testUser2 to save it
+    composeTestRule.onNodeWithTag("searchTextField").performTextReplacement("sampleTitle")
+    // When selecting the note filter chip, the additional public filter chip is selected by default
+    composeTestRule.onNodeWithTag("noteFilterChip").performClick()
+
+    composeTestRule.onNodeWithTag("filteredNoteList").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("noSearchResults").assertIsNotDisplayed()
+
+    composeTestRule
+        .onAllNodesWithTag("noteCard")
+        .filter(hasText(testNoteUser2.title))
+        .onFirst()
+        .assertIsDisplayed()
+
+    // Go to the note
+    composeTestRule
+        .onAllNodesWithTag("noteCard")
+        .filter(hasText(testNoteUser2.title))
+        .onFirst()
+        .assertIsDisplayed()
+        .performClick()
+
+    // verify the bookmark button is displayed and click it
+
+    // Then go to overview screen, switch to the saved screen and check the note is there
+
+    // And maybe we could try to modify it or something
   }
 }
