@@ -4,6 +4,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
@@ -17,6 +19,7 @@ import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.flashcard.Flashcard
 import com.github.onlynotesswent.model.flashcard.FlashcardRepository
 import com.github.onlynotesswent.model.flashcard.FlashcardViewModel
+import com.github.onlynotesswent.model.flashcard.UserFlashcard
 import com.github.onlynotesswent.model.flashcard.deck.Deck
 import com.github.onlynotesswent.model.flashcard.deck.DeckRepository
 import com.github.onlynotesswent.model.flashcard.deck.DeckViewModel
@@ -78,6 +81,28 @@ class DeckPlayTest {
           folderId = null,
           noteId = null)
 
+  private val userFlashcard1 =
+      UserFlashcard(
+          id = testFlashcard1.id,
+          level = 2,
+          lastReviewed = Timestamp.now(),
+      )
+  private val userFlashcard2 =
+      UserFlashcard(
+          id = testFlashcard2.id,
+          level = 4,
+          lastReviewed = Timestamp.now(),
+      )
+
+  private val testFlashcard3 =
+      Flashcard(
+          id = "testFlashcard3",
+          front = "testFront3",
+          back = "testBack3",
+          userId = "testUser",
+          folderId = null,
+          noteId = null)
+
   private val testDeck =
       Deck(
           id = "testDeck",
@@ -85,7 +110,7 @@ class DeckPlayTest {
           description = "testDeckDescription",
           userId = "testUser",
           visibility = Visibility.PUBLIC,
-          flashcardIds = listOf("testFlashcard1", "testFlashcard2"),
+          flashcardIds = listOf("testFlashcard1", "testFlashcard2", "testFlashcard3"),
           lastModified = Timestamp.now(),
           folderId = null)
 
@@ -110,6 +135,7 @@ class DeckPlayTest {
             when (id) {
               "testFlashcard1" -> testFlashcard1
               "testFlashcard2" -> testFlashcard2
+              "testFlashcard3" -> testFlashcard2
               else -> null
             }
           })
@@ -119,8 +145,17 @@ class DeckPlayTest {
       val onSuccess = it.getArgument<(Deck) -> Unit>(1)
       onSuccess(testDeck)
     }
+    `when`(userRepository.updateUserFlashcard(any(), any(), any(), any())).thenAnswer {
+      val onSuccess = it.getArgument<() -> Unit>(2)
+      onSuccess()
+    }
+
+    `when`(userRepository.getUserFlashcardFromDeck(any(), any(), any(), any())).thenAnswer {
+      val onSuccess = it.getArgument<(Map<String, UserFlashcard>) -> Unit>(2)
+      onSuccess(mapOf("testFlashcard1" to userFlashcard1, "testFlashcard2" to userFlashcard2))
+    }
     userViewModel.addUser(testUser)
-    deckViewModel.selectDeck(testDeck)
+    deckViewModel.playDeckWithMode(testDeck, Deck.PlayMode.REVIEW)
     flashcardViewModel.fetchFlashcardsFromDeck(testDeck)
   }
 
@@ -186,6 +221,8 @@ class DeckPlayTest {
 
   @Test
   fun reviewMode() {
+    deckViewModel.playDeckWithMode(testDeck, Deck.PlayMode.REVIEW)
+
     composeTestRule.setContent {
       DeckPlayScreen(
           userViewModel = userViewModel,
@@ -194,5 +231,19 @@ class DeckPlayTest {
           fileViewModel = fileViewModel,
           navigationActions = navigationActions)
     }
+
+    composeTestRule.onNodeWithTag("DeckPlayScreen").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("DeckPlayScreenTopBar").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("DeckPlayScreenColumn").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("ReviewModeColumn").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("flashcardColumn").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("incorrectButton").assertExists()
+    composeTestRule.onNodeWithTag("correctButton").assertExists()
+    composeTestRule.onNodeWithTag("correctButton").assertIsEnabled()
+    composeTestRule.onNodeWithTag("incorrectButton").assertIsEnabled()
+    composeTestRule.onNodeWithTag("correctButton").performClick()
+    // composeTestRule.onNodeWithTag("incorrectButton").assertIsNotEnabled()
+    // composeTestRule.onNodeWithTag("correctButton").assertIsNotEnabled()
+
   }
 }

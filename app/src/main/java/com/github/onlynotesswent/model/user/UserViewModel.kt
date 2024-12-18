@@ -588,8 +588,8 @@ class UserViewModel(
                   _deckUserFlashcards.value.toMutableMap().apply {
                     put(userFlashcard.id, userFlashcard)
                   }
-              onSuccess()
             }
+            onSuccess()
           },
           onFailure)
     }

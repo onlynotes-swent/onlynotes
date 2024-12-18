@@ -1,6 +1,5 @@
 package com.github.onlynotesswent.ui.deck
 
-import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -31,6 +30,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.flashcard.Flashcard
@@ -56,7 +56,6 @@ fun DeckPlayScreen(
 ) {
 
   val deck = deckViewModel.selectedDeck.collectAsState()
-  val selectedFlashcard = flashcardViewModel.selectedFlashcard.collectAsState()
   val playMode = deckViewModel.selectedPlayMode.collectAsState()
   val isFinished = remember { mutableStateOf(false) }
   val currentFlashcardIndex = remember { mutableIntStateOf(0) }
@@ -87,15 +86,15 @@ fun DeckPlayScreen(
               userFlashcardList.value += userViewModel.deckUserFlashcards.value[id]!!
             }
           }
-          Log.e("DeckPlayScreen", "userFlashcardList: ${userFlashcardList.value.size }}")
         })
   }
 
   Scaffold(
+      modifier = Modifier.testTag("DeckPlayScreen"),
       topBar = {
         ScreenTopBar(
             playMode.value?.toString() ?: "No mode selected",
-            "DeckPlayScreen",
+            "DeckPlayScreenTopBar",
             { navigationActions.goBack() },
             {
               Icon(
@@ -106,12 +105,10 @@ fun DeckPlayScreen(
             "DeckPlayIcon")
       }) { innerPadding ->
         Column(
-            modifier = Modifier.padding(innerPadding),
+            modifier = Modifier.padding(innerPadding).testTag("DeckPlayScreenColumn"),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally) {
-              if (deck.value == null ||
-                  selectedFlashcard.value == null ||
-                  userFlashcardList.value.isEmpty()) {
+              if (deck.value == null || userFlashcardList.value.isEmpty()) {
                 LoadingIndicator("Loading deck...")
               } else {
                 val score = remember { mutableIntStateOf(0) }
@@ -119,7 +116,6 @@ fun DeckPlayScreen(
                     remember(deck.value?.flashcardIds) {
                       deck.value!!.flashcardIds.associateWith { mutableStateOf(null) }
                     }
-
                 if (isFinished.value) {
                   FinishedScreen(
                       score,
@@ -132,24 +128,22 @@ fun DeckPlayScreen(
                       flashcardViewModel,
                       answers)
                 } else {
-                  if (selectedFlashcard.value != null) {
-                    if (playMode.value == Deck.PlayMode.REVIEW) {
-                      ReviewMode(
-                          fileViewModel,
-                          userViewModel,
-                          userViewModelFlashcards,
-                          userFlashcardList,
-                          answers,
-                          flashcardMap)
-                    } else {
-                      TestMode(
-                          fileViewModel,
-                          flashcardList,
-                          score,
-                          isFinished,
-                          answers,
-                      )
-                    }
+                  if (playMode.value == Deck.PlayMode.REVIEW) {
+                    ReviewMode(
+                        fileViewModel,
+                        userViewModel,
+                        userViewModelFlashcards,
+                        userFlashcardList,
+                        answers,
+                        flashcardMap)
+                  } else {
+                    TestMode(
+                        fileViewModel,
+                        flashcardList,
+                        score,
+                        isFinished,
+                        answers,
+                    )
                   }
                 }
               }
@@ -181,16 +175,18 @@ fun ReviewMode(
             currentFlashcardId =
                 UserFlashcard.selectRandomFlashcardLinear(userFlashcardList.value).id))
   }
-  Column {
+  Column(
+      modifier = Modifier.testTag("ReviewModeColumn"),
+  ) {
     val listOfPagerFlashcards = remember {
       derivedStateOf { playDeckHistory.value.listOfAllFlashcard }
     }
     val pagerState = rememberPagerState(initialPage = 1) { listOfPagerFlashcards.value.size }
     val scrollScope = rememberCoroutineScope()
 
-    HorizontalPager(pagerState) { pageIndex ->
+    HorizontalPager(pagerState, modifier = Modifier.testTag("Pager")) { pageIndex ->
       Column(
-          modifier = Modifier.fillMaxWidth().padding(16.dp),
+          modifier = Modifier.fillMaxWidth().padding(16.dp).testTag("flashcardColumn"),
           horizontalAlignment = Alignment.CenterHorizontally,
           verticalArrangement = Arrangement.spacedBy(16.dp)) {
             val flashcardState = remember {
@@ -391,7 +387,7 @@ private fun SelectWrongRight(
   Row(modifier = Modifier.fillMaxWidth()) {
     Button(
         onClick = { onIncorrect() },
-        modifier = Modifier.padding(16.dp),
+        modifier = Modifier.padding(16.dp).testTag("incorrectButton"),
         enabled = answers[selectedFlashcardId]!!.value == null) {
           Row {
             Icon(
@@ -403,7 +399,7 @@ private fun SelectWrongRight(
         }
     Button(
         onClick = { onCorrect() },
-        modifier = Modifier.padding(16.dp),
+        modifier = Modifier.padding(16.dp).testTag("correctButton"),
         enabled = answers[selectedFlashcardId]!!.value == null) {
           Row {
             Icon(
