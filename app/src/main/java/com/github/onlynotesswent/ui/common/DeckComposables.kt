@@ -119,6 +119,7 @@ fun DeckItem(
  * @param userViewModel The ViewModel for user-related data.
  * @param onDismissRequest The callback to be invoked when the dialog is dismissed.
  * @param mode The mode of the dialog, default is "Edit".
+ * @param folderId The ID of the folder the deck belongs to.
  */
 @Composable
 fun EditDeckDialog(
@@ -127,6 +128,7 @@ fun EditDeckDialog(
     onDismissRequest: () -> Unit,
     onSave: (() -> Unit)? = null,
     mode: String = stringResource(R.string.update),
+    folderId: String? = null
 ) {
   val deck: State<Deck?> = deckViewModel.selectedDeck.collectAsState()
   val deckTitle = remember { mutableStateOf(deck.value?.name ?: "") }
@@ -173,7 +175,7 @@ fun EditDeckDialog(
                           id = deckViewModel.getNewUid(),
                           name = deckTitle.value,
                           userId = userViewModel.currentUser.value!!.uid,
-                          folderId = null,
+                          folderId = folderId,
                           visibility = deckVisibility.value,
                           description = deckDescription.value,
                           lastModified = Timestamp.now())

@@ -50,14 +50,7 @@ fun NoteOverviewScreen(
     folderViewModel: FolderViewModel
 ) {
   val userRootNotes = noteViewModel.userRootNotes.collectAsState()
-  userViewModel.currentUser.collectAsState().value?.let {
-    noteViewModel.getRootNotesFromUid(it.uid)
-  }
-
   val userRootFolders = folderViewModel.userRootFolders.collectAsState()
-  userViewModel.currentUser.collectAsState().value?.let {
-    folderViewModel.getRootFoldersFromUserId(it.uid)
-  }
 
   val parentFolderId = folderViewModel.parentFolderId.collectAsState()
   val context = LocalContext.current

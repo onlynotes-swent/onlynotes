@@ -21,6 +21,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import com.github.onlynotesswent.model.authentication.Authenticator
@@ -104,6 +105,16 @@ fun OnlyNotesApp(
         route = Route.NOTE_OVERVIEW,
     ) {
       composable(Screen.NOTE_OVERVIEW) {
+        val user = userViewModel.currentUser.collectAsState().value
+        val currentBackStackEntry = navController.currentBackStackEntryAsState().value
+
+        LaunchedEffect(currentBackStackEntry) {
+          if (user != null) {
+            folderViewModel.getRootNoteFoldersFromUserId(user.uid)
+            noteViewModel.getRootNotesFromUid(user.uid)
+          }
+        }
+
         NoteOverviewScreen(navigationActions, noteViewModel, userViewModel, folderViewModel)
       }
       composable(Screen.EDIT_NOTE) {
@@ -134,6 +145,8 @@ fun OnlyNotesApp(
             LaunchedEffect(folderId) {
               if (folderId != null && folderId != "{folderId}") {
                 folderViewModel.getFolderById(folderId)
+                noteViewModel.getNotesFromFolder(folderId)
+                folderViewModel.getSubFoldersOf(folderId)
               }
             }
             // Wait until selected folder is updated to display the screen
@@ -152,6 +165,16 @@ fun OnlyNotesApp(
         route = Route.DECK_OVERVIEW,
     ) {
       composable(Screen.DECK_OVERVIEW) {
+        val user = userViewModel.currentUser.collectAsState().value
+        val currentBackStackEntry = navController.currentBackStackEntryAsState().value
+
+        LaunchedEffect(currentBackStackEntry) {
+          if (user != null) {
+            folderViewModel.getRootDeckFoldersFromUserId(user.uid)
+            deckViewModel.getRootDecksFromUserId(user.uid)
+          }
+        }
+
         DeckOverviewScreen(navigationActions, deckViewModel, userViewModel, folderViewModel)
       }
       composable(Screen.DECK_MENU) {
@@ -180,6 +203,8 @@ fun OnlyNotesApp(
             LaunchedEffect(folderId) {
               if (folderId != null && folderId != "{folderId}") {
                 folderViewModel.getFolderById(folderId)
+                deckViewModel.getDecksByFolder(folderId)
+                folderViewModel.getSubFoldersOf(folderId)
               }
             }
             // Wait until selected folder is updated to display the screen

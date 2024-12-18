@@ -78,23 +78,11 @@ fun FolderContentScreen(
     deckViewModel: DeckViewModel? = null
 ) {
   val folder = folderViewModel.selectedFolder.collectAsState()
-  val folderId = folder.value?.id
   val currentUser = userViewModel.currentUser.collectAsState()
 
   val userFolderNotes = noteViewModel?.folderNotes?.collectAsState()
-  if (folderId != null) {
-    noteViewModel?.getNotesFromFolder(folderId)
-  }
-
   val userFolderDecks = deckViewModel?.folderDecks?.collectAsState()
-  if (folderId != null) {
-    deckViewModel?.getDecksByFolder(folderId)
-  }
-
   val userFolderSubFolders = folderViewModel.folderSubFolders.collectAsState()
-  if (folderId != null) {
-    folderViewModel.getSubFoldersOf(folderId)
-  }
 
   val context = LocalContext.current
 
@@ -143,7 +131,8 @@ fun FolderContentScreen(
                 expandedFab = expandedFolder,
                 onExpandedFabChange = { expandedFolder = it },
                 showCreateFolderDialog = { showCreateFolderDialog = it },
-                showCreateItemDialog = { showCreateDialog = it })
+                showCreateItemDialog = { showCreateDialog = it },
+                isDeckView = isDeckView)
           }
         }) { paddingValues ->
           Text(
@@ -193,7 +182,8 @@ fun FolderContentScreen(
                   userViewModel = userViewModel,
                   onDismissRequest = { showCreateDialog = false },
                   mode = stringResource(R.string.create),
-                  onSave = { navigationActions.navigateTo(Screen.DECK_MENU) })
+                  onSave = { navigationActions.navigateTo(Screen.DECK_MENU) },
+                  folderId = folder.value!!.id)
             } else {
               NoteDialog(
                   onDismiss = { showCreateDialog = false },
@@ -405,9 +395,7 @@ fun FolderContentTopBar(
                 folderViewModel.clearSelectedFolder()
 
                 folderViewModel.getRootDeckFoldersFromUserId(currentUser.value!!.uid)
-                navigationActions.goBackFolderContents(
-                    folder, currentUser.value!!, isDeckView)
-
+                navigationActions.goBackFolderContents(folder, currentUser.value!!, isDeckView)
 
                 handleSubFoldersAndContent(
                     folder = folder,

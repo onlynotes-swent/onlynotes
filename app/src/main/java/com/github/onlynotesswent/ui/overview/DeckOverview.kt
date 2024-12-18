@@ -49,14 +49,7 @@ fun DeckOverviewScreen(
     folderViewModel: FolderViewModel
 ) {
   val userRootDecks = deckViewModel.userRootDecks.collectAsState()
-  userViewModel.currentUser.collectAsState().value?.let {
-    deckViewModel.getRootDecksFromUserId(it.uid)
-  }
-
   val userRootFolders = folderViewModel.userRootFolders.collectAsState()
-  userViewModel.currentUser.collectAsState().value?.let {
-    folderViewModel.getRootDeckFoldersFromUserId(it.uid)
-  }
 
   val parentFolderId = folderViewModel.parentFolderId.collectAsState()
   val context = LocalContext.current
