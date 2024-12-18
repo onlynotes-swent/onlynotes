@@ -25,7 +25,35 @@ import com.github.onlynotesswent.model.file.FileType
 import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.user.User
 
-private val doesNothing = {}
+/**
+ * Extracts the UID from the URI.
+ *
+ * @param uri The URI from which the UID is to be extracted.
+ * @param extension The extension of the file in the URI.
+ * @return The UID extracted from the URI.
+ */
+fun extractUID(uri: String?, extension: String = FileType.FLASHCARD_IMAGE.fileExtension): String? {
+  val parts = uri?.split("/") ?: return null
+  val fileName = parts.lastOrNull() ?: return null
+  return fileName.substringBeforeLast(extension)
+}
+
+/**
+ * Compares the UID extracted from the URI with the given UID.
+ *
+ * @param uri The URI from which the UID is to be extracted.
+ * @param uid The UID to compare with the extracted UID.
+ * @param extension The extension of the file in the URI.
+ * @return True if the extracted UID matches the given UID, false otherwise.
+ */
+fun compareUID(
+    uri: String?,
+    uid: String?,
+    extension: String = FileType.FLASHCARD_IMAGE.fileExtension
+): Boolean {
+  return uid?.let { extractUID(uri, extension)?.take(it.length) == it } == true
+}
+
 /**
  * Displays the user's thumbnail profile picture, by wrapping the NonModifiableProfilePicture
  * composable.
@@ -54,7 +82,7 @@ fun ThumbnailPic(user: User?, fileViewModel: FileViewModel, size: Int = 40) {
 fun ThumbnailDynamicPic(
     user: State<User?>,
     fileViewModel: FileViewModel,
-    onClick: () -> Unit = doesNothing,
+    onClick: (() -> Unit)? = null,
     size: Int = 40,
 ) {
   val profilePictureUri = remember { mutableStateOf("") }
@@ -64,7 +92,7 @@ fun ThumbnailDynamicPic(
       fileViewModel,
       size,
       "thumbnail--${user.value?.uid?:"default"}",
-      onClick = { onClick() })
+      onClick)
 }
 
 /**
@@ -83,33 +111,28 @@ fun NonModifiableProfilePicture(
     fileViewModel: FileViewModel,
     size: Int = 150,
     testTag: String = "profilePicture",
-    onClick: () -> Unit = doesNothing
+    onClick: (() -> Unit)? = null
 ) {
-  val boxModifier =
-      if (onClick === doesNothing) Modifier.size(size.dp)
-      else Modifier.size(size.dp).clickable { onClick() }
-  Box(modifier = boxModifier) {
-
-    // Download the profile picture from Firebase Storage if it hasn't been downloaded yet
-    if (user.value != null && user.value!!.hasProfilePicture && profilePictureUri.value.isBlank()) {
-      fileViewModel.downloadFile(
-          user.value!!.uid,
-          FileType.PROFILE_PIC_JPEG,
-          context = LocalContext.current,
-          onSuccess = { file -> profilePictureUri.value = file.absolutePath },
-          onFileNotFound = { Log.e("ProfilePicture", "Profile picture not found") },
-          onFailure = { e -> Log.e("ProfilePicture", "Error downloading profile picture", e) })
-    }
-
-    // Profile Picture Painter
+  val boxModifier = Modifier.size(size.dp)
+  Box(modifier = onClick?.let { boxModifier.clickable { onClick() } } ?: boxModifier) {
     val painter =
-        if (user.value != null &&
-            user.value!!.hasProfilePicture &&
-            profilePictureUri.value.isNotBlank()) {
-          // Load the profile picture if it exists
+        if (compareUID(
+            profilePictureUri.value, user.value?.uid, FileType.PROFILE_PIC_JPEG.fileExtension)) {
           rememberAsyncImagePainter(profilePictureUri.value)
         } else {
-          // Load the default profile picture if it doesn't exist
+          // Load the default profile picture if no picture was found
+          // and download the profile picture if it should exist
+          if (user.value?.hasProfilePicture == true) {
+            fileViewModel.downloadFile(
+                user.value!!.uid,
+                FileType.PROFILE_PIC_JPEG,
+                context = LocalContext.current,
+                onSuccess = { file -> profilePictureUri.value = file.absolutePath },
+                onFileNotFound = { Log.e("ProfilePicture", "Profile picture not found") },
+                onFailure = { e ->
+                  Log.e("ProfilePicture", "Error downloading profile picture", e)
+                })
+          }
           rememberVectorPainter(Icons.Default.AccountCircle)
         }
 
