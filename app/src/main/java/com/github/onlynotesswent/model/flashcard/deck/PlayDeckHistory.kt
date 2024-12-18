@@ -26,7 +26,7 @@ data class PlayDeckHistory(
     )
 
     companion object{
-        const val MAX_LIST_LENGTH = 100
+        const val MAX_LIST_LENGTH = 12
         //because the first and last element are always null  and
         //one null element witch limit the next and previous flashcard
         const val MAX_SIZE = MAX_LIST_LENGTH-3
@@ -38,28 +38,53 @@ data class PlayDeckHistory(
      *
      * @param flashcardId The ID of the flashcard to add.
      */
-    fun goForwardWithNewFlashcard(flashcardId: String): PlayDeckHistory {
-        val index= getIndexForward()
-        Log.e("PlayDeckHistory", "goForwardWithNewFlashcard: $index")
+    fun stayWithNewFlashcard(flashcardId: String): PlayDeckHistory {
+        val nextIndex = getIndexForward()
+        Log.e("PlayDeckHistory", "goForwardWithNewFlashcard: $nextIndex")
 
-        val nextIndex=if(index==MAX_LIST_LENGTH-2) 1 else index+1
+        val twiceNextIndex = getIndexForward(nextIndex)
 
         if(size==MAX_SIZE){
-            return PlayDeckHistory(
+            return this.copy(
                 listOfAllFlashcard = listOfAllFlashcard.
-                replaceAt(index,flashcardId).
-                replaceAt(nextIndex,null),
-                currentFlashcardId = flashcardId,
-                indexOfCurrentFlashcard = index,
-                size = size
+                replaceAt(nextIndex,flashcardId).
+                replaceAt(twiceNextIndex,null),
+            )
+        }
+        return this.copy(
+                listOfAllFlashcard = listOfAllFlashcard.replaceAt(nextIndex,flashcardId),
+                size = size+1
+            )
+
+    }
+
+    /**
+     * Moves forward to the next flashcard, adds the twice next flashcard to the list, and removes the thrice next flashcard.
+     *
+     * @param twiceNextId The ID of the flashcard to add.
+     * @return The updated PlayDeckHistory.
+     * @throws NullPointerException if the next flashcard is null, and we are trying to generate the twice next flashcard.
+     */
+    fun goForwardWithTwiceNextFlashcard(twiceNextId: String): PlayDeckHistory {
+        val nextIndex = getIndexForward()
+        val twiceNextIndex = getIndexForward(nextIndex)
+        val thriceNextIndex = getIndexForward(twiceNextIndex)
+
+        if(size==MAX_SIZE){
+            return this.copy(
+                listOfAllFlashcard = listOfAllFlashcard.
+                replaceAt(twiceNextIndex,twiceNextId).
+                replaceAt(thriceNextIndex,null),
+                currentFlashcardId = listOfAllFlashcard[nextIndex]!!,
+                indexOfCurrentFlashcard = nextIndex,
             )
         }
         return PlayDeckHistory(
-                listOfAllFlashcard = listOfAllFlashcard.replaceAt(index,flashcardId),
-                currentFlashcardId = flashcardId,
-                indexOfCurrentFlashcard = index,
-                size = size+1
-            )
+            listOfAllFlashcard = listOfAllFlashcard.replaceAt(twiceNextIndex,twiceNextId),
+            currentFlashcardId = listOfAllFlashcard[nextIndex]!!,
+            indexOfCurrentFlashcard = nextIndex,
+            size = size + 1
+        )
 
     }
 
@@ -127,11 +152,17 @@ data class PlayDeckHistory(
         return listOfAllFlashcard[index]!=null
     }
 
-    private fun getIndexForward() = if (indexOfCurrentFlashcard == MAX_LIST_LENGTH - 2)
-        1 else indexOfCurrentFlashcard + 1
+    fun canGoTwiceForward(): Boolean {
+        val index = getIndexForward(getIndexForward())
+        Log.e("PlayDeckHistory", "can go twice forward: $index")
+        return canGoForward() && listOfAllFlashcard[index]!=null
+    }
 
-    private fun getIndexBackward() = if (indexOfCurrentFlashcard == 1)
-        MAX_LIST_LENGTH - 2 else indexOfCurrentFlashcard - 1
+    fun getIndexForward(index:Int = indexOfCurrentFlashcard) = if (index == MAX_LIST_LENGTH - 2)
+        1 else index + 1
+
+    private fun getIndexBackward(index:Int = indexOfCurrentFlashcard) = if (index == 1)
+        MAX_LIST_LENGTH - 2 else index - 1
 }
 
 private fun <E> List<E>.replaceAt(i: Int, flashcardId: E): List<E?> {

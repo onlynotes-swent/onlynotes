@@ -195,7 +195,7 @@ fun ReviewMode(
   )) }
   Column {
       val listOfPagerFlashcards= remember{
-          mutableStateOf( playDeckHistory.value.listOfAllFlashcard)}
+          derivedStateOf {playDeckHistory.value.listOfAllFlashcard}}
       val pagerState = rememberPagerState(initialPage = 1) { listOfPagerFlashcards.value.size }
       val scrollScope = rememberCoroutineScope()
 
@@ -208,9 +208,7 @@ fun ReviewMode(
               ,
               horizontalAlignment = Alignment.CenterHorizontally,
               verticalArrangement = Arrangement.spacedBy(16.dp)) {
-              if(pageIndex==0){
-                   pagerState.requestScrollToPage(playDeckHistory.value.indexOfCurrentFlashcard)
-              }else{
+
                   val flashcardState = remember { derivedStateOf { flashcardMap[listOfPagerFlashcards.value[pageIndex]] } }
                   FlashcardPlayItem(flashcardState, fileViewModel,
                         onCorrect = {
@@ -240,51 +238,83 @@ fun ReviewMode(
                                           }
                                       }
                               })},
-                        choice = answers[playDeckHistory.value.currentFlashcardId]!!
+                        choice = answers[playDeckHistory.value.currentFlashcardId]!!,
+                        isReview = true
                   )
-              }
+
           }
       }
 
       //this a listener for the pager state that will be triggered when the current page changes
       //it will handle all the cases when the user goes back or forward
 
-      LaunchedEffect(pagerState.currentPage) {
+      LaunchedEffect(pagerState.settledPage) {
+          Log.d("ReviewMode", "------------------------------------------------------------------")
+          Log.d("ReviewMode", "pagerState.settledPage: ${pagerState.settledPage}")
+          Log.d("ReviewMode", "playDeckHistory.value.indexOfCurrentFlashcard: ${playDeckHistory.value.indexOfCurrentFlashcard}")
+          Log.d("ReviewMode", "playDeckHistory.value.listOfAllFlashcard: ${playDeckHistory.value.listOfAllFlashcard}")
+
           scrollScope.launch {
-              val diff = pagerState.currentPage - playDeckHistory.value.indexOfCurrentFlashcard
+              val diff = pagerState.settledPage - playDeckHistory.value.indexOfCurrentFlashcard
               if (diff > 0) {
-                  if (playDeckHistory.value.canGoForward()) {
+                  if (playDeckHistory.value.canGoTwiceForward()) {
                       playDeckHistory.value = playDeckHistory.value.goForward()
                   } else {
-                      val withoutCurrent =
-                          userFlashcardList.value.filter { it.id != playDeckHistory.value.currentFlashcardId }
-                      val selectedUserFlashcard =
-                          UserFlashcard.selectRandomFlashcardLinear(withoutCurrent)
-                      answers[selectedUserFlashcard.id]!!.value = null
-                      playDeckHistory.value =
-                          playDeckHistory.value.goForwardWithNewFlashcard(selectedUserFlashcard.id)
+                      while (playDeckHistory.value.canGoForward() && pagerState.settledPage > playDeckHistory.value.indexOfCurrentFlashcard) {
+                          Log.d("ReviewMode", "in while | diff ${pagerState.settledPage - playDeckHistory.value.indexOfCurrentFlashcard}")
+                          Log.d("ReviewMode", "in while | pagerState.settledPage ${pagerState.settledPage}")
+                          Log.d("ReviewMode", "in while | playDeckHistory.value.canGoForward() ${playDeckHistory.value.canGoForward()}")
+                          val nextCardId = playDeckHistory.value.listOfAllFlashcard[playDeckHistory.value.getIndexForward()]
+                          val withoutNext =
+                                userFlashcardList.value.filter { it.id != nextCardId }
+                          val twiceNextFlashcardId =
+                              UserFlashcard.selectRandomFlashcardLinear(withoutNext).id
+                          answers[nextCardId]!!.value = null
+                          playDeckHistory.value =
+                              playDeckHistory.value.goForwardWithTwiceNextFlashcard(twiceNextFlashcardId)
+                          if (pagerState.settledPage == PlayDeckHistory.MAX_LIST_LENGTH - 1) {
+                              break
+                          }
+                      }
                   }
-                  listOfPagerFlashcards.value = playDeckHistory.value.listOfAllFlashcard
-                  if (pagerState.currentPage == listOfPagerFlashcards.value.size - 1) {
+                  if (pagerState.settledPage == PlayDeckHistory.MAX_LIST_LENGTH - 1) {
+                      Log.d("ReviewMode", "start scroll A1")
                       pagerState.scrollToPage(1)
+                      Log.d("ReviewMode", "end scroll A1")
                   }
               } else if (diff < 0) {
                   if (playDeckHistory.value.canGoBack()) {
                       playDeckHistory.value = playDeckHistory.value.goBack()
-                      if (pagerState.currentPage == 0) {
-                          pagerState.requestScrollToPage(listOfPagerFlashcards.value.size - 2)
+                      if (pagerState.settledPage == 0) {
+                          Log.d("ReviewMode", "start scroll B${listOfPagerFlashcards.value.size - 2}")
+                          pagerState.scrollToPage(listOfPagerFlashcards.value.size - 2)
+                          Log.d("ReviewMode", "end scroll B${listOfPagerFlashcards.value.size - 2}")
                       }
-                      listOfPagerFlashcards.value = playDeckHistory.value.listOfAllFlashcard
                   } else {
+                      Log.d("ReviewMode", "start scroll C${playDeckHistory.value.indexOfCurrentFlashcard}")
                       pagerState.scrollToPage(playDeckHistory.value.indexOfCurrentFlashcard)
+                      Log.d("ReviewMode", "end scroll C${playDeckHistory.value.indexOfCurrentFlashcard}")
                   }
+              } else if (!playDeckHistory.value.canGoForward()){
+                  // this is the case when the user opens the deck and the user can't go forward
+                  val withoutCurrent = userFlashcardList.value.filter { it.id != playDeckHistory.value.currentFlashcardId }
+                  val nextFlashcardId = UserFlashcard.selectRandomFlashcardLinear(withoutCurrent).id
+                  playDeckHistory.value = playDeckHistory.value.stayWithNewFlashcard(nextFlashcardId)
               }
-              if (pagerState.currentPage == 0) {
-                  pagerState.requestScrollToPage(playDeckHistory.value.indexOfCurrentFlashcard)
+              if (pagerState.settledPage == 0) {
+                  Log.d("ReviewMode", "SHOULD NEVER HAPPEN")
+                  pagerState.scrollToPage(playDeckHistory.value.indexOfCurrentFlashcard)
+                  Log.d("ReviewMode", "end scroll that should never happen")
               }
+              Log.d("ReviewMode", "scope finished")
+              Log.d("ReviewMode", "after scope | pagerState.settledPage: ${pagerState.settledPage}")
+              Log.d("ReviewMode", "after scope | playDeckHistory.value.indexOfCurrentFlashcard: ${playDeckHistory.value.indexOfCurrentFlashcard}")
+              Log.d("ReviewMode", "after scope | playDeckHistory.value.listOfAllFlashcard: ${playDeckHistory.value.listOfAllFlashcard}")
+              Log.d("ReviewMode", "after scope | playDeckHistory.value.size: ${playDeckHistory.value.size}")
+
           }
+          Log.d("ReviewMode", "------------------------------------------------------------------")
       }
-if(!flashcardMap[playDeckHistory.value.currentFlashcardId]!!.isMCQ()){
     SelectWrongRight(
         answers,
         playDeckHistory.value.currentFlashcardId,
@@ -318,7 +348,7 @@ if(!flashcardMap[playDeckHistory.value.currentFlashcardId]!!.isMCQ()){
                     }
               })
         })
-  }
+
   }
 }
 
