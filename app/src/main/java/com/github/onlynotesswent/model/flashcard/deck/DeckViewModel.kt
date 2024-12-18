@@ -59,8 +59,13 @@ class DeckViewModel(private val repository: DeckRepository) : ViewModel() {
    *
    * @param deck The deck to be selected.
    */
-  fun selectDeck(deck: Deck?) {
+  fun selectDeck(deck: Deck) {
     _selectedDeck.value = deck
+  }
+
+  /** Clear the selected deck. */
+  fun clearSelectedDeck() {
+    _selectedDeck.value = null
   }
 
   /**

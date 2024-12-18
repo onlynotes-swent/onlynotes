@@ -130,7 +130,7 @@ fun DeckScreen(
       topBar = {
         DeckMenuTopAppBar {
           navigationActions.goBack()
-          deckViewModel.selectDeck(null)
+          deckViewModel.clearSelectedDeck()
         }
       },
       floatingActionButton = {
