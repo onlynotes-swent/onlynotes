@@ -503,6 +503,7 @@ fun FolderContentTopBar(
                         navigationActions.navigateTo(
                             Screen.FOLDER_CONTENTS.replace(
                                 oldValue = "{folderId}", newValue = selectedFolder.id))
+                        return@moveFolder
                       }
 
                       if (isDeckView) {
