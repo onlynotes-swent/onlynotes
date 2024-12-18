@@ -1,6 +1,7 @@
 package com.github.onlynotesswent.ui.search
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -17,6 +18,7 @@ import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -141,138 +143,162 @@ fun SearchScreen(
       modifier = Modifier.testTag("searchScreen"),
       topBar = {
         Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-          OutlinedTextField(
-              value = searchQuery.value,
-              onValueChange = { searchQuery.value = it },
-              placeholder = { Text(stringResource(R.string.search)) },
-              leadingIcon = {
-                Icon(
-                    imageVector = Icons.Default.Search,
-                    contentDescription = "Search Icon",
-                    tint = MaterialTheme.colorScheme.onBackground)
-              },
-              shape = RoundedCornerShape(50),
-              singleLine = true,
-              colors =
-                  OutlinedTextFieldDefaults.colors(
-                      focusedBorderColor = MaterialTheme.colorScheme.onBackground,
-                      unfocusedBorderColor = MaterialTheme.colorScheme.onBackground,
-                      focusedTextColor = MaterialTheme.colorScheme.onBackground,
-                      unfocusedTextColor = MaterialTheme.colorScheme.onBackground),
-              modifier =
-                  Modifier.fillMaxWidth()
-                      .padding(top = 16.dp, start = 16.dp, end = 16.dp)
-                      .testTag("searchTextField"))
-          LazyRow(modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp, horizontal = 20.dp)) {
-            item {
-              FilterChip(
-                  searchType.value == SearchType.USERS,
-                  label = { Text(stringResource(R.string.users_maj), maxLines = 1) },
-                  onClick = {
-                    showAdditionalFilters.value = false
-                    searchType.value = SearchType.USERS
-                    userViewModel.getAllUsers()
-                  },
+            modifier = Modifier.background(MaterialTheme.colorScheme.onPrimary),
+            horizontalAlignment = Alignment.CenterHorizontally) {
+              OutlinedTextField(
+                  value = searchQuery.value,
+                  onValueChange = { searchQuery.value = it },
+                  placeholder = { Text(stringResource(R.string.search)) },
                   leadingIcon = {
-                    if (searchType.value == SearchType.USERS)
-                        Icon(
-                            imageVector = Icons.Default.Check,
-                            contentDescription = "Chip Icon",
-                            tint = MaterialTheme.colorScheme.onBackground)
+                    Icon(
+                        imageVector = Icons.Default.Search,
+                        contentDescription = "Search Icon",
+                        tint = MaterialTheme.colorScheme.onBackground)
                   },
-                  modifier = Modifier.padding(horizontal = 5.dp).testTag("userFilterChip"))
-            }
-            item {
-              FilterChip(
-                  searchType.value == SearchType.NOTES,
-                  label = { Text(stringResource(R.string.notes_maj), maxLines = 1) },
-                  onClick = {
-                    if (searchType.value == SearchType.NOTES || !showAdditionalFilters.value) {
-                      showAdditionalFilters.value = !showAdditionalFilters.value
+                  shape = RoundedCornerShape(50),
+                  singleLine = true,
+                  colors =
+                      OutlinedTextFieldDefaults.colors(
+                          focusedBorderColor = MaterialTheme.colorScheme.onBackground,
+                          unfocusedBorderColor = MaterialTheme.colorScheme.onBackground,
+                          focusedTextColor = MaterialTheme.colorScheme.onBackground,
+                          unfocusedTextColor = MaterialTheme.colorScheme.onBackground),
+                  modifier =
+                      Modifier.fillMaxWidth()
+                          .padding(top = 16.dp, start = 16.dp, end = 16.dp)
+                          .testTag("searchTextField"))
+              LazyRow(
+                  modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp, horizontal = 20.dp)) {
+                    item {
+                      FilterChip(
+                          searchType.value == SearchType.USERS,
+                          label = { Text(stringResource(R.string.users_maj), maxLines = 1) },
+                          onClick = {
+                            showAdditionalFilters.value = false
+                            searchType.value = SearchType.USERS
+                            userViewModel.getAllUsers()
+                          },
+                          leadingIcon = {
+                            if (searchType.value == SearchType.USERS)
+                                Icon(
+                                    imageVector = Icons.Default.Check,
+                                    contentDescription = "Chip Icon",
+                                    tint = MaterialTheme.colorScheme.onBackground)
+                          },
+                          colors =
+                              FilterChipDefaults.filterChipColors(
+                                  selectedContainerColor =
+                                      MaterialTheme.colorScheme.primaryContainer),
+                          modifier = Modifier.padding(horizontal = 5.dp).testTag("userFilterChip"))
                     }
-                    searchType.value = SearchType.NOTES
-                  },
-                  leadingIcon = {
-                    if (searchType.value == SearchType.NOTES)
-                        Icon(
-                            imageVector = Icons.Default.Check,
-                            contentDescription = "Chip Icon",
-                            tint = MaterialTheme.colorScheme.onBackground)
-                  },
-                  trailingIcon = {
-                    if (searchType.value == SearchType.NOTES && showAdditionalFilters.value) {
-                      Icon(Icons.Default.KeyboardArrowUp, contentDescription = null)
-                    } else {
-                      Icon(Icons.Default.KeyboardArrowDown, contentDescription = null)
+                    item {
+                      FilterChip(
+                          searchType.value == SearchType.NOTES,
+                          label = { Text(stringResource(R.string.notes_maj), maxLines = 1) },
+                          onClick = {
+                            if (searchType.value == SearchType.NOTES ||
+                                !showAdditionalFilters.value) {
+                              showAdditionalFilters.value = !showAdditionalFilters.value
+                            }
+                            searchType.value = SearchType.NOTES
+                          },
+                          leadingIcon = {
+                            if (searchType.value == SearchType.NOTES)
+                                Icon(
+                                    imageVector = Icons.Default.Check,
+                                    contentDescription = "Chip Icon",
+                                    tint = MaterialTheme.colorScheme.onBackground)
+                          },
+                          trailingIcon = {
+                            if (searchType.value == SearchType.NOTES &&
+                                showAdditionalFilters.value) {
+                              Icon(Icons.Default.KeyboardArrowUp, contentDescription = null)
+                            } else {
+                              Icon(Icons.Default.KeyboardArrowDown, contentDescription = null)
+                            }
+                          },
+                          colors =
+                              FilterChipDefaults.filterChipColors(
+                                  selectedContainerColor =
+                                      MaterialTheme.colorScheme.primaryContainer),
+                          modifier = Modifier.padding(horizontal = 5.dp).testTag("noteFilterChip"))
                     }
-                  },
-                  modifier = Modifier.padding(horizontal = 5.dp).testTag("noteFilterChip"))
-            }
-            item {
-              FilterChip(
-                  searchType.value == SearchType.FOLDERS,
-                  label = { Text(stringResource(R.string.folders_maj), maxLines = 1) },
-                  onClick = {
-                    if (searchType.value == SearchType.FOLDERS || !showAdditionalFilters.value) {
-                      showAdditionalFilters.value = !showAdditionalFilters.value
+                    item {
+                      FilterChip(
+                          searchType.value == SearchType.FOLDERS,
+                          label = { Text(stringResource(R.string.folders_maj), maxLines = 1) },
+                          onClick = {
+                            if (searchType.value == SearchType.FOLDERS ||
+                                !showAdditionalFilters.value) {
+                              showAdditionalFilters.value = !showAdditionalFilters.value
+                            }
+                            searchType.value = SearchType.FOLDERS
+                          },
+                          leadingIcon = {
+                            if (searchType.value == SearchType.FOLDERS)
+                                Icon(
+                                    imageVector = Icons.Default.Check,
+                                    contentDescription = "Chip Icon",
+                                    tint = MaterialTheme.colorScheme.onBackground)
+                          },
+                          trailingIcon = {
+                            if (searchType.value == SearchType.FOLDERS &&
+                                showAdditionalFilters.value) {
+                              Icon(Icons.Default.KeyboardArrowUp, contentDescription = null)
+                            } else {
+                              Icon(Icons.Default.KeyboardArrowDown, contentDescription = null)
+                            }
+                          },
+                          colors =
+                              FilterChipDefaults.filterChipColors(
+                                  selectedContainerColor =
+                                      MaterialTheme.colorScheme.primaryContainer),
+                          modifier =
+                              Modifier.padding(horizontal = 5.dp).testTag("folderFilterChip"))
                     }
-                    searchType.value = SearchType.FOLDERS
-                  },
-                  leadingIcon = {
-                    if (searchType.value == SearchType.FOLDERS)
-                        Icon(
-                            imageVector = Icons.Default.Check,
-                            contentDescription = "Chip Icon",
-                            tint = MaterialTheme.colorScheme.onBackground)
-                  },
-                  trailingIcon = {
-                    if (searchType.value == SearchType.FOLDERS && showAdditionalFilters.value) {
-                      Icon(Icons.Default.KeyboardArrowUp, contentDescription = null)
-                    } else {
-                      Icon(Icons.Default.KeyboardArrowDown, contentDescription = null)
+                    item {
+                      FilterChip(
+                          searchType.value == SearchType.DECKS,
+                          label = { Text(stringResource(R.string.decks_maj), maxLines = 1) },
+                          onClick = {
+                            if (searchType.value == SearchType.DECKS ||
+                                !showAdditionalFilters.value) {
+                              showAdditionalFilters.value = !showAdditionalFilters.value
+                            }
+                            searchType.value = SearchType.DECKS
+                          },
+                          leadingIcon = {
+                            if (searchType.value == SearchType.DECKS)
+                                Icon(
+                                    imageVector = Icons.Default.Check,
+                                    contentDescription = "Chip Icon",
+                                    tint = MaterialTheme.colorScheme.onBackground)
+                          },
+                          trailingIcon = {
+                            if (searchType.value == SearchType.DECKS &&
+                                showAdditionalFilters.value) {
+                              Icon(Icons.Default.KeyboardArrowUp, contentDescription = null)
+                            } else {
+                              Icon(Icons.Default.KeyboardArrowDown, contentDescription = null)
+                            }
+                          },
+                          colors =
+                              FilterChipDefaults.filterChipColors(
+                                  selectedContainerColor =
+                                      MaterialTheme.colorScheme.primaryContainer),
+                          modifier = Modifier.padding(horizontal = 5.dp).testTag("deckFilterChip"))
                     }
-                  },
-                  modifier = Modifier.padding(horizontal = 5.dp).testTag("folderFilterChip"))
-            }
-            item {
-              FilterChip(
-                  searchType.value == SearchType.DECKS,
-                  label = { Text(stringResource(R.string.decks_maj), maxLines = 1) },
-                  onClick = {
-                    if (searchType.value == SearchType.DECKS || !showAdditionalFilters.value) {
-                      showAdditionalFilters.value = !showAdditionalFilters.value
-                    }
-                    searchType.value = SearchType.DECKS
-                  },
-                  leadingIcon = {
-                    if (searchType.value == SearchType.DECKS)
-                        Icon(
-                            imageVector = Icons.Default.Check,
-                            contentDescription = "Chip Icon",
-                            tint = MaterialTheme.colorScheme.onBackground)
-                  },
-                  trailingIcon = {
-                    if (searchType.value == SearchType.DECKS && showAdditionalFilters.value) {
-                      Icon(Icons.Default.KeyboardArrowUp, contentDescription = null)
-                    } else {
-                      Icon(Icons.Default.KeyboardArrowDown, contentDescription = null)
-                    }
-                  },
-                  modifier = Modifier.padding(horizontal = 5.dp).testTag("deckFilterChip"))
-            }
-          }
+                  }
 
-          AdditionalFilters(
-              showAdditionalFilters = showAdditionalFilters,
-              additionalFilter = additionalFilter,
-              itemType = searchType,
-              noteViewModel = noteViewModel,
-              folderViewModel = folderViewModel,
-              deckViewModel = deckViewModel,
-              userViewModel = userViewModel)
-        }
+              AdditionalFilters(
+                  showAdditionalFilters = showAdditionalFilters,
+                  additionalFilter = additionalFilter,
+                  itemType = searchType,
+                  noteViewModel = noteViewModel,
+                  folderViewModel = folderViewModel,
+                  deckViewModel = deckViewModel,
+                  userViewModel = userViewModel)
+            }
       },
       bottomBar = {
         BottomNavigationMenu(
@@ -591,6 +617,9 @@ private fun AdditionalFilters(
                   modifier =
                       Modifier.testTag(
                           "additionalFilterChip--${AdditionalFilterType.entries[index]}"),
+                  colors =
+                      FilterChipDefaults.filterChipColors(
+                          selectedContainerColor = MaterialTheme.colorScheme.primaryContainer),
                   selected = additionalFilter.value == AdditionalFilterType.entries[index],
                   onClick = {
                     additionalFilter.value = AdditionalFilterType.entries[index]
