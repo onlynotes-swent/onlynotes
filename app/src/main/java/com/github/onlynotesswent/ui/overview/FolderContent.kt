@@ -2,6 +2,7 @@ package com.github.onlynotesswent.ui.overview
 
 import android.content.Context
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -13,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.automirrored.outlined.LibraryBooks
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.FolderOpen
@@ -52,12 +54,14 @@ import com.github.onlynotesswent.ui.common.ConfirmationPopup
 import com.github.onlynotesswent.ui.common.CustomDropDownMenu
 import com.github.onlynotesswent.ui.common.CustomDropDownMenuItem
 import com.github.onlynotesswent.ui.common.CustomSeparatedLazyGrid
+import com.github.onlynotesswent.ui.common.DecksCreationDialog
 import com.github.onlynotesswent.ui.common.FileSystemPopup
 import com.github.onlynotesswent.ui.common.FolderDialog
 import com.github.onlynotesswent.ui.common.NoteDialog
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
 import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
+import com.github.onlynotesswent.utils.NotesToFlashcard
 import com.google.firebase.Timestamp
 
 /**
@@ -67,13 +71,15 @@ import com.google.firebase.Timestamp
  * @param folderViewModel view model for the folder
  * @param noteViewModel view model for the note
  * @param userViewModel view model for the user
+ * @param notesToFlashcard the notes to flashcard object
  */
 @Composable
 fun FolderContentScreen(
     navigationActions: NavigationActions,
     folderViewModel: FolderViewModel,
     noteViewModel: NoteViewModel,
-    userViewModel: UserViewModel
+    userViewModel: UserViewModel,
+    notesToFlashcard: NotesToFlashcard? = null
 ) {
   val folder = folderViewModel.selectedFolder.collectAsState()
   val currentUser = userViewModel.currentUser.collectAsState()
@@ -129,7 +135,8 @@ fun FolderContentScreen(
               userFolderNotes = userFolderNotes,
               expanded = expanded,
               onExpandedChange = { expanded = it },
-              showUpdateDialog = { showUpdateDialog = it })
+              showUpdateDialog = { showUpdateDialog = it },
+              notesToFlashcard = notesToFlashcard)
         },
         floatingActionButton = {
           if (folder.value!!.isOwner(currentUser.value!!.uid)) {
@@ -256,6 +263,7 @@ fun UserNotFoundFolderContentScreen() {
  * @param expanded whether the dropdown menu is expanded
  * @param onExpandedChange function to change the expanded state
  * @param showUpdateDialog function to show the update dialog
+ * @param notesToFlashcard the notes to flashcard object
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -274,9 +282,11 @@ fun FolderContentTopBar(
     expanded: Boolean,
     onExpandedChange: (Boolean) -> Unit,
     showUpdateDialog: (Boolean) -> Unit,
+    notesToFlashcard: NotesToFlashcard?
 ) {
   var showDeleteFolderConfirmation by remember { mutableStateOf(false) }
   var showDeleteFolderContentsConfirmation by remember { mutableStateOf(false) }
+  var showFlashcardCreationPopup by remember { mutableStateOf(false) }
   var showFileSystemPopup by remember { mutableStateOf(false) }
   TopAppBar(
       colors =
@@ -346,6 +356,18 @@ fun FolderContentTopBar(
                           },
                           modifier = Modifier.testTag("moveFolderButton")),
                       CustomDropDownMenuItem(
+                          text = { Text(stringResource(R.string.convert_folder_to_decks)) },
+                          icon = {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Outlined.LibraryBooks,
+                                contentDescription = "CreateFlashcards")
+                          },
+                          onClick = {
+                            onExpandedChange(false)
+                            showFlashcardCreationPopup = true
+                          },
+                          modifier = Modifier.testTag("createFlashcardsButton")),
+                      CustomDropDownMenuItem(
                           text = { Text(stringResource(R.string.delete_folder)) },
                           icon = {
                             Icon(
@@ -376,6 +398,17 @@ fun FolderContentTopBar(
               onFabClick = { onExpandedChange(true) },
               onDismissRequest = { onExpandedChange(false) })
         }
+        if (showFlashcardCreationPopup) {
+          // Popup for flashcard creation
+          DecksCreationDialog(
+              notesToFlashcard!!,
+              onConversionComplete = {
+                showFlashcardCreationPopup = false
+                Toast.makeText(context, "Flashcards created", Toast.LENGTH_SHORT).show()
+              },
+          )
+        }
+
         // Popup for delete folder confirmation
         if (showDeleteFolderConfirmation) {
           ConfirmationPopup(

@@ -221,19 +221,18 @@ fun NoteOptionsBottomSheet(
         })
   }
 
-    if (showFlashcardCreationPopup) {
-            AlertDialog(
-                modifier = Modifier.testTag("popup"),
-                onDismissRequest = {},
-                title = {},
-                text = {
-                    LoadingIndicator(
-                        text = stringResource(R.string.converting_note_to_flashcards),
-                        modifier = Modifier.padding(16.dp)
-                    )
-                },
-                confirmButton = {})
-    }
+  if (showFlashcardCreationPopup) {
+    AlertDialog(
+        modifier = Modifier.testTag("popup"),
+        onDismissRequest = {},
+        title = {},
+        text = {
+          LoadingIndicator(
+              text = stringResource(R.string.converting_note_to_flashcards),
+              modifier = Modifier.padding(16.dp))
+        },
+        confirmButton = {})
+  }
 
   ModalBottomSheet(
       modifier = Modifier.testTag("noteModalBottomSheet"),
@@ -256,68 +255,59 @@ fun NoteOptionsBottomSheet(
                     style = MaterialTheme.typography.bodyLarge)
               }
 
-            if (notesToFlashcard != null) {
-                Row(
-                    modifier =
+          if (notesToFlashcard != null) {
+            Row(
+                modifier =
                     Modifier.fillMaxWidth()
                         .clickable {
-                            showFlashcardCreationPopup = true
-                            notesToFlashcard.convertNoteToDeck(
-                                note,
-                                onSuccess = {
-                                    showFlashcardCreationPopup = false
-                                    onDismiss()
-                                    if (it != null) {
-                                        navigationActions.navigateTo(
-                                            Screen.DECK_MENU.replace(
-                                                oldValue = "{deckId}",
-                                                newValue = it.id
-                                            )
-                                        )
-                                    } else {
-                                        Toast.makeText(
-                                            context,
-                                            R.string.no_flashcards_created,
-                                            Toast.LENGTH_SHORT
-                                        ).show()
-                                    }
-                                },
-                                onFileNotFoundException = {
-                                    showFlashcardCreationPopup = false
-                                    onDismiss()
-                                    Toast.makeText(
-                                        context,
-                                        R.string.no_note_text_found,
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-                                },
-                                onFailure = {
-                                    showFlashcardCreationPopup = false
-                                    onDismiss()
-                                    Toast.makeText(
+                          showFlashcardCreationPopup = true
+                          notesToFlashcard.convertNoteToDeck(
+                              note,
+                              onSuccess = {
+                                showFlashcardCreationPopup = false
+                                onDismiss()
+                                if (it != null) {
+                                  navigationActions.navigateTo(
+                                      Screen.DECK_MENU.replace(
+                                          oldValue = "{deckId}", newValue = it.id))
+                                } else {
+                                  Toast.makeText(
+                                          context,
+                                          R.string.no_flashcards_created,
+                                          Toast.LENGTH_SHORT)
+                                      .show()
+                                }
+                              },
+                              onFileNotFoundException = {
+                                showFlashcardCreationPopup = false
+                                onDismiss()
+                                Toast.makeText(
+                                        context, R.string.no_note_text_found, Toast.LENGTH_SHORT)
+                                    .show()
+                              },
+                              onFailure = {
+                                showFlashcardCreationPopup = false
+                                onDismiss()
+                                Toast.makeText(
                                         context,
                                         R.string.error_creating_flashcards,
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-                                }
-                            )
-
+                                        Toast.LENGTH_SHORT)
+                                    .show()
+                              })
                         }
                         .padding(vertical = 8.dp)
                         .testTag("moveNoteBottomSheet"),
-                    verticalAlignment = Alignment.CenterVertically) {
-                    Spacer(modifier = Modifier.width(16.dp))
-                    Text(
-                        text = stringResource(R.string.convert_note_to_flashcards),
-                        style = MaterialTheme.typography.bodyLarge
-                    )
-                    Spacer(modifier = Modifier.width(16.dp))
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Outlined.LibraryBooks,
-                        contentDescription = stringResource(R.string.convert_note_to_flashcards)
-                    )
+                verticalAlignment = Alignment.CenterVertically) {
+                  Spacer(modifier = Modifier.width(16.dp))
+                  Text(
+                      text = stringResource(R.string.convert_note_to_flashcards),
+                      style = MaterialTheme.typography.bodyLarge)
+                  Spacer(modifier = Modifier.width(16.dp))
+                  Icon(
+                      imageVector = Icons.AutoMirrored.Outlined.LibraryBooks,
+                      contentDescription = stringResource(R.string.convert_note_to_flashcards))
                 }
-            }
+          }
 
           HorizontalDivider(Modifier.padding(vertical = 10.dp), 1.dp)
 
