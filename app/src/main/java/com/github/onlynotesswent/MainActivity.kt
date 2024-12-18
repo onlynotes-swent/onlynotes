@@ -189,22 +189,20 @@ fun OnlyNotesApp(
         UserProfileScreen(
             navigationActions, userViewModel, fileViewModel, notificationViewModel, authenticator)
       }
-      composable(Screen.PUBLIC_PROFILE) {
+
+      composable(Screen.PUBLIC_PROFILE) { navBackStackEntry ->
+        val userId = navBackStackEntry.arguments?.getString("userId")
+
+        // Refresh the user profile when the user Id changes
+        LaunchedEffect(userId) {
+          if (userId != null && userId != "{userId}") {
+            userViewModel.refreshProfileUser(userId)
+          }
+        }
         PublicProfileScreen(
             navigationActions, userViewModel, fileViewModel, notificationViewModel, authenticator)
-        composable(Screen.PUBLIC_PROFILE) { navBackStackEntry ->
-          val userId = navBackStackEntry.arguments?.getString("userId")
-
-          // Refresh the user profile when the user Id changes
-          LaunchedEffect(userId) {
-            if (userId != null && userId != "{userId}") {
-              userViewModel.refreshProfileUser(userId)
-            }
-          }
-          PublicProfileScreen(
-              navigationActions, userViewModel, fileViewModel, notificationViewModel, authenticator)
-        }
       }
+
       composable(Screen.EDIT_PROFILE) {
         EditProfileScreen(
             navigationActions,
