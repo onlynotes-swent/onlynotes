@@ -138,7 +138,11 @@ fun OnlyNotesApp(
             }
             // Wait until selected folder is updated to display the screen
             if (selectedFolder != null) {
-              FolderContentScreen(navigationActions, folderViewModel, noteViewModel, userViewModel)
+              FolderContentScreen(
+                  navigationActions = navigationActions,
+                  folderViewModel = folderViewModel,
+                  userViewModel = userViewModel,
+                  noteViewModel = noteViewModel)
             }
           }
     }
@@ -180,7 +184,12 @@ fun OnlyNotesApp(
             }
             // Wait until selected folder is updated to display the screen
             if (selectedFolder != null) {
-              FolderContentScreen(navigationActions, folderViewModel, noteViewModel, userViewModel)
+              FolderContentScreen(
+                  navigationActions = navigationActions,
+                  folderViewModel = folderViewModel,
+                  userViewModel = userViewModel,
+                  deckViewModel = deckViewModel,
+                  isDeckView = true)
             }
           }
     }

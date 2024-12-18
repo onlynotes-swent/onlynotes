@@ -171,7 +171,7 @@ class FolderContentTest {
     composeTestRule.onNodeWithTag("goBackButton").assertIsDisplayed()
     composeTestRule.onNodeWithTag("folderSettingsButton").assertIsDisplayed()
     composeTestRule.onNodeWithTag("createSubNoteOrSubFolder").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("emptyFolderPrompt").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("emptyNoteAndFolderPrompt").assertIsDisplayed()
   }
 
   @Test
@@ -246,7 +246,7 @@ class FolderContentTest {
     composeTestRule.onNodeWithTag("folderSettingsButton").performClick()
     composeTestRule.onNodeWithTag("deleteFolderContentsButton").assertIsDisplayed()
     composeTestRule.onNodeWithTag("deleteFolderContentsButton").performClick()
-    composeTestRule.onNodeWithTag("emptyFolderPrompt").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("").assertIsDisplayed()
   }
 
   @Test
