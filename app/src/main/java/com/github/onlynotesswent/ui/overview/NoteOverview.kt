@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
@@ -108,6 +109,9 @@ fun NoteOverviewScreen(
                   selected = pagerState.currentPage == index,
                   shape = SegmentedButtonDefaults.itemShape(index = index, count = pageLabels.size),
                   label = { Text(label) },
+                  colors =
+                      SegmentedButtonDefaults.colors(
+                          activeContainerColor = MaterialTheme.colorScheme.primary),
                   onClick = {
                     // Animate to the selected page when clicked
                     coroutineScope.launch { pagerState.animateScrollToPage(index) }

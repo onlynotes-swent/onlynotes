@@ -120,7 +120,8 @@ fun FlashcardViewItem(
       modifier =
           Modifier.testTag("flashcardItem--${flashcard.value.id}")
               .fillMaxWidth()
-              .heightIn(min = 160.dp)) {
+              .heightIn(min = 160.dp),
+      colors = CardDefaults.elevatedCardColors(containerColor = Color.White)) {
         Box(contentAlignment = Alignment.Center, modifier = Modifier.padding(10.dp)) {
           if (flashcard.value.isMCQ()) {
             Text(

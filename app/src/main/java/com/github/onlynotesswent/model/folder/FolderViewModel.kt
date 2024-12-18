@@ -590,24 +590,20 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
     return false
   }
 
-    /**
-     * Moves a folder to another folder.
-     */
-    fun moveFolder(
-        chosenFolder: Folder?,
-        onSubFolderError: () -> Unit,
-        onSuccess: () -> Unit
-    ) {
-        viewModelScope.launch {
-            if (chosenFolder != null && isSubFolder(chosenFolder, selectedFolder.value!!.id)) {
-                onSubFolderError()
-            } else {
-                updateFolder(selectedFolder.value!!.copy(parentFolderId = chosenFolder?.id, lastModified = Timestamp.now()))
-                clearSelectedFolder()
-                onSuccess()
-            }
-        }
+  /** Moves a folder to another folder. */
+  fun moveFolder(chosenFolder: Folder?, onSubFolderError: () -> Unit, onSuccess: () -> Unit) {
+    viewModelScope.launch {
+      if (chosenFolder != null && isSubFolder(chosenFolder, selectedFolder.value!!.id)) {
+        onSubFolderError()
+      } else {
+        updateFolder(
+            selectedFolder.value!!.copy(
+                parentFolderId = chosenFolder?.id, lastModified = Timestamp.now()))
+        clearSelectedFolder()
+        onSuccess()
+      }
     }
+  }
 
   /**
    * Adds a new folder to the userSavedFolders list. This folder must not already be on the list.

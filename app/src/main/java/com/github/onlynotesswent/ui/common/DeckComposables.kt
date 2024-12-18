@@ -41,8 +41,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.draganddrop.DragAndDropTransferData
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
@@ -117,7 +117,7 @@ fun DeckItem(
                 },
             )
           },
-          colors = CardDefaults.cardColors(containerColor = Color.White)) {
+      colors = CardDefaults.cardColors(containerColor = Color.White)) {
         Column(modifier = Modifier.testTag("deckColumn").fillMaxWidth().padding(8.dp)) {
           Row(
               modifier = Modifier.fillMaxWidth(),
