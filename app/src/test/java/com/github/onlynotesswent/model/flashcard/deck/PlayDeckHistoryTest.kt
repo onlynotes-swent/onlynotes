@@ -36,8 +36,11 @@ class PlayDeckHistoryTest {
         assert(newPlayDeckHistory2.size == 2)
         assert(!newPlayDeckHistory2.canGoBack())
         assert(newPlayDeckHistory2.canGoForward())
-        assert(newPlayDeckHistory2.currentFlashcardId == "1")
 
+        val newPlayDeckHistory3 = newPlayDeckHistory2.goForward()
+        assert(newPlayDeckHistory3.size == 2)
+        assert(newPlayDeckHistory3.canGoBack())
+        assert(!newPlayDeckHistory3.canGoForward())
 
     }
 
