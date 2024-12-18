@@ -186,7 +186,10 @@ fun OnlyNotesApp(
             pictureTaker,
             navigationActions)
       }
-      composable(Screen.DECK_PLAY) { DeckPlayScreen() }
+      composable(Screen.DECK_PLAY) {
+        DeckPlayScreen(
+            navigationActions, userViewModel, deckViewModel, flashcardViewModel, fileViewModel)
+      }
       composable(
           route = Screen.FOLDER_CONTENTS,
           enterTransition = { scaleIn(animationSpec = tween(300, easing = EaseIn)) },
