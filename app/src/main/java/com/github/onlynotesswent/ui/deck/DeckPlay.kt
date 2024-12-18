@@ -46,7 +46,6 @@ import com.github.onlynotesswent.ui.common.ScreenTopBar
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import kotlinx.coroutines.launch
 
-
 @Composable
 fun DeckPlayScreen(
     navigationActions: NavigationActions,
@@ -64,43 +63,33 @@ fun DeckPlayScreen(
   val userFlashcardList: MutableState<List<UserFlashcard>> = remember { mutableStateOf(listOf()) }
   val flashcardList = flashcardViewModel.deckFlashcards.collectAsState()
   val userViewModelFlashcards = userViewModel.deckUserFlashcards.collectAsState()
-  val flashcardMap= flashcardList.value.associateBy { it.id }
+  val flashcardMap = flashcardList.value.associateBy { it.id }
 
-
-
-
-    //this code will load the flashcards from the deck,
-    //select the current flashcard
-    //get all the  user flashcards from the user
-    //if the user flashcard is not in the user flashcard list, it will add it
-   deck.value?.let{
-
-       flashcardViewModel.fetchFlashcardsFromDeck(
+  // this code will load the flashcards from the deck,
+  // select the current flashcard
+  // get all the  user flashcards from the user
+  // if the user flashcard is not in the user flashcard list, it will add it
+  deck.value?.let {
+    flashcardViewModel.fetchFlashcardsFromDeck(
+        it, onSuccess = { flashcards -> flashcardViewModel.selectFlashcard(flashcards.first()) })
+    userViewModel.getUserFlashcardFromDeck(
         it,
-        onSuccess = { flashcards ->
-            flashcardViewModel.selectFlashcard(flashcards.first())
+        onSuccess = {
+          for (id in it.flashcardIds) {
+            if (userFlashcardList.value.contains(userViewModel.deckUserFlashcards.value[id])) {
+              continue
+            }
+            if (userViewModel.deckUserFlashcards.value[id] == null) {
+              val userFlashcard = UserFlashcard(id)
+              userViewModel.addUserFlashcard(userFlashcard)
+              userFlashcardList.value += userFlashcard
+            } else {
+              userFlashcardList.value += userViewModel.deckUserFlashcards.value[id]!!
+            }
+          }
+          Log.e("DeckPlayScreen", "userFlashcardList: ${userFlashcardList.value.size }}")
         })
-       userViewModel.getUserFlashcardFromDeck(
-           it,
-           onSuccess = {
-               for (id in it.flashcardIds) {
-                   if(userFlashcardList.value.contains(userViewModel.deckUserFlashcards.value[id])){
-                       continue
-                   }
-                   if (userViewModel.deckUserFlashcards.value[id] == null) {
-                       val userFlashcard= UserFlashcard(id)
-                       userViewModel.addUserFlashcard(userFlashcard)
-                       userFlashcardList.value += userFlashcard
-                   }else{
-                          userFlashcardList.value += userViewModel.deckUserFlashcards.value[id]!!
-                   }
-               }
-               Log.e("DeckPlayScreen", "userFlashcardList: ${userFlashcardList.value.size }}")
-           })
-   }
-
-
-
+  }
 
   Scaffold(
       topBar = {
@@ -120,57 +109,53 @@ fun DeckPlayScreen(
             modifier = Modifier.padding(innerPadding),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally) {
-
-              if (deck.value == null || selectedFlashcard.value == null || userFlashcardList.value.isEmpty()) {
+              if (deck.value == null ||
+                  selectedFlashcard.value == null ||
+                  userFlashcardList.value.isEmpty()) {
                 LoadingIndicator("Loading deck...")
-              }
+              } else {
+                val score = remember { mutableIntStateOf(0) }
+                val answers: Map<String, MutableState<Int?>> =
+                    remember(deck.value?.flashcardIds) {
+                      deck.value!!.flashcardIds.associateWith { mutableStateOf(null) }
+                    }
 
-              else {
-                  val score = remember { mutableIntStateOf(0) }
-                  val answers: Map<String, MutableState<Int?>> =
-                      remember(deck.value?.flashcardIds) {
-                          deck.value!!.flashcardIds.associateWith { mutableStateOf(null) }
-                      }
-
-                  if(isFinished.value){
-                      FinishedScreen(
-                          score,
-                          flashcardList,
-                          isFinished,
-                          currentFlashcardIndex,
+                if (isFinished.value) {
+                  FinishedScreen(
+                      score,
+                      flashcardList,
+                      isFinished,
+                      currentFlashcardIndex,
+                      userViewModel,
+                      deck,
+                      userFlashcardList,
+                      flashcardViewModel,
+                      answers)
+                } else {
+                  if (selectedFlashcard.value != null) {
+                    if (playMode.value == Deck.PlayMode.REVIEW) {
+                      ReviewMode(
+                          fileViewModel,
                           userViewModel,
-                          deck,
+                          userViewModelFlashcards,
                           userFlashcardList,
-                          flashcardViewModel,
-                          answers
+                          answers,
+                          flashcardMap)
+                    } else {
+                      TestMode(
+                          fileViewModel,
+                          flashcardList,
+                          score,
+                          isFinished,
+                          answers,
                       )
-                  }else {
-                      if (selectedFlashcard.value != null) {
-                          if (playMode.value == Deck.PlayMode.REVIEW) {
-                              ReviewMode(
-                                  fileViewModel,
-                                  userViewModel,
-                                  userViewModelFlashcards,
-                                  userFlashcardList,
-                                  answers,
-                                  flashcardMap
-                              )
-                          } else {
-                              TestMode(
-                                  fileViewModel,
-                                  flashcardList,
-                                  score,
-                                  isFinished,
-                                  answers,
-                              )
-                          }
-                      }
+                    }
                   }
+                }
               }
             }
       }
 }
-
 
 /**
  * This composable is used to handle the logic for the review mode of the deck play screen.
@@ -190,135 +175,144 @@ fun ReviewMode(
     answers: Map<String, MutableState<Int?>>,
     flashcardMap: Map<String, Flashcard>
 ) {
-  val playDeckHistory = remember { mutableStateOf(PlayDeckHistory(
-        currentFlashcardId = UserFlashcard.selectRandomFlashcardLinear(userFlashcardList.value).id
-  )) }
-  Column {
-      val listOfPagerFlashcards= remember{
-          mutableStateOf( playDeckHistory.value.listOfAllFlashcard)}
-      val pagerState = rememberPagerState(initialPage = 1) { listOfPagerFlashcards.value.size }
-      val scrollScope = rememberCoroutineScope()
-
-      HorizontalPager(pagerState) { pageIndex ->
-
-          Column(
-              modifier = Modifier
-                  .fillMaxWidth()
-                  .padding(16.dp)
-              ,
-              horizontalAlignment = Alignment.CenterHorizontally,
-              verticalArrangement = Arrangement.spacedBy(16.dp)) {
-              if(pageIndex==0){
-                   pagerState.requestScrollToPage(playDeckHistory.value.indexOfCurrentFlashcard)
-              }else{
-                  val flashcardState = remember { derivedStateOf { flashcardMap[listOfPagerFlashcards.value[pageIndex]] } }
-                  FlashcardPlayItem(flashcardState, fileViewModel,
-                        onCorrect = {
-                            userViewModel.updateUserFlashcard(
-                                userViewModelFlashcards.value[playDeckHistory.value.currentFlashcardId]!!.increaseLevel(),
-                                onSuccess = {
-                                    userFlashcardList.value =
-                                        userFlashcardList.value.map { userFlashcard ->
-                                            if (userFlashcard.id == playDeckHistory.value.currentFlashcardId) {
-                                                userViewModelFlashcards.value[playDeckHistory.value.currentFlashcardId]!!
-                                            } else {
-                                                userFlashcard
-                                            }
-                                        }
-                                })
-                        },
-                      onIncorrect = {
-                          userViewModel.updateUserFlashcard(
-                              userViewModelFlashcards.value[playDeckHistory.value.currentFlashcardId]!!.decreaseLevel(),
-                              onSuccess = {
-                                  userFlashcardList.value =
-                                      userFlashcardList.value.map { userFlashcard ->
-                                          if (userFlashcard.id == playDeckHistory.value.currentFlashcardId) {
-                                              userViewModelFlashcards.value[playDeckHistory.value.currentFlashcardId]!!
-                                          } else {
-                                              userFlashcard
-                                          }
-                                      }
-                              })},
-                        choice = answers[playDeckHistory.value.currentFlashcardId]!!
-                  )
-              }
-          }
-      }
-
-      //this a listener for the pager state that will be triggered when the current page changes
-      //it will handle all the cases when the user goes back or forward
-
-      LaunchedEffect(pagerState.currentPage) {
-          scrollScope.launch {
-              val diff = pagerState.currentPage - playDeckHistory.value.indexOfCurrentFlashcard
-              if (diff > 0) {
-                  if (playDeckHistory.value.canGoForward()) {
-                      playDeckHistory.value = playDeckHistory.value.goForward()
-                  } else {
-                      val withoutCurrent =
-                          userFlashcardList.value.filter { it.id != playDeckHistory.value.currentFlashcardId }
-                      val selectedUserFlashcard =
-                          UserFlashcard.selectRandomFlashcardLinear(withoutCurrent)
-                      answers[selectedUserFlashcard.id]!!.value = null
-                      playDeckHistory.value =
-                          playDeckHistory.value.goForwardWithNewFlashcard(selectedUserFlashcard.id)
-                  }
-                  listOfPagerFlashcards.value = playDeckHistory.value.listOfAllFlashcard
-                  if (pagerState.currentPage == listOfPagerFlashcards.value.size - 1) {
-                      pagerState.scrollToPage(1)
-                  }
-              } else if (diff < 0) {
-                  if (playDeckHistory.value.canGoBack()) {
-                      playDeckHistory.value = playDeckHistory.value.goBack()
-                      if (pagerState.currentPage == 0) {
-                          pagerState.requestScrollToPage(listOfPagerFlashcards.value.size - 2)
-                      }
-                      listOfPagerFlashcards.value = playDeckHistory.value.listOfAllFlashcard
-                  } else {
-                      pagerState.scrollToPage(playDeckHistory.value.indexOfCurrentFlashcard)
-                  }
-              }
-              if (pagerState.currentPage == 0) {
-                  pagerState.requestScrollToPage(playDeckHistory.value.indexOfCurrentFlashcard)
-              }
-          }
-      }
-if(!flashcardMap[playDeckHistory.value.currentFlashcardId]!!.isMCQ()){
-    SelectWrongRight(
-        answers,
-        playDeckHistory.value.currentFlashcardId,
-        onCorrect = {
-          userViewModel.updateUserFlashcard(
-              userViewModelFlashcards.value[  playDeckHistory.value.currentFlashcardId]!!.increaseLevel(),
-              onSuccess = {
-                  answers[  playDeckHistory.value.currentFlashcardId]!!.value = 0
-                userFlashcardList.value =
-                    userFlashcardList.value.map { userFlashcard ->
-                      if (userFlashcard.id ==   playDeckHistory.value.currentFlashcardId) {
-                        userViewModelFlashcards.value[ playDeckHistory.value.currentFlashcardId]!!
-                      } else {
-                        userFlashcard
-                      }
-                    }
-              })
-        },
-        onIncorrect = {
-          userViewModel.updateUserFlashcard(
-              userViewModelFlashcards.value[  playDeckHistory.value.currentFlashcardId]!!.decreaseLevel(),
-              onSuccess = {
-                  answers[  playDeckHistory.value.currentFlashcardId]!!.value = 1
-                userFlashcardList.value =
-                    userFlashcardList.value.map { userFlashcard ->
-                      if (userFlashcard.id ==  playDeckHistory.value.currentFlashcardId) {
-                        userViewModelFlashcards.value[  playDeckHistory.value.currentFlashcardId]!!
-                      } else {
-                        userFlashcard
-                      }
-                    }
-              })
-        })
+  val playDeckHistory = remember {
+    mutableStateOf(
+        PlayDeckHistory(
+            currentFlashcardId =
+                UserFlashcard.selectRandomFlashcardLinear(userFlashcardList.value).id))
   }
+  Column {
+    val listOfPagerFlashcards = remember {
+      mutableStateOf(playDeckHistory.value.listOfAllFlashcard)
+    }
+    val pagerState = rememberPagerState(initialPage = 1) { listOfPagerFlashcards.value.size }
+    val scrollScope = rememberCoroutineScope()
+
+    HorizontalPager(pagerState) { pageIndex ->
+      Column(
+          modifier = Modifier.fillMaxWidth().padding(16.dp),
+          horizontalAlignment = Alignment.CenterHorizontally,
+          verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            if (pageIndex == 0) {
+              pagerState.requestScrollToPage(playDeckHistory.value.indexOfCurrentFlashcard)
+            } else {
+              val flashcardState = remember {
+                derivedStateOf { flashcardMap[listOfPagerFlashcards.value[pageIndex]] }
+              }
+              FlashcardPlayItem(
+                  flashcardState,
+                  fileViewModel,
+                  onCorrect = {
+                    userViewModel.updateUserFlashcard(
+                        userViewModelFlashcards.value[playDeckHistory.value.currentFlashcardId]!!
+                            .increaseLevel(),
+                        onSuccess = {
+                          userFlashcardList.value =
+                              userFlashcardList.value.map { userFlashcard ->
+                                if (userFlashcard.id == playDeckHistory.value.currentFlashcardId) {
+                                  userViewModelFlashcards.value[
+                                          playDeckHistory.value.currentFlashcardId]!!
+                                } else {
+                                  userFlashcard
+                                }
+                              }
+                        })
+                  },
+                  onIncorrect = {
+                    userViewModel.updateUserFlashcard(
+                        userViewModelFlashcards.value[playDeckHistory.value.currentFlashcardId]!!
+                            .decreaseLevel(),
+                        onSuccess = {
+                          userFlashcardList.value =
+                              userFlashcardList.value.map { userFlashcard ->
+                                if (userFlashcard.id == playDeckHistory.value.currentFlashcardId) {
+                                  userViewModelFlashcards.value[
+                                          playDeckHistory.value.currentFlashcardId]!!
+                                } else {
+                                  userFlashcard
+                                }
+                              }
+                        })
+                  },
+                  choice = answers[playDeckHistory.value.currentFlashcardId]!!)
+            }
+          }
+    }
+
+    // this a listener for the pager state that will be triggered when the current page changes
+    // it will handle all the cases when the user goes back or forward
+
+    LaunchedEffect(pagerState.currentPage) {
+      scrollScope.launch {
+        val diff = pagerState.currentPage - playDeckHistory.value.indexOfCurrentFlashcard
+        if (diff > 0) {
+          if (playDeckHistory.value.canGoForward()) {
+            playDeckHistory.value = playDeckHistory.value.goForward()
+          } else {
+            val withoutCurrent =
+                userFlashcardList.value.filter { it.id != playDeckHistory.value.currentFlashcardId }
+            val selectedUserFlashcard = UserFlashcard.selectRandomFlashcardLinear(withoutCurrent)
+            answers[selectedUserFlashcard.id]!!.value = null
+            playDeckHistory.value =
+                playDeckHistory.value.goForwardWithNewFlashcard(selectedUserFlashcard.id)
+          }
+          listOfPagerFlashcards.value = playDeckHistory.value.listOfAllFlashcard
+          if (pagerState.currentPage == listOfPagerFlashcards.value.size - 1) {
+            pagerState.scrollToPage(1)
+          }
+        } else if (diff < 0) {
+          if (playDeckHistory.value.canGoBack()) {
+            playDeckHistory.value = playDeckHistory.value.goBack()
+            if (pagerState.currentPage == 0) {
+              pagerState.requestScrollToPage(listOfPagerFlashcards.value.size - 2)
+            }
+            listOfPagerFlashcards.value = playDeckHistory.value.listOfAllFlashcard
+          } else {
+            pagerState.scrollToPage(playDeckHistory.value.indexOfCurrentFlashcard)
+          }
+        }
+        if (pagerState.currentPage == 0) {
+          pagerState.requestScrollToPage(playDeckHistory.value.indexOfCurrentFlashcard)
+        }
+      }
+    }
+    if (!flashcardMap[playDeckHistory.value.currentFlashcardId]!!.isMCQ()) {
+      SelectWrongRight(
+          answers,
+          playDeckHistory.value.currentFlashcardId,
+          onCorrect = {
+            userViewModel.updateUserFlashcard(
+                userViewModelFlashcards.value[playDeckHistory.value.currentFlashcardId]!!
+                    .increaseLevel(),
+                onSuccess = {
+                  answers[playDeckHistory.value.currentFlashcardId]!!.value = 0
+                  userFlashcardList.value =
+                      userFlashcardList.value.map { userFlashcard ->
+                        if (userFlashcard.id == playDeckHistory.value.currentFlashcardId) {
+                          userViewModelFlashcards.value[playDeckHistory.value.currentFlashcardId]!!
+                        } else {
+                          userFlashcard
+                        }
+                      }
+                })
+          },
+          onIncorrect = {
+            userViewModel.updateUserFlashcard(
+                userViewModelFlashcards.value[playDeckHistory.value.currentFlashcardId]!!
+                    .decreaseLevel(),
+                onSuccess = {
+                  answers[playDeckHistory.value.currentFlashcardId]!!.value = 1
+                  userFlashcardList.value =
+                      userFlashcardList.value.map { userFlashcard ->
+                        if (userFlashcard.id == playDeckHistory.value.currentFlashcardId) {
+                          userViewModelFlashcards.value[playDeckHistory.value.currentFlashcardId]!!
+                        } else {
+                          userFlashcard
+                        }
+                      }
+                })
+          })
+    }
   }
 }
 
@@ -337,25 +331,22 @@ private fun TestMode(
     score: MutableIntState,
     isFinished: MutableState<Boolean>,
     answers: Map<String, MutableState<Int?>>,
-    ) {
+) {
   Column {
-      val pagerState = rememberPagerState { flashcardList.value.size }
-      HorizontalPager(pagerState) { pageIndex ->
-          Column(
-              modifier = Modifier
-                  .fillMaxWidth()
-                  .padding(16.dp),
-              horizontalAlignment = Alignment.CenterHorizontally,
-              verticalArrangement = Arrangement.spacedBy(16.dp)) {
-              val flashcardState = remember { derivedStateOf { flashcardList.value[pageIndex] } }
-              FlashcardPlayItem(flashcardState, fileViewModel,
-                  onCorrect = {
-                      score.value += 1
-                  },
-                  choice = answers[flashcardList.value[pageIndex].id]!!
-                  )
+    val pagerState = rememberPagerState { flashcardList.value.size }
+    HorizontalPager(pagerState) { pageIndex ->
+      Column(
+          modifier = Modifier.fillMaxWidth().padding(16.dp),
+          horizontalAlignment = Alignment.CenterHorizontally,
+          verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            val flashcardState = remember { derivedStateOf { flashcardList.value[pageIndex] } }
+            FlashcardPlayItem(
+                flashcardState,
+                fileViewModel,
+                onCorrect = { score.value += 1 },
+                choice = answers[flashcardList.value[pageIndex].id]!!)
           }
-      }
+    }
 
     if (!flashcardList.value[pagerState.currentPage].isMCQ()) {
       SelectWrongRight(
@@ -367,14 +358,11 @@ private fun TestMode(
           },
           onIncorrect = { answers[flashcardList.value[pagerState.currentPage].id]!!.value = 1 })
     }
-      Button(
-          modifier = Modifier.padding(16.dp),
-            onClick = {
-                    isFinished.value = true
-            },
-            enabled = pagerState.currentPage == flashcardList.value.size - 1
-        ) {
-            Text("Submit")
+    Button(
+        modifier = Modifier.padding(16.dp),
+        onClick = { isFinished.value = true },
+        enabled = pagerState.currentPage == flashcardList.value.size - 1) {
+          Text("Submit")
         }
   }
 }
@@ -447,40 +435,32 @@ private fun FinishedScreen(
     flashcardViewModel: FlashcardViewModel,
     answers: Map<String, MutableState<Int?>>
 ) {
-    Box(
-        contentAlignment = Alignment.Center,
-        modifier = Modifier
-            .height(200.dp)
-            .fillMaxWidth()
-    ) {
-        val scorePercent = score.intValue * 100 / flashcardList.value.size
-        Column {
-            Text("You have finished the deck")
-            Text("Your score is $scorePercent%")
-            Button(
-                onClick = {
-                    isFinished.value = false
-                    score.intValue = 0
-                    currentFlashcardIndex.intValue = 0
-                    userViewModel.getUserFlashcardFromDeck(
-                        deck.value!!,
-                        onSuccess = {
-                            userFlashcardList.value =
-                                flashcardList.value.mapNotNull { fc ->
-                                    userViewModel.deckUserFlashcards.value[fc.id]
-                                }
-                            flashcardViewModel.selectFlashcard(
-                                flashcardList.value.first()
-                            )
-                        })
-                    for (flashcard in flashcardList.value) {
-                        answers[flashcard.id]!!.value = null
-                    }
-                },
-                modifier = Modifier.padding(16.dp)
-            ) {
-                Text("test again")
+  Box(contentAlignment = Alignment.Center, modifier = Modifier.height(200.dp).fillMaxWidth()) {
+    val scorePercent = score.intValue * 100 / flashcardList.value.size
+    Column {
+      Text("You have finished the deck")
+      Text("Your score is $scorePercent%")
+      Button(
+          onClick = {
+            isFinished.value = false
+            score.intValue = 0
+            currentFlashcardIndex.intValue = 0
+            userViewModel.getUserFlashcardFromDeck(
+                deck.value!!,
+                onSuccess = {
+                  userFlashcardList.value =
+                      flashcardList.value.mapNotNull { fc ->
+                        userViewModel.deckUserFlashcards.value[fc.id]
+                      }
+                  flashcardViewModel.selectFlashcard(flashcardList.value.first())
+                })
+            for (flashcard in flashcardList.value) {
+              answers[flashcard.id]!!.value = null
             }
-        }
+          },
+          modifier = Modifier.padding(16.dp)) {
+            Text("test again")
+          }
     }
+  }
 }

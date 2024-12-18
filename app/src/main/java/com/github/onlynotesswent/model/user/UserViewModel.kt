@@ -552,11 +552,17 @@ class UserViewModel(
   ) {
 
     _currentUser.value?.let {
-      repository.addUserFlashcard(it.uid, userFlashcard,{
-        _deckUserFlashcards.value = _deckUserFlashcards.value.toMutableMap().apply {
-          put(userFlashcard.id, userFlashcard)
-        }
-        onSuccess()},onFailure)
+      repository.addUserFlashcard(
+          it.uid,
+          userFlashcard,
+          {
+            _deckUserFlashcards.value =
+                _deckUserFlashcards.value.toMutableMap().apply {
+                  put(userFlashcard.id, userFlashcard)
+                }
+            onSuccess()
+          },
+          onFailure)
     }
   }
 

@@ -1,7 +1,6 @@
 package com.github.onlynotesswent.model.flashcard
 
 import com.google.firebase.Timestamp
-import kotlin.math.abs
 import kotlin.random.Random
 
 /**
@@ -53,7 +52,6 @@ data class UserFlashcard(
       }
       return flashcards[0]
     }
-
   }
 
   /**

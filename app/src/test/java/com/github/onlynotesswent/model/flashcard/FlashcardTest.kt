@@ -71,41 +71,42 @@ class FlashcardTest {
     assert(userFlashcard.level == UserFlashcard.MAX_FLASHCARD_LEVEL - 1)
   }
 
-@Test
-fun `testWeight function`(){
-    val flashcards = listOf(
-        UserFlashcard(id = "1", level = 0),
-        UserFlashcard(id = "1", level = 1),
-        UserFlashcard(id = "2", level = 2),
-        UserFlashcard(id = "3", level = 3),
-        UserFlashcard(id = "4", level = 4),
-        UserFlashcard(id = "5", level = 5)
-    )
+  @Test
+  fun `testWeight function`() {
+    val flashcards =
+        listOf(
+            UserFlashcard(id = "1", level = 0),
+            UserFlashcard(id = "1", level = 1),
+            UserFlashcard(id = "2", level = 2),
+            UserFlashcard(id = "3", level = 3),
+            UserFlashcard(id = "4", level = 4),
+            UserFlashcard(id = "5", level = 5))
     val totalWeight = UserFlashcard.totalWeight(flashcards)
-   var newTotalWeight=0
+    var newTotalWeight = 0
     for (flashcard in flashcards) {
-        val fWeight = flashcard.fromLevelToWeight()
-        assert(fWeight >= 0)
-        newTotalWeight += fWeight
+      val fWeight = flashcard.fromLevelToWeight()
+      assert(fWeight >= 0)
+      newTotalWeight += fWeight
     }
     assert(totalWeight == newTotalWeight)
-}
+  }
 
-@Test
-fun `testRandomFlashcard function`() {
-    val flashcards = listOf(
-        UserFlashcard(id = "1", level = 0),
-        UserFlashcard(id = "1", level = 1),
-        UserFlashcard(id = "2", level = 2),
-        UserFlashcard(id = "3", level = 3),
-        UserFlashcard(id = "4", level = 4),
-        UserFlashcard(id = "5", level = 5),
-    )
+  @Test
+  fun `testRandomFlashcard function`() {
+    val flashcards =
+        listOf(
+            UserFlashcard(id = "1", level = 0),
+            UserFlashcard(id = "1", level = 1),
+            UserFlashcard(id = "2", level = 2),
+            UserFlashcard(id = "3", level = 3),
+            UserFlashcard(id = "4", level = 4),
+            UserFlashcard(id = "5", level = 5),
+        )
     val flashcard1 = UserFlashcard.selectRandomFlashcardLinear(flashcards)
     val flashcard2 =
         UserFlashcard.selectRandomFlashcardLinear(flashcards.filter { it != flashcard1 })
     assert(flashcard1 != flashcard2)
     assert(flashcard1 in flashcards)
     assert(flashcard2 in flashcards)
-}
+  }
 }
