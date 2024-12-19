@@ -470,9 +470,14 @@ fun FolderContentTopBar(
           // Popup for flashcard creation
           DecksCreationDialog(
               notesToFlashcard!!,
+              closePopup = { showFlashcardCreationPopup = false },
               onConversionComplete = {
+                folderViewModel.clearSelectedFolder()
                 showFlashcardCreationPopup = false
-                Toast.makeText(context, "Flashcards created", Toast.LENGTH_SHORT).show()
+                navigationActions.navigateTo(TopLevelDestinations.DECK_OVERVIEW)
+                  navigationActions.navigateTo(
+                      Screen.FOLDER_CONTENTS.replace(
+                          oldValue = "{folderId}", newValue = it.folderId!!))
               },
           )
         }
