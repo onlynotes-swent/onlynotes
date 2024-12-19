@@ -16,6 +16,9 @@ class DeckViewModel(private val repository: DeckRepository) : ViewModel() {
   private val _userDecks = MutableStateFlow<List<Deck>>(emptyList())
   val userDecks: StateFlow<List<Deck>> = _userDecks.asStateFlow()
 
+  private val _userRootDecks = MutableStateFlow<List<Deck>>(emptyList())
+  val userRootDecks: StateFlow<List<Deck>> = _userRootDecks.asStateFlow()
+
   // The selected deck
   private val _selectedDeck = MutableStateFlow<Deck?>(null)
   val selectedDeck: StateFlow<Deck?> = _selectedDeck.asStateFlow()
@@ -36,6 +39,10 @@ class DeckViewModel(private val repository: DeckRepository) : ViewModel() {
   private val _friendsDecks = MutableStateFlow<List<Deck>>(emptyList())
   val friendsDecks: StateFlow<List<Deck>> = _friendsDecks.asStateFlow()
 
+  // Dragged deck
+  private val _draggedDeck = MutableStateFlow<Deck?>(null)
+  val draggedDeck: StateFlow<Deck?> = _draggedDeck.asStateFlow()
+
   /** Initializes the DeckViewModel and the repository. */
   init {
     repository.init { getPublicDecks() }
@@ -54,6 +61,20 @@ class DeckViewModel(private val repository: DeckRepository) : ViewModel() {
    */
   fun selectDeck(deck: Deck) {
     _selectedDeck.value = deck
+  }
+
+  /** Clear the selected deck. */
+  fun clearSelectedDeck() {
+    _selectedDeck.value = null
+  }
+
+  /**
+   * Sets the dragged Deck document.
+   *
+   * @param draggedDeck The dragged Deck document.
+   */
+  fun draggedDeck(draggedDeck: Deck?) {
+    _draggedDeck.value = draggedDeck
   }
 
   /**
@@ -132,6 +153,27 @@ class DeckViewModel(private val repository: DeckRepository) : ViewModel() {
   }
 
   /**
+   * Retrieves all root decks from a user (folderId == null).
+   *
+   * @param userId The ID of the user to retrieve root decks for.
+   * @param onSuccess Callback to be invoked with the retrieved root decks.
+   * @param onFailure Callback to be invoked if an error occurs.
+   */
+  fun getRootDecksFromUserId(
+      userId: String,
+      onSuccess: (List<Deck>) -> Unit = {},
+      onFailure: (Exception) -> Unit = {}
+  ) {
+    repository.getRootDecksFromUserId(
+        userId,
+        { decks ->
+          _userRootDecks.value = decks
+          onSuccess(decks)
+        },
+        { onFailure(it) })
+  }
+
+  /**
    * Retrieves all decks in the given folder.
    *
    * @param folderId The identifier of the folder.
@@ -181,6 +223,27 @@ class DeckViewModel(private val repository: DeckRepository) : ViewModel() {
    */
   fun deleteDeck(deck: Deck, onSuccess: () -> Unit = {}, onFailure: (Exception) -> Unit = {}) {
     repository.deleteDeck(deck, { onSuccess() }, { onFailure(it) })
+  }
+
+  /**
+   * Deletes all decks from a folder.
+   *
+   * @param folderId The ID of the folder to delete decks from.
+   * @param onSuccess The function to call when the deletion is successful.
+   * @param onFailure The function to call when the deletion fails.
+   */
+  fun deleteDecksFromFolder(
+      folderId: String,
+      onSuccess: () -> Unit = {},
+      onFailure: (Exception) -> Unit = {},
+  ) {
+    repository.deleteDecksFromFolder(
+        folderId = folderId,
+        onSuccess = {
+          getDecksByFolder(folderId)
+          onSuccess()
+        },
+        onFailure = onFailure)
   }
 
   /**
