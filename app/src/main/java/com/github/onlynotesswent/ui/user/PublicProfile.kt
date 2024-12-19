@@ -2,7 +2,6 @@ package com.github.onlynotesswent.ui.user
 
 import android.widget.Toast
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -80,8 +79,6 @@ import com.github.onlynotesswent.ui.common.ThumbnailDynamicPic
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
 import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
-import com.github.onlynotesswent.ui.theme.DarkCards
-import com.github.onlynotesswent.ui.theme.LightCards
 import com.github.onlynotesswent.ui.theme.Typography
 import com.google.firebase.Timestamp
 import kotlinx.coroutines.launch
@@ -330,8 +327,7 @@ fun ProfileContent(
     ElevatedCard(
         modifier = Modifier.fillMaxSize().padding(40.dp).testTag("profileCard"),
         colors =
-            CardDefaults.cardColors(
-                containerColor = if (!isSystemInDarkTheme()) LightCards else DarkCards)) {
+            CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
           val borderPadding = 20.dp
           Column(
               modifier =

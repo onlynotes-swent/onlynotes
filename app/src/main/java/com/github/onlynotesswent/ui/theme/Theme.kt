@@ -29,7 +29,8 @@ private val DarkColorScheme =
         onSecondary = LightShade,
         onTertiary = DarkShade,
         onBackground = LightShade,
-        onSurface = LightShade)
+        onSurface = LightShade,
+        surfaceVariant = DarkCards)
 
 private val LightColorScheme =
     lightColorScheme(
@@ -45,7 +46,8 @@ private val LightColorScheme =
         onSecondary = DarkShade,
         onTertiary = LightShade,
         onBackground = DarkShade,
-        onSurface = DarkShade)
+        onSurface = DarkShade,
+        surfaceVariant = LightCards)
 
 @Composable
 fun AppTheme(

@@ -239,7 +239,8 @@ fun EditProfileScreen(
           },
           content = { paddingValues ->
             LazyColumn(
-                modifier = Modifier.fillMaxSize().padding(paddingValues),
+                contentPadding = paddingValues,
+                modifier = Modifier.fillMaxSize().padding(vertical = 16.dp),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally) {
                   item {

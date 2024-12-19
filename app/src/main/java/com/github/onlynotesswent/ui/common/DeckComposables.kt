@@ -6,7 +6,6 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.draganddrop.dragAndDropSource
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -59,8 +58,6 @@ import com.github.onlynotesswent.model.user.UserViewModel
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Route.DECK_OVERVIEW
 import com.github.onlynotesswent.ui.navigation.Screen
-import com.github.onlynotesswent.ui.theme.DarkCards
-import com.github.onlynotesswent.ui.theme.LightCards
 import com.google.firebase.Timestamp
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -119,9 +116,7 @@ fun DeckItem(
                 },
             )
           },
-      colors =
-          CardDefaults.cardColors(
-              containerColor = if (!isSystemInDarkTheme()) LightCards else DarkCards)) {
+      colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
         Column(modifier = Modifier.testTag("deckColumn").fillMaxWidth().padding(8.dp)) {
           Row(
               modifier = Modifier.fillMaxWidth(),
