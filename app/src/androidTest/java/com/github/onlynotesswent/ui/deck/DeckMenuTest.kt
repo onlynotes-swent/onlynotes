@@ -13,14 +13,14 @@ import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTextReplacement
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.github.onlynotesswent.model.common.Visibility
+import com.github.onlynotesswent.model.deck.Deck
+import com.github.onlynotesswent.model.deck.DeckRepository
+import com.github.onlynotesswent.model.deck.DeckViewModel
 import com.github.onlynotesswent.model.file.FileRepository
 import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.flashcard.Flashcard
 import com.github.onlynotesswent.model.flashcard.FlashcardRepository
 import com.github.onlynotesswent.model.flashcard.FlashcardViewModel
-import com.github.onlynotesswent.model.flashcard.deck.Deck
-import com.github.onlynotesswent.model.flashcard.deck.DeckRepository
-import com.github.onlynotesswent.model.flashcard.deck.DeckViewModel
 import com.github.onlynotesswent.model.user.User
 import com.github.onlynotesswent.model.user.UserRepository
 import com.github.onlynotesswent.model.user.UserViewModel
@@ -374,7 +374,7 @@ class DeckMenuTest {
       composeTestRule.onNodeWithTag("playMode--$it", useUnmergedTree = true).assertIsDisplayed()
     }
     // Click the flashcard play mode
-    val playMode = Deck.PlayMode.FLASHCARD
+    val playMode = Deck.PlayMode.REVIEW
     composeTestRule
         .onNodeWithTag("playMode--${playMode.name}", useUnmergedTree = true)
         .assertIsDisplayed()

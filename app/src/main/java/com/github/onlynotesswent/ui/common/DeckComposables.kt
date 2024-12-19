@@ -29,8 +29,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.github.onlynotesswent.R
 import com.github.onlynotesswent.model.common.Visibility
-import com.github.onlynotesswent.model.flashcard.deck.Deck
-import com.github.onlynotesswent.model.flashcard.deck.DeckViewModel
+import com.github.onlynotesswent.model.deck.Deck
+import com.github.onlynotesswent.model.deck.DeckViewModel
 import com.github.onlynotesswent.model.user.UserViewModel
 import com.github.onlynotesswent.ui.theme.Typography
 import com.google.firebase.Timestamp
