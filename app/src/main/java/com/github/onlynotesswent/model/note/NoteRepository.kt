@@ -1,6 +1,6 @@
 package com.github.onlynotesswent.model.note
 
-import com.github.onlynotesswent.model.user.Friends
+import com.github.onlynotesswent.model.user.User
 import com.github.onlynotesswent.model.user.UserViewModel
 
 interface NoteRepository {
@@ -204,12 +204,11 @@ interface NoteRepository {
   )
 
   /**
-   * Retrieves a list of saved notes by their IDs. This only returns notes that are saveable which
-   * means they are public or the user is following the note's author. The list of currently saved
-   * notes that don't comply is also returned.
+   * Retrieves a list of saved notes by their IDs. This only returns notes that are visible to the
+   * current user. The list of currently saved notes that don't comply is also returned.
    *
    * @param savedNotesIds The list of note IDs to retrieve.
-   * @param friends The user's friends.
+   * @param currentUser The current user.
    * @param onSuccess Callback to be invoked with the retrieved notes and the list of missing notes.
    * @param onFailure Callback to be invoked if an error occurs.
    * @param useCache Whether to update data from cache. Should be true only if userId of the notes
@@ -217,7 +216,7 @@ interface NoteRepository {
    */
   suspend fun getSavedNotesByIds(
       savedNotesIds: List<String>,
-      friends: Friends,
+      currentUser: User,
       onSuccess: (List<Note>, List<String>) -> Unit,
       onFailure: (Exception) -> Unit,
       useCache: Boolean

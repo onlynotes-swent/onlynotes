@@ -129,4 +129,6 @@
     <string name="move_here">Move item here</string>
     <string name="edit_note">Edit note</string>
     <string name="move_note">Move note</string>
+    <string name="your_notes">Your notes</string>
+    <string name="saved">Saved</string>
 </resources>

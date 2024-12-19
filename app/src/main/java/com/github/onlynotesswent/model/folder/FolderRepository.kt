@@ -1,7 +1,7 @@
 package com.github.onlynotesswent.model.folder
 
 import com.github.onlynotesswent.model.note.NoteViewModel
-import com.github.onlynotesswent.model.user.Friends
+import com.github.onlynotesswent.model.user.User
 import com.github.onlynotesswent.model.user.UserViewModel
 
 interface FolderRepository {
@@ -243,12 +243,11 @@ interface FolderRepository {
   )
 
   /**
-   * Retrieves a list of saved folders by their IDs. This only returns folders that are saveable
-   * which means they are public or the user is following the folder's author. The list of currently
-   * saved folders that don't comply is also returned.
+   * Retrieves a list of saved folders by their IDs. This only returns folders that are visible to
+   * the current user. The list of currently saved folders that don't comply is also returned.
    *
    * @param savedFoldersIds The list of folder IDs to retrieve.
-   * @param friends The user's friends.
+   * @param currentUser The current user.
    * @param onSuccess Callback to be invoked with the retrieved folders and the list of missing
    *   folders.
    * @param onFailure Callback to be invoked if an error occurs.
@@ -257,7 +256,7 @@ interface FolderRepository {
    */
   suspend fun getSavedFoldersByIds(
       savedFoldersIds: List<String>,
-      friends: Friends,
+      currentUser: User,
       onSuccess: (List<Folder>, List<String>) -> Unit,
       onFailure: (Exception) -> Unit,
       useCache: Boolean

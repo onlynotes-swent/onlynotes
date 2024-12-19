@@ -468,7 +468,7 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
           viewModelScope.launch {
             repository.getSavedNotesByIds(
                 savedNotesIds = documentIds,
-                friends = userViewModel.currentUser.value!!.friends,
+                currentUser = userViewModel.currentUser.value!!,
                 onSuccess = { savedNotes, nonSaveableNotesIds ->
                   _userSavedNotes.value = savedNotes
 

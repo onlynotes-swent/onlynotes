@@ -58,6 +58,8 @@ import com.github.onlynotesswent.ui.navigation.Screen
 import com.google.firebase.Timestamp
 import kotlinx.coroutines.launch
 
+private const val s = "Your notes"
+
 /**
  * Displays the overview screen which contains a list of publicNotes retrieved from the ViewModel.
  * If there are no publicNotes, it shows a text to the user indicating no publicNotes are available.
@@ -95,7 +97,7 @@ fun OverviewScreen(
   var showCreateFolderDialog by remember { mutableStateOf(false) }
   var showCreateNoteDialog by remember { mutableStateOf(false) }
 
-  val pageLabels = listOf("Your notes", "Saved")
+  val pageLabels = listOf(stringResource(R.string.your_notes), stringResource(R.string.saved))
   val pagerState = rememberPagerState(initialPage = 0) { pageLabels.size }
   val coroutineScope = rememberCoroutineScope()
 

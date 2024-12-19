@@ -26,7 +26,7 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore) : UserRepositor
 
   enum class SavedDocumentType(val firebaseDocumentName: String) {
     NOTE("savedNotes"),
-    FOLDER("savedFolders"), // FLASHCARDS, DECKS,
+    FOLDER("savedFolders"),
   }
 
   /**
@@ -79,10 +79,6 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore) : UserRepositor
   }
 
   fun documentSnapshotToSavedDocumentsId(document: DocumentSnapshot): List<String> {
-    // Todo: This function is quite unecessary to define separately, but for consistency with
-    //  the other similar functions, it is defined here.
-    // Todo: Also, this uses default values as it is a new introduction. Once all users get the
-    //  different saved document fields, we can check if it is correctly retrieved
     return document.get(savedDocumentArrayName) as? List<String> ?: emptyList()
   }
 
@@ -396,9 +392,6 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore) : UserRepositor
 
     // Update the current array in the user's {documentType.firebaseDocumentName} document with the
     // new saved id
-    // Todo: We could potentially separate an add document function, to initially create the
-    //  document and empty array, and separately use firebase's update function to enable easier
-    //  partial updates
     db.collection(collectionPath)
         .document(currentUserID)
         .collection(savedDocumentLevelSubcollection)

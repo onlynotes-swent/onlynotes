@@ -43,7 +43,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.github.onlynotesswent.R
 import com.github.onlynotesswent.model.common.Course
-import com.github.onlynotesswent.model.common.Visibility
 import com.github.onlynotesswent.model.folder.Folder
 import com.github.onlynotesswent.model.folder.FolderViewModel
 import com.github.onlynotesswent.model.note.Note
@@ -418,11 +417,8 @@ fun FolderContentTopBar(
               expanded = expanded,
               onFabClick = { onExpandedChange(true) },
               onDismissRequest = { onExpandedChange(false) })
-        } else if (folder.visibility == Visibility.PUBLIC ||
-            (folder.visibility == Visibility.FRIENDS &&
-                folder.userId in currentUser.value!!.friends.following)) {
-          // Display the saved folders button if the folder is public or the user is following the
-          // owner, and the user is not the owner
+        } else if (folder.isVisibleTo(currentUser.value!!)) {
+          // Display the saved folders button if the folder is viewable by the current user.
           SavedFoldersButton(folder, userViewModel, folderViewModel)
         }
 

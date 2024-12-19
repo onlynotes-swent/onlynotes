@@ -262,8 +262,8 @@ fun FileSystemPopup(
                                       shape = RoundedCornerShape(8.dp))
                                   .clickable {
                                     folderViewModel.getSubFoldersOfNoStateUpdate(
-                                        folder.id,
-                                        null,
+                                        parentFolderId = folder.id,
+                                        userViewModel = null,
                                         onSuccess = { subFolders -> folderSubFolders = subFolders })
                                     selectedFolder = folder
                                   }
@@ -286,8 +286,8 @@ fun FileSystemPopup(
                                       shape = RoundedCornerShape(8.dp))
                                   .clickable {
                                     folderViewModel.getSubFoldersOfNoStateUpdate(
-                                        subFolder.id,
-                                        null,
+                                        parentFolderId = subFolder.id,
+                                        userViewModel = null,
                                         onSuccess = { subFolders -> folderSubFolders = subFolders })
                                     selectedFolder = subFolder
                                   }

@@ -632,7 +632,7 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
           viewModelScope.launch {
             repository.getSavedFoldersByIds(
                 savedFoldersIds = documentIds,
-                friends = userViewModel.currentUser.value!!.friends,
+                currentUser = userViewModel.currentUser.value!!,
                 onSuccess = { savedFolders, nonSaveableFoldersIds ->
                   Log.d("FolderViewModel", "Saved folders: $savedFolders")
                   _userSavedFolders.value = savedFolders
@@ -644,7 +644,6 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
                         documentType = UserRepositoryFirestore.SavedDocumentType.FOLDER,
                         documentId = folderId)
                   }
-
                   onSuccess(savedFolders)
                 },
                 onFailure = onFailure,

@@ -5,7 +5,7 @@ import android.util.Log
 import com.github.onlynotesswent.model.cache.CacheDatabase
 import com.github.onlynotesswent.model.common.Visibility
 import com.github.onlynotesswent.model.note.NoteViewModel
-import com.github.onlynotesswent.model.user.Friends
+import com.github.onlynotesswent.model.user.User
 import com.github.onlynotesswent.model.user.UserViewModel
 import com.github.onlynotesswent.utils.NetworkUtils
 import com.google.firebase.Firebase
@@ -418,17 +418,9 @@ class FolderRepositoryFirestore(
           if (useCache) syncFoldersFirestoreWithCache(firestoreFolders, cachedFolders)
           else firestoreFolders
 
-      // If you are not the owner of the folder, only return public notes or notes from people
-      // you follow
+      // Only return folders visible to the current user.
       if (userViewModel != null) {
-        updatedFolders =
-            updatedFolders.filter { folder ->
-              val currentUser = userViewModel.currentUser.value!!
-              folder.isOwner(currentUser.uid) ||
-                  folder.visibility == Visibility.PUBLIC ||
-                  (folder.visibility == Visibility.FRIENDS &&
-                      currentUser.friends.following.contains(folder.userId))
-            }
+        updatedFolders = updatedFolders.filter { it.isVisibleTo(userViewModel.currentUser.value!!) }
       }
 
       onSuccess(updatedFolders)
@@ -533,7 +525,7 @@ class FolderRepositoryFirestore(
 
   override suspend fun getSavedFoldersByIds(
       savedFoldersIds: List<String>,
-      friends: Friends,
+      currentUser: User,
       onSuccess: (List<Folder>, List<String>) -> Unit,
       onFailure: (Exception) -> Unit,
       useCache: Boolean
@@ -559,10 +551,8 @@ class FolderRepositoryFirestore(
                 .documents
                 .mapNotNull { documentSnapshotToFolder(it) }
                 .filter {
-                  // If the folder is saved and is public or if the current user follows
-                  // the owner it can be saved, otherwise it can't
-                  if (it.id in savedFoldersIds &&
-                      (it.visibility == Visibility.PUBLIC || it.userId in friends.following)) {
+                  // Make sure the folder is saved and is visible to the current user
+                  if (it.id in savedFoldersIds && it.isVisibleTo(currentUser)) {
                     saveableIdList.add(it.id)
                     true
                   } else {

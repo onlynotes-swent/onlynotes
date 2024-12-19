@@ -5,7 +5,7 @@ import android.util.Log
 import com.github.onlynotesswent.model.cache.CacheDatabase
 import com.github.onlynotesswent.model.common.Course
 import com.github.onlynotesswent.model.common.Visibility
-import com.github.onlynotesswent.model.user.Friends
+import com.github.onlynotesswent.model.user.User
 import com.github.onlynotesswent.model.user.UserViewModel
 import com.github.onlynotesswent.utils.NetworkUtils
 import com.google.android.gms.tasks.Task
@@ -346,17 +346,9 @@ class NoteRepositoryFirestore(
       var updatedNotes =
           if (useCache) syncNotesFirestoreWithCache(firestoreNotes, cachedNotes) else firestoreNotes
 
+      // Only return notes that are visible to the user
       if (userViewModel != null) {
-        // If you are not the owner of the folder, only return public notes or notes from people
-        // you follow
-        updatedNotes =
-            updatedNotes.filter { note ->
-              val currentUser = userViewModel.currentUser.value!!
-              note.isOwner(currentUser.uid) ||
-                  note.visibility == Visibility.PUBLIC ||
-                  (note.visibility == Visibility.FRIENDS &&
-                      currentUser.friends.following.contains(note.userId))
-            }
+        updatedNotes = updatedNotes.filter { it.isVisibleTo(userViewModel.currentUser.value!!) }
       }
 
       onSuccess(updatedNotes)
@@ -397,7 +389,7 @@ class NoteRepositoryFirestore(
 
   override suspend fun getSavedNotesByIds(
       savedNotesIds: List<String>,
-      friends: Friends,
+      currentUser: User,
       onSuccess: (List<Note>, List<String>) -> Unit,
       onFailure: (Exception) -> Unit,
       useCache: Boolean
@@ -425,8 +417,7 @@ class NoteRepositoryFirestore(
                 .filter {
                   // If the note is saved and is public or if the current user follows
                   // the owner it can be saved, otherwise it can't
-                  if (it.id in savedNotesIds &&
-                      (it.visibility == Visibility.PUBLIC || it.userId in friends.following)) {
+                  if (it.id in savedNotesIds && it.isVisibleTo(currentUser)) {
                     saveableIdList.add(it.id)
                     true
                   } else {
