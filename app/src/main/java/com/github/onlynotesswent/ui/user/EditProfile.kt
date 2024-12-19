@@ -269,10 +269,10 @@ fun EditProfileScreen(
                           modifier =
                               Modifier.width(130.dp).height(40.dp).testTag("publicAccountChip"),
                           colors =
-                            FilterChipDefaults.filterChipColors(
-                                selectedContainerColor =
-                                    MaterialTheme.colorScheme.primaryContainer),
-                        selected = newIsAccountPublic.value,
+                              FilterChipDefaults.filterChipColors(
+                                  selectedContainerColor =
+                                      MaterialTheme.colorScheme.primaryContainer),
+                          selected = newIsAccountPublic.value,
                           onClick = { newIsAccountPublic.value = true },
                           label = {
                             Row(
@@ -295,10 +295,10 @@ fun EditProfileScreen(
                           modifier =
                               Modifier.width(130.dp).height(40.dp).testTag("privateAccountChip"),
                           colors =
-                            FilterChipDefaults.filterChipColors(
-                                selectedContainerColor =
-                                    MaterialTheme.colorScheme.primaryContainer),
-                        selected = !newIsAccountPublic.value,
+                              FilterChipDefaults.filterChipColors(
+                                  selectedContainerColor =
+                                      MaterialTheme.colorScheme.primaryContainer),
+                          selected = !newIsAccountPublic.value,
                           onClick = { newIsAccountPublic.value = false },
                           label = {
                             Row(

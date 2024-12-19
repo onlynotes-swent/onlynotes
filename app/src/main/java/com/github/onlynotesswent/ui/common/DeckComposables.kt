@@ -24,10 +24,10 @@ import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
@@ -56,11 +56,11 @@ import com.github.onlynotesswent.model.deck.DeckViewModel
 import com.github.onlynotesswent.model.folder.FolderViewModel
 import com.github.onlynotesswent.model.user.User
 import com.github.onlynotesswent.model.user.UserViewModel
-import com.github.onlynotesswent.ui.theme.DarkCards
-import com.github.onlynotesswent.ui.theme.LightCards
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Route.DECK_OVERVIEW
 import com.github.onlynotesswent.ui.navigation.Screen
+import com.github.onlynotesswent.ui.theme.DarkCards
+import com.github.onlynotesswent.ui.theme.LightCards
 import com.google.firebase.Timestamp
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -119,7 +119,7 @@ fun DeckItem(
                 },
             )
           },
-          colors =
+      colors =
           CardDefaults.cardColors(
               containerColor = if (!isSystemInDarkTheme()) LightCards else DarkCards)) {
         Column(modifier = Modifier.testTag("deckColumn").fillMaxWidth().padding(8.dp)) {
