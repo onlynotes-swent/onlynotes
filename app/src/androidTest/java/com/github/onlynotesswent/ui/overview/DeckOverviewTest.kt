@@ -14,14 +14,13 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTouchInput
-import com.github.onlynotesswent.model.common.Course
 import com.github.onlynotesswent.model.common.Visibility
+import com.github.onlynotesswent.model.deck.Deck
+import com.github.onlynotesswent.model.deck.DeckRepository
+import com.github.onlynotesswent.model.deck.DeckViewModel
 import com.github.onlynotesswent.model.folder.Folder
 import com.github.onlynotesswent.model.folder.FolderRepository
 import com.github.onlynotesswent.model.folder.FolderViewModel
-import com.github.onlynotesswent.model.note.Note
-import com.github.onlynotesswent.model.note.NoteRepository
-import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.model.user.User
 import com.github.onlynotesswent.model.user.UserRepository
 import com.github.onlynotesswent.model.user.UserViewModel
@@ -32,42 +31,45 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.mockito.Mockito.mock
+import org.mockito.Mock
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
+import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
 
-class NoteOverviewTest {
-  private lateinit var userRepository: UserRepository
+class DeckOverviewTest {
+  @Mock private lateinit var userRepository: UserRepository
   private lateinit var userViewModel: UserViewModel
-  private lateinit var navigationActions: NavigationActions
-  private lateinit var noteViewModel: NoteViewModel
-  private lateinit var noteRepository: NoteRepository
+  @Mock private lateinit var navigationActions: NavigationActions
+  private lateinit var deckViewModel: DeckViewModel
+  @Mock private lateinit var deckRepository: DeckRepository
   private lateinit var folderViewModel: FolderViewModel
-  private lateinit var folderRepository: FolderRepository
+  @Mock private lateinit var folderRepository: FolderRepository
 
-  private val noteList =
+  private val deckList =
       listOf(
-          Note(
+          Deck(
               id = "1",
-              title = "Sample Title",
-              date = Timestamp.now(), // Use current timestamp
-              lastModified = Timestamp.now(),
-              visibility = Visibility.DEFAULT,
+              name = "name",
               userId = "1",
-              noteCourse = Course("CS-100", "Sample Course", 2024, "path")))
+              folderId = null,
+              visibility = Visibility.DEFAULT,
+              lastModified = Timestamp.now(),
+              description = "description"))
 
   private val folderList =
       listOf(
           Folder(
               id = "2",
+              isDeckFolder = true,
               name = "name",
               userId = "1",
               parentFolderId = null,
               lastModified = Timestamp.now()),
           Folder(
               id = "3",
+              isDeckFolder = true,
               name = "name2",
               userId = "1",
               parentFolderId = null,
@@ -78,12 +80,9 @@ class NoteOverviewTest {
   @Before
   fun setUp() {
     // Mock is a way to create a fake object that can be used in place of a real object
-    userRepository = mock(UserRepository::class.java)
-    navigationActions = mock(NavigationActions::class.java)
+    MockitoAnnotations.openMocks(this)
     userViewModel = UserViewModel(userRepository)
-    noteRepository = mock(NoteRepository::class.java)
-    noteViewModel = NoteViewModel(noteRepository)
-    folderRepository = mock(FolderRepository::class.java)
+    deckViewModel = DeckViewModel(deckRepository)
     folderViewModel = FolderViewModel(folderRepository)
 
     // Mock folder repository to return new folder id
@@ -107,68 +106,60 @@ class NoteOverviewTest {
     userViewModel.addUser(testUser, {}, {})
 
     // Mock the current route to be the user create screen
-    `when`(navigationActions.currentRoute()).thenReturn(Screen.NOTE_OVERVIEW)
+    `when`(navigationActions.currentRoute()).thenReturn(Screen.DECK_OVERVIEW)
     composeTestRule.setContent {
-      NoteOverviewScreen(navigationActions, noteViewModel, userViewModel, folderViewModel)
+      DeckOverviewScreen(navigationActions, deckViewModel, userViewModel, folderViewModel)
     }
   }
 
-  @Test
-  fun noteAndFolderListIsDisplayed() = runTest {
-    `when`(noteRepository.getRootNotesFromUid(eq("1"), any(), any(), any())).then { invocation ->
-      val onSuccess = invocation.getArgument<(List<Note>) -> Unit>(1)
-      onSuccess(noteList)
+  private fun mockGetRootDecksFromUserId() {
+    `when`(deckRepository.getRootDecksFromUserId(eq("1"), any(), any())).then { invocation ->
+      val onSuccess = invocation.getArgument<(List<Deck>) -> Unit>(1)
+      onSuccess(deckList)
     }
-    `when`(folderRepository.getRootNoteFoldersFromUserId(eq("1"), any(), any(), any())).then {
+    deckViewModel.getRootDecksFromUserId("1")
+  }
+
+  @Test
+  fun deckAndFolderListIsDisplayed() = runTest {
+    mockGetRootDecksFromUserId()
+    `when`(folderRepository.getRootDeckFoldersFromUserId(eq("1"), any(), any(), any())).then {
         invocation ->
       val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(1)
       onSuccess(folderList)
     }
-    noteViewModel.getRootNotesFromUid("1")
-    folderViewModel.getRootFoldersFromUserId("1")
-    composeTestRule.onNodeWithTag("noteAndFolderList").assertIsDisplayed()
+    folderViewModel.getRootFoldersFromUserId("1", isDeckView = true)
+    composeTestRule.onNodeWithTag("deckAndFolderList").assertIsDisplayed()
   }
 
   @Test
-  fun editNoteClickCallsNavActions() = runTest {
-    `when`(noteRepository.getRootNotesFromUid(eq("1"), any(), any(), any())).then { invocation ->
-      val onSuccess = invocation.getArgument<(List<Note>) -> Unit>(1)
-      onSuccess(noteList)
-    }
-    noteViewModel.getRootNotesFromUid("1")
-    composeTestRule.onNodeWithTag("noteCard").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("noteCard").performClick()
-    verify(navigationActions).navigateTo(screen = Screen.EDIT_NOTE)
+  fun editDeckClickCallsNavActions() = runTest {
+    mockGetRootDecksFromUserId()
+    composeTestRule.onNodeWithTag("deckCard").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("deckCard").performClick()
+    verify(navigationActions).navigateTo(screen = Screen.DECK_MENU)
   }
 
   @Test
   fun displayTextWhenEmpty() = runTest {
-    `when`(noteRepository.getRootNotesFromUid(eq("1"), any(), any(), any())).then { invocation ->
-      val onSuccess = invocation.getArgument<(List<Note>) -> Unit>(1)
-      onSuccess(listOf())
-    }
-    noteViewModel.getRootNotesFromUid("1")
-    composeTestRule.onNodeWithTag("emptyNoteAndFolderPrompt").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("emptyDeckAndFolderPrompt").assertIsDisplayed()
   }
 
   @Test
-  fun displayTextWhenUserHasNoNotes() = runTest {
-    `when`(noteRepository.getRootNotesFromUid(eq("1"), any(), any(), any())).then { invocation ->
-      val onSuccess = invocation.getArgument<(List<Note>) -> Unit>(1)
-      onSuccess(noteList)
-    }
-    noteViewModel.getRootNotesFromUid("2") // User 2 has no publicNotes
-    composeTestRule.onNodeWithTag("emptyNoteAndFolderPrompt").assertIsDisplayed()
+  fun displayTextWhenUserHasNoDecks() = runTest {
+    deckViewModel.getRootDecksFromUserId("2") // User 2 has no publicDecks
+    composeTestRule.onNodeWithTag("emptyDeckAndFolderPrompt").assertIsDisplayed()
   }
 
   @Test
   fun selectFolderCallsNavActions() = runTest {
-    `when`(folderRepository.getRootNoteFoldersFromUserId(eq("1"), any(), any(), any())).then {
+    mockGetRootDecksFromUserId()
+    `when`(folderRepository.getRootDeckFoldersFromUserId(eq("1"), any(), any(), any())).then {
         invocation ->
       val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(1)
       onSuccess(folderList)
     }
-    folderViewModel.getRootFoldersFromUserId("1")
+    folderViewModel.getRootFoldersFromUserId("1", isDeckView = true)
     composeTestRule.onAllNodesWithTag("folderCard").onFirst().assertIsDisplayed()
     composeTestRule.onAllNodesWithTag("folderCard").onFirst().performClick()
     val folderContentsScreen =
@@ -179,7 +170,7 @@ class NoteOverviewTest {
   @Test
   fun displayBaseComponents() {
     composeTestRule.onNodeWithTag("createObjectOrFolder").assertExists()
-    composeTestRule.onNodeWithTag("emptyNoteAndFolderPrompt").assertExists()
+    composeTestRule.onNodeWithTag("emptyDeckAndFolderPrompt").assertExists()
     composeTestRule.onNodeWithTag("overviewScreen").assertExists()
 
     composeTestRule.onNodeWithTag("createObjectOrFolder").performClick()
@@ -188,17 +179,19 @@ class NoteOverviewTest {
   }
 
   @Test
-  fun createNoteButtonShowsDialog() {
+  fun createDeckButtonShowsDialog() {
+    mockGetRootDecksFromUserId()
     composeTestRule.onNodeWithTag("overviewScreen").assertIsDisplayed()
     composeTestRule.onNodeWithTag("createObjectOrFolder").assertIsDisplayed()
     composeTestRule.onNodeWithTag("createObjectOrFolder").performClick()
     composeTestRule.onNodeWithTag("createDeckOrNote").assertIsDisplayed()
     composeTestRule.onNodeWithTag("createDeckOrNote").performClick()
-    composeTestRule.onNodeWithTag("NoteDialog").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("DeckDialog").assertIsDisplayed()
   }
 
   @Test
   fun createFolderButtonShowsDialog() {
+    mockGetRootDecksFromUserId()
     composeTestRule.onNodeWithTag("overviewScreen").assertIsDisplayed()
     composeTestRule.onNodeWithTag("createObjectOrFolder").assertIsDisplayed()
     composeTestRule.onNodeWithTag("createObjectOrFolder").performClick()
@@ -208,28 +201,31 @@ class NoteOverviewTest {
   }
 
   @Test
-  fun createNoteDialogWorks() = runTest {
+  fun createDeckDialogWorks() = runTest {
+    mockGetRootDecksFromUserId()
     composeTestRule.onNodeWithTag("createObjectOrFolder").performClick()
     composeTestRule.onNodeWithTag("createDeckOrNote").performClick()
 
-    composeTestRule.onNodeWithTag("inputNoteName").performTextInput("Note Name")
+    composeTestRule.onNodeWithTag("deckTitleTextField").performTextInput("Deck Name")
     composeTestRule.onNodeWithTag("currentVisibilityOption").assertIsDisplayed()
     composeTestRule.onNodeWithTag("previousVisibility").assertIsDisplayed()
     composeTestRule.onNodeWithTag("nextVisibility").performClick()
+    composeTestRule.onNodeWithTag("deckDescriptionTextField").performTextInput("Deck Description")
 
-    composeTestRule.onNodeWithTag("confirmNoteAction").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("saveDeckButton").assertIsDisplayed()
 
     // mock get newUid
-    `when`(noteRepository.getNewUid()).thenReturn("2")
+    `when`(deckRepository.getNewUid()).thenReturn("2")
 
-    composeTestRule.onNodeWithTag("confirmNoteAction").performClick()
+    composeTestRule.onNodeWithTag("saveDeckButton").performClick()
 
-    verify(noteRepository).addNote(any(), any(), any(), any())
-    verify(navigationActions).navigateTo(screen = Screen.EDIT_NOTE)
+    verify(deckRepository).updateDeck(any(), any(), any())
+    verify(navigationActions).navigateTo(screen = Screen.DECK_MENU)
   }
 
   @Test
   fun createFolderDialogWorks() {
+    mockGetRootDecksFromUserId()
     composeTestRule.onNodeWithTag("createObjectOrFolder").performClick()
     composeTestRule.onNodeWithTag("createFolder").performClick()
 
@@ -246,27 +242,23 @@ class NoteOverviewTest {
   }
 
   @Test
-  fun dragAndDropNoteWorksCorrectly() = runTest {
-    `when`(noteRepository.getRootNotesFromUid(eq("1"), any(), any(), any())).then { invocation ->
-      val onSuccess = invocation.getArgument<(List<Note>) -> Unit>(1)
-      onSuccess(noteList)
-    }
-    `when`(folderRepository.getRootNoteFoldersFromUserId(eq("1"), any(), any(), any())).then {
+  fun dragAndDropDeckWorksCorrectly() = runTest {
+    mockGetRootDecksFromUserId()
+    `when`(folderRepository.getRootDeckFoldersFromUserId(eq("1"), any(), any(), any())).then {
         invocation ->
       val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(1)
       onSuccess(folderList)
     }
-    noteViewModel.getRootNotesFromUid("1")
-    folderViewModel.getRootFoldersFromUserId("1")
-    composeTestRule.onNodeWithTag("noteAndFolderList").assertIsDisplayed()
+    folderViewModel.getRootFoldersFromUserId("1", isDeckView = true)
+    composeTestRule.onNodeWithTag("deckAndFolderList").assertIsDisplayed()
 
-    composeTestRule.onNodeWithTag("noteCard").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("deckCard").assertIsDisplayed()
     composeTestRule
         .onAllNodesWithTag("folderCard")
         .filter(hasText("name"))
         .onFirst()
         .assertIsDisplayed()
-    composeTestRule.onNodeWithTag("noteCard").performTouchInput {
+    composeTestRule.onNodeWithTag("deckCard").performTouchInput {
       down(center)
       advanceEventTime(1000)
       moveBy(Offset(-center.x * 9, 0f))
@@ -277,66 +269,62 @@ class NoteOverviewTest {
 
   @Test
   fun openFileSystem() = runTest {
-    `when`(noteRepository.getRootNotesFromUid(eq("1"), any(), any(), any())).then { invocation ->
-      val onSuccess = invocation.getArgument<(List<Note>) -> Unit>(1)
-      onSuccess(noteList)
-    }
-    `when`(folderRepository.getRootNoteFoldersFromUserId(eq("1"), any(), any(), any())).then {
+    mockGetRootDecksFromUserId()
+    `when`(folderRepository.getRootDeckFoldersFromUserId(eq("1"), any(), any(), any())).then {
         invocation ->
       val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(1)
       onSuccess(folderList)
     }
-    noteViewModel.getRootNotesFromUid("1")
-    folderViewModel.getRootFoldersFromUserId("1")
-    composeTestRule.onNodeWithTag("noteModalBottomSheet").assertIsNotDisplayed()
+    folderViewModel.getRootFoldersFromUserId("1", isDeckView = true)
+    composeTestRule.onNodeWithTag("deckModalBottomSheet").assertIsNotDisplayed()
     composeTestRule.onNodeWithTag("showBottomSheetButton").assertIsDisplayed()
     composeTestRule.onNodeWithTag("showBottomSheetButton").performClick()
-    composeTestRule.onNodeWithTag("noteModalBottomSheet").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("deleteNoteBottomSheet").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("moveNoteBottomSheet").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("moveNoteBottomSheet").performClick()
+    composeTestRule.onNodeWithTag("deckModalBottomSheet").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("deleteDeckBottomSheet").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("moveDeckBottomSheet").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("moveDeckBottomSheet").performClick()
     composeTestRule.onNodeWithTag("FileSystemPopup").assertIsDisplayed()
   }
 
   @Test
-  fun deleteNote() = runTest {
-    `when`(noteRepository.getRootNotesFromUid(eq("1"), any(), any(), any())).then { invocation ->
-      val onSuccess = invocation.getArgument<(List<Note>) -> Unit>(1)
-      onSuccess(noteList)
-    }
+  fun deleteDeck() = runTest {
+    mockGetRootDecksFromUserId()
     val userRootFoldersFlow =
         listOf(
             Folder(
                 id = "8",
+                isDeckFolder = true,
                 name = "Root Folder 1",
                 userId = "1",
                 parentFolderId = "1",
                 lastModified = Timestamp.now()),
             Folder(
                 id = "9",
+                isDeckFolder = true,
                 name = "Root Folder 2",
                 userId = "1",
                 parentFolderId = "1",
                 lastModified = Timestamp.now()))
 
-    `when`(folderRepository.getRootNoteFoldersFromUserId(eq("1"), any(), any(), any())).then {
+    `when`(folderRepository.getRootDeckFoldersFromUserId(eq("1"), any(), any(), any())).then {
         invocation ->
       val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(1)
       onSuccess(userRootFoldersFlow)
     }
-    noteViewModel.getRootNotesFromUid("1")
-    folderViewModel.getRootNoteFoldersFromUserId("1")
+    folderViewModel.getRootDeckFoldersFromUserId("1")
 
     val subFolderList =
         listOf(
             Folder(
                 id = "10",
+                isDeckFolder = true,
                 name = "SubFolder1",
                 userId = "1",
                 parentFolderId = "8",
                 lastModified = Timestamp.now()),
             Folder(
                 id = "11",
+                isDeckFolder = true,
                 name = "SubFolder2",
                 userId = "1",
                 parentFolderId = "8",
@@ -347,63 +335,62 @@ class NoteOverviewTest {
           val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(1)
           onSuccess(subFolderList)
         }
-    `when`(noteRepository.deleteNoteById(eq("noteId"), any(), any(), eq(true))).thenAnswer {
-        invocation ->
+    `when`(deckRepository.deleteDeck(any(), any(), any())).thenAnswer { invocation ->
       val onSuccess = invocation.getArgument<() -> Unit>(1)
       onSuccess()
     }
-    composeTestRule.onNodeWithTag("noteModalBottomSheet").assertIsNotDisplayed()
+    composeTestRule.onNodeWithTag("deckModalBottomSheet").assertIsNotDisplayed()
     composeTestRule.onNodeWithTag("showBottomSheetButton").assertIsDisplayed()
     composeTestRule.onNodeWithTag("showBottomSheetButton").performClick()
-    composeTestRule.onNodeWithTag("noteModalBottomSheet").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("deleteNoteBottomSheet").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("deleteNoteBottomSheet").performClick()
+    composeTestRule.onNodeWithTag("deckModalBottomSheet").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("deleteDeckBottomSheet").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("deleteDeckBottomSheet").performClick()
     composeTestRule.onNodeWithTag("popup").assertIsDisplayed()
     composeTestRule.onNodeWithTag("popup").performClick()
     composeTestRule.onNodeWithTag("confirmButton").assertIsDisplayed()
     composeTestRule.onNodeWithTag("confirmButton").performClick()
-    verify(noteRepository).deleteNoteById(any(), any(), any(), any())
+    verify(deckRepository).deleteDeck(any(), any(), any())
   }
 
   @Test
   fun navigateFileSystem() = runTest {
-    `when`(noteRepository.getRootNotesFromUid(eq("1"), any(), any(), any())).then { invocation ->
-      val onSuccess = invocation.getArgument<(List<Note>) -> Unit>(1)
-      onSuccess(noteList)
-    }
+    mockGetRootDecksFromUserId()
     val userRootFoldersFlow =
         listOf(
             Folder(
                 id = "8",
+                isDeckFolder = true,
                 name = "Root Folder 1",
                 userId = "1",
                 parentFolderId = "1",
                 lastModified = Timestamp.now()),
             Folder(
                 id = "9",
+                isDeckFolder = true,
                 name = "Root Folder 2",
                 userId = "1",
                 parentFolderId = "1",
                 lastModified = Timestamp.now()))
 
-    `when`(folderRepository.getRootNoteFoldersFromUserId(eq("1"), any(), any(), any())).then {
+    `when`(folderRepository.getRootDeckFoldersFromUserId(eq("1"), any(), any(), any())).then {
         invocation ->
       val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(1)
       onSuccess(userRootFoldersFlow)
     }
-    noteViewModel.getRootNotesFromUid("1")
-    folderViewModel.getRootNoteFoldersFromUserId("1")
+    folderViewModel.getRootDeckFoldersFromUserId("1")
 
     val subFolderList =
         listOf(
             Folder(
                 id = "10",
+                isDeckFolder = true,
                 name = "SubFolder1",
                 userId = "1",
                 parentFolderId = "8",
                 lastModified = Timestamp.now()),
             Folder(
                 id = "11",
+                isDeckFolder = true,
                 name = "SubFolder2",
                 userId = "1",
                 parentFolderId = "8",
@@ -414,12 +401,12 @@ class NoteOverviewTest {
           val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(1)
           onSuccess(subFolderList)
         }
-    composeTestRule.onNodeWithTag("noteModalBottomSheet").assertIsNotDisplayed()
+    composeTestRule.onNodeWithTag("deckModalBottomSheet").assertIsNotDisplayed()
     composeTestRule.onNodeWithTag("showBottomSheetButton").assertIsDisplayed()
     composeTestRule.onNodeWithTag("showBottomSheetButton").performClick()
-    composeTestRule.onNodeWithTag("noteModalBottomSheet").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("moveNoteBottomSheet").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("moveNoteBottomSheet").performClick()
+    composeTestRule.onNodeWithTag("deckModalBottomSheet").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("moveDeckBottomSheet").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("moveDeckBottomSheet").performClick()
     composeTestRule.onNodeWithTag("FileSystemPopup").assertIsDisplayed()
     composeTestRule.onNodeWithTag("FileSystemPopupFolderChoiceBox8").assertIsDisplayed()
     composeTestRule.onNodeWithTag("FileSystemPopupFolderChoiceBox9").assertIsDisplayed()

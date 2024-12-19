@@ -295,9 +295,9 @@ class EndToEndTest {
     composeTestRule.onNodeWithTag("saveButton").performClick()
 
     // Interact with the note creation flow
-    composeTestRule.onNodeWithTag("createNoteOrFolder").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("createNoteOrFolder").performClick()
-    composeTestRule.onNodeWithTag("createNote").performClick()
+    composeTestRule.onNodeWithTag("createObjectOrFolder").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("createObjectOrFolder").performClick()
+    composeTestRule.onNodeWithTag("createDeckOrNote").performClick()
     composeTestRule.onNodeWithTag("confirmNoteAction").assertIsDisplayed()
     composeTestRule.onNodeWithTag("inputNoteName").performTextInput(testNote.title)
     composeTestRule.onNodeWithTag("currentVisibilityOption").assertIsDisplayed()

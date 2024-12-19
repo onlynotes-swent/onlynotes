@@ -134,16 +134,16 @@ class FolderContentTest {
     composeTestRule.onNodeWithTag("folderContentTitle").assertIsDisplayed()
     composeTestRule.onNodeWithTag("goBackButton").assertIsDisplayed()
     composeTestRule.onNodeWithTag("folderSettingsButton").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("createNoteOrFolder").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("createObjectOrFolder").assertIsDisplayed()
     composeTestRule.onNodeWithTag("emptyNoteAndFolderPrompt").assertIsDisplayed()
   }
 
   @Test
   fun createFolderAndNoteFabWorks() {
     init(folder)
-    composeTestRule.onNodeWithTag("createNoteOrFolder").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("createNoteOrFolder").performClick()
-    composeTestRule.onNodeWithTag("createNote").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("createObjectOrFolder").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("createObjectOrFolder").performClick()
+    composeTestRule.onNodeWithTag("createDeckOrNote").assertIsDisplayed()
     composeTestRule.onNodeWithTag("createFolder").assertIsDisplayed()
     composeTestRule.onNodeWithTag("createFolder").performClick()
     composeTestRule.onNodeWithTag("inputFolderName").assertIsDisplayed()
@@ -162,8 +162,8 @@ class FolderContentTest {
       onSuccess()
     }
     `when`(mockFolderRepository.getNewFolderId()).thenReturn("3")
-    composeTestRule.onNodeWithTag("createNoteOrFolder").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("createNoteOrFolder").performClick()
+    composeTestRule.onNodeWithTag("createObjectOrFolder").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("createObjectOrFolder").performClick()
     composeTestRule.onNodeWithTag("createFolder").assertIsDisplayed()
     composeTestRule.onNodeWithTag("createFolder").performClick()
     composeTestRule.onNodeWithTag("FolderDialog").assertIsDisplayed()
@@ -281,10 +281,10 @@ class FolderContentTest {
       onSuccess()
     }
     `when`(mockNoteRepository.getNewUid()).thenReturn("4")
-    composeTestRule.onNodeWithTag("createNoteOrFolder").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("createNoteOrFolder").performClick()
-    composeTestRule.onNodeWithTag("createNote").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("createNote").performClick()
+    composeTestRule.onNodeWithTag("createObjectOrFolder").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("createObjectOrFolder").performClick()
+    composeTestRule.onNodeWithTag("createDeckOrNote").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("createDeckOrNote").performClick()
     composeTestRule.onNodeWithTag("NoteDialog").assertIsDisplayed()
     composeTestRule.onNodeWithTag("inputNoteName").assertIsDisplayed()
     composeTestRule.onNodeWithTag("inputNoteName").performTextInput("test name")
