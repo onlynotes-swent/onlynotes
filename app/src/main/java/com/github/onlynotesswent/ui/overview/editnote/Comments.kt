@@ -1,19 +1,32 @@
 package com.github.onlynotesswent.ui.overview.editnote
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Send
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -23,6 +36,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -50,63 +64,90 @@ fun CommentsScreen(
     noteViewModel: NoteViewModel,
     userViewModel: UserViewModel
 ) {
-  val note by noteViewModel.selectedNote.collectAsState()
-  val currentUser by userViewModel.currentUser.collectAsState()
-  var updatedComments by remember { mutableStateOf(note!!.comments) }
-  Scaffold(
-      floatingActionButton = {
-        AddCommentButton(
-            currentUser = currentUser,
-            note = note,
-            updatedComments = updatedComments,
-            onCommentsChange = { updatedComments = it })
-      },
-      modifier = Modifier.testTag("commentsScreen"),
-      topBar = {
-        EditNoteTopBar(
-            title = stringResource(R.string.comments),
-            titleTestTag = "commentsTitle",
-            noteViewModel = noteViewModel,
-            navigationActions = navigationActions,
-            onClick = {
-              val commentsNotEmpty = updatedComments.commentsList.filter { it.content.isNotEmpty() }
-              noteViewModel.updateNote(
-                  note = note!!.copy(comments = Note.CommentCollection(commentsNotEmpty)))
-            })
-      },
-      bottomBar = {
-          Column {
-              HorizontalDivider(
-                  color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f), thickness = 0.5.dp)
-              EditNoteNavigationMenu(
-                  navigationActions = navigationActions,
-                  selectedItem = Screen.EDIT_NOTE_COMMENT,
-                  onClick = {
-                      val commentsNotEmpty = updatedComments.commentsList.filter { it.content.isNotEmpty() }
-                      noteViewModel.updateNote(
-                          note!!.copy(comments = Note.CommentCollection(commentsNotEmpty)))
-                      noteViewModel.getNoteById(note!!.id)
-                  })
-          }
-      }) { paddingValues ->
-        if (currentUser == null) {
-          ErrorScreen("User not found. Please sign out then in again.")
-        } else if (note == null) {
-          ErrorScreen("No note is selected to edit")
-        } else {
-          Column(
-              modifier =
-                  Modifier.fillMaxSize()
-                      .padding(16.dp)
-                      .padding(paddingValues)
-                      .testTag("commentsColumn")
-                      .verticalScroll(rememberScrollState()),
-              verticalArrangement = Arrangement.spacedBy(8.dp),
-              horizontalAlignment = Alignment.CenterHorizontally) {
-                CommentsSection(updatedComments, { updatedComments = it }, currentUser!!, note!!)
-              }
+    val note by noteViewModel.selectedNote.collectAsState()
+    val currentUser by userViewModel.currentUser.collectAsState()
+    var updatedComments by remember { mutableStateOf(note!!.comments) }
+    LaunchedEffect(Unit) {
+        while (true) {
+            kotlinx.coroutines.delay(1000L) // Delay for 1 second to not saturate firestore
+            noteViewModel.updateNote(
+                note = note!!.copy(comments = Note.CommentCollection(updatedComments.commentsList))
+            )
         }
-      }
+    }
+    Scaffold(
+        floatingActionButton = {
+
+        },
+
+        modifier = Modifier.testTag("commentsScreen"),
+        topBar = {
+            EditNoteTopBar(
+                title = stringResource(R.string.comments),
+                titleTestTag = "commentsTitle",
+                noteViewModel = noteViewModel,
+                navigationActions = navigationActions
+            )
+        },
+        bottomBar = {
+            Column(modifier = Modifier.background(MaterialTheme.colorScheme.surface)) {
+
+                HorizontalDivider(
+                  color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f), thickness = 0.5.dp)
+
+                SendCommentBar(
+                    currentUser = currentUser,
+                    note = note,
+                    updatedComments = updatedComments,
+                    { updatedComments = it },
+                    modifier = Modifier
+                        .fillMaxWidth().padding(horizontal = 2.dp, vertical = 2.dp)
+                )
+                EditNoteNavigationMenu(
+                    navigationActions = navigationActions,
+                    selectedItem = Screen.EDIT_NOTE_COMMENT,
+                    onClick = {
+                        val commentsNotEmpty =
+                            updatedComments.commentsList.filter { it.content.isNotEmpty() }
+                        noteViewModel.updateNote(
+                            note = note!!.copy(comments = Note.CommentCollection(commentsNotEmpty))
+                        )
+                        noteViewModel.getNoteById(note!!.id)
+                    }
+                )
+            }
+        }
+    ) { paddingValues ->
+        if (currentUser == null) {
+            ErrorScreen("User not found. Please sign out then in again.")
+        } else if (note == null) {
+            ErrorScreen("No note is selected to edit")
+        } else {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+            ) {
+                // Scrollable comments section
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .verticalScroll(rememberScrollState())
+                        .padding(16.dp)
+                        .align(Alignment.TopStart) // Aligns the Column to the top of the Box
+                        .testTag("commentsColumn"),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    CommentsSection(updatedComments, { updatedComments = it }, currentUser!!, note!!, userViewModel)
+                }
+
+                // SendCommentBar fixed at the bottom
+
+
+            }
+        }
+    }
 }
 
 /**
@@ -117,26 +158,58 @@ fun CommentsScreen(
  * @param updatedComments The updated collection of comments for the note.
  * @param onCommentsChange The callback function to update the comments collection.
  */
+
 @Composable
-fun AddCommentButton(
+fun SendCommentBar(
     currentUser: User?,
     note: Note?,
     updatedComments: Note.CommentCollection,
     onCommentsChange: (Note.CommentCollection) -> Unit,
+    modifier: Modifier = Modifier
 ) {
-  if (currentUser != null && note != null) {
-    FloatingActionButton(
-        modifier = Modifier.testTag("addCommentButton"),
-        onClick = {
-          onCommentsChange(
-              updatedComments.addCommentByUser(currentUser.uid, currentUser.userName, ""))
-        },
-        containerColor = MaterialTheme.colorScheme.primary,
-        contentColor = MaterialTheme.colorScheme.onPrimary,
-    ) {
-      Icon(imageVector = Icons.Default.Add, contentDescription = "Add Comment")
+    var commentText by remember { mutableStateOf("") }
+
+    if (currentUser != null && note != null) {
+        Row(
+            modifier = modifier
+                .fillMaxWidth()
+                .background(MaterialTheme.colorScheme.surface)
+                .padding(8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            // TextField for entering a comment
+            OutlinedTextField(
+                value = commentText,
+                onValueChange = { commentText = it },
+                modifier = Modifier.weight(1f),
+                label = { Text(stringResource(R.string.enter_comment_here)) },
+                placeholder = { Text(stringResource(R.string.enter_comment_here)) }
+            )
+
+            // Send Button
+            FloatingActionButton(
+                onClick = {
+                    if (commentText.isNotEmpty()) {
+                        val newComments = updatedComments.addCommentByUser(
+                            currentUser.uid,
+                            currentUser.userName,
+                            commentText
+                        )
+                        onCommentsChange(newComments)
+                        commentText = "" // Clear the text field after sending
+                    }
+                },
+                containerColor = if (commentText.isNotEmpty()) {MaterialTheme.colorScheme.primary} else {MaterialTheme.colorScheme.surfaceDim},
+                contentColor = MaterialTheme.colorScheme.onPrimary
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Send,
+                    contentDescription = "Add Comment"
+                )
+            }
+        }
     }
-  }
 }
 
 /**
@@ -154,71 +227,177 @@ fun CommentsSection(
     updatedComments: Note.CommentCollection,
     onCommentsChange: (Note.CommentCollection) -> Unit,
     currentUser: User,
-    note: Note
+    note: Note,
+    userViewModel: UserViewModel
 ) {
-  if (updatedComments.commentsList.isEmpty()) {
+    if (updatedComments.commentsList.isEmpty()) {
+        NoCommentsText()
+    } else {
+        updatedComments.commentsList.forEach { comment ->
+            CommentRow(
+                comment = comment,
+                updatedComments = updatedComments,
+                onCommentsChange = onCommentsChange,
+                currentUser = currentUser,
+                note = note,
+                userViewModel
+            )
+        }
+    }
+}
+
+@Composable
+fun NoCommentsText() {
     Text(
         text = stringResource(R.string.no_comments_text),
         color = Color.Gray,
-        modifier = Modifier.padding(8.dp).testTag("noCommentsText"))
-  } else {
-    updatedComments.commentsList.forEachIndexed { _, comment ->
-      Row(
-          modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
-          verticalAlignment = Alignment.CenterVertically, // Align items vertically
-          horizontalArrangement = Arrangement.SpaceBetween // Distribute space
-          ) {
-            // Comment TextField
-            OutlinedTextField(
-                value = comment.content,
-                onValueChange = {
-                  val updatedCollection =
-                      updatedComments.editCommentByCommentId(comment.commentId, it)
-                  onCommentsChange(updatedCollection)
-                },
-                label = {
-                  val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
-                  val formattedDate = formatter.format(comment.editedDate.toDate())
-                  val displayedText =
-                      if (comment.isUnedited()) {
-                        "${comment.userName} : $formattedDate"
-                      } else {
-                        stringResource(R.string.edited, comment.userName, formattedDate)
-                      }
-                  Text(displayedText)
-                },
-                placeholder = { Text(stringResource(R.string.enter_comment_here)) },
-                modifier =
-                    Modifier.weight(1f) // Ensure the text field takes up remaining space
-                        .testTag("EditCommentTextField"))
-
-            // Delete Button with Background
-            Box(
-                modifier =
-                    Modifier.padding(
-                            start = 8.dp, top = 7.dp) // Space between TextField and IconButton
-                        .background(
-                            color = MaterialTheme.colorScheme.error,
-                            shape = MaterialTheme.shapes.small)
-                        .size(50.dp), // Ensure consistent size for the delete button
-                contentAlignment = Alignment.Center) {
-                  // Only creators of comments or note owner can delete their comments
-                  if (comment.isOwner(currentUser.uid) || note.isOwner(currentUser.uid)) {
-                    IconButton(
-                        onClick = {
-                          onCommentsChange(
-                              updatedComments.deleteCommentByCommentId(comment.commentId))
-                        },
-                        modifier = Modifier.testTag("DeleteCommentButton")) {
-                          Icon(
-                              imageVector = Icons.Default.Delete,
-                              contentDescription = "Delete Comment",
-                              tint = MaterialTheme.colorScheme.onError,
-                          )
-                        }
-                  }
-                }
-          }
-    }
-  }
+        modifier = Modifier.padding(8.dp).testTag("noCommentsText")
+    )
 }
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun CommentRow(
+    comment: Note.Comment,
+    updatedComments: Note.CommentCollection,
+    onCommentsChange: (Note.CommentCollection) -> Unit,
+    currentUser: User,
+    note: Note,
+    userViewModel: UserViewModel
+) {
+    var isEditing by remember { mutableStateOf(false) }
+    var currentContent by remember { mutableStateOf(comment.content) }
+    var expanded by remember { mutableStateOf(false) } // Shared state for CommentOptionsMenu
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Start
+    ) {
+
+        if (isEditing) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp)
+                    .padding(8.dp)
+            ) {
+                OutlinedTextField(
+                    value = currentContent,
+                    onValueChange = { currentContent = it },
+                    label = {
+                        val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
+                        val formattedDate = formatter.format(comment.editedDate.toDate())
+                        val displayedText =
+                            if (comment.isUnedited()) {
+                                "${comment.userName} : $formattedDate"
+                            } else {
+                                stringResource(R.string.edited, comment.userName, formattedDate)
+                            }
+                        Text(displayedText)
+                    },
+                    placeholder = { Text(stringResource(R.string.enter_comment_here)) },
+                    modifier = Modifier.weight(1f).testTag("EditCommentTextField")
+                )
+                IconButton(onClick = {
+                    val updatedCollection =
+                        updatedComments.editCommentByCommentId(comment.commentId, currentContent)
+                    onCommentsChange(updatedCollection)
+                    isEditing = false
+                }) {
+                    Icon(imageVector = Icons.Default.Check, contentDescription = "Save Comment")
+                }
+            }
+        } else {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp)
+            ) {
+                    Text(
+                        text = comment.userName, // Replace with your desired title
+                        style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onBackground),
+                        modifier = Modifier
+                            .padding(bottom = 4.dp) // Space between title and row
+                    )
+                    // Outlined Row
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .border(
+                                1.dp,
+                                MaterialTheme.colorScheme.primary,
+                                shape = RoundedCornerShape(4.dp)
+                            )
+                            .padding(8.dp)
+                            .combinedClickable(
+                                onClick = { /* Add desired click behavior if needed */ },
+                                onLongClick = {
+                                    if (comment.isOwner(currentUser.uid) || note.isOwner(currentUser.uid)) {
+                                        expanded = true
+                                    }
+                                }
+                            )
+                    ) {
+                        Text(
+                            text = comment.content,
+                            modifier = Modifier
+                                .weight(1f) // Ensures the text takes up all available space before the Spacer
+                                .padding(end = 8.dp) // Optional: adds some space between text and options menu
+                        )
+                        Spacer(modifier = Modifier.weight(0.1f)) // Add this to push the menu to the end
+                        if (comment.isOwner(currentUser.uid) || note.isOwner(currentUser.uid)) {
+                            CommentOptionsMenu(
+                                comment = comment,
+                                updatedComments = updatedComments,
+                                onCommentsChange = onCommentsChange,
+                                currentUser = currentUser,
+                                note = note,
+                                expanded = expanded,
+                                onDismissRequest = { expanded = false },
+                                onEditRequest = { isEditing = true }
+                            )
+                        }
+                    }
+
+
+            }
+
+        }
+    }
+}
+
+@Composable
+fun CommentOptionsMenu(
+    comment: Note.Comment,
+    updatedComments: Note.CommentCollection,
+    onCommentsChange: (Note.CommentCollection) -> Unit,
+    currentUser: User,
+    note: Note,
+    expanded: Boolean, // Receive expanded state
+    onDismissRequest: () -> Unit, // Callback to dismiss menu
+    onEditRequest: () -> Unit
+) {
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = onDismissRequest // Use callback to handle dismissal
+        ) {
+            if (comment.isOwner(currentUser.uid)) {
+                DropdownMenuItem(
+                    text = { Text("Edit comment") },
+                    onClick = {
+                        onDismissRequest()
+                        onEditRequest()
+                    })
+            }
+            if (comment.isOwner(currentUser.uid) || note.isOwner(currentUser.uid)) {
+                DropdownMenuItem(
+                    text = { Text("Delete comment") },
+                    onClick = {
+                        onDismissRequest()
+                        onCommentsChange(updatedComments.deleteCommentByCommentId(comment.commentId))
+                    })
+            }
+        }
+
+}
+
