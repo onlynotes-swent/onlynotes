@@ -2,14 +2,14 @@ package com.github.onlynotesswent.ui.navigation
 
 import android.util.Log
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Comment
+import androidx.compose.material.icons.automirrored.outlined.Comment
 import androidx.compose.material.icons.automirrored.outlined.LibraryBooks
-import androidx.compose.material.icons.filled.EditNote
-import androidx.compose.material.icons.filled.PictureAsPdf
-import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.outlined.EditNote
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material.icons.outlined.PictureAsPdf
 import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
@@ -71,17 +71,17 @@ val LIST_TOP_LEVEL_DESTINATION =
 
 object EditNoteDestinations {
   val DETAIL =
-      Destination(screen = Screen.EDIT_NOTE, icon = Icons.Filled.Settings, textId = "Detail")
+      Destination(screen = Screen.EDIT_NOTE, icon = Icons.Outlined.Settings, textId = "Detail")
   val COMMENT =
       Destination(
           screen = Screen.EDIT_NOTE_COMMENT,
-          icon = Icons.AutoMirrored.Filled.Comment,
+          icon = Icons.AutoMirrored.Outlined.Comment,
           textId = "Comments")
   val PDF =
-      Destination(screen = Screen.EDIT_NOTE_PDF, icon = Icons.Filled.PictureAsPdf, textId = "PDF")
+      Destination(screen = Screen.EDIT_NOTE_PDF, icon = Icons.Outlined.PictureAsPdf, textId = "PDF")
   val MARKDOWN =
       Destination(
-          screen = Screen.EDIT_NOTE_MARKDOWN, icon = Icons.Filled.EditNote, textId = "Content")
+          screen = Screen.EDIT_NOTE_MARKDOWN, icon = Icons.Outlined.EditNote, textId = "Content")
 }
 
 val LIST_EDIT_NOTE_DESTINATION =
