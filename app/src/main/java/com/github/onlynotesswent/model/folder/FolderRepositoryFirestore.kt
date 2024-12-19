@@ -121,7 +121,7 @@ class FolderRepositoryFirestore(
     }
   }
 
-  override suspend fun deleteFoldersFromUid(
+  override suspend fun deleteAllFoldersFromUserId(
       userId: String,
       onSuccess: () -> Unit,
       onFailure: (Exception) -> Unit,
@@ -129,7 +129,7 @@ class FolderRepositoryFirestore(
   ) {
     // Update the cache if needed
     if (useCache) {
-      withContext(dispatcher) { folderDao.deleteFoldersFromUid(userId) }
+      withContext(Dispatchers.IO) { folderDao.deleteFoldersFromUid(userId) }
     }
 
     db.collection(folderCollectionPath).get().addOnCompleteListener { task ->

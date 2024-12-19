@@ -152,6 +152,7 @@ class DeckRepositoryFirestoreTest {
     `when`(mockQuerySnapshot.documents).thenReturn(listOf(mockDocumentSnapshot))
     // Mock the behavior of the DocumentSnapshot
     `when`(mockDocumentSnapshot.id).thenReturn(testDeck.id)
+    `when`(mockDocumentSnapshot.reference).thenReturn(mockDocumentReference)
     `when`(mockDocumentSnapshot.getString("name")).thenReturn(testDeck.name)
     `when`(mockDocumentSnapshot.getString("userId")).thenReturn(testDeck.userId)
     `when`(mockDocumentSnapshot.getString("folderId")).thenReturn(testDeck.folderId)
@@ -391,6 +392,16 @@ class DeckRepositoryFirestoreTest {
     verify(mockCollectionReference).whereEqualTo("folderId", "3")
     verify(mockQuery).get()
     verify(mockQuerySnapshot).documents
+    verify(mockDocumentReference).delete()
+    assert(wasCalled)
+  }
+
+  @Test
+  fun testDeleteDecksFromUser() {
+    var wasCalled = false
+    deckRepository.deleteAllDecksFromUserId("2", { wasCalled = true }, { fail("Should not fail") })
+    verify(mockCollectionReference).whereEqualTo("userId", "2")
+    verify(mockQuery).get()
     verify(mockDocumentReference).delete()
     assert(wasCalled)
   }
