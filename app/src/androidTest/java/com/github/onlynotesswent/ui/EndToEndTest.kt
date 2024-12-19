@@ -25,11 +25,11 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navigation
 import androidx.test.espresso.intent.Intents
 import com.github.onlynotesswent.model.authentication.Authenticator
+import com.github.onlynotesswent.model.deck.DeckRepository
+import com.github.onlynotesswent.model.deck.DeckViewModel
 import com.github.onlynotesswent.model.common.Visibility
 import com.github.onlynotesswent.model.file.FileRepository
 import com.github.onlynotesswent.model.file.FileViewModel
-import com.github.onlynotesswent.model.flashcard.deck.DeckRepository
-import com.github.onlynotesswent.model.flashcard.deck.DeckViewModel
 import com.github.onlynotesswent.model.folder.FolderRepository
 import com.github.onlynotesswent.model.folder.FolderViewModel
 import com.github.onlynotesswent.model.note.Note
@@ -45,7 +45,7 @@ import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Route
 import com.github.onlynotesswent.ui.navigation.Screen
 import com.github.onlynotesswent.ui.overview.FolderContentScreen
-import com.github.onlynotesswent.ui.overview.OverviewScreen
+import com.github.onlynotesswent.ui.overview.NoteOverviewScreen
 import com.github.onlynotesswent.ui.overview.editnote.EditMarkdownScreen
 import com.github.onlynotesswent.ui.overview.editnote.EditNoteScreen
 import com.github.onlynotesswent.ui.search.SearchScreen
@@ -180,11 +180,12 @@ class EndToEndTest {
                 }
 
                 navigation(
-                    startDestination = Screen.OVERVIEW,
-                    route = Route.OVERVIEW,
+                    startDestination = Screen.NOTE_OVERVIEW,
+                    route = Route.NOTE_OVERVIEW,
                 ) {
-                  composable(Screen.OVERVIEW) {
-                    OverviewScreen(navigationActions, noteViewModel, userViewModel, folderViewModel)
+                  composable(Screen.NOTE_OVERVIEW) {
+                    NoteOverviewScreen(
+                        navigationActions, noteViewModel, userViewModel, folderViewModel)
                   }
                   composable(Screen.EDIT_NOTE) {
                     EditNoteScreen(navigationActions, noteViewModel, userViewModel)
@@ -304,9 +305,9 @@ class EndToEndTest {
     composeTestRule.onNodeWithTag("saveButton").performClick()
 
     // Interact with the note creation flow
-    composeTestRule.onNodeWithTag("createNoteOrFolder").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("createNoteOrFolder").performClick()
-    composeTestRule.onNodeWithTag("createNote").performClick()
+    composeTestRule.onNodeWithTag("createObjectOrFolder").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("createObjectOrFolder").performClick()
+    composeTestRule.onNodeWithTag("createDeckOrNote").performClick()
     composeTestRule.onNodeWithTag("confirmNoteAction").assertIsDisplayed()
     composeTestRule.onNodeWithTag("inputNoteName").performTextInput(testNote.title)
     composeTestRule.onNodeWithTag("currentVisibilityOption").assertIsDisplayed()
@@ -409,7 +410,7 @@ class EndToEndTest {
     }
 
     // Start at overview screen
-    composeTestRule.runOnUiThread { navController.navigate(Route.OVERVIEW) }
+    composeTestRule.runOnUiThread { navController.navigate(Route.NOTE_OVERVIEW) }
 
     `when`(mockNotificationRepository.getNewUid()).thenReturn(testUid)
 
@@ -577,7 +578,7 @@ class EndToEndTest {
         }
 
     // Start at overview screen
-    composeTestRule.runOnUiThread { navController.navigate(Route.OVERVIEW) }
+    composeTestRule.runOnUiThread { navController.navigate(Route.NOTE_OVERVIEW) }
   }
 
   @Test
@@ -645,7 +646,7 @@ class EndToEndTest {
     // potentially alwo mock update note if we modify the saved note
 
     // Start at overview screen
-    composeTestRule.runOnUiThread { navController.navigate(Route.OVERVIEW) }
+    composeTestRule.runOnUiThread { navController.navigate(Route.NOTE_OVERVIEW) }
   }
 
   @Test

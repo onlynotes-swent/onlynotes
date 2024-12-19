@@ -98,7 +98,7 @@ internal fun authSuccessHandler(
 ) {
   userViewModel.getCurrentUserByEmail(
       email = result.user!!.email!!,
-      onSuccess = { navigationActions.navigateTo(TopLevelDestinations.OVERVIEW) },
+      onSuccess = { navigationActions.navigateTo(TopLevelDestinations.NOTE_OVERVIEW) },
       onUserNotFound = { navigationActions.navigateTo(Screen.CREATE_USER) },
       onFailure = { Toast.makeText(context, "Error fetching user", Toast.LENGTH_LONG).show() })
 }

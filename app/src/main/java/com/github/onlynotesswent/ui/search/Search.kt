@@ -38,14 +38,14 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.github.onlynotesswent.R
+import com.github.onlynotesswent.model.deck.DeckViewModel
 import com.github.onlynotesswent.model.file.FileViewModel
-import com.github.onlynotesswent.model.flashcard.deck.DeckViewModel
 import com.github.onlynotesswent.model.folder.FolderViewModel
 import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.model.user.User
 import com.github.onlynotesswent.model.user.UserViewModel
 import com.github.onlynotesswent.ui.common.CustomSeparatedLazyGrid
-import com.github.onlynotesswent.ui.common.DeckSearchItem
+import com.github.onlynotesswent.ui.common.DeckItem
 import com.github.onlynotesswent.ui.common.NoteItem
 import com.github.onlynotesswent.ui.navigation.BottomNavigationMenu
 import com.github.onlynotesswent.ui.navigation.LIST_TOP_LEVEL_DESTINATION
@@ -341,7 +341,6 @@ fun SearchScreen(
                       currentUser = userViewModel.currentUser.collectAsState(),
                       noteViewModel = noteViewModel,
                       folderViewModel = folderViewModel,
-                      showDialog = false,
                       navigationActions = navigationActions,
                   ) {
                     noteViewModel.selectedNote(filteredPublicNotes.value[index])
@@ -366,7 +365,6 @@ fun SearchScreen(
                       currentUser = userViewModel.currentUser.collectAsState(),
                       noteViewModel = noteViewModel,
                       folderViewModel = folderViewModel,
-                      showDialog = false,
                       navigationActions = navigationActions,
                   ) {
                     noteViewModel.selectedNote(filteredFriendsNotes.value[index])
@@ -435,17 +433,22 @@ fun SearchScreen(
               modifier =
                   Modifier.fillMaxWidth().padding(padding).testTag("filteredPublicDeckList")) {
                 items(filteredPublicDecks.value.size) { index ->
-                  DeckSearchItem(
+                  DeckItem(
                       deck = filteredPublicDecks.value[index],
                       author =
                           users.value
                               .first { it.uid == filteredPublicDecks.value[index].userId }
                               .userHandle(),
-                  ) {
-                    deckViewModel.selectDeck(filteredPublicDecks.value[index])
-                    navigationActions.navigateTo(
-                        Screen.DECK_MENU.replace("{deckId}", filteredPublicDecks.value[index].id))
-                  }
+                      folderViewModel = folderViewModel,
+                      currentUser =
+                          users.value.first { it.uid == filteredPublicDecks.value[index].userId },
+                      navigationActions = navigationActions,
+                      onClick = {
+                        deckViewModel.selectDeck(filteredPublicDecks.value[index])
+                        navigationActions.navigateTo(
+                            Screen.DECK_MENU.replace(
+                                "{deckId}", filteredPublicDecks.value[index].id))
+                      })
                 }
               }
         }
@@ -456,17 +459,22 @@ fun SearchScreen(
               modifier =
                   Modifier.fillMaxWidth().padding(padding).testTag("filteredFriendDeckList")) {
                 items(filteredFriendsDecks.value.size) { index ->
-                  DeckSearchItem(
+                  DeckItem(
                       deck = filteredFriendsDecks.value[index],
                       author =
                           users.value
                               .first { it.uid == filteredFriendsDecks.value[index].userId }
                               .userHandle(),
-                  ) {
-                    deckViewModel.selectDeck(filteredFriendsDecks.value[index])
-                    navigationActions.navigateTo(
-                        Screen.DECK_MENU.replace("{deckId}", filteredFriendsDecks.value[index].id))
-                  }
+                      folderViewModel = folderViewModel,
+                      currentUser =
+                          users.value.first { it.uid == filteredFriendsDecks.value[index].userId },
+                      navigationActions = navigationActions,
+                      onClick = {
+                        deckViewModel.selectDeck(filteredFriendsDecks.value[index])
+                        navigationActions.navigateTo(
+                            Screen.DECK_MENU.replace(
+                                "{deckId}", filteredFriendsDecks.value[index].id))
+                      })
                 }
               }
         }
