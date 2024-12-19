@@ -4,6 +4,9 @@ import com.github.onlynotesswent.BuildConfig
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import java.io.IOException
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
+import kotlin.coroutines.suspendCoroutine
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -97,5 +100,23 @@ class OpenAI(private val client: OkHttpClient = OkHttpClient()) {
                 onSuccess(body) // Invoke the success callback
               }
             })
+  }
+
+  /**
+   * Is a synchronous version of the sendRequest function that suspends the coroutine until the
+   * response is received. This function is useful when you want to call the sendRequest function
+   * from a coroutine and wait for the response.
+   *
+   * @param prompt the prompt to generate text from
+   * @param model the model to use for generating text (default: "gpt-4o-mini")
+   */
+  suspend fun sendRequestSuspend(prompt: String, model: String = "gpt-4o-mini"): String {
+    return suspendCoroutine { continuation ->
+      sendRequest(
+          prompt = prompt,
+          onSuccess = { response -> continuation.resume(response) },
+          onFailure = { exception -> continuation.resumeWithException(exception) },
+          model = model)
+    }
   }
 }

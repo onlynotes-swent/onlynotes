@@ -23,6 +23,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 
@@ -86,12 +87,11 @@ class NotesToFlashcard(
         fileType = FileType.NOTE_TEXT,
         context = context,
         onSuccess = { downloadedFile ->
-          openAIClient.sendRequest(
-              promptPrefix + downloadedFile.readText(),
-              {
-                  Log.d(TAG, "Response from OpenAI: $it")
-                  parseFlashcardsFromJson(it, note, folderId, onSuccess, onFailure) },
-              { onFailure(it) })
+          CoroutineScope(Dispatchers.IO).launch {
+            val prompt = promptPrefix + downloadedFile.readText()
+            val response = openAIClient.sendRequestSuspend(prompt)
+            parseFlashcardsFromJson(response, note, folderId, onSuccess, onFailure)
+          }
         },
         onFileNotFound = onFileNotFoundException,
         onFailure = onFailure)
