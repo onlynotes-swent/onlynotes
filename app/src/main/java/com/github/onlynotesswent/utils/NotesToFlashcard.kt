@@ -186,7 +186,10 @@ class NotesToFlashcard(
             note,
             folderId,
             onSuccess = { continuation.resume(it) },
-            onFailure = { continuation.resumeWithException(it) },
+            onFailure = {
+              continuation.resumeWithException(
+                  Exception("Failed to convert note to deck: ${note.title}"))
+            },
             onFileNotFoundException = {
               continuation.resumeWithException(
                   FileNotFoundException("Text file not found for note: ${note.title}"))
@@ -322,7 +325,7 @@ class NotesToFlashcard(
     noteDeferreds.awaitAll()
     subfolderDeferreds.awaitAll()
 
-    return if (folderFlashcardIds.isNotEmpty() && notes.size > 1) {
+    return if (folderFlashcardIds.isNotEmpty() && notesProcessed.get() > 1) {
       val combinedDeck =
           Deck(
               id = deckViewModel.getNewUid(),
@@ -368,7 +371,10 @@ class NotesToFlashcard(
           folderViewModel.addFolder(
               newDeckFolder,
               onSuccess = { continuation.resume(newDeckFolder) },
-              onFailure = { continuation.resumeWithException(it) })
+              onFailure = {
+                continuation.resumeWithException(
+                    Exception("Failed to create deck folder ${subfolder.name}"))
+              })
         },
         onSuccess = { existingFolders ->
           if (parentDeckFolder == null) {
@@ -391,7 +397,10 @@ class NotesToFlashcard(
               folderViewModel.addFolder(
                   newDeckFolder,
                   onSuccess = { continuation.resume(newDeckFolder) },
-                  onFailure = { continuation.resumeWithException(it) })
+                  onFailure = {
+                    continuation.resumeWithException(
+                        Exception("Failed to create deck folder ${subfolder.name}"))
+                  })
             }
           }
         },
