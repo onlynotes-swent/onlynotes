@@ -534,6 +534,19 @@ fun FlashcardItemDropdownMenu(
       }
 }
 
+/**
+ * Composable function that displays a flashcard item for playing. The flashcard can be either a
+ * normal flashcard or a multiple choice question (MCQ). If the flashcard is null, a loading
+ * indicator is displayed. When reviewing flashcards, all flashcards are displayed as normal
+ * flashcards.
+ *
+ * @param flashcardState The state of the flashcard to be displayed.
+ * @param fileViewModel The ViewModel for file-related data.
+ * @param onCorrect The callback to be invoked when the correct choice is selected (for MCQ).
+ * @param onIncorrect The callback to be invoked when an incorrect choice is selected (for MCQ).
+ * @param choice The state for the selected choice (for MCQ).
+ * @param isReview Indicates whether the flashcard is in review mode.
+ */
 @Composable
 fun FlashcardPlayItem(
     flashcardState: State<Flashcard?>,

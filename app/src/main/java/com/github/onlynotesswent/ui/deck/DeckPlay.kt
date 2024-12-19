@@ -54,8 +54,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
+import com.github.onlynotesswent.R
 import com.github.onlynotesswent.model.deck.Deck
 import com.github.onlynotesswent.model.deck.DeckViewModel
 import com.github.onlynotesswent.model.deck.PlayDeckHistory
@@ -71,6 +73,15 @@ import com.github.onlynotesswent.ui.navigation.NavigationActions
 import kotlin.math.absoluteValue
 import kotlinx.coroutines.launch
 
+/**
+ * This composable is used to display the deck play screen.
+ *
+ * @param navigationActions The navigation actions.
+ * @param userViewModel The view model for the user.
+ * @param deckViewModel The view model for the deck.
+ * @param flashcardViewModel The view model for the flashcards.
+ * @param fileViewModel The view model for the files.
+ */
 @Composable
 fun DeckPlayScreen(
     navigationActions: NavigationActions,
@@ -118,7 +129,7 @@ fun DeckPlayScreen(
       modifier = Modifier.testTag("DeckPlayScreen"),
       topBar = {
         ScreenTopBar(
-            playMode.value?.toReadableString() ?: "No mode selected",
+            playMode.value?.toReadableString() ?: stringResource(R.string.no_mode_selected),
             "DeckPlayScreenTopBar",
             { navigationActions.goBack() },
             {
@@ -134,7 +145,7 @@ fun DeckPlayScreen(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally) {
               if (deck.value == null || userFlashcardList.value.isEmpty()) {
-                LoadingIndicator("Loading deck...")
+                LoadingIndicator(stringResource(R.string.loading_deck))
               } else {
                 val score = remember { mutableIntStateOf(0) }
                 val answers: Map<String, MutableState<Int?>> =
@@ -404,7 +415,9 @@ private fun TestMode(
                 modifier = Modifier.padding(20.dp).testTag("submitButton"),
                 onClick = { isFinished.value = true },
                 enabled = pagerState.currentPage == flashcardList.value.size - 1) {
-                  Text("Finish Test", style = MaterialTheme.typography.headlineSmall)
+                  Text(
+                      stringResource(R.string.finish_test),
+                      style = MaterialTheme.typography.headlineSmall)
                 }
           }
           AnimatedVisibility(!flashcardList.value[pagerState.currentPage].isMCQ()) {
@@ -464,7 +477,10 @@ private fun SelectWrongRight(
                     contentDescription = "Close Icon",
                     tint = MaterialTheme.colorScheme.onSurface)
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("I got it wrong", style = MaterialTheme.typography.bodyLarge, maxLines = 1)
+                Text(
+                    stringResource(R.string.i_got_it_wrong),
+                    style = MaterialTheme.typography.bodyLarge,
+                    maxLines = 1)
               }
         }
     Button(
@@ -479,7 +495,10 @@ private fun SelectWrongRight(
                     contentDescription = "Close Icon",
                     tint = MaterialTheme.colorScheme.onSurface)
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("I got it right", style = MaterialTheme.typography.bodyLarge, maxLines = 1)
+                Text(
+                    stringResource(R.string.i_got_it_right),
+                    style = MaterialTheme.typography.bodyLarge,
+                    maxLines = 1)
               }
         }
   }
@@ -538,7 +557,7 @@ private fun FinishedScreen(
         }
 
         Text(
-            "You have finished the deck with a score of ${animatedScore.toInt()}% !",
+            stringResource(R.string.deck_finish_test_text, animatedScore.toInt()),
             style = MaterialTheme.typography.bodyLarge)
         Spacer(modifier = Modifier.height(20.dp))
         Button(
@@ -567,7 +586,9 @@ private fun FinishedScreen(
                         imageVector = Icons.Default.Replay,
                         contentDescription = "Close Icon",
                         tint = MaterialTheme.colorScheme.onSurface)
-                    Text("Retry", style = MaterialTheme.typography.headlineSmall)
+                    Text(
+                        stringResource(R.string.retry),
+                        style = MaterialTheme.typography.headlineSmall)
                   }
             }
       }
