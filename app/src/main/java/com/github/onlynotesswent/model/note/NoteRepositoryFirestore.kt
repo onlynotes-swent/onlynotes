@@ -283,7 +283,7 @@ class NoteRepositoryFirestore(
         db.collection(collectionPath).document(id).delete(), onSuccess, onFailure)
   }
 
-  override suspend fun deleteNotesFromUid(
+  override suspend fun deleteAllNotesFromUserId(
       userId: String,
       onSuccess: () -> Unit,
       onFailure: (Exception) -> Unit,
@@ -291,7 +291,7 @@ class NoteRepositoryFirestore(
   ) {
     // Update the cache if needed
     if (useCache) {
-      withContext(Dispatchers.IO) { noteDao.deleteNotesFromUid() }
+      withContext(Dispatchers.IO) { noteDao.deleteNotesFromUid(userId) }
     }
 
     db.collection(collectionPath).get().addOnCompleteListener { task ->

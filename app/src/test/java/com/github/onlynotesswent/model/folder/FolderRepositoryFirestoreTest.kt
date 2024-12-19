@@ -321,17 +321,17 @@ class FolderRepositoryFirestoreTest {
   }
 
   @Test
-  fun deleteFoldersFromUid_callsDocuments() = runTest {
+  fun deleteAllFoldersFromUserId_callsDocuments() = runTest {
     `when`(mockQuerySnapshot.documents)
         .thenReturn(listOf(mockDocumentSnapshot, mockDocumentSnapshot2))
 
-    folderRepositoryFirestore.deleteFoldersFromUid("1", onSuccess = {}, onFailure = {}, false)
+    folderRepositoryFirestore.deleteAllFoldersFromUserId("1", onSuccess = {}, onFailure = {}, false)
 
     verify(timeout(100)) { (mockQuerySnapshot).documents }
   }
 
   @Test
-  fun deleteFoldersFromUid_fail() = runTest {
+  fun deleteAllFoldersFromUserId_fail() = runTest {
     val errorMessage = "TestError"
     `when`(mockQuerySnapshotTask.isSuccessful).thenReturn(false)
     `when`(mockQuerySnapshotTask.exception).thenReturn(Exception(errorMessage))
@@ -344,7 +344,7 @@ class FolderRepositoryFirestoreTest {
     `when`(mockQuerySnapshot.documents)
         .thenReturn(listOf(mockDocumentSnapshot, mockDocumentSnapshot2))
     var exceptionThrown: Exception? = null
-    folderRepositoryFirestore.deleteFoldersFromUid(
+    folderRepositoryFirestore.deleteAllFoldersFromUserId(
         "1", onSuccess = {}, onFailure = { e -> exceptionThrown = e }, false)
     assertNotNull(exceptionThrown)
     assertEquals(errorMessage, exceptionThrown?.message)

@@ -161,7 +161,7 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
    *   current user.
    * @param isDeckView A flag indicating if the folder is a deck view.
    */
-  fun deleteFoldersFromUid(
+  fun deleteAllFoldersFromUserId(
       userId: String,
       onSuccess: () -> Unit = {},
       onFailure: (Exception) -> Unit = {},
@@ -169,7 +169,7 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
       isDeckView: Boolean = false
   ) {
     viewModelScope.launch {
-      repository.deleteFoldersFromUid(
+      repository.deleteAllFoldersFromUserId(
           userId = userId,
           onSuccess = {
             getRootFoldersFromUserId(userId, isDeckView)

@@ -229,7 +229,11 @@ class EndToEndTest {
                         pictureTaker,
                         fileViewModel,
                         noteViewModel,
-                        folderViewModel)
+                        folderViewModel,
+                        deckViewModel,
+                        flashcardViewModel,
+                        notificationViewModel
+                    )
                   }
                 }
               }

@@ -123,7 +123,11 @@ class EditProfileScreenTest {
           pictureTaker,
           fileViewModel,
           noteViewModel,
-          folderViewModel)
+          folderViewModel,
+          deckViewModel,
+          flashcardViewModel,
+          notificationViewModel
+      )
     }
 
     composeTestRule.onNodeWithTag("ProfileScreen").assertExists()
@@ -153,7 +157,11 @@ class EditProfileScreenTest {
           pictureTaker,
           fileViewModel,
           noteViewModel,
-          folderViewModel)
+          folderViewModel,
+          deckViewModel,
+          flashcardViewModel,
+          notificationViewModel
+      )
     }
 
     composeTestRule.onNodeWithTag("saveButton").performClick()
@@ -169,7 +177,11 @@ class EditProfileScreenTest {
           pictureTaker,
           fileViewModel,
           noteViewModel,
-          folderViewModel)
+          folderViewModel,
+          deckViewModel,
+          flashcardViewModel,
+          notificationViewModel
+      )
     }
 
     composeTestRule.onNodeWithTag("inputUserName").performTextClearance()
@@ -205,7 +217,11 @@ class EditProfileScreenTest {
           pictureTaker,
           fileViewModel,
           noteViewModel,
-          folderViewModel)
+          folderViewModel,
+          deckViewModel,
+          flashcardViewModel,
+          notificationViewModel
+      )
     }
 
     composeTestRule.onNodeWithTag("inputFirstName").performTextClearance()
@@ -230,7 +246,11 @@ class EditProfileScreenTest {
           pictureTaker,
           fileViewModel,
           noteViewModel,
-          folderViewModel)
+          folderViewModel,
+          deckViewModel,
+          flashcardViewModel,
+          notificationViewModel
+      )
     }
 
     composeTestRule.onNodeWithTag("saveButton").assertIsEnabled()
@@ -249,7 +269,11 @@ class EditProfileScreenTest {
           pictureTaker,
           fileViewModel,
           noteViewModel,
-          folderViewModel)
+          folderViewModel,
+          deckViewModel,
+          flashcardViewModel,
+          notificationViewModel
+      )
     }
 
     composeTestRule.onNodeWithTag("goBackButton").performClick()
@@ -266,7 +290,11 @@ class EditProfileScreenTest {
           pictureTaker,
           fileViewModel,
           noteViewModel,
-          folderViewModel)
+          folderViewModel,
+          deckViewModel,
+          flashcardViewModel,
+          notificationViewModel
+      )
     }
     composeTestRule.onNodeWithTag("displayBottomSheet").assertIsEnabled()
     composeTestRule.onNodeWithTag("displayBottomSheet").performClick()
@@ -298,7 +326,11 @@ class EditProfileScreenTest {
           pictureTaker,
           fileViewModel,
           noteViewModel,
-          folderViewModel)
+          folderViewModel,
+          deckViewModel,
+          flashcardViewModel,
+          notificationViewModel
+      )
     }
     composeTestRule.onNodeWithTag("profilePicture").assertIsDisplayed()
     verify(mockFileRepository).downloadFile(any(), any(), any(), any(), any(), any())
@@ -319,7 +351,11 @@ class EditProfileScreenTest {
           pictureTaker,
           fileViewModel,
           noteViewModel,
-          folderViewModel)
+          folderViewModel,
+          deckViewModel,
+          flashcardViewModel,
+          notificationViewModel
+      )
     }
 
     composeTestRule.onNodeWithTag("displayBottomSheet").assertIsEnabled()
@@ -343,7 +379,11 @@ class EditProfileScreenTest {
           pictureTaker,
           fileViewModel,
           noteViewModel,
-          folderViewModel)
+          folderViewModel,
+          deckViewModel,
+          flashcardViewModel,
+          notificationViewModel
+      )
     }
 
     composeTestRule.onNodeWithTag("displayBottomSheet").assertIsEnabled()
@@ -381,7 +421,11 @@ class EditProfileScreenTest {
           pictureTaker,
           fileViewModel,
           noteViewModel,
-          folderViewModel)
+          folderViewModel,
+          deckViewModel,
+          flashcardViewModel,
+          notificationViewModel
+      )
     }
 
     composeTestRule.onNodeWithTag("deleteAccountButton").assertIsEnabled()
@@ -404,7 +448,11 @@ class EditProfileScreenTest {
           pictureTaker,
           fileViewModel,
           noteViewModel,
-          folderViewModel)
+          folderViewModel,
+          deckViewModel,
+          flashcardViewModel,
+          notificationViewModel
+      )
     }
 
     composeTestRule.onNodeWithTag("inputUserName").performTextInput("testForGoBack")
@@ -425,7 +473,11 @@ class EditProfileScreenTest {
           pictureTaker,
           fileViewModel,
           noteViewModel,
-          folderViewModel)
+          folderViewModel,
+          deckViewModel,
+          flashcardViewModel,
+          notificationViewModel
+      )
     }
 
     composeTestRule.onNodeWithTag("deleteAccountButton").assertIsEnabled()
@@ -434,8 +486,8 @@ class EditProfileScreenTest {
     composeTestRule.onNodeWithTag("confirmDeleteButton").performClick()
 
     verify(mockUserRepository).deleteUserById(eq(testUid), any(), any(), any())
-    verify(mockNoteRepository).deleteNotesFromUid(eq(testUid), any(), any(), any())
-    verify(mockFolderRepository).deleteFoldersFromUid(eq(testUid), any(), any(), any())
+    verify(mockNoteRepository).deleteAllNotesFromUserId(eq(testUid), any(), any(), any())
+    verify(mockFolderRepository).deleteAllFoldersFromUserId(eq(testUid), any(), any(), any())
     verify(mockFileRepository).deleteFile(eq(testUid), any(), any(), any(), any())
     verify(mockNavigationActions).navigateTo(Route.AUTH)
   }

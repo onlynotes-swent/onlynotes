@@ -23,7 +23,7 @@ interface NoteDao {
 
   @Query("DELETE FROM note WHERE id = :noteId") fun deleteNoteById(noteId: String)
 
-  @Query("DELETE FROM note") fun deleteNotesFromUid()
+  @Query("DELETE FROM note WHERE userId = :userID") fun deleteNotesFromUid(userID: String)
 
   @Query("DELETE FROM note WHERE folderid = :folderId") fun deleteNotesFromFolder(folderId: String)
 }
