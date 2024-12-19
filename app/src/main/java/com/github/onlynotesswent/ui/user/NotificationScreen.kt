@@ -59,30 +59,31 @@ fun NotificationScreen(
   Scaffold(
       modifier = Modifier.testTag("notificationScreen"),
       topBar = {
-          Column {
-              // TopAppBar with title
-              TopAppBar(
-                  title = { Text(stringResource(R.string.your_notifications)) },
-                  navigationIcon = {
-                      IconButton(
-                          onClick = {
-                              navigationActions.goBack()
-                              userNotifications.value.forEach { notification ->
-                                  if (!notification.read &&
-                                      notification.type != Notification.NotificationType.FOLLOW_REQUEST) {
-                                      notificationViewModel.updateNotification(notification.copy(read = true))
-                                  }
-                              }
-                          },
-                          Modifier.testTag("goBackButton")) {
-                          Icon(
-                              imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                              contentDescription = "Back")
+        Column {
+          // TopAppBar with title
+          TopAppBar(
+              title = { Text(stringResource(R.string.your_notifications)) },
+              navigationIcon = {
+                IconButton(
+                    onClick = {
+                      navigationActions.goBack()
+                      userNotifications.value.forEach { notification ->
+                        if (!notification.read &&
+                            notification.type != Notification.NotificationType.FOLLOW_REQUEST) {
+                          notificationViewModel.updateNotification(notification.copy(read = true))
+                        }
                       }
-                  })
+                    },
+                    Modifier.testTag("goBackButton")) {
+                      Icon(
+                          imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
+                          contentDescription = "Back")
+                    }
+              })
 
-              HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f), thickness = 0.5.dp)
-          }
+          HorizontalDivider(
+              color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f), thickness = 0.5.dp)
+        }
       }) { innerPadding ->
         LazyColumn(
             contentPadding = innerPadding, modifier = Modifier.testTag("notificationsList")) {

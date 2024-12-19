@@ -144,11 +144,11 @@ fun EditMarkdownScreen(
             navigationActions = navigationActions)
       },
       bottomBar = {
-          Column {
-              HorizontalDivider(
-                  color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f), thickness = 0.5.dp)
-              EditNoteNavigationMenu(navigationActions, selectedItem = Screen.EDIT_NOTE_MARKDOWN)
-          }
+        Column {
+          HorizontalDivider(
+              color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f), thickness = 0.5.dp)
+          EditNoteNavigationMenu(navigationActions, selectedItem = Screen.EDIT_NOTE_MARKDOWN)
+        }
       },
       floatingActionButton = {
         if (!isEditing && selectedNote != null && selectedNote!!.isOwner(currentUser!!.uid)) {

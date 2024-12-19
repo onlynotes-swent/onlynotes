@@ -75,7 +75,7 @@ class NotesToFlashcard(
   fun convertNoteToDeck(
       note: Note,
       folderId: String? = null,
-      onSuccess: (Deck) -> Unit,
+      onSuccess: (Deck?) -> Unit,
       onFileNotFoundException: () -> Unit,
       onFailure: (Exception) -> Unit
   ) {
@@ -87,7 +87,7 @@ class NotesToFlashcard(
         onSuccess = { downloadedFile ->
           openAIClient.sendRequest(
               promptPrefix + downloadedFile.readText(),
-              { parseFlashcardsFromJson(it, note, folderId, onSuccess, onFailure) },
+              {parseFlashcardsFromJson(it, note, folderId, onSuccess, onFailure) },
               { onFailure(it) })
         },
         onFileNotFound = onFileNotFoundException,
@@ -108,7 +108,7 @@ class NotesToFlashcard(
       jsonResponse: String,
       note: Note,
       folderId: String? = null,
-      onSuccess: (Deck) -> Unit,
+      onSuccess: (Deck?) -> Unit,
       onFailure: (Exception) -> Unit
   ) {
     val flashcards = mutableListOf<Flashcard>()
@@ -150,6 +150,10 @@ class NotesToFlashcard(
       onFailure(e)
       return
     }
+    if (flashcards.isEmpty()) {
+      onSuccess(null)
+      return
+    }
     val deck =
         Deck(
             id = deckViewModel.getNewUid(),
@@ -159,8 +163,13 @@ class NotesToFlashcard(
             visibility = note.visibility,
             lastModified = Timestamp.now(),
             flashcardIds = flashcards.map { it.id })
-    deckViewModel.updateDeck(deck)
-    onSuccess(deck)
+    deckViewModel.updateDeck(
+        deck,
+        onSuccess = {
+          deckViewModel.selectDeck(deck)
+          onSuccess(deck)
+        },
+        onFailure = onFailure)
   }
 
   /**
@@ -171,7 +180,7 @@ class NotesToFlashcard(
    * @param folderId the ID of the folder containing the note
    * @return the deck of flashcards created from the note
    */
-  private suspend fun convertNoteToDeckSuspend(note: Note, folderId: String): Deck =
+  private suspend fun convertNoteToDeckSuspend(note: Note, folderId: String): Deck? =
       suspendCoroutine { continuation ->
         convertNoteToDeck(
             note,
@@ -270,9 +279,11 @@ class NotesToFlashcard(
             noteSemaphore.withPermit {
               try {
                 val deck = convertNoteToDeckSuspend(note, deckFolder.id)
-                finalDeck = deck
-                folderFlashcardIds.addAll(deck.flashcardIds)
-                onProgress(notesProcessed.incrementAndGet(), foldersProcessed.get(), null)
+                if (deck != null) {
+                  finalDeck = deck
+                  folderFlashcardIds.addAll(deck.flashcardIds)
+                  onProgress(notesProcessed.incrementAndGet(), foldersProcessed.get(), null)
+                }
               } catch (e: Exception) {
                 // Log the error and continue processing other notes
                 Log.e(TAG, "Failed to convert note ${note.id} to deck", e)
