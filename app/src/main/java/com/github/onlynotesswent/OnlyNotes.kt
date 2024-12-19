@@ -204,9 +204,23 @@ fun OnlyNotesApp(scanner: Scanner, pictureTaker: PictureTaker, textExtractor: Te
             pictureTaker,
             navigationActions)
       }
-      composable(Screen.DECK_PLAY) {
-        DeckPlayScreen(
-            navigationActions, userViewModel, deckViewModel, flashcardViewModel, fileViewModel)
+      composable(Screen.DECK_PLAY) { navBackStackEntry ->
+        val deckId = navBackStackEntry.arguments?.getString("deckId")
+        val mode = navBackStackEntry.arguments?.getString("mode")
+
+        // Refresh deck if it is not null
+        LaunchedEffect(deckId, mode) {
+          if (deckId != null && deckId != "{deckId}" && mode != null && mode != "{mode}") {
+            deckViewModel.getDeckById(
+                deckId, { deckViewModel.playDeckWithMode(it, Deck.PlayMode.fromString(mode)) })
+          }
+        }
+
+        if (deckViewModel.selectedDeck.collectAsState().value != null &&
+            deckViewModel.selectedPlayMode.collectAsState().value != null) {
+          DeckPlayScreen(
+              navigationActions, userViewModel, deckViewModel, flashcardViewModel, fileViewModel)
+        }
       }
       composable(
           route = Screen.FOLDER_CONTENTS,
