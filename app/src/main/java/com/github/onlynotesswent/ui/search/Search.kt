@@ -31,6 +31,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
@@ -74,10 +75,9 @@ fun SearchScreen(
     deckViewModel: DeckViewModel,
     fileViewModel: FileViewModel
 ) {
-  val searchQuery = remember { mutableStateOf("") }
-  val searchType = remember { mutableStateOf(SearchType.NOTES) }
-  val searchWords = remember { mutableStateOf(emptyList<String>()) }
-  searchWords.value = searchQuery.value.split("\\s+".toRegex())
+  val searchQuery = rememberSaveable { mutableStateOf("") }
+  val searchType = rememberSaveable { mutableStateOf(SearchType.NOTES) }
+  val searchWords = remember { derivedStateOf { searchQuery.value.split("\\s+".toRegex()) } }
 
   val currentUser = userViewModel.currentUser.collectAsState()
   val showAdditionalFilters = remember { mutableStateOf(false) }
@@ -145,7 +145,7 @@ fun SearchScreen(
         ) {
           OutlinedTextField(
               value = searchQuery.value,
-              onValueChange = { searchQuery.value = it },
+              onValueChange = { searchQuery.value = it.trimStart() },
               placeholder = { Text(stringResource(R.string.search)) },
               leadingIcon = {
                 Icon(
@@ -583,7 +583,7 @@ private fun AdditionalFilters(
   Row(
       horizontalArrangement = Arrangement.spacedBy(10.dp),
       verticalAlignment = Alignment.CenterVertically,
-      modifier = Modifier.padding(vertical = 5.dp)) {
+      modifier = Modifier.padding(bottom = 5.dp)) {
         AnimatedVisibility(visible = showAdditionalFilters.value) {
           LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             items(AdditionalFilterType.entries.size) { index ->
