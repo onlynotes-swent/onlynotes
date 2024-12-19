@@ -1,4 +1,4 @@
-package com.github.onlynotesswent.model.flashcard.deck
+package com.github.onlynotesswent.model.deck
 
 import com.github.onlynotesswent.model.common.Visibility
 import com.github.onlynotesswent.model.flashcard.Flashcard
@@ -28,10 +28,8 @@ data class Deck(
 ) {
   /** Represents the play mode of a deck. */
   enum class PlayMode {
-    FLASHCARD,
-    MATCH,
-    MCQ,
-    ALL;
+    TEST,
+    REVIEW;
 
     companion object {
       /**
@@ -41,7 +39,7 @@ data class Deck(
        * @return The converted PlayMode.
        */
       fun fromString(s: String?): PlayMode {
-        return entries.find { it.toString() == s } ?: FLASHCARD
+        return entries.find { it.toString() == s } ?: REVIEW
       }
     }
   }
