@@ -89,7 +89,14 @@ fun CommentsScreen(
               currentUser = currentUser,
               note = note,
               updatedComments = updatedComments,
-              { updatedComments = it },
+              {
+                  updatedComments = it
+                  val newNote = note!!.copy(comments = Note.CommentCollection(updatedComments.commentsList))
+                  noteViewModel.selectedNote(newNote)
+                  noteViewModel.updateNote(
+                      note = note!!
+                  )
+              },
               modifier = Modifier.fillMaxWidth().padding(horizontal = 2.dp, vertical = 2.dp))
 
           HorizontalDivider(
@@ -119,7 +126,14 @@ fun CommentsScreen(
                 horizontalAlignment = Alignment.CenterHorizontally) {
                   CommentsSection(
                       updatedComments,
-                      { updatedComments = it },
+                      {
+                          updatedComments = it
+                          val newNote = note!!.copy(comments = Note.CommentCollection(updatedComments.commentsList))
+                          noteViewModel.selectedNote(newNote)
+                          noteViewModel.updateNote(
+                              note = note!!
+                          )
+                      },
                       currentUser!!,
                       note!!,
                       userViewModel,
@@ -336,6 +350,7 @@ fun CommentOptionsMenu(
     onEditRequest: () -> Unit
 ) {
   DropdownMenu(
+      modifier = Modifier.background(MaterialTheme.colorScheme.onPrimary),
       expanded = expanded, onDismissRequest = onDismissRequest // Use callback to handle dismissal
       ) {
         if (comment.isOwner(currentUser.uid)) {
@@ -349,6 +364,7 @@ fun CommentOptionsMenu(
         }
         if (comment.isOwner(currentUser.uid) || note.isOwner(currentUser.uid)) {
           DropdownMenuItem(
+                modifier = Modifier.background(MaterialTheme.colorScheme.onPrimary),
               text = { Text("Delete comment") },
               onClick = {
                 onDismissRequest()
