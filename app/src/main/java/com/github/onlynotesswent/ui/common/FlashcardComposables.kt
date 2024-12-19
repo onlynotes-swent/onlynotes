@@ -545,14 +545,17 @@ fun FlashcardPlayItem(
     choice: MutableState<Int?> = remember { mutableStateOf(null) },
     isReview: Boolean = false
 ) {
-  if (flashcardState.value == null) {
-    LoadingIndicator(stringResource(R.string.loading_flashcard))
-  } else {
-    val flashcard = remember { derivedStateOf { flashcardState.value!! } }
-    if (flashcard.value.isMCQ() && !isReview) {
-      McqPlayItem(flashcard, fileViewModel, onCorrect, onIncorrect, choice)
+  AnimatedContent(flashcardState.value == null, label = "") { displayLoader ->
+    if (displayLoader) {
+      LoadingIndicator(
+          stringResource(R.string.loading_flashcard), Modifier.fillMaxWidth().height(200.dp))
     } else {
-      NormalFlashcardPlayItem(flashcard, fileViewModel)
+      val flashcard = remember { derivedStateOf { flashcardState.value!! } }
+      if (flashcard.value.isMCQ() && !isReview) {
+        McqPlayItem(flashcard, fileViewModel, onCorrect, onIncorrect, choice)
+      } else {
+        NormalFlashcardPlayItem(flashcard, fileViewModel)
+      }
     }
   }
 }
@@ -596,7 +599,7 @@ fun NormalFlashcardPlayItem(
 
   ElevatedCard(
       modifier =
-          Modifier.fillMaxWidth(0.9f)
+          Modifier.fillMaxWidth(0.95f)
               .testTag("flashcard")
               .padding(5.dp)
               .graphicsLayer {
