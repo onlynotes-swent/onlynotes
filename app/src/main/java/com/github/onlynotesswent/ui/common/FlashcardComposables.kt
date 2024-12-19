@@ -126,8 +126,7 @@ fun FlashcardViewItem(
           if (flashcard.value.isMCQ()) {
             Text(
                 stringResource(R.string.mcq),
-                style = Typography.bodyLarge,
-                fontStyle = FontStyle.Italic,
+                style = MaterialTheme.typography.titleMedium,
                 modifier =
                     Modifier.align(Alignment.TopStart)
                         .testTag("flashcardMCQ--${flashcard.value.id}"))
@@ -160,7 +159,8 @@ fun FlashcardViewItem(
               verticalArrangement = Arrangement.SpaceAround,
               modifier =
                   Modifier.testTag("flashcardItemColumn")
-                      .semantics(mergeDescendants = true, properties = {})) {
+                      .semantics(mergeDescendants = true, properties = {})
+                      .padding(top = 20.dp)) {
                 Text(
                     flashcard.value.front,
                     style = Typography.bodyMedium,
