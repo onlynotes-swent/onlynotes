@@ -165,6 +165,11 @@ fun PdfViewerScreen(
                 } else {
                   updateMdFile(text, noteViewModel, fileViewModel, navigationActions, context)
                 }
+              },
+              onFailure = {
+                Toast.makeText(context, "Error: text could not be extracted", Toast.LENGTH_LONG)
+                    .show()
+                Log.e("PdfViewerScreen", "Error extracting text from PDF: $it")
               })
           expandedMenu = false
         },

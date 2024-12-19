@@ -4,7 +4,6 @@ import android.graphics.Bitmap
 import android.graphics.pdf.PdfRenderer
 import android.os.ParcelFileDescriptor
 import android.util.Log
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
@@ -31,13 +30,13 @@ open class TextExtractor(
    * @param pdfFile the PDF file to extract text from.
    * @param onSuccess the lambda function to call with the extracted text.
    */
-  fun processPdfFile(pdfFile: File, onSuccess: (String) -> Unit) {
+  fun processPdfFile(pdfFile: File, onSuccess: (String) -> Unit, onFailure: (Exception) -> Unit) {
     try {
       val bitmaps = convertPdfToBitmap(pdfFile)
-      extractTextFromBitmaps(bitmaps, onSuccess)
+      extractTextFromBitmaps(bitmaps, onSuccess, onFailure)
     } catch (e: Exception) {
       Log.e(TAG, "Error while converting PDF to bitmap", e)
-      Toast.makeText(activity, "Error: text recognition failed", Toast.LENGTH_SHORT).show()
+      onFailure(e)
     }
   }
 
@@ -62,7 +61,6 @@ open class TextExtractor(
         val bitmap = Bitmap.createBitmap(page.width, page.height, Bitmap.Config.ARGB_8888)
         page.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
         bitmaps.add(bitmap)
-        bitmap.recycle()
         page.close()
       }
     } finally {
@@ -79,21 +77,42 @@ open class TextExtractor(
    * @param bitmaps the list of bitmaps to extract text from.
    * @param onSuccess the lambda function to call with the extracted text.
    */
-  internal fun extractTextFromBitmaps(bitmaps: List<Bitmap>, onSuccess: (String) -> Unit) {
+  internal fun extractTextFromBitmaps(
+      bitmaps: List<Bitmap>,
+      onSuccess: (String) -> Unit,
+      onFailure: (Exception) -> Unit
+  ) {
     val textResults = StringBuilder()
+    var processedCount = 0
+    val totalBitmaps = bitmaps.size
+    var hasFailed = false
+    val lock = Any()
 
-    bitmaps.forEachIndexed { index, bitmap ->
+    bitmaps.forEach { bitmap ->
       val image = InputImage.fromBitmap(bitmap, 0)
       textRecognizer
           .process(image)
           .addOnSuccessListener { visionText ->
-            val text = visionText.text
-            if (text.isNotEmpty()) textResults.append(text).append("\n")
-            if (index == bitmaps.size - 1) onSuccess(textResults.toString())
+            synchronized(lock) {
+              if (!hasFailed) {
+                val text = visionText.text
+                if (text.isNotEmpty()) textResults.append(text).append("\n")
+                processedCount++
+                if (processedCount == totalBitmaps) onSuccess(textResults.toString())
+              }
+            }
           }
           .addOnFailureListener { e ->
-            Log.e(TAG, "Text recognition failed", e)
-            Toast.makeText(activity, "Error: text recognition failed", Toast.LENGTH_SHORT).show()
+            synchronized(lock) {
+              if (!hasFailed) {
+                hasFailed = true
+                Log.e(TAG, "Text recognition failed", e)
+                onFailure(e)
+              }
+            }
+          }
+          .addOnCompleteListener {
+            bitmap.recycle() // Recycle the bitmap after processing
           }
     }
   }
