@@ -31,6 +31,13 @@ data class Deck(
     TEST,
     REVIEW;
 
+    fun toReadableString(): String {
+      return when (this) {
+        TEST -> "Test"
+        REVIEW -> "Review"
+      }
+    }
+
     companion object {
       /**
        * Converts a string to a PlayMode.
