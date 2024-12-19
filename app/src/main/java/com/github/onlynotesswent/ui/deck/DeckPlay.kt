@@ -509,14 +509,14 @@ private fun FinishedScreen(
       modifier = Modifier.testTag("FinishedScreenColumn").fillMaxSize(),
       verticalArrangement = Arrangement.Center,
       horizontalAlignment = Alignment.CenterHorizontally) {
-        val scorePercent = score.intValue * 100 / flashcardList.value.size
+        // wait for the user to finish the test before starting animation
+        val scorePercent =
+            if (!isFinished.value) 0 else score.intValue * 100 / flashcardList.value.size
         val animatedScore =
             animateFloatAsState(
-                targetValue = scorePercent.toFloat(), animationSpec = tween(1300), label = "")
+                targetValue = scorePercent.toFloat(), animationSpec = tween(1300, 300), label = "")
         CircularProgressIndicator(
-            progress = { animatedScore.value },
-            modifier = Modifier.size(300.dp).padding(30.dp),
-            color = MaterialTheme.colorScheme.primary)
+            progress = { animatedScore.value }, modifier = Modifier.size(180.dp).padding(30.dp))
         Text(
             "You have finished the deck with a score of ${animatedScore.value}% !",
             style = MaterialTheme.typography.bodyLarge)
