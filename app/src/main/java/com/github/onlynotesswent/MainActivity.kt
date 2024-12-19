@@ -53,6 +53,7 @@ import com.github.onlynotesswent.ui.user.PublicProfileScreen
 import com.github.onlynotesswent.ui.user.UserProfileScreen
 import com.github.onlynotesswent.utils.PictureTaker
 import com.github.onlynotesswent.utils.Scanner
+import com.github.onlynotesswent.utils.TextExtractor
 
 class MainActivity : ComponentActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -60,20 +61,20 @@ class MainActivity : ComponentActivity() {
 
     val scanner = Scanner(this).apply { init() }
     val pictureTaker = PictureTaker(this).apply { init() }
+    val textExtractor = TextExtractor(this)
 
     setContent {
       AppTheme {
-        Surface(modifier = Modifier.fillMaxSize()) { OnlyNotesApp(scanner, pictureTaker) }
+        Surface(modifier = Modifier.fillMaxSize()) {
+          OnlyNotesApp(scanner, pictureTaker, textExtractor)
+        }
       }
     }
   }
 }
 
 @Composable
-fun OnlyNotesApp(
-    scanner: Scanner,
-    pictureTaker: PictureTaker,
-) {
+fun OnlyNotesApp(scanner: Scanner, pictureTaker: PictureTaker, textExtractor: TextExtractor) {
   val context = LocalContext.current
 
   val navController = rememberNavController()
@@ -112,7 +113,8 @@ fun OnlyNotesApp(
         CommentsScreen(navigationActions, noteViewModel, userViewModel)
       }
       composable(Screen.EDIT_NOTE_PDF) {
-        PdfViewerScreen(noteViewModel, fileViewModel, userViewModel, scanner, navigationActions)
+        PdfViewerScreen(
+            navigationActions, noteViewModel, fileViewModel, userViewModel, scanner, textExtractor)
       }
       composable(Screen.EDIT_NOTE_MARKDOWN) {
         EditMarkdownScreen(navigationActions, noteViewModel, fileViewModel, userViewModel)
