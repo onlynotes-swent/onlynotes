@@ -49,7 +49,9 @@ import com.github.onlynotesswent.model.note.Note
 import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.model.user.User
 import com.github.onlynotesswent.ui.navigation.NavigationActions
+import com.github.onlynotesswent.ui.navigation.Route.NOTE_OVERVIEW
 import com.github.onlynotesswent.ui.navigation.Screen
+import com.google.firebase.Timestamp
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -63,7 +65,6 @@ import java.util.Locale
  * @param currentUser The current user.
  * @param noteViewModel The ViewModel that provides the list of notes to display.
  * @param folderViewModel The ViewModel that provides the list of folders to display.
- * @param showDialog A boolean indicating whether the move out dialog should be displayed.
  * @param navigationActions The navigation instance used to transition between different screens.
  * @param onClick The lambda function to be invoked when the note card is clicked.
  */
@@ -75,7 +76,6 @@ fun NoteItem(
     currentUser: State<User?>,
     noteViewModel: NoteViewModel,
     folderViewModel: FolderViewModel,
-    showDialog: Boolean,
     navigationActions: NavigationActions,
     onClick: () -> Unit
 ) {
@@ -86,8 +86,8 @@ fun NoteItem(
         note = note,
         noteViewModel = noteViewModel,
         folderViewModel = folderViewModel,
-        navigationActions = navigationActions,
-        onDismiss = { showBottomSheet = false })
+        onDismiss = { showBottomSheet = false },
+        navigationActions = navigationActions)
   }
 
   Card(
@@ -173,8 +173,8 @@ fun NoteItem(
  * @param note The note data that will be displayed in this card.
  * @param noteViewModel The ViewModel that provides the list of notes to display.
  * @param folderViewModel the folderViewModel used here to move the note.
- * @param navigationActions The navigation instance used to transition between different screens.
  * @param onDismiss The callback to be invoked when the bottom sheet is dismissed.
+ * @param navigationActions The navigation instance used to transition between different screens.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -182,8 +182,8 @@ fun NoteOptionsBottomSheet(
     note: Note,
     noteViewModel: NoteViewModel,
     folderViewModel: FolderViewModel,
-    navigationActions: NavigationActions,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    navigationActions: NavigationActions
 ) {
   var showFileSystemPopup by remember { mutableStateOf(false) }
   var showDeletePopup by remember { mutableStateOf(false) }
@@ -193,11 +193,18 @@ fun NoteOptionsBottomSheet(
         onDismiss = { showFileSystemPopup = false },
         folderViewModel = folderViewModel,
         onMoveHere = { selectedFolder ->
-          noteViewModel.updateNote(note.copy(folderId = selectedFolder?.id))
+          noteViewModel.updateNote(
+              note.copy(folderId = selectedFolder?.id, lastModified = Timestamp.now()))
           showFileSystemPopup = false
-          // this is needed to update the displayed notes
-          noteViewModel.getNotesFromFolder(folderViewModel.selectedFolder.value?.id ?: "", null)
-          folderViewModel.selectedFolder.value?.let { folderViewModel.getFolderById(it.id) }
+          folderViewModel.clearSelectedFolder()
+          if (selectedFolder != null) {
+            navigationActions.navigateTo(
+                Screen.FOLDER_CONTENTS.replace(
+                    oldValue = "{folderId}", newValue = selectedFolder.id))
+          } else {
+            navigationActions.navigateTo(NOTE_OVERVIEW)
+          }
+
           onDismiss() // Dismiss the bottom sheet after moving the note
         })
   }
@@ -206,7 +213,13 @@ fun NoteOptionsBottomSheet(
     ConfirmationPopup(
         title = stringResource(R.string.delete_note),
         text = stringResource(R.string.delete_note_text),
-        onConfirm = { noteViewModel.deleteNoteById(note.id, note.userId) },
+        onConfirm = {
+          noteViewModel.deleteNoteById(note.id, note.userId)
+          if (folderViewModel.selectedFolder.value != null) {
+            noteViewModel.getNotesFromFolder(folderViewModel.selectedFolder.value!!.id, null)
+          }
+          showDeletePopup = false // Close the dialog after deleting
+        },
         onDismiss = {
           showDeletePopup = false // Close the dialog without deleting
         })
@@ -271,10 +284,11 @@ fun NoteDialog(
     onDismiss: () -> Unit,
     onConfirm: (String, Visibility) -> Unit,
     action: String,
-    oldVisibility: Visibility = Visibility.PRIVATE,
+    oldVisibility: Visibility = Visibility.DEFAULT,
     oldName: String = ""
 ) {
-  CreationDialog(onDismiss, onConfirm, action, oldVisibility, oldName, "Note")
+  CreationDialog(
+      onDismiss, onConfirm, action, oldVisibility, oldName, stringResource(R.string.note))
 }
 
 /**

@@ -5,6 +5,7 @@ import androidx.room.PrimaryKey
 import com.github.onlynotesswent.model.common.Visibility
 import com.github.onlynotesswent.model.user.User
 import com.google.firebase.Timestamp
+import com.google.firebase.firestore.PropertyName
 
 /**
  * Represents a folder that contains notes.
@@ -24,7 +25,7 @@ data class Folder(
     val userId: String,
     val parentFolderId: String? = null,
     val visibility: Visibility = Visibility.DEFAULT,
-    val isDeckFolder: Boolean = false,
+    @get:PropertyName("isDeckFolder") val isDeckFolder: Boolean = false,
     val lastModified: Timestamp
 ) {
   /**

@@ -1,4 +1,4 @@
-package com.github.onlynotesswent.model.flashcard.deck
+package com.github.onlynotesswent.model.deck
 
 import com.github.onlynotesswent.model.common.Visibility
 import com.google.firebase.Timestamp
@@ -70,6 +70,11 @@ class DeckViewModelTest {
       onSuccess()
     }
     `when`(mockDeckRepository.deleteDeck(any(), any(), any())).thenAnswer {
+      val onSuccess: () -> Unit = it.getArgument(1)
+      onSuccess()
+    }
+
+    `when`(mockDeckRepository.deleteDecksFromFolder(any(), any(), any())).thenAnswer {
       val onSuccess: () -> Unit = it.getArgument(1)
       onSuccess()
     }
@@ -222,6 +227,29 @@ class DeckViewModelTest {
     }
     deckViewModel.deleteDeck(testDeck, { fail("Should not succeed") }, { exceptionThrown = it })
     verify(mockDeckRepository).deleteDeck(eq(testDeck), any(), any())
+    assertEquals(testException, exceptionThrown)
+  }
+
+  @Test
+  fun `deleteDecksFromFolder calls repository`() {
+    var wasCalled = false
+    deckViewModel.deleteDecksFromFolder(
+        testDeck.folderId!!, { wasCalled = true }, { fail("Should not fail") })
+    verify(mockDeckRepository).deleteDecksFromFolder(eq(testDeck.folderId!!), any(), any())
+    assert(wasCalled)
+  }
+
+  @Test
+  fun `deleteDecksFromFolder fails`() {
+    val testException = Exception("Test exception")
+    var exceptionThrown: Exception? = null
+    `when`(mockDeckRepository.deleteDecksFromFolder(any(), any(), any())).thenAnswer {
+      val onFailure: (Exception) -> Unit = it.getArgument(2)
+      onFailure(testException)
+    }
+    deckViewModel.deleteDecksFromFolder(
+        testDeck.folderId!!, { fail("Should not succeed") }, { exceptionThrown = it })
+    verify(mockDeckRepository).deleteDecksFromFolder(eq(testDeck.folderId!!), any(), any())
     assertEquals(testException, exceptionThrown)
   }
 }

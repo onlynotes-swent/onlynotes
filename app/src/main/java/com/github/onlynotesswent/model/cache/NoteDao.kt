@@ -10,9 +10,11 @@ import com.github.onlynotesswent.model.note.Note
 interface NoteDao {
   @Query("SELECT * FROM note WHERE id = :noteId") fun getNoteById(noteId: String): Note?
 
-  @Query("SELECT * FROM note") fun getNotesFromUid(): List<Note>
+  @Query("SELECT * FROM note WHERE userid = :userId")
+  fun getNotesFromUid(userId: String): List<Note>
 
-  @Query("SELECT * FROM note WHERE folderid IS NULL") fun getRootNotesFromUid(): List<Note>
+  @Query("SELECT * FROM note WHERE folderid IS NULL AND userid = :userId")
+  fun getRootNotesFromUid(userId: String): List<Note>
 
   @Query("SELECT * FROM note WHERE id IN(:noteIds)")
   fun getNotesByIds(noteIds: List<String>): List<Note>
@@ -28,7 +30,7 @@ interface NoteDao {
 
   @Query("DELETE FROM note WHERE id IN(:noteIds)") fun deleteNotesByIds(noteIds: List<String>)
 
-  @Query("DELETE FROM note") fun deleteNotesFromUid()
+  @Query("DELETE FROM note WHERE userid = :userId") fun deleteNotesFromUid(userId: String)
 
   @Query("DELETE FROM note WHERE folderid = :folderId") fun deleteNotesFromFolder(folderId: String)
 }

@@ -33,14 +33,13 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.mockito.Mockito.mock
-import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.eq
 
-class OverviewTest {
+class NoteOverviewTest {
   private lateinit var userRepository: UserRepository
   private lateinit var userViewModel: UserViewModel
   private lateinit var navigationActions: NavigationActions
@@ -109,46 +108,10 @@ class OverviewTest {
     userViewModel.addUser(testUser, {}, {})
 
     // Mock the current route to be the user create screen
-    `when`(navigationActions.currentRoute()).thenReturn(Screen.OVERVIEW)
+    `when`(navigationActions.currentRoute()).thenReturn(Screen.NOTE_OVERVIEW)
     composeTestRule.setContent {
-      OverviewScreen(navigationActions, noteViewModel, userViewModel, folderViewModel)
+      NoteOverviewScreen(navigationActions, noteViewModel, userViewModel, folderViewModel)
     }
-  }
-
-  @Test
-  fun refreshButtonWorks() = runTest {
-    // Mock the repositories to return an empty list of notes and folders, for the refresh button to
-    // appear
-    `when`(noteRepository.getRootNotesFromUid(eq("1"), any(), any(), any())).then { invocation ->
-      val onSuccess = invocation.getArgument<(List<Note>) -> Unit>(1)
-      onSuccess(listOf())
-    }
-    `when`(folderRepository.getRootNoteFoldersFromUserId(eq("1"), any(), any(), any())).then {
-        invocation ->
-      val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(1)
-      onSuccess(listOf())
-    }
-    composeTestRule.onNodeWithTag("emptyNoteAndFolderPrompt").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("refreshButton").assertIsDisplayed()
-
-    // Mock the repositories to return a list of notes and folders
-    `when`(noteRepository.getRootNotesFromUid(eq("1"), any(), any(), any())).then { invocation ->
-      val onSuccess = invocation.getArgument<(List<Note>) -> Unit>(1)
-      onSuccess(noteList)
-    }
-    `when`(folderRepository.getRootNoteFoldersFromUserId(eq("1"), any(), any(), any())).then {
-        invocation ->
-      val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(1)
-      onSuccess(folderList)
-    }
-    composeTestRule.onNodeWithTag("refreshButton").performClick()
-
-    // Verify that the repositories were called twice, once during the initial load and once during
-    // the
-    // refresh click
-    verify(noteRepository, times(2)).getRootNotesFromUid(eq("1"), any(), any(), any())
-    verify(folderRepository, times(2)).getRootNoteFoldersFromUserId(eq("1"), any(), any(), any())
-    composeTestRule.onNodeWithTag("noteAndFolderList").assertIsDisplayed()
   }
 
   @Test
@@ -216,30 +179,30 @@ class OverviewTest {
 
   @Test
   fun displayBaseComponents() {
-    composeTestRule.onNodeWithTag("createNoteOrFolder").assertExists()
+    composeTestRule.onNodeWithTag("createObjectOrFolder").assertExists()
     composeTestRule.onNodeWithTag("emptyNoteAndFolderPrompt").assertExists()
     composeTestRule.onNodeWithTag("overviewScreen").assertExists()
 
-    composeTestRule.onNodeWithTag("createNoteOrFolder").performClick()
-    composeTestRule.onNodeWithTag("createNote").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("createObjectOrFolder").performClick()
+    composeTestRule.onNodeWithTag("createDeckOrNote").assertIsDisplayed()
     composeTestRule.onNodeWithTag("createFolder").assertIsDisplayed()
   }
 
   @Test
   fun createNoteButtonShowsDialog() {
     composeTestRule.onNodeWithTag("overviewScreen").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("createNoteOrFolder").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("createNoteOrFolder").performClick()
-    composeTestRule.onNodeWithTag("createNote").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("createNote").performClick()
+    composeTestRule.onNodeWithTag("createObjectOrFolder").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("createObjectOrFolder").performClick()
+    composeTestRule.onNodeWithTag("createDeckOrNote").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("createDeckOrNote").performClick()
     composeTestRule.onNodeWithTag("NoteDialog").assertIsDisplayed()
   }
 
   @Test
   fun createFolderButtonShowsDialog() {
     composeTestRule.onNodeWithTag("overviewScreen").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("createNoteOrFolder").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("createNoteOrFolder").performClick()
+    composeTestRule.onNodeWithTag("createObjectOrFolder").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("createObjectOrFolder").performClick()
     composeTestRule.onNodeWithTag("createFolder").assertIsDisplayed()
     composeTestRule.onNodeWithTag("createFolder").performClick()
     composeTestRule.onNodeWithTag("FolderDialog").assertIsDisplayed()
@@ -247,8 +210,8 @@ class OverviewTest {
 
   @Test
   fun createNoteDialogWorks() = runTest {
-    composeTestRule.onNodeWithTag("createNoteOrFolder").performClick()
-    composeTestRule.onNodeWithTag("createNote").performClick()
+    composeTestRule.onNodeWithTag("createObjectOrFolder").performClick()
+    composeTestRule.onNodeWithTag("createDeckOrNote").performClick()
 
     composeTestRule.onNodeWithTag("inputNoteName").performTextInput("Note Name")
     composeTestRule.onNodeWithTag("currentVisibilityOption").assertIsDisplayed()
@@ -268,7 +231,7 @@ class OverviewTest {
 
   @Test
   fun createFolderDialogWorks() {
-    composeTestRule.onNodeWithTag("createNoteOrFolder").performClick()
+    composeTestRule.onNodeWithTag("createObjectOrFolder").performClick()
     composeTestRule.onNodeWithTag("createFolder").performClick()
 
     composeTestRule.onNodeWithTag("confirmFolderAction").assertIsNotEnabled()

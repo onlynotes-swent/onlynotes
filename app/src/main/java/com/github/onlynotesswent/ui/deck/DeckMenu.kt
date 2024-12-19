@@ -57,11 +57,11 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.github.onlynotesswent.R
+import com.github.onlynotesswent.model.deck.Deck
+import com.github.onlynotesswent.model.deck.Deck.SortMode
+import com.github.onlynotesswent.model.deck.DeckViewModel
 import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.flashcard.FlashcardViewModel
-import com.github.onlynotesswent.model.flashcard.deck.Deck
-import com.github.onlynotesswent.model.flashcard.deck.Deck.SortMode
-import com.github.onlynotesswent.model.flashcard.deck.DeckViewModel
 import com.github.onlynotesswent.model.user.User
 import com.github.onlynotesswent.model.user.UserViewModel
 import com.github.onlynotesswent.ui.common.CustomDropDownMenu
@@ -127,7 +127,12 @@ fun DeckScreen(
   }
 
   Scaffold(
-      topBar = { DeckMenuTopAppBar { navigationActions.goBack() } },
+      topBar = {
+        DeckMenuTopAppBar {
+          navigationActions.goBack()
+          deckViewModel.clearSelectedDeck()
+        }
+      },
       floatingActionButton = {
         if (belongsToUser) {
           DeckFab(
@@ -510,13 +515,10 @@ private fun PlayModesBottomSheet(
                             headlineContent = {
                               Text(
                                   when (playMode) {
-                                    Deck.PlayMode.FLASHCARD ->
-                                        stringResource(R.string.play_mode_flashcards)
-                                    Deck.PlayMode.MATCH ->
-                                        stringResource(R.string.play_mode_match_cards)
-                                    Deck.PlayMode.MCQ -> stringResource(R.string.play_mode_mcq)
-                                    Deck.PlayMode.ALL ->
-                                        stringResource(R.string.play_mode_all_combined)
+                                    Deck.PlayMode.REVIEW ->
+                                        stringResource(R.string.review_the_flashcards)
+                                    Deck.PlayMode.TEST ->
+                                        stringResource(R.string.test_your_knowledge)
                                   },
                                   style = MaterialTheme.typography.bodyLarge)
                             },
