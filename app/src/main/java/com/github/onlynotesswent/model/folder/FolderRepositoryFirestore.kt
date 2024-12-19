@@ -4,7 +4,7 @@ import android.content.Context
 import android.util.Log
 import com.github.onlynotesswent.model.cache.CacheDatabase
 import com.github.onlynotesswent.model.common.Visibility
-import com.github.onlynotesswent.model.flashcard.deck.DeckViewModel
+import com.github.onlynotesswent.model.deck.DeckViewModel
 import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.model.user.Friends
 import com.github.onlynotesswent.model.user.UserViewModel

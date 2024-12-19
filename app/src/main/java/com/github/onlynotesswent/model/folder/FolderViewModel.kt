@@ -8,7 +8,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.github.onlynotesswent.model.cache.CacheDatabase
-import com.github.onlynotesswent.model.flashcard.deck.DeckViewModel
+import com.github.onlynotesswent.model.deck.DeckViewModel
 import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.model.user.UserRepositoryFirestore
 import com.github.onlynotesswent.model.user.UserViewModel

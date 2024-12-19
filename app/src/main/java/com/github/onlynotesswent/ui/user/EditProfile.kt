@@ -329,51 +329,6 @@ fun EditProfileScreen(
                                   tint = MaterialTheme.colorScheme.onSurface)
                         })
                   }
-                    Row(modifier = Modifier.padding(top = 16.dp)) {
-                      FilterChip(
-                          modifier =
-                              Modifier.width(130.dp).height(40.dp).testTag("publicAccountChip"),
-                          selected = newIsAccountPublic.value,
-                          onClick = { newIsAccountPublic.value = true },
-                          label = {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.Center) {
-                                  Text(
-                                      stringResource(R.string.public_account),
-                                      style = Typography.titleMedium)
-                                }
-                          },
-                          leadingIcon = {
-                            if (newIsAccountPublic.value)
-                                Icon(
-                                    imageVector = Icons.Default.Public,
-                                    contentDescription = "Public Account",
-                                    tint = MaterialTheme.colorScheme.onSurface)
-                          })
-                      Spacer(modifier = Modifier.width(16.dp))
-                      FilterChip(
-                          modifier =
-                              Modifier.width(130.dp).height(40.dp).testTag("privateAccountChip"),
-                          selected = !newIsAccountPublic.value,
-                          onClick = { newIsAccountPublic.value = false },
-                          label = {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.Center) {
-                                  Text(
-                                      stringResource(R.string.private_account),
-                                      style = Typography.titleMedium)
-                                }
-                          },
-                          leadingIcon = {
-                            if (!newIsAccountPublic.value)
-                                Icon(
-                                    imageVector = Icons.Default.Lock,
-                                    contentDescription = "Private Account",
-                                    tint = MaterialTheme.colorScheme.onSurface)
-                          })
-                    }
 
                     Button(
                         modifier = Modifier.padding(top = 16.dp).testTag("deleteAccountButton"),
