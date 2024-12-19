@@ -85,8 +85,9 @@ class NavigationActionsTest {
 
   @Test
   fun navigateToCallsController() {
-    navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
-    verify(mockNavHostController).navigate(eq(Route.OVERVIEW), any<NavOptionsBuilder.() -> Unit>())
+    navigationActions.navigateTo(TopLevelDestinations.NOTE_OVERVIEW)
+    verify(mockNavHostController)
+        .navigate(eq(Route.NOTE_OVERVIEW), any<NavOptionsBuilder.() -> Unit>())
 
     navigationActions.navigateTo(Screen.AUTH)
     verify(mockNavHostController).navigate(Screen.AUTH)
@@ -104,9 +105,9 @@ class NavigationActionsTest {
   @Test
   fun currentRouteWorksWithDestination() {
     `when`(mockNavHostController.currentDestination).thenReturn(mockNavigationDestination)
-    `when`(mockNavigationDestination.route).thenReturn(Route.OVERVIEW)
+    `when`(mockNavigationDestination.route).thenReturn(Route.NOTE_OVERVIEW)
 
-    assertThat(navigationActions.currentRoute(), `is`(Route.OVERVIEW))
+    assertThat(navigationActions.currentRoute(), `is`(Route.NOTE_OVERVIEW))
   }
 
   @Test
@@ -129,7 +130,8 @@ class NavigationActionsTest {
                 oldValue = "{folderId}", newValue = subfolder.parentFolderId!!))
 
     navigationActions.goBackFolderContents(folder, user)
-    verify(mockNavHostController).navigate(eq(Route.OVERVIEW), any<NavOptionsBuilder.() -> Unit>())
+    verify(mockNavHostController)
+        .navigate(eq(Route.NOTE_OVERVIEW), any<NavOptionsBuilder.() -> Unit>())
   }
 
   @Test

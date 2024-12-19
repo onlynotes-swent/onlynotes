@@ -469,7 +469,7 @@ class DeckMenuTest {
     composeTestRule.onNodeWithTag("editDeckMenuItem").performClick()
 
     // Check that the edit deck dialog is displayed
-    composeTestRule.onNodeWithTag("editDeckDialog").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("deckDialog").assertIsDisplayed()
     // Check that the title and description text fields are displayed
     composeTestRule
         .onNodeWithTag("deckTitleTextField")

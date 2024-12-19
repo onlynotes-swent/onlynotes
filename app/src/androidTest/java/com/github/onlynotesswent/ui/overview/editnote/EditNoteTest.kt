@@ -175,7 +175,7 @@ class EditNoteTest {
 
     composeTestRule.onNodeWithTag("popup").assertIsDisplayed()
     composeTestRule.onNodeWithTag("confirmButton").performClick()
-    verify(navigationActions).navigateTo(TopLevelDestinations.OVERVIEW)
+    verify(navigationActions).navigateTo(TopLevelDestinations.NOTE_OVERVIEW)
     verify(noteRepository).deleteNoteById(any(), any(), any(), any())
   }
 
@@ -189,7 +189,7 @@ class EditNoteTest {
     composeTestRule.onNodeWithTag("cancelButton").performClick()
     composeTestRule.onNodeWithTag("popup").assertIsNotDisplayed()
     verify(noteRepository, never()).deleteNoteById(any(), any(), any(), any())
-    verify(navigationActions, never()).navigateTo(TopLevelDestinations.OVERVIEW)
+    verify(navigationActions, never()).navigateTo(TopLevelDestinations.NOTE_OVERVIEW)
   }
 
   @Test
@@ -242,7 +242,7 @@ class EditNoteTest {
 
     composeTestRule.onNodeWithTag("confirmButton").performClick()
 
-    verify(navigationActions).navigateTo(TopLevelDestinations.OVERVIEW)
+    verify(navigationActions).navigateTo(TopLevelDestinations.NOTE_OVERVIEW)
     verify(noteRepository, never()).updateNote(any(), any(), any(), any())
   }
 

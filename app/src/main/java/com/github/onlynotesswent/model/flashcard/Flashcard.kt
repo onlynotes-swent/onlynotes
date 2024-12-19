@@ -9,7 +9,6 @@ package com.github.onlynotesswent.model.flashcard
  * @property latexFormula The latex formula for the flashcard, if any.
  * @property hasImage A flag indicating if the flashcard has an image.
  * @property fakeBacks The fake backs of the flashcard for MCQs, if any.
- * @property lastReviewed The timestamp of the last review of the flashcard.
  * @property userId The ID of the user who created the flashcard.
  * @property folderId The ID of the folder that the flashcard belongs to.
  * @property noteId The ID of the note that the flashcard belongs to.

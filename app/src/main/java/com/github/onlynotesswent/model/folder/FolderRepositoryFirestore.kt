@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.Log
 import com.github.onlynotesswent.model.cache.CacheDatabase
 import com.github.onlynotesswent.model.common.Visibility
+import com.github.onlynotesswent.model.deck.DeckViewModel
 import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.utils.NetworkUtils
 import com.google.firebase.Firebase
@@ -496,6 +497,54 @@ class FolderRepositoryFirestore(
               }
 
               noteViewModel.deleteNotesFromFolder(subFolder.id)
+              deleteFolderById(
+                  folderId = subFolder.id,
+                  onSuccess = {},
+                  onFailure = {
+                    onFailure(it)
+                    Log.e(TAG, "Failed to delete folderContents: ${it.message}")
+                  },
+                  useCache = useCache)
+            }
+          }
+          onSuccess()
+        },
+        onFailure = { e: Exception ->
+          Log.e(TAG, "Failed to delete folder contents: ${e.message}")
+          onFailure(e)
+        },
+        useCache = useCache)
+  }
+
+  override suspend fun deleteFolderContents(
+      folder: Folder,
+      deckViewModel: DeckViewModel,
+      onSuccess: () -> Unit,
+      onFailure: (Exception) -> Unit,
+      useCache: Boolean
+  ) {
+    getSubFoldersOf(
+        parentFolderId = folder.id,
+        onSuccess = { subFolders ->
+          subFolders.forEach { subFolder ->
+            CoroutineScope(Dispatchers.IO).launch {
+              deleteFolderContents(
+                  folder = subFolder,
+                  deckViewModel = deckViewModel,
+                  onSuccess = {},
+                  onFailure = {
+                    onFailure(it)
+                    Log.e(TAG, "Failed to delete folder contents: ${it.message}")
+                  },
+                  useCache = useCache)
+
+              // Update the cache if needed
+              if (useCache) {
+                // TODO: add deck cache
+                folderDao.deleteFolderById(subFolder.id)
+              }
+
+              deckViewModel.deleteDecksFromFolder(subFolder.id)
               deleteFolderById(
                   folderId = subFolder.id,
                   onSuccess = {},
