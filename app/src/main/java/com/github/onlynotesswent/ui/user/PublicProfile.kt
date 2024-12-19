@@ -32,6 +32,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -222,10 +223,15 @@ private fun ProfileScaffold(
       modifier = Modifier.testTag("profileScaffold"),
       floatingActionButton = floatingActionButton,
       bottomBar = {
-        BottomNavigationMenu(
-            onTabSelect = { route -> navigationActions.navigateTo(route) },
-            tabList = LIST_TOP_LEVEL_DESTINATION,
-            selectedItem = navigationActions.currentRoute())
+          Column {
+              HorizontalDivider(
+                  color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f), thickness = 0.5.dp)
+
+              BottomNavigationMenu(
+                  onTabSelect = { route -> navigationActions.navigateTo(route) },
+                  tabList = LIST_TOP_LEVEL_DESTINATION,
+                  selectedItem = navigationActions.currentRoute())
+          }
       },
       topBar = {
         TopProfileBar(
@@ -298,6 +304,8 @@ fun TopProfileBar(
             SendMessageButton(userViewModel, notificationViewModel, onSendMessageClick)
           }
         })
+
+      HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f), thickness = 0.5.dp)
   }
 }
 

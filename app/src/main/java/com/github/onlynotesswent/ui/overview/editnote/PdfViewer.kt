@@ -9,6 +9,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.UploadFile
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -26,6 +27,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.github.onlynotesswent.R
 import com.github.onlynotesswent.model.file.FileType
@@ -192,9 +194,13 @@ fun PdfViewerScreen(
             navigationActions = navigationActions)
       },
       bottomBar = {
-        // Navigation menu at the bottom
-        EditNoteNavigationMenu(
-            navigationActions = navigationActions, selectedItem = Screen.EDIT_NOTE_PDF)
+          Column {
+              HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f), thickness = 0.5.dp)
+
+              // Navigation menu at the bottom
+              EditNoteNavigationMenu(
+                  navigationActions = navigationActions, selectedItem = Screen.EDIT_NOTE_PDF)
+          }
       }) { paddingValues ->
         if (isLoading) {
           LoadingIndicator(

@@ -16,6 +16,7 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -37,6 +38,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import com.github.onlynotesswent.R
 import com.github.onlynotesswent.model.common.Course
 import com.github.onlynotesswent.model.common.Visibility
@@ -109,24 +111,29 @@ fun FolderContentScreen(
     Scaffold(
         modifier = Modifier.testTag("folderContentScreen"),
         topBar = {
-          FolderContentTopBar(
-              folder = folder.value,
-              updatedName = updatedName,
-              onUpdateName = { updatedName = it },
-              navigationActions = navigationActions,
-              folderViewModel = folderViewModel,
-              noteViewModel = noteViewModel,
-              userViewModel = userViewModel,
-              currentUser = currentUser,
-              context = context,
-              userFolderSubFolders = userFolderSubFolders,
-              userFolderNotes = userFolderNotes,
-              expanded = expanded,
-              onExpandedChange = { expanded = it },
-              showUpdateDialog = { showUpdateDialog = it },
-              isDeckView = isDeckView,
-              deckViewModel = deckViewModel,
-              userFolderDecks = userFolderDecks)
+            Column {
+                FolderContentTopBar(
+                    folder = folder.value,
+                    updatedName = updatedName,
+                    onUpdateName = { updatedName = it },
+                    navigationActions = navigationActions,
+                    folderViewModel = folderViewModel,
+                    noteViewModel = noteViewModel,
+                    userViewModel = userViewModel,
+                    currentUser = currentUser,
+                    context = context,
+                    userFolderSubFolders = userFolderSubFolders,
+                    userFolderNotes = userFolderNotes,
+                    expanded = expanded,
+                    onExpandedChange = { expanded = it },
+                    showUpdateDialog = { showUpdateDialog = it },
+                    isDeckView = isDeckView,
+                    deckViewModel = deckViewModel,
+                    userFolderDecks = userFolderDecks)
+
+                HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f), thickness = 0.5.dp)
+            }
+
         },
         floatingActionButton = {
           if (folder.value!!.isOwner(currentUser.value!!.uid)) {

@@ -19,6 +19,7 @@ import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -298,13 +299,22 @@ fun SearchScreen(
                   folderViewModel = folderViewModel,
                   deckViewModel = deckViewModel,
                   userViewModel = userViewModel)
+
+              HorizontalDivider(
+                  color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f), thickness = 0.5.dp)
             }
       },
       bottomBar = {
-        BottomNavigationMenu(
-            onTabSelect = { route -> navigationActions.navigateTo(route) },
-            tabList = LIST_TOP_LEVEL_DESTINATION,
-            selectedItem = navigationActions.currentRoute())
+          Column {
+              HorizontalDivider(
+                  color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
+                  thickness = 0.5.dp)
+
+              BottomNavigationMenu(
+                  onTabSelect = { route -> navigationActions.navigateTo(route) },
+                  tabList = LIST_TOP_LEVEL_DESTINATION,
+                  selectedItem = navigationActions.currentRoute())
+          }
       }) { padding ->
 
         // To skip large nested if-else blocks, we can use a boolean to determine which list to
