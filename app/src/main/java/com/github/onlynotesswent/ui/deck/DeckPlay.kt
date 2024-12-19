@@ -2,7 +2,7 @@ package com.github.onlynotesswent.ui.deck
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.animate
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -39,10 +39,13 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -505,20 +508,28 @@ private fun FinishedScreen(
     flashcardViewModel: FlashcardViewModel,
     answers: Map<String, MutableState<Int?>>
 ) {
+  var animatedScore by remember { mutableFloatStateOf(0f) }
+  val targetScore = if (!isFinished.value) 0 else score.intValue * 100 / flashcardList.value.size
   Column(
       modifier = Modifier.testTag("FinishedScreenColumn").fillMaxSize(),
       verticalArrangement = Arrangement.Center,
       horizontalAlignment = Alignment.CenterHorizontally) {
         // wait for the user to finish the test before starting animation
-        val scorePercent =
-            if (!isFinished.value) 0 else score.intValue * 100 / flashcardList.value.size
-        val animatedScore =
-            animateFloatAsState(
-                targetValue = scorePercent.toFloat(), animationSpec = tween(1300, 300), label = "")
+
+        LaunchedEffect(isFinished.value) {
+          if (isFinished.value) {
+            animate(
+                initialValue = 0f,
+                targetValue = targetScore.toFloat(),
+                animationSpec = tween(durationMillis = 1300, delayMillis = 300)) { value, _ ->
+                  animatedScore = value
+                }
+          }
+        }
         CircularProgressIndicator(
-            progress = { animatedScore.value }, modifier = Modifier.size(180.dp).padding(30.dp))
+            progress = { animatedScore / 100f }, modifier = Modifier.size(180.dp).padding(30.dp))
         Text(
-            "You have finished the deck with a score of ${animatedScore.value}% !",
+            "You have finished the deck with a score of ${animatedScore.toInt()}% !",
             style = MaterialTheme.typography.bodyLarge)
         Spacer(modifier = Modifier.height(20.dp))
         Button(
