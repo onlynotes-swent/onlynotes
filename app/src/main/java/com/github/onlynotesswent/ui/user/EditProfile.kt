@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
@@ -249,30 +250,31 @@ fun EditProfileScreen(
             }
           },
           content = { paddingValues ->
-            Column(
+            LazyColumn(
                 modifier = Modifier.fillMaxSize().padding(paddingValues),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally) {
-                  EditableProfilePicture(
-                      pictureTaker,
-                      userViewModel,
-                      profilePictureUri,
-                      fileViewModel,
-                      isProfilePictureUpToDate,
-                      hasProfilePictureBeenChanged,
-                      localContext,
-                      showSheet,
-                      sheetState,
-                  )
+                  item {
+                    EditableProfilePicture(
+                        pictureTaker,
+                        userViewModel,
+                        profilePictureUri,
+                        fileViewModel,
+                        isProfilePictureUpToDate,
+                        hasProfilePictureBeenChanged,
+                        localContext,
+                        showSheet,
+                        sheetState,
+                    )
 
-                  // Text Fields for user information
-                  FirstNameTextField(newFirstName)
-                  LastNameTextField(newLastName)
-                  UserNameTextField(newUserName, userNameError)
-                  BioTextField(newBio)
+                    // Text Fields for user information
+                    FirstNameTextField(newFirstName)
+                    LastNameTextField(newLastName)
+                    UserNameTextField(newUserName, userNameError)
+                    BioTextField(newBio)
 
-                  // Save Button
-                  saveEnabled.value = newUserName.value.isNotBlank()
+                    // Save Button
+                    saveEnabled.value = newUserName.value.isNotBlank()
 
                   Row(modifier = Modifier.padding(top = 16.dp)) {
                     FilterChip(
@@ -328,73 +330,76 @@ fun EditProfileScreen(
                         })
                   }
 
-                  Button(
-                      modifier = Modifier.padding(top = 16.dp).testTag("deleteAccountButton"),
-                      colors =
-                          ButtonDefaults.buttonColors(
-                              containerColor = MaterialTheme.colorScheme.background,
-                              contentColor = MaterialTheme.colorScheme.error),
-                      border = BorderStroke(1.dp, MaterialTheme.colorScheme.error),
-                      onClick = { showDeleteAccountAlert.value = true },
-                      content = { Text("Delete Account") })
+                    Button(
+                        modifier = Modifier.padding(top = 16.dp).testTag("deleteAccountButton"),
+                        colors =
+                            ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.background,
+                                contentColor = MaterialTheme.colorScheme.error),
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.error),
+                        onClick = { showDeleteAccountAlert.value = true },
+                        content = { Text("Delete Account") })
 
-                  if (showDeleteAccountAlert.value) {
-                    AlertDialog(
-                        onDismissRequest = { showDeleteAccountAlert.value = false },
-                        title = { Text(stringResource(R.string.delete_account)) },
-                        text = { Text(stringResource(R.string.delete_account_prompt)) },
-                        modifier = Modifier.testTag("deleteAccountAlert"),
-                        confirmButton = {
-                          Button(
-                              modifier = Modifier.testTag("confirmDeleteButton"),
-                              onClick = {
-                                showDeleteAccountAlert.value = false
+                    if (showDeleteAccountAlert.value) {
+                      AlertDialog(
+                          onDismissRequest = { showDeleteAccountAlert.value = false },
+                          title = { Text(stringResource(R.string.delete_account)) },
+                          text = { Text(stringResource(R.string.delete_account_prompt)) },
+                          modifier = Modifier.testTag("deleteAccountAlert"),
+                          confirmButton = {
+                            Button(
+                                modifier = Modifier.testTag("confirmDeleteButton"),
+                                onClick = {
+                                  showDeleteAccountAlert.value = false
 
-                                noteViewModel.deleteNotesFromUid(user.value!!.uid)
-                                folderViewModel.deleteFoldersFromUid(user.value!!.uid)
-                                noteViewModel.getNoteById(user.value!!.uid)
-                                noteViewModel.userRootNotes.value.forEach {
-                                  fileViewModel.deleteFile(it.id, FileType.NOTE_PDF)
-                                }
-                                fileViewModel.deleteFile(
-                                    user.value!!.uid, FileType.PROFILE_PIC_JPEG)
-                                userViewModel.deleteUserById(
-                                    user.value!!.uid,
-                                    onSuccess = { navigationActions.navigateTo(Route.AUTH) })
-                              },
-                              content = { Text(stringResource(R.string.yes)) })
-                        },
-                        dismissButton = {
-                          Button(
-                              modifier = Modifier.testTag("dismissDeleteButton"),
-                              onClick = { showDeleteAccountAlert.value = false },
-                              content = { Text(stringResource(R.string.no)) })
-                        })
-                  }
-                  if (showGoingBackWithoutSavingChanges.value) {
-                    AlertDialog(
-                        onDismissRequest = { showGoingBackWithoutSavingChanges.value = false },
-                        title = { Text(stringResource(R.string.discard_changes)) },
-                        text = { Text(stringResource(R.string.discard_changes_text)) },
-                        modifier = Modifier.testTag("goingBackAlert"),
-                        confirmButton = {
-                          Button(
-                              modifier = Modifier.testTag("confirmGoingBack"),
-                              onClick = {
-                                showGoingBackWithoutSavingChanges.value = false
-                                // When we go back, we will need to fetch again the old profile
-                                // picture (if it was changed), if the user didn't save the changes
-                                isProfilePictureUpToDate.value = !hasProfilePictureBeenChanged.value
-                                navigationActions.goBack()
-                              },
-                              content = { Text(stringResource(R.string.yes)) })
-                        },
-                        dismissButton = {
-                          Button(
-                              modifier = Modifier.testTag("dismissGoingBack"),
-                              onClick = { showGoingBackWithoutSavingChanges.value = false },
-                              content = { Text(stringResource(R.string.no)) })
-                        })
+                                  noteViewModel.deleteNotesFromUid(user.value!!.uid)
+                                  folderViewModel.deleteFoldersFromUid(user.value!!.uid)
+                                  noteViewModel.getNoteById(user.value!!.uid)
+                                  noteViewModel.userRootNotes.value.forEach {
+                                    fileViewModel.deleteFile(it.id, FileType.NOTE_PDF)
+                                  }
+                                  fileViewModel.deleteFile(
+                                      user.value!!.uid, FileType.PROFILE_PIC_JPEG)
+                                  userViewModel.deleteUserById(
+                                      user.value!!.uid,
+                                      onSuccess = { navigationActions.navigateTo(Route.AUTH) })
+                                },
+                                content = { Text(stringResource(R.string.yes)) })
+                          },
+                          dismissButton = {
+                            Button(
+                                modifier = Modifier.testTag("dismissDeleteButton"),
+                                onClick = { showDeleteAccountAlert.value = false },
+                                content = { Text(stringResource(R.string.no)) })
+                          })
+                    }
+                    if (showGoingBackWithoutSavingChanges.value) {
+                      AlertDialog(
+                          onDismissRequest = { showGoingBackWithoutSavingChanges.value = false },
+                          title = { Text(stringResource(R.string.discard_changes)) },
+                          text = { Text(stringResource(R.string.discard_changes_text)) },
+                          modifier = Modifier.testTag("goingBackAlert"),
+                          confirmButton = {
+                            Button(
+                                modifier = Modifier.testTag("confirmGoingBack"),
+                                onClick = {
+                                  showGoingBackWithoutSavingChanges.value = false
+                                  // When we go back, we will need to fetch again the old profile
+                                  // picture (if it was changed), if the user didn't save the
+                                  // changes
+                                  isProfilePictureUpToDate.value =
+                                      !hasProfilePictureBeenChanged.value
+                                  navigationActions.goBack()
+                                },
+                                content = { Text(stringResource(R.string.yes)) })
+                          },
+                          dismissButton = {
+                            Button(
+                                modifier = Modifier.testTag("dismissGoingBack"),
+                                onClick = { showGoingBackWithoutSavingChanges.value = false },
+                                content = { Text(stringResource(R.string.no)) })
+                          })
+                    }
                   }
                 }
           })

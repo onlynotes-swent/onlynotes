@@ -132,8 +132,10 @@
     <string name="add_fake_option">Add fake option</string>
     <string name="delete">Delete</string>
     <string name="mcq">MCQ</string>
-    <string name="move_here">Move</string>
     <string name="folder_cannot_be_moved_to_subfolder">Folder cannot be moved to a subfolder</string>
+    <string name="review_the_flashcards">Review the flashcards</string>
+    <string name="test_your_knowledge">Test your knowledge</string>
+    <string name="move_here">Move item here</string>
     <string name="edit_note">Edit note</string>
     <string name="move_note">Move note</string>
     <string name="move_deck">Move deck</string>

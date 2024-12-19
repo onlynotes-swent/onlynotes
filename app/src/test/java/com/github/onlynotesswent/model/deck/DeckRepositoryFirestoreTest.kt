@@ -1,7 +1,10 @@
-package com.github.onlynotesswent.model.flashcard.deck
+package com.github.onlynotesswent.model.deck
 
 import android.util.Log
 import com.github.onlynotesswent.model.common.Visibility
+import com.github.onlynotesswent.model.deck.Deck
+import com.github.onlynotesswent.model.deck.DeckRepositoryFirestore
+import com.google.android.gms.tasks.OnFailureListener
 import com.google.android.gms.tasks.OnSuccessListener
 import com.google.android.gms.tasks.Task
 import com.google.firebase.FirebaseApp
@@ -26,6 +29,7 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.verify
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.RuntimeEnvironment
 import org.robolectric.shadows.ShadowLog
 
 @RunWith(RobolectricTestRunner::class)
@@ -62,7 +66,9 @@ class DeckRepositoryFirestoreTest {
 
     // Check for the debug log that should be generated
     val errorLog =
-        logs.find { it.type == Log.ERROR && it.tag == DeckRepositoryFirestore.TAG && it.msg == msg }
+        logs.find {
+          it.type == Log.ERROR && it.tag == DeckRepositoryFirestore.Companion.TAG && it.msg == msg
+        }
     assert(errorLog != null) { "Expected error log was not found!" }
   }
 
@@ -70,7 +76,7 @@ class DeckRepositoryFirestoreTest {
     // Mock query task to fail
     `when`(mockQueryTask.addOnSuccessListener(any())).thenReturn(mockQueryTask)
     `when`(mockQueryTask.addOnFailureListener(any())).thenAnswer { invocation ->
-      val listener = invocation.arguments[0] as com.google.android.gms.tasks.OnFailureListener
+      val listener = invocation.arguments[0] as OnFailureListener
       // Simulate a failure being passed to the listener
       listener.onFailure(testException)
       mockQueryTask
@@ -78,7 +84,7 @@ class DeckRepositoryFirestoreTest {
     // Mock document task to fail
     `when`(mockDocumentTask.addOnSuccessListener(any())).thenReturn(mockDocumentTask)
     `when`(mockDocumentTask.addOnFailureListener(any())).thenAnswer { invocation ->
-      val listener = invocation.arguments[0] as com.google.android.gms.tasks.OnFailureListener
+      val listener = invocation.arguments[0] as OnFailureListener
       // Simulate a failure being passed to the listener
       listener.onFailure(testException)
       mockDocumentTask
@@ -86,7 +92,7 @@ class DeckRepositoryFirestoreTest {
     // Mock resolve task to fail
     `when`(mockResolveTask.addOnSuccessListener(any())).thenReturn(mockResolveTask)
     `when`(mockResolveTask.addOnFailureListener(any())).thenAnswer { invocation ->
-      val listener = invocation.arguments[0] as com.google.android.gms.tasks.OnFailureListener
+      val listener = invocation.arguments[0] as OnFailureListener
       // Simulate a failure being passed to the listener
       listener.onFailure(testException)
       mockResolveTask
@@ -98,7 +104,7 @@ class DeckRepositoryFirestoreTest {
     MockitoAnnotations.openMocks(this)
     deckRepository = DeckRepositoryFirestore(mockFirestore)
 
-    val context = org.robolectric.RuntimeEnvironment.getApplication()
+    val context = RuntimeEnvironment.getApplication()
     FirebaseApp.initializeApp(context)
 
     // Mock the behavior of the Firestore database
