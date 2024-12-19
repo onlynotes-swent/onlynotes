@@ -2,6 +2,7 @@ package com.github.onlynotesswent.ui.deck
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -15,6 +16,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerDefaults
@@ -23,7 +25,9 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Replay
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -221,7 +225,7 @@ fun ReviewMode(
                                 stop = 1f,
                                 fraction = 1f - pageOffset.coerceIn(0f, 1f))
                       }
-                      .animateContentSize(tween(250)),
+                      .animateContentSize(tween(100)),
               horizontalAlignment = Alignment.CenterHorizontally,
               verticalArrangement = Arrangement.Center) {
                 val flashcardState = remember {
@@ -360,7 +364,7 @@ private fun TestMode(
                   Modifier.fillMaxWidth()
                       .padding(10.dp)
                       .testTag("flashcardColumn")
-                      .animateContentSize(tween(500))
+                      .animateContentSize(tween(100))
                       .graphicsLayer {
                         val pageOffset =
                             ((pagerState.currentPage - pageIndex) +
@@ -368,7 +372,7 @@ private fun TestMode(
                                 .absoluteValue
                         alpha =
                             lerp(
-                                start = 0.5f,
+                                start = 0.4f,
                                 stop = 1f,
                                 fraction = 1f - pageOffset.coerceIn(0f, 1f))
                       },
@@ -395,7 +399,7 @@ private fun TestMode(
                 modifier = Modifier.padding(10.dp).testTag("submitButton"),
                 onClick = { isFinished.value = true },
                 enabled = pagerState.currentPage == flashcardList.value.size - 1) {
-                  Text("Finish Test", style = MaterialTheme.typography.headlineSmall)
+                  Text("Finish Test", style = MaterialTheme.typography.bodyLarge)
                 }
           }
           AnimatedVisibility(!flashcardList.value[pagerState.currentPage].isMCQ()) {
@@ -445,27 +449,33 @@ private fun SelectWrongRight(
   Row(modifier = modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
     Button(
         onClick = { onIncorrect() },
-        modifier = Modifier.padding(16.dp).testTag("incorrectButton"),
+        modifier = Modifier.padding(5.dp).testTag("incorrectButton"),
         enabled = answers[selectedFlashcardId]!!.value == null) {
-          Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(
-                imageVector = Icons.Default.Close,
-                contentDescription = "Close Icon",
-                tint = MaterialTheme.colorScheme.onSurface)
-            Text("I got it wrong")
-          }
+          Row(
+              verticalAlignment = Alignment.CenterVertically,
+              horizontalArrangement = Arrangement.SpaceBetween) {
+                Icon(
+                    imageVector = Icons.Default.Close,
+                    contentDescription = "Close Icon",
+                    tint = MaterialTheme.colorScheme.onSurface)
+
+                Text("I got it wrong", style = MaterialTheme.typography.bodyLarge, maxLines = 1)
+              }
         }
     Button(
         onClick = { onCorrect() },
-        modifier = Modifier.padding(16.dp).testTag("correctButton"),
+        modifier = Modifier.padding(5.dp).testTag("correctButton"),
         enabled = answers[selectedFlashcardId]!!.value == null) {
-          Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(
-                imageVector = Icons.Default.Check,
-                contentDescription = "Close Icon",
-                tint = MaterialTheme.colorScheme.onSurface)
-            Text("I got it right")
-          }
+          Row(
+              verticalAlignment = Alignment.CenterVertically,
+              horizontalArrangement = Arrangement.SpaceBetween) {
+                Icon(
+                    imageVector = Icons.Default.Check,
+                    contentDescription = "Close Icon",
+                    tint = MaterialTheme.colorScheme.onSurface)
+                Spacer(modifier = Modifier.width(5.dp))
+                Text("I got it right", style = MaterialTheme.typography.bodyLarge, maxLines = 1)
+              }
         }
   }
 }
@@ -495,33 +505,48 @@ private fun FinishedScreen(
     flashcardViewModel: FlashcardViewModel,
     answers: Map<String, MutableState<Int?>>
 ) {
-  Box(contentAlignment = Alignment.Center, modifier = Modifier.height(200.dp).fillMaxWidth()) {
-    val scorePercent = score.intValue * 100 / flashcardList.value.size
-    Column(
-        modifier = Modifier.testTag("FinishedScreenColumn"),
-    ) {
-      Text("You have finished the deck")
-      Button(
-          onClick = {
-            isFinished.value = false
-            score.intValue = 0
-            currentFlashcardIndex.intValue = 0
-            userViewModel.getUserFlashcardFromDeck(
-                deck.value!!,
-                onSuccess = {
-                  userFlashcardList.value =
-                      flashcardList.value.mapNotNull { fc ->
-                        userViewModel.deckUserFlashcards.value[fc.id]
-                      }
-                  flashcardViewModel.selectFlashcard(flashcardList.value.first())
-                })
-            for (flashcard in flashcardList.value) {
-              answers[flashcard.id]!!.value = null
+  Column(
+      modifier = Modifier.testTag("FinishedScreenColumn").fillMaxSize(),
+      verticalArrangement = Arrangement.Center,
+      horizontalAlignment = Alignment.CenterHorizontally) {
+        val scorePercent = score.intValue * 100 / flashcardList.value.size
+        val animatedScore =
+            animateFloatAsState(
+                targetValue = scorePercent.toFloat(), animationSpec = tween(1300), label = "")
+        CircularProgressIndicator(
+            progress = { animatedScore.value },
+            modifier = Modifier.size(300.dp).padding(30.dp),
+            color = MaterialTheme.colorScheme.primary)
+        Text(
+            "You have finished the deck with a score of ${animatedScore.value}% !",
+            style = MaterialTheme.typography.bodyLarge)
+        Spacer(modifier = Modifier.height(20.dp))
+        Button(
+            onClick = {
+              isFinished.value = false
+              score.intValue = 0
+              currentFlashcardIndex.intValue = 0
+              userViewModel.getUserFlashcardFromDeck(
+                  deck.value!!,
+                  onSuccess = {
+                    userFlashcardList.value =
+                        flashcardList.value.mapNotNull { fc ->
+                          userViewModel.deckUserFlashcards.value[fc.id]
+                        }
+                    flashcardViewModel.selectFlashcard(flashcardList.value.first())
+                  })
+              for (flashcard in flashcardList.value) {
+                answers[flashcard.id]!!.value = null
+              }
+            },
+            modifier = Modifier.padding(16.dp).testTag("retryButton")) {
+              Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = Icons.Default.Replay,
+                    contentDescription = "Close Icon",
+                    tint = MaterialTheme.colorScheme.onSurface)
+                Text("Retry", style = MaterialTheme.typography.headlineSmall)
+              }
             }
-          },
-          modifier = Modifier.padding(16.dp).testTag("retryButton")) {
-            Text("test again")
-          }
-    }
-  }
+      }
 }
