@@ -157,15 +157,36 @@ fun PdfViewerScreen(
         buttonText = stringResource(R.string.convert_to_text),
         testTag = "convertPdfToTextMenuItem",
         onClick = {
-          textExtractor.processPdfFile(
-              pdfFile = pdfFile!!,
-              onSuccess = { text ->
-                if (text.isEmpty()) {
-                  Toast.makeText(context, "No text found", Toast.LENGTH_LONG).show()
-                } else {
-                  updateMdFile(text, noteViewModel, fileViewModel, navigationActions, context)
-                }
-              })
+            try {
+                isLoading = true // Show progress indicator
+                textExtractor.processPdfFile(
+                    pdfFile = pdfFile!!,
+                    onSuccess = { text ->
+                        isLoading = false // Hide progress indicator
+
+                        if (text.isEmpty()) {
+                            Toast.makeText(context, "No text found", Toast.LENGTH_LONG).show()
+                        } else {
+                            updateMdFile(
+                                text,
+                                noteViewModel,
+                                fileViewModel,
+                                navigationActions,
+                                context
+                            )
+                        }
+                    },
+                    onFailure = { error ->
+                        isLoading = false // Hide progress indicator
+                        Log.e("PdfViewerScreen", "Error extracting text from PDF: $error")
+                        Toast.makeText(context, "Error: text could not be extracted", Toast.LENGTH_LONG).show()
+                    }
+                )
+            } catch (e: Exception) {
+                isLoading = false // Hide progress indicator
+                Log.e("PdfViewerScreen", "Error extracting text from PDF: $e")
+                Toast.makeText(context, "Error: text could not be extracted", Toast.LENGTH_LONG).show()
+            }
           expandedMenu = false
         },
         icon = {
