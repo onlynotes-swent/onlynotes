@@ -20,7 +20,6 @@ import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -29,8 +28,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -198,9 +199,6 @@ fun NoteOptionsBottomSheet(
   var showFileSystemPopup by remember { mutableStateOf(false) }
   var showDeletePopup by remember { mutableStateOf(false) }
   var showFlashcardDialog by remember { mutableStateOf(false) }
-  var flashcardErrorMessage by remember { mutableStateOf<String?>(null) }
-  var isFlashcardLoading by remember { mutableStateOf(false) }
-  val context = LocalContext.current
 
   if (showFileSystemPopup) {
     FileSystemPopup(
@@ -241,14 +239,12 @@ fun NoteOptionsBottomSheet(
         })
   }
 
-  if (showFlashcardDialog) {
+  if (showFlashcardDialog && notesToFlashcard != null) {
     NoteToFlashcardDialog(
-        isLoading = isFlashcardLoading,
-        errorMessage = flashcardErrorMessage,
-        onDismiss = {
-          showFlashcardDialog = false
-          flashcardErrorMessage = null
-        })
+        note = note,
+        notesToFlashcard = notesToFlashcard,
+        navigationActions = navigationActions,
+        onDismiss = { showFlashcardDialog = false })
   }
 
   ModalBottomSheet(
@@ -278,34 +274,7 @@ fun NoteOptionsBottomSheet(
             Row(
                 modifier =
                     Modifier.fillMaxWidth()
-                        .clickable {
-                          showFlashcardDialog = true
-                          isFlashcardLoading = true
-                          notesToFlashcard.convertNoteToDeck(
-                              note,
-                              onSuccess = {
-                                isFlashcardLoading = false
-                                showFlashcardDialog = false
-                                if (it != null) {
-                                  navigationActions.navigateTo(
-                                      Screen.DECK_MENU.replace(
-                                          oldValue = "{deckId}", newValue = it.id))
-                                } else {
-                                  flashcardErrorMessage =
-                                      context.getString(R.string.no_flashcards_created)
-                                }
-                              },
-                              onFileNotFoundException = {
-                                isFlashcardLoading = false
-                                flashcardErrorMessage =
-                                    context.getString(R.string.no_note_text_found)
-                              },
-                              onFailure = {
-                                isFlashcardLoading = false
-                                flashcardErrorMessage =
-                                    context.getString(R.string.error_creating_flashcards)
-                              })
-                        }
+                        .clickable { showFlashcardDialog = true }
                         .padding(vertical = 8.dp)
                         .testTag("convertNoteBottomSheet"),
                 verticalAlignment = Alignment.CenterVertically) {
@@ -345,40 +314,85 @@ fun NoteOptionsBottomSheet(
 /**
  * Dialog that displays a loading indicator while converting a note to flashcards.
  *
- * @param isLoading A boolean indicating whether the note is being converted to flashcards.
- * @param errorMessage The error message to display if the conversion fails.
+ * @param note The note to be converted to flashcards.
+ * @param notesToFlashcard The notes to flashcard object to be passed to the note item.
+ * @param navigationActions The navigation instance used to transition between different screens.
  * @param onDismiss The callback to be invoked when the dialog is dismissed.
  */
 @Composable
-fun NoteToFlashcardDialog(isLoading: Boolean, errorMessage: String?, onDismiss: () -> Unit) {
+fun NoteToFlashcardDialog(
+    note: Note,
+    notesToFlashcard: NotesToFlashcard,
+    navigationActions: NavigationActions,
+    onDismiss: () -> Unit
+) {
+  val context = LocalContext.current
+  var isLoading by remember { mutableStateOf(true) }
+  var flashcardErrorMessage by remember { mutableStateOf<String?>(null) }
+
   AlertDialog(
-      onDismissRequest = {},
-      title = {
-        if (isLoading) {
-          Text(text = stringResource(R.string.converting_note_to_flashcards))
-        }
-      },
-      text = {
-        if (isLoading) {
-          LoadingIndicator(
-              text = stringResource(R.string.converting_note_to_flashcards),
-              modifier = Modifier.padding(16.dp))
-        } else {
-          Text(
-              text =
-                  buildAnnotatedString {
-                    withStyle(style = SpanStyle(color = MaterialTheme.colorScheme.error)) {
-                      append(stringResource(R.string.error_while_converting))
-                    }
-                    append(": $errorMessage")
-                  })
-        }
-      },
-      confirmButton = {
+      onDismissRequest = {
         if (!isLoading) {
-          Button(onClick = onDismiss) { Text(text = stringResource(R.string.close)) }
+          onDismiss()
+        }
+      },
+      title = { Text(stringResource(R.string.convert_folder_to_decks)) },
+      text = {
+        Column {
+          if (isLoading) {
+            LoadingIndicator(
+                text = stringResource(R.string.converting_note_to_flashcards),
+                modifier = Modifier.fillMaxWidth(),
+                spacerHeight = 8.dp)
+          }
+
+          if (flashcardErrorMessage != null) {
+            Spacer(modifier = Modifier.height(16.dp))
+            Column {
+              Text(
+                  text =
+                      buildAnnotatedString {
+                        withStyle(style = SpanStyle(color = MaterialTheme.colorScheme.error)) {
+                          append(stringResource(R.string.error_while_converting))
+                        }
+                        append(": $flashcardErrorMessage")
+                      })
+            }
+          }
+        }
+      },
+      confirmButton = {},
+      dismissButton = {
+        if (!isLoading) {
+          TextButton(onClick = { onDismiss() }, modifier = Modifier.testTag("closeAction")) {
+            Text(stringResource(R.string.close), color = MaterialTheme.colorScheme.error)
+          }
         }
       })
+
+  if (isLoading) {
+    LaunchedEffect(Unit) {
+      notesToFlashcard.convertNoteToDeck(
+          note,
+          onSuccess = {
+            isLoading = false
+            if (it != null) {
+              navigationActions.navigateTo(
+                  Screen.DECK_MENU.replace(oldValue = "{deckId}", newValue = it.id))
+            } else {
+              flashcardErrorMessage = context.getString(R.string.no_flashcards_created)
+            }
+          },
+          onFileNotFoundException = {
+            isLoading = false
+            flashcardErrorMessage = context.getString(R.string.no_note_text_found)
+          },
+          onFailure = {
+            isLoading = false
+            flashcardErrorMessage = context.getString(R.string.error_creating_flashcards)
+          })
+    }
+  }
 }
 
 /**
