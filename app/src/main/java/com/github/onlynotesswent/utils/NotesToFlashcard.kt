@@ -23,6 +23,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 
@@ -60,8 +61,9 @@ class NotesToFlashcard(
        You can create flashcards as either:
        1. Regular flashcards with 'question' and 'answer', or
        2. MCQs with 'question', 'answer', and at least two 'fakeBacks'.
-       Return only the JSON array with no additional text. If the note content is empty, return an 
-       empty JSON array and no additional text. Here is the note content: """
+       Return ONLY the JSON array with no additional text, markdown formatting, or code block syntax. 
+       If the note content is empty, return an empty JSON array with no additional text.
+       Here is the note content: """
 
   /**
    * Converts a note into a deck of flashcards using the OpenAI API.
@@ -85,10 +87,17 @@ class NotesToFlashcard(
         fileType = FileType.NOTE_TEXT,
         context = context,
         onSuccess = { downloadedFile ->
-          openAIClient.sendRequest(
-              promptPrefix + downloadedFile.readText(),
-              { parseFlashcardsFromJson(it, note, folderId, onSuccess, onFailure) },
-              { onFailure(it) })
+          CoroutineScope(Dispatchers.IO).launch {
+            val prompt = promptPrefix + downloadedFile.readText()
+            try {
+              val response = openAIClient.sendRequestSuspend(prompt)
+              parseFlashcardsFromJson(response, note, folderId, onSuccess, onFailure)
+            } catch (e: Exception) {
+              Log.e(TAG, "Error sending request to OpenAI API", e)
+              onFailure(e)
+              return@launch
+            }
+          }
         },
         onFileNotFound = onFileNotFoundException,
         onFailure = onFailure)
@@ -163,8 +172,13 @@ class NotesToFlashcard(
             visibility = note.visibility,
             lastModified = Timestamp.now(),
             flashcardIds = flashcards.map { it.id })
-    deckViewModel.updateDeck(deck)
-    onSuccess(deck)
+    deckViewModel.updateDeck(
+        deck,
+        onSuccess = {
+          deckViewModel.selectDeck(deck)
+          onSuccess(deck)
+        },
+        onFailure = onFailure)
   }
 
   /**
@@ -181,7 +195,10 @@ class NotesToFlashcard(
             note,
             folderId,
             onSuccess = { continuation.resume(it) },
-            onFailure = { continuation.resumeWithException(it) },
+            onFailure = {
+              continuation.resumeWithException(
+                  Exception("Failed to convert note to deck: ${note.title}"))
+            },
             onFileNotFoundException = {
               continuation.resumeWithException(
                   FileNotFoundException("Text file not found for note: ${note.title}"))
@@ -227,6 +244,7 @@ class NotesToFlashcard(
       noteViewModel.getNotesFromFolder(folderId = currentFolder.id)
 
       if (finalDeck != null) {
+        onProgress(notesProcessedCounter.get(), foldersProcessedCounter.incrementAndGet(), null)
         onSuccess(finalDeck)
       } else {
         onFailure(IllegalStateException("No deck was created"))
@@ -315,7 +333,7 @@ class NotesToFlashcard(
     noteDeferreds.awaitAll()
     subfolderDeferreds.awaitAll()
 
-    return if (folderFlashcardIds.isNotEmpty() && notes.size > 1) {
+    return if (folderFlashcardIds.isNotEmpty() && notesProcessed.get() > 1) {
       val combinedDeck =
           Deck(
               id = deckViewModel.getNewUid(),
@@ -361,7 +379,10 @@ class NotesToFlashcard(
           folderViewModel.addFolder(
               newDeckFolder,
               onSuccess = { continuation.resume(newDeckFolder) },
-              onFailure = { continuation.resumeWithException(it) })
+              onFailure = {
+                continuation.resumeWithException(
+                    Exception("Failed to create deck folder ${subfolder.name}"))
+              })
         },
         onSuccess = { existingFolders ->
           if (parentDeckFolder == null) {
@@ -384,7 +405,10 @@ class NotesToFlashcard(
               folderViewModel.addFolder(
                   newDeckFolder,
                   onSuccess = { continuation.resume(newDeckFolder) },
-                  onFailure = { continuation.resumeWithException(it) })
+                  onFailure = {
+                    continuation.resumeWithException(
+                        Exception("Failed to create deck folder ${subfolder.name}"))
+                  })
             }
           }
         },
