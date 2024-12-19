@@ -186,7 +186,7 @@ class DeckOverviewTest {
     composeTestRule.onNodeWithTag("createObjectOrFolder").performClick()
     composeTestRule.onNodeWithTag("createDeckOrNote").assertIsDisplayed()
     composeTestRule.onNodeWithTag("createDeckOrNote").performClick()
-    composeTestRule.onNodeWithTag("DeckDialog").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("deckDialog").assertIsDisplayed()
   }
 
   @Test

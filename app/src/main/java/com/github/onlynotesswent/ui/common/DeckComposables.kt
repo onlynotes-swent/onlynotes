@@ -303,7 +303,7 @@ fun EditDeckDialog(
       title = { Text("$mode Deck") },
       text = {
         Column(
-            modifier = Modifier.padding(16.dp).testTag("DeckDialog"),
+            modifier = Modifier.padding(16.dp).testTag("deckDialog"),
             verticalArrangement = Arrangement.spacedBy(8.dp),
             horizontalAlignment = Alignment.CenterHorizontally) {
               OutlinedTextField(
