@@ -62,6 +62,8 @@ import com.github.onlynotesswent.model.user.UserViewModel
 import com.github.onlynotesswent.ui.common.BottomEditNoteNavigationBarWithDivider
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
+import com.github.onlynotesswent.ui.theme.LightCards
+import com.github.onlynotesswent.ui.theme.textColor
 import com.mohamedrejeb.richeditor.model.RichTextState
 import com.mohamedrejeb.richeditor.model.rememberRichTextState
 import com.mohamedrejeb.richeditor.ui.material3.RichTextEditor
@@ -189,7 +191,9 @@ fun EditMarkdownScreen(
                         })
                   }
                 },
-                colors = RichTextEditorDefaults.richTextEditorColors(containerColor = Color.White))
+                colors =
+                    RichTextEditorDefaults.richTextEditorColors(
+                        containerColor = LightCards, textColor = textColor))
           }
         }
       }

@@ -5,6 +5,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.draganddrop.dragAndDropSource
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -37,7 +38,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draganddrop.DragAndDropTransferData
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
@@ -52,6 +52,8 @@ import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.model.user.User
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
+import com.github.onlynotesswent.ui.theme.DarkCards
+import com.github.onlynotesswent.ui.theme.LightCards
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -112,7 +114,9 @@ fun NoteItem(
                     },
                 )
               },
-      colors = CardDefaults.cardColors(containerColor = Color.White)) {
+      colors =
+          CardDefaults.cardColors(
+              containerColor = if (!isSystemInDarkTheme()) LightCards else DarkCards)) {
         Column(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
           Row(
               modifier = Modifier.fillMaxWidth(),

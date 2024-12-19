@@ -12,4 +12,7 @@ val LightContainer = Color(0xFF76ACCF) // Carolina blue
 val DarkContainer = Color(0xFF02739A)
 val LightBackground = Color(0xFFEEF1F3) // Platinum
 val DarkBackground = Color.Black
+val LightCards = Color.White
+val textColor = Color.Black
+val DarkCards = Color(0xFF191925)
 val Danger = Color(0xFFF44336)

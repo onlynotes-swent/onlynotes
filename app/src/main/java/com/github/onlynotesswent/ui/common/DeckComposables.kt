@@ -1,6 +1,7 @@
 package com.github.onlynotesswent.ui.common
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -21,7 +22,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
@@ -34,6 +34,8 @@ import com.github.onlynotesswent.model.common.Visibility
 import com.github.onlynotesswent.model.flashcard.deck.Deck
 import com.github.onlynotesswent.model.flashcard.deck.DeckViewModel
 import com.github.onlynotesswent.model.user.UserViewModel
+import com.github.onlynotesswent.ui.theme.DarkCards
+import com.github.onlynotesswent.ui.theme.LightCards
 import com.github.onlynotesswent.ui.theme.Typography
 import com.google.firebase.Timestamp
 import java.text.SimpleDateFormat
@@ -55,7 +57,9 @@ fun DeckSearchItem(deck: Deck, author: String, onClick: () -> Unit) {
               .semantics(mergeDescendants = true, properties = {})
               .fillMaxWidth()
               .clickable(onClick = onClick),
-      colors = CardDefaults.cardColors(containerColor = Color.White)) {
+      colors =
+          CardDefaults.cardColors(
+              containerColor = if (!isSystemInDarkTheme()) LightCards else DarkCards)) {
         Column(
             Modifier.testTag("deckColumn").padding(10.dp).fillMaxWidth(),
         ) {
