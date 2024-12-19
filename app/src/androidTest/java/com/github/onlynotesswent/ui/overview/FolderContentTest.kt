@@ -20,7 +20,6 @@ import com.github.onlynotesswent.model.user.UserRepository
 import com.github.onlynotesswent.model.user.UserViewModel
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
-import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
 import com.google.firebase.Timestamp
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
@@ -58,32 +57,6 @@ class FolderContentTest {
               noteCourse = Course("CS-100", "Sample Course", 2024, "path"),
           ))
 
-  private val subNoteList2 =
-      listOf(
-          Note(
-              id = "6",
-              title = "Sample Sub Note3",
-              date = Timestamp.now(),
-              lastModified = Timestamp.now(),
-              visibility = Visibility.DEFAULT,
-              userId = "1",
-              folderId = "1",
-              noteCourse = Course("CS-100", "Sample Course", 2024, "path"),
-          ))
-
-  private val subNoteList3 =
-      listOf(
-          Note(
-              id = "7",
-              title = "Sample Sub Note4",
-              date = Timestamp.now(),
-              lastModified = Timestamp.now(),
-              visibility = Visibility.DEFAULT,
-              userId = "1",
-              folderId = "4",
-              noteCourse = Course("CS-100", "Sample Course", 2024, "path"),
-          ))
-
   private val folderList =
       listOf(
           Folder(
@@ -91,15 +64,6 @@ class FolderContentTest {
               name = "name",
               userId = "1",
               parentFolderId = null,
-              lastModified = Timestamp.now()))
-
-  private val subFolderListSameUser =
-      listOf(
-          Folder(
-              id = "4",
-              name = "name",
-              userId = "1",
-              parentFolderId = "1",
               lastModified = Timestamp.now()))
 
   private val subfolder = Folder("3", "sub name", "1", "1", lastModified = Timestamp.now())
@@ -170,15 +134,15 @@ class FolderContentTest {
     composeTestRule.onNodeWithTag("folderContentTitle").assertIsDisplayed()
     composeTestRule.onNodeWithTag("goBackButton").assertIsDisplayed()
     composeTestRule.onNodeWithTag("folderSettingsButton").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("createSubNoteOrSubFolder").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("createNoteOrFolder").assertIsDisplayed()
     composeTestRule.onNodeWithTag("emptyNoteAndFolderPrompt").assertIsDisplayed()
   }
 
   @Test
   fun createFolderAndNoteFabWorks() {
     init(folder)
-    composeTestRule.onNodeWithTag("createSubNoteOrSubFolder").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("createSubNoteOrSubFolder").performClick()
+    composeTestRule.onNodeWithTag("createNoteOrFolder").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("createNoteOrFolder").performClick()
     composeTestRule.onNodeWithTag("createNote").assertIsDisplayed()
     composeTestRule.onNodeWithTag("createFolder").assertIsDisplayed()
     composeTestRule.onNodeWithTag("createFolder").performClick()
@@ -198,8 +162,8 @@ class FolderContentTest {
       onSuccess()
     }
     `when`(mockFolderRepository.getNewFolderId()).thenReturn("3")
-    composeTestRule.onNodeWithTag("createSubNoteOrSubFolder").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("createSubNoteOrSubFolder").performClick()
+    composeTestRule.onNodeWithTag("createNoteOrFolder").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("createNoteOrFolder").performClick()
     composeTestRule.onNodeWithTag("createFolder").assertIsDisplayed()
     composeTestRule.onNodeWithTag("createFolder").performClick()
     composeTestRule.onNodeWithTag("FolderDialog").assertIsDisplayed()
@@ -241,12 +205,17 @@ class FolderContentTest {
   }
 
   @Test
-  fun deleteFolderContents() {
+  fun deleteFolderContents() = runTest {
     init(folder)
     composeTestRule.onNodeWithTag("folderSettingsButton").performClick()
     composeTestRule.onNodeWithTag("deleteFolderContentsButton").assertIsDisplayed()
     composeTestRule.onNodeWithTag("deleteFolderContentsButton").performClick()
-    composeTestRule.onNodeWithTag("").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("popup").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("confirmButton").performClick()
+
+    verify(mockNoteRepository).deleteNotesFromFolder(eq("1"), any(), any(), any())
+    verify(mockFolderRepository)
+        .deleteFolderContents(any(), any<NoteViewModel>(), any(), any(), any())
   }
 
   @Test
@@ -259,7 +228,7 @@ class FolderContentTest {
     composeTestRule.onNodeWithTag("popup").assertIsDisplayed()
     composeTestRule.onNodeWithTag("confirmButton").performClick()
 
-    verify(mockNavigationActions).navigateTo(TopLevelDestinations.NOTE_OVERVIEW)
+    verify(mockNavigationActions).goBackFolderContents(any(), any(), any())
   }
 
   @Test
@@ -280,7 +249,7 @@ class FolderContentTest {
     composeTestRule.onNodeWithTag("popup").assertIsDisplayed()
     composeTestRule.onNodeWithTag("confirmButton").performClick()
 
-    verify(mockNavigationActions).navigateTo(Screen.FOLDER_CONTENTS.replace("{folderId}", "1"))
+    verify(mockNavigationActions).goBackFolderContents(any(), any(), any())
   }
 
   @Test
@@ -312,8 +281,8 @@ class FolderContentTest {
       onSuccess()
     }
     `when`(mockNoteRepository.getNewUid()).thenReturn("4")
-    composeTestRule.onNodeWithTag("createSubNoteOrSubFolder").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("createSubNoteOrSubFolder").performClick()
+    composeTestRule.onNodeWithTag("createNoteOrFolder").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("createNoteOrFolder").performClick()
     composeTestRule.onNodeWithTag("createNote").assertIsDisplayed()
     composeTestRule.onNodeWithTag("createNote").performClick()
     composeTestRule.onNodeWithTag("NoteDialog").assertIsDisplayed()
