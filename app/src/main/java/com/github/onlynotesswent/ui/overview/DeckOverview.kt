@@ -52,6 +52,11 @@ fun DeckOverviewScreen(
 ) {
   val userRootDecks = deckViewModel.userRootDecks.collectAsState()
   val userRootFolders = folderViewModel.userRootFolders.collectAsState()
+  val user = userViewModel.currentUser.collectAsState().value
+  // Each time you navigate to this screen update userRootFolders and userRootDecks
+  folderViewModel.getRootDeckFoldersFromUserId(user!!.uid)
+  deckViewModel.getRootDecksFromUserId(user.uid)
+  deckViewModel.clearSelectedDeck()
 
   val parentFolderId = folderViewModel.parentFolderId.collectAsState()
   val context = LocalContext.current
