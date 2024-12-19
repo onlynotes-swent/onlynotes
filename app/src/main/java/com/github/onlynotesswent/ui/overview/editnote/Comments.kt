@@ -57,59 +57,48 @@ fun CommentsScreen(
     noteViewModel: NoteViewModel,
     userViewModel: UserViewModel
 ) {
-    val note by noteViewModel.selectedNote.collectAsState()
-    val currentUser by userViewModel.currentUser.collectAsState()
-    var updatedComments by remember { mutableStateOf(note!!.comments) }
-    LaunchedEffect(Unit) {
-        while (true) {
-            kotlinx.coroutines.delay(1000L) // Delay for 1 second to not saturate firestore
-            if (note != null) {
+  val note by noteViewModel.selectedNote.collectAsState()
+  val currentUser by userViewModel.currentUser.collectAsState()
+  var updatedComments by remember { mutableStateOf(note!!.comments) }
+  LaunchedEffect(Unit) {
+    while (true) {
+      kotlinx.coroutines.delay(1000L) // Delay for 1 second to not saturate firestore
+      if (note != null) {
 
-                noteViewModel.updateNote(
-                    note = note!!.copy(comments = Note.CommentCollection(updatedComments.commentsList))
-                )
-            }
-
-        }
+        noteViewModel.updateNote(
+            note = note!!.copy(comments = Note.CommentCollection(updatedComments.commentsList)))
+      }
     }
-    Scaffold(
-        floatingActionButton = {
+  }
+  Scaffold(
+      floatingActionButton = {},
+      modifier = Modifier.testTag("commentsScreen"),
+      topBar = {
+        EditNoteTopBar(
+            title = stringResource(R.string.comments),
+            titleTestTag = "commentsTitle",
+            noteViewModel = noteViewModel,
+            navigationActions = navigationActions)
+      },
+      bottomBar = {
+        Column(modifier = Modifier.background(MaterialTheme.colorScheme.surface)) {
+          HorizontalDivider(
+              color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f), thickness = 0.5.dp)
 
-        },
+          SendCommentBar(
+              currentUser = currentUser,
+              note = note,
+              updatedComments = updatedComments,
+              { updatedComments = it },
+              modifier = Modifier.fillMaxWidth().padding(horizontal = 2.dp, vertical = 2.dp))
 
-        modifier = Modifier.testTag("commentsScreen"),
-        topBar = {
-            EditNoteTopBar(
-                title = stringResource(R.string.comments),
-                titleTestTag = "commentsTitle",
-                noteViewModel = noteViewModel,
-                navigationActions = navigationActions
-            )
-        },
-        bottomBar = {
-            Column(modifier = Modifier.background(MaterialTheme.colorScheme.surface)) {
+          HorizontalDivider(
+              color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f), thickness = 0.5.dp)
 
-                HorizontalDivider(
-                  color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f), thickness = 0.5.dp)
-
-                SendCommentBar(
-                    currentUser = currentUser,
-                    note = note,
-                    updatedComments = updatedComments,
-                    { updatedComments = it },
-                    modifier = Modifier
-                        .fillMaxWidth().padding(horizontal = 2.dp, vertical = 2.dp))
-
-                HorizontalDivider(
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f), thickness = 0.5.dp)        
-
-                EditNoteNavigationMenu(
-                    navigationActions = navigationActions,
-                    selectedItem = Screen.EDIT_NOTE_COMMENT,
-                    onClick = {
-                    }
-                )
-            }
+          EditNoteNavigationMenu(
+              navigationActions = navigationActions,
+              selectedItem = Screen.EDIT_NOTE_COMMENT,
+              onClick = {})
         }
       }) { paddingValues ->
         if (currentUser == null) {
@@ -313,12 +302,10 @@ fun CommentRow(
                       modifier =
                           Modifier.weight(
                                   1f) // Ensures the text takes up all available space before the
-                                      // Spacer
+                              // Spacer
                               .padding(
-                                  end =
-                                      8
-                                          .dp) // Optional: adds some space between text and options
-                                               // menu
+                                  end = 8.dp) // Optional: adds some space between text and options
+                      // menu
                       )
                   Spacer(modifier = Modifier.weight(0.1f)) // Add this to push the menu to the end
                   if (comment.isOwner(currentUser.uid) || note.isOwner(currentUser.uid)) {
