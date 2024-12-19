@@ -94,7 +94,9 @@ fun CreateUserScreen(navigationActions: NavigationActions, userViewModel: UserVi
                             rating = 0.0)
                     userViewModel.addUser(
                         user = user,
-                        onSuccess = { navigationActions.navigateTo(TopLevelDestinations.OVERVIEW) },
+                        onSuccess = {
+                          navigationActions.navigateTo(TopLevelDestinations.NOTE_OVERVIEW)
+                        },
                         onFailure = { exception ->
                           Toast.makeText(
                                   context,
