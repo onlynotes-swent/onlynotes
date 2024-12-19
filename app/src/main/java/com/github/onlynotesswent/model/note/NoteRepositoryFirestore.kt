@@ -108,7 +108,7 @@ class NoteRepositoryFirestore(
   ) {
     try {
       val cachedNotes: List<Note> =
-          if (useCache) withContext(Dispatchers.IO) { noteDao.getNotesFromUid() } else emptyList()
+          if (useCache) withContext(Dispatchers.IO) { noteDao.getNotesFromUid(userId) } else emptyList()
 
       // If device is offline, fetch from from local database
       if (!NetworkUtils.isInternetAvailable(context)) {
@@ -146,7 +146,7 @@ class NoteRepositoryFirestore(
   ) {
     try {
       val cachedNotes: List<Note> =
-          if (useCache) withContext(Dispatchers.IO) { noteDao.getRootNotesFromUid() }
+          if (useCache) withContext(Dispatchers.IO) { noteDao.getRootNotesFromUid(userId) }
           else emptyList()
 
       // If device is offline, fetch from local database
@@ -291,7 +291,7 @@ class NoteRepositoryFirestore(
   ) {
     // Update the cache if needed
     if (useCache) {
-      withContext(Dispatchers.IO) { noteDao.deleteNotesFromUid() }
+      withContext(Dispatchers.IO) { noteDao.deleteNotesFromUid(userId) }
     }
 
     db.collection(collectionPath).get().addOnCompleteListener { task ->
