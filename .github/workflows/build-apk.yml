@@ -57,6 +57,13 @@ jobs:
           mkdir -p ~/.android
           echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > ~/.android/debug.keystore
 
+      # Decode openai api key
+      - name: Decode OpenAI API Key
+        env:
+          OPEN_AI_API_KEY: ${{ secrets.OPEN_AI_API_KEY }}
+        run: |
+            echo "OPEN_AI_API_KEY=$OPEN_AI_API_KEY" > apikeys.properties
+
         # display the SHA1 of the keystore
       - name: Print SHA1
         run: keytool -list -v -keystore ~/.android/debug.keystore -storepass ${{ secrets.KEYSTORE_PASSWORD }} -keypass ${{ secrets.KEYSTORE_PASSWORD }}

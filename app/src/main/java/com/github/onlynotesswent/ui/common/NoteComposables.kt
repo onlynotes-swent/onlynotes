@@ -1,6 +1,8 @@
 package com.github.onlynotesswent.ui.common
 
 import android.content.ClipData
+import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.draganddrop.dragAndDropSource
@@ -15,9 +17,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.LibraryBooks
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -38,6 +42,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draganddrop.DragAndDropTransferData
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
@@ -53,6 +58,8 @@ import com.github.onlynotesswent.model.user.User
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Route.NOTE_OVERVIEW
 import com.github.onlynotesswent.ui.navigation.Screen
+import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
+import com.github.onlynotesswent.utils.NotesToFlashcard
 import com.google.firebase.Timestamp
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -67,6 +74,7 @@ import java.util.Locale
  * @param currentUser The current user.
  * @param noteViewModel The ViewModel that provides the list of notes to display.
  * @param folderViewModel The ViewModel that provides the list of folders to display.
+ * @param notesToFlashcard The notes to flashcard object to be passed to the note item.
  * @param navigationActions The navigation instance used to transition between different screens.
  * @param onClick The lambda function to be invoked when the note card is clicked.
  */
@@ -78,6 +86,7 @@ fun NoteItem(
     currentUser: State<User?>,
     noteViewModel: NoteViewModel,
     folderViewModel: FolderViewModel,
+    notesToFlashcard: NotesToFlashcard? = null,
     navigationActions: NavigationActions,
     onClick: () -> Unit
 ) {
@@ -89,7 +98,8 @@ fun NoteItem(
         noteViewModel = noteViewModel,
         folderViewModel = folderViewModel,
         onDismiss = { showBottomSheet = false },
-        navigationActions = navigationActions)
+        navigationActions = navigationActions,
+        notesToFlashcard = notesToFlashcard)
   }
 
   Card(
@@ -178,6 +188,7 @@ fun NoteItem(
  * @param folderViewModel the folderViewModel used here to move the note.
  * @param onDismiss The callback to be invoked when the bottom sheet is dismissed.
  * @param navigationActions The navigation instance used to transition between different screens.
+ * @param notesToFlashcard The notes to flashcard object to be passed to the note item.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -186,10 +197,13 @@ fun NoteOptionsBottomSheet(
     noteViewModel: NoteViewModel,
     folderViewModel: FolderViewModel,
     onDismiss: () -> Unit,
-    navigationActions: NavigationActions
+    navigationActions: NavigationActions,
+    notesToFlashcard: NotesToFlashcard?,
 ) {
   var showFileSystemPopup by remember { mutableStateOf(false) }
   var showDeletePopup by remember { mutableStateOf(false) }
+  var showFlashcardCreationPopup by remember { mutableStateOf(false) }
+  val context = LocalContext.current
 
   if (showFileSystemPopup) {
     FileSystemPopup(
@@ -220,12 +234,27 @@ fun NoteOptionsBottomSheet(
           noteViewModel.deleteNoteById(note.id, note.userId)
           if (folderViewModel.selectedFolder.value != null) {
             noteViewModel.getNotesFromFolder(folderViewModel.selectedFolder.value!!.id, null)
+          } else {
+            noteViewModel.getRootNotesFromUid(note.userId)
           }
           showDeletePopup = false // Close the dialog after deleting
         },
         onDismiss = {
           showDeletePopup = false // Close the dialog without deleting
         })
+  }
+
+  if (showFlashcardCreationPopup) {
+    AlertDialog(
+        modifier = Modifier.testTag("popup"),
+        onDismissRequest = {},
+        title = {},
+        text = {
+          LoadingIndicator(
+              text = stringResource(R.string.converting_note_to_flashcards),
+              modifier = Modifier.padding(16.dp))
+        },
+        confirmButton = {})
   }
 
   ModalBottomSheet(
@@ -249,6 +278,63 @@ fun NoteOptionsBottomSheet(
                     text = stringResource(R.string.move_note),
                     style = MaterialTheme.typography.bodyLarge)
               }
+
+          if (notesToFlashcard != null) {
+            Row(
+                modifier =
+                    Modifier.fillMaxWidth()
+                        .clickable {
+                          showFlashcardCreationPopup = true
+                          notesToFlashcard.convertNoteToDeck(
+                              note,
+                              onSuccess = {
+                                Log.d("NoteOptionsBottomSheet", "Successfully created flashcards")
+                                Log.d("NoteOptionsBottomSheet", "Deck ID: ${it?.id}")
+                                showFlashcardCreationPopup = false
+                                onDismiss()
+                                if (it != null) {
+                                  navigationActions.navigateTo(TopLevelDestinations.DECK_OVERVIEW)
+                                  navigationActions.navigateTo(
+                                      Screen.DECK_MENU.replace(
+                                          oldValue = "{deckId}", newValue = it.id))
+                                } else {
+                                  Toast.makeText(
+                                          context,
+                                          R.string.no_flashcards_created,
+                                          Toast.LENGTH_SHORT)
+                                      .show()
+                                }
+                              },
+                              onFileNotFoundException = {
+                                showFlashcardCreationPopup = false
+                                onDismiss()
+                                Toast.makeText(
+                                        context, R.string.no_note_text_found, Toast.LENGTH_SHORT)
+                                    .show()
+                              },
+                              onFailure = {
+                                showFlashcardCreationPopup = false
+                                onDismiss()
+                                Toast.makeText(
+                                        context,
+                                        R.string.error_creating_flashcards,
+                                        Toast.LENGTH_SHORT)
+                                    .show()
+                              })
+                        }
+                        .padding(vertical = 8.dp)
+                        .testTag("moveNoteBottomSheet"),
+                verticalAlignment = Alignment.CenterVertically) {
+                  Icon(
+                      imageVector = Icons.AutoMirrored.Outlined.LibraryBooks,
+                      contentDescription = stringResource(R.string.convert_note_to_flashcards))
+                  Spacer(modifier = Modifier.width(16.dp))
+                  Text(
+                      text = stringResource(R.string.convert_note_to_flashcards),
+                      style = MaterialTheme.typography.bodyLarge)
+                  Spacer(modifier = Modifier.width(16.dp))
+                }
+          }
 
           HorizontalDivider(Modifier.padding(vertical = 10.dp), 1.dp)
 

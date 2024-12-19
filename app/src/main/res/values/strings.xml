@@ -139,4 +139,12 @@
     <string name="edit_note">Edit note</string>
     <string name="move_note">Move note</string>
     <string name="move_deck">Move deck</string>
+    <string name="convert_note_to_flashcards">Convert note to flashcards</string>
+    <string name="converting_note_to_flashcards">Converting note to flashcards…</string>
+    <string name="no_flashcards_created">No flashcards created</string>
+    <string name="no_note_text_found">The note has no text to convert to flashcards. Please either convert the PDF to text or add text to the note.</string>
+    <string name="error_creating_flashcards">Error creating flashcards</string>
+    <string name="convert_folder_to_decks">Convert folder to decks</string>
+    <string name="converting_folder_to_decks">Converting folder to decks…</string>
+    <string name="flashcards_conversion_progress">%1$d notes and %2$d folders processed</string>
 </resources>

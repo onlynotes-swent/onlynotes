@@ -16,8 +16,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FloatingActionButton
@@ -179,7 +179,9 @@ fun SendCommentBar(
                   if (commentText.isNotEmpty()) MaterialTheme.colorScheme.primary
                   else MaterialTheme.colorScheme.surface,
               contentColor = MaterialTheme.colorScheme.onPrimary) {
-                Icon(imageVector = Icons.Default.Send, contentDescription = "Add Comment")
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.Send,
+                    contentDescription = "Add Comment")
               }
         }
   }

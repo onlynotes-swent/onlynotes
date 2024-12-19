@@ -20,6 +20,7 @@ import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.model.user.UserViewModel
 import com.github.onlynotesswent.ui.common.CustomSeparatedLazyGrid
 import com.github.onlynotesswent.ui.navigation.NavigationActions
+import com.github.onlynotesswent.utils.NotesToFlashcard
 
 /**
  * Displays the overview screen in a grid layout. If there are no notes or folders, it shows a text
@@ -33,6 +34,7 @@ import com.github.onlynotesswent.ui.navigation.NavigationActions
  * @param noteViewModel The ViewModel that provides the list of publicNotes to display.
  * @param userViewModel The ViewModel that provides the current user.
  * @param navigationActions The navigation view model used to transition between different screens.
+ * @param notesToFlashcard The notes to flashcard object to be passed to the note item.
  */
 @Composable
 fun NoteOverviewScreenGrid(
@@ -42,7 +44,8 @@ fun NoteOverviewScreenGrid(
     folderViewModel: FolderViewModel,
     noteViewModel: NoteViewModel,
     userViewModel: UserViewModel,
-    navigationActions: NavigationActions
+    navigationActions: NavigationActions,
+    notesToFlashcard: NotesToFlashcard? = null
 ) {
   CustomSeparatedLazyGrid(
       modifier = Modifier.fillMaxSize(),
@@ -63,5 +66,6 @@ fun NoteOverviewScreenGrid(
             modifier = Modifier.testTag("emptyNoteAndFolderPrompt"),
             text = stringResource(R.string.you_have_no_notes_or_folders_yet),
             color = MaterialTheme.colorScheme.onBackground)
-      })
+      },
+      notesToFlashcard = notesToFlashcard)
 }

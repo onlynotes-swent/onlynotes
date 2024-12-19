@@ -43,6 +43,7 @@ import com.github.onlynotesswent.ui.navigation.BottomNavigationMenu
 import com.github.onlynotesswent.ui.navigation.LIST_TOP_LEVEL_DESTINATION
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
+import com.github.onlynotesswent.utils.NotesToFlashcard
 import com.google.firebase.Timestamp
 import kotlinx.coroutines.launch
 
@@ -56,13 +57,15 @@ import kotlinx.coroutines.launch
  * @param noteViewModel The ViewModel that provides the list of publicNotes to display.
  * @param userViewModel The ViewModel that provides the current user.
  * @param folderViewModel The ViewModel that provides the list of folders to display.
+ * @param notesToFlashcard The notes to flashcard object to be passed to the note item.
  */
 @Composable
 fun NoteOverviewScreen(
     navigationActions: NavigationActions,
     noteViewModel: NoteViewModel,
     userViewModel: UserViewModel,
-    folderViewModel: FolderViewModel
+    folderViewModel: FolderViewModel,
+    notesToFlashcard: NotesToFlashcard
 ) {
   val userRootNotes = noteViewModel.userRootNotes.collectAsState()
   val userSavedNotes = noteViewModel.userSavedNotes.collectAsState()
@@ -108,30 +111,44 @@ fun NoteOverviewScreen(
               tabList = LIST_TOP_LEVEL_DESTINATION,
               selectedItem = navigationActions.currentRoute())
         }
+        Column {
+          HorizontalDivider(
+              color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f), thickness = 0.5.dp)
+          BottomNavigationMenu(
+              onTabSelect = { route -> navigationActions.navigateTo(route) },
+              tabList = LIST_TOP_LEVEL_DESTINATION,
+              selectedItem = navigationActions.currentRoute())
+        }
       }) { paddingValues ->
         Column(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
           SingleChoiceSegmentedButtonRow(
               modifier =
                   Modifier.fillMaxWidth(fraction = 0.8f).align(Alignment.CenterHorizontally)) {
-                pageLabels.forEachIndexed { index, label ->
-                  SegmentedButton(
-                      selected = pagerState.currentPage == index,
-                      shape =
-                          SegmentedButtonDefaults.itemShape(
-                              index = index,
-                              count = pageLabels.size,
-                              baseShape = RoundedCornerShape(10)),
-                      border = ButtonDefaults.outlinedButtonBorder(false),
-                      colors =
-                          SegmentedButtonDefaults.colors(
-                              activeContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                              inactiveContainerColor = MaterialTheme.colorScheme.surface),
-                      label = { Text(label) },
-                      onClick = {
-                        // Animate to the selected page when clicked
-                        coroutineScope.launch { pagerState.animateScrollToPage(index) }
-                      })
-                }
+                SingleChoiceSegmentedButtonRow(
+                    modifier =
+                        Modifier.fillMaxWidth(fraction = 0.8f)
+                            .align(Alignment.CenterHorizontally)) {
+                      pageLabels.forEachIndexed { index, label ->
+                        SegmentedButton(
+                            selected = pagerState.currentPage == index,
+                            shape =
+                                SegmentedButtonDefaults.itemShape(
+                                    index = index,
+                                    count = pageLabels.size,
+                                    baseShape = RoundedCornerShape(10)),
+                            border = ButtonDefaults.outlinedButtonBorder(false),
+                            colors =
+                                SegmentedButtonDefaults.colors(
+                                    activeContainerColor =
+                                        MaterialTheme.colorScheme.primaryContainer,
+                                    inactiveContainerColor = MaterialTheme.colorScheme.surface),
+                            label = { Text(label) },
+                            onClick = {
+                              // Animate to the selected page when clicked
+                              coroutineScope.launch { pagerState.animateScrollToPage(index) }
+                            })
+                      }
+                    }
               }
           HorizontalPager(state = pagerState, modifier = Modifier.fillMaxSize()) {
             when (it) {
@@ -143,7 +160,8 @@ fun NoteOverviewScreen(
                     folderViewModel = folderViewModel,
                     noteViewModel = noteViewModel,
                     userViewModel = userViewModel,
-                    navigationActions = navigationActions)
+                    navigationActions = navigationActions,
+                    notesToFlashcard = notesToFlashcard)
 
                 if (showCreateNoteDialog) {
                   NoteDialog(

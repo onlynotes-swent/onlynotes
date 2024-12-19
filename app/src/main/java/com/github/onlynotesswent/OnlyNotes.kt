@@ -53,6 +53,8 @@ import com.github.onlynotesswent.ui.user.EditProfileScreen
 import com.github.onlynotesswent.ui.user.NotificationScreen
 import com.github.onlynotesswent.ui.user.PublicProfileScreen
 import com.github.onlynotesswent.ui.user.UserProfileScreen
+import com.github.onlynotesswent.utils.NotesToFlashcard
+import com.github.onlynotesswent.utils.OpenAI
 import com.github.onlynotesswent.utils.PictureTaker
 import com.github.onlynotesswent.utils.Scanner
 
@@ -90,6 +92,16 @@ fun OnlyNotesApp(
       viewModel(factory = NotificationViewModel.Factory)
   val deckViewModel: DeckViewModel = viewModel(factory = DeckViewModel.Factory)
   val flashcardViewModel: FlashcardViewModel = viewModel(factory = FlashcardViewModel.Factory)
+  val openAI = OpenAI()
+  val notesToFlashcards =
+      NotesToFlashcard(
+          flashcardViewModel = flashcardViewModel,
+          fileViewModel = fileViewModel,
+          noteViewModel = noteViewModel,
+          deckViewModel = deckViewModel,
+          folderViewModel = folderViewModel,
+          openAIClient = openAI,
+          context = context)
 
   NavHost(navController = navController, startDestination = Route.AUTH) {
     navigation(
@@ -117,7 +129,8 @@ fun OnlyNotesApp(
           }
         }
 
-        NoteOverviewScreen(navigationActions, noteViewModel, userViewModel, folderViewModel)
+        NoteOverviewScreen(
+            navigationActions, noteViewModel, userViewModel, folderViewModel, notesToFlashcards)
       }
       composable(Screen.EDIT_NOTE) {
         EditNoteScreen(navigationActions, noteViewModel, userViewModel)
@@ -157,7 +170,8 @@ fun OnlyNotesApp(
                   navigationActions = navigationActions,
                   folderViewModel = folderViewModel,
                   userViewModel = userViewModel,
-                  noteViewModel = noteViewModel)
+                  noteViewModel = noteViewModel,
+                  notesToFlashcard = notesToFlashcards)
             }
           }
     }

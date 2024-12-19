@@ -40,6 +40,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -48,9 +49,11 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.github.onlynotesswent.R
 import com.github.onlynotesswent.model.common.Visibility
+import com.github.onlynotesswent.model.flashcard.deck.Deck
 import com.github.onlynotesswent.model.folder.Folder
 import com.github.onlynotesswent.model.folder.FolderViewModel
 import com.github.onlynotesswent.model.note.Note
+import com.github.onlynotesswent.utils.NotesToFlashcard
 
 /**
  * Composable function to display a popup dialog with a title, text, and confirm and dismiss
@@ -99,6 +102,53 @@ fun ConfirmationPopup(title: String, text: String, onConfirm: () -> Unit, onDism
               Text(text = stringResource(R.string.no))
             }
       })
+}
+
+@Composable
+fun DecksCreationDialog(
+    notesToFlashcard: NotesToFlashcard,
+    onConversionComplete: (Deck) -> Unit,
+) {
+  var progressMessage by remember { mutableStateOf("Initializing conversion...") }
+  var isLoading by remember { mutableStateOf(true) }
+  var errorMessage by remember { mutableStateOf<String?>(null) }
+
+  val context = LocalContext.current
+
+  AlertDialog(
+      onDismissRequest = {},
+      title = { Text(stringResource(R.string.convert_folder_to_decks)) },
+      text = {
+        if (isLoading) {
+          LoadingIndicator(progressMessage)
+        }
+        if (errorMessage != null) {
+          Text(errorMessage!!, color = MaterialTheme.colorScheme.error)
+        }
+      },
+      confirmButton = {})
+
+  if (isLoading) {
+    LaunchedEffect(Unit) {
+      notesToFlashcard.convertFolderToDecks(
+          onProgress = { notes, folders, exception ->
+            if (exception != null) {
+              errorMessage = "Error: ${exception.localizedMessage}"
+            } else {
+              progressMessage =
+                  context.getString(R.string.flashcards_conversion_progress, notes, folders)
+            }
+          },
+          onSuccess = { deck ->
+            isLoading = false
+            onConversionComplete(deck)
+          },
+          onFailure = { exception ->
+            errorMessage = "Conversion failed: ${exception.localizedMessage}"
+            isLoading = false
+          })
+    }
+  }
 }
 
 /**
