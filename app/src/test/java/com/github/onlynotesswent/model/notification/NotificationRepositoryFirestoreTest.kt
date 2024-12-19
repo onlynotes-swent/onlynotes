@@ -15,6 +15,7 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mock
+import org.mockito.Mockito.anyString
 import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
@@ -48,11 +49,19 @@ class NotificationRepositoryFirestoreTest {
     `when`(mockFirestore.collection("notifications")).thenReturn(mockCollectionReference)
     `when`(mockCollectionReference.document(any())).thenReturn(mockDocumentReference)
     `when`(mockCollectionReference.document()).thenReturn(mockDocumentReference)
+    `when`(mockCollectionReference.document(anyString())).thenReturn(mockDocumentReference)
+
     `when`(mockCollectionReference.whereEqualTo("receiverId", "1")).thenReturn(mockQuery)
+
+
+
     `when`(mockCollectionReference.get()).thenReturn(mockQuerySnapshotTask)
+    `when`(mockDocumentSnapshot.id).thenReturn("1")
 
     // Mock the behavior of the QuerySnapshot task
     `when`(mockQuery.get()).thenReturn(mockQuerySnapshotTask)
+    `when`(mockQuery.whereEqualTo("receiverId", "1")).thenReturn(mockQuery)
+
     `when`(mockQuerySnapshotTask.addOnSuccessListener(any())).thenAnswer { invocation ->
       val listener =
           invocation.arguments[0] as com.google.android.gms.tasks.OnSuccessListener<QuerySnapshot>
@@ -66,6 +75,7 @@ class NotificationRepositoryFirestoreTest {
             listOf(
                 mockDocumentSnapshot,
             ))
+    `when`(mockQuerySnapshot.size()).thenReturn(1)
 
     // Mock the behavior of the DocumentReference set operation
     `when`(mockDocumentReference.set(any())).thenReturn(mockResolveTask)
@@ -145,4 +155,12 @@ class NotificationRepositoryFirestoreTest {
         id = "1", onSuccess = { wasCalled = true }, onFailure = { fail() })
     assert(wasCalled)
   }
+
+    @Test
+    fun `deleteNotificationsFromUserId should delete all notifications`() {
+        var wasCalled = false
+        notificationRepositoryFirestore.deleteNotificationsFromUserId(
+          userID = "1", onSuccess = { wasCalled = true }, onFailure = { fail() })
+        assert(wasCalled)
+    }
 }

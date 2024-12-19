@@ -400,7 +400,24 @@ class FlashcardRepositoryFirestoreTest {
 
     verifyErrorLog("Error deleting flashcard")
   }
+
+  @Test
+  fun deleteFlashcardsFromUser_callsCollection() {
+    `when`(mockQuerySnapshot.documents).thenReturn(listOf(mockDocumentSnapshot))
+    `when`(mockDocumentReference.delete()).thenReturn(Tasks.forResult(null)) // Simulate success
+
+    flashcardRepositoryFirestore.deleteFlashcardsFromUser(
+        flashcard.userId,
+        onSuccess = {},
+        onFailure = { fail("Failure callback should not be called") })
+
+    shadowOf(Looper.getMainLooper()).idle()
+
+    verify(mockDocumentReference).delete()
+  }
 }
+
+
 
 private fun verifyErrorLog(msg: String) {
   // Get all the logs
