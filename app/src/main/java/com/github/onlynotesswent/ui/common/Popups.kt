@@ -43,7 +43,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -107,44 +110,95 @@ fun ConfirmationPopup(title: String, text: String, onConfirm: () -> Unit, onDism
 @Composable
 fun DecksCreationDialog(
     notesToFlashcard: NotesToFlashcard,
+    closePopup: () -> Unit,
     onConversionComplete: (Deck) -> Unit,
 ) {
   var progressMessage by remember { mutableStateOf("Initializing conversion...") }
   var isLoading by remember { mutableStateOf(true) }
-  var errorMessage by remember { mutableStateOf<String?>(null) }
+  var listOfErrorMessages by remember { mutableStateOf(emptyList<String>()) }
+  var deck by remember { mutableStateOf<Deck?>(null) }
 
   val context = LocalContext.current
 
   AlertDialog(
-      onDismissRequest = {},
+      onDismissRequest = {
+          if (!isLoading) {
+             closePopup()
+          }
+      },
       title = { Text(stringResource(R.string.convert_folder_to_decks)) },
       text = {
-        if (isLoading) {
-          LoadingIndicator(progressMessage)
-        }
-        if (errorMessage != null) {
-          Text(errorMessage!!, color = MaterialTheme.colorScheme.error)
-        }
+          Column{
+              if (isLoading) {
+                  LoadingIndicator(text = progressMessage, modifier = Modifier.fillMaxWidth(), spacerHeight = 8.dp)
+              } else {
+                  if (deck != null) {
+                      Text(text = progressMessage,  style = MaterialTheme.typography.titleMedium)
+                  } else {
+                      Text(text = stringResource(R.string.no_flashcards_created))
+                  }
+              }
+
+              if (listOfErrorMessages.isNotEmpty()) {
+                  Spacer(modifier = Modifier.height(16.dp))
+                  Column {
+                      listOfErrorMessages.forEach {
+                          Text(
+                              text = buildAnnotatedString {
+                                  withStyle(style = SpanStyle(color = MaterialTheme.colorScheme.error)) {
+                                      append(stringResource(R.string.error_while_converting))
+                                  }
+                                  append(": $it")
+                              }
+                          )
+                      }
+                  }
+              }
+          }
       },
-      confirmButton = {})
+      confirmButton = {
+          if (!isLoading && deck != null) {
+                  TextButton(
+                      onClick = {
+                          onConversionComplete(deck!!)
+                          closePopup()
+                      },
+                      modifier = Modifier.testTag("goToDeckFolderAction")
+                  ) {
+                      Text(stringResource(R.string.go_to_deck_folder))
+                  }
+          }
+      },
+      dismissButton = {
+          if (!isLoading) {
+              TextButton(
+                  onClick = {
+                      closePopup()
+                  },
+                  modifier = Modifier.testTag("closeAction")
+              ) {
+                  Text(stringResource(R.string.close), color = MaterialTheme.colorScheme.error)
+              }
+          }
+      })
 
   if (isLoading) {
     LaunchedEffect(Unit) {
       notesToFlashcard.convertFolderToDecks(
           onProgress = { notes, folders, exception ->
             if (exception != null) {
-              errorMessage = "Error: ${exception.localizedMessage}"
+                listOfErrorMessages += exception.localizedMessage
             } else {
               progressMessage =
                   context.getString(R.string.flashcards_conversion_progress, notes, folders)
             }
           },
-          onSuccess = { deck ->
+          onSuccess = { finalDeck ->
             isLoading = false
-            onConversionComplete(deck)
+            deck = finalDeck
           },
           onFailure = { exception ->
-            errorMessage = "Conversion failed: ${exception.localizedMessage}"
+            listOfErrorMessages += exception.localizedMessage
             isLoading = false
           })
     }
@@ -183,7 +237,9 @@ fun CreationDialog(
       title = { Text("$action $type") },
       text = {
         Column(
-            modifier = Modifier.padding(16.dp).testTag("${type}Dialog"),
+            modifier = Modifier
+                .padding(16.dp)
+                .testTag("${type}Dialog"),
             verticalArrangement = Arrangement.spacedBy(8.dp),
             horizontalAlignment = Alignment.CenterHorizontally) {
               OutlinedTextField(
@@ -244,18 +300,20 @@ fun FileSystemPopup(
   fun subFolder(subFolder: Folder) = Column {
     Box(
         modifier =
-            Modifier.testTag("FileSystemPopupFolderChoiceBox" + subFolder.id)
-                .fillMaxWidth()
-                .background(
-                    color = MaterialTheme.colorScheme.background, shape = RoundedCornerShape(8.dp))
-                .clickable {
-                  folderViewModel.getSubFoldersOfNoStateUpdate(
-                      subFolder.id,
-                      null,
-                      onSuccess = { subFolders -> folderSubFolders = subFolders })
-                  selectedFolder = subFolder
-                }
-                .padding(4.dp) // Adjust padding for better spacing
+        Modifier
+            .testTag("FileSystemPopupFolderChoiceBox" + subFolder.id)
+            .fillMaxWidth()
+            .background(
+                color = MaterialTheme.colorScheme.background, shape = RoundedCornerShape(8.dp)
+            )
+            .clickable {
+                folderViewModel.getSubFoldersOfNoStateUpdate(
+                    subFolder.id,
+                    null,
+                    onSuccess = { subFolders -> folderSubFolders = subFolders })
+                selectedFolder = subFolder
+            }
+            .padding(4.dp) // Adjust padding for better spacing
         ) {
           Row(
               verticalAlignment = Alignment.CenterVertically,
@@ -265,8 +323,9 @@ fun FileSystemPopup(
                     contentDescription = "Folder Icon",
                     tint = MaterialTheme.colorScheme.primary,
                     modifier =
-                        Modifier.size(50.dp) // Make the icon significantly larger
-                            .padding(end = 16.dp) // Move it slightly to the left
+                    Modifier
+                        .size(50.dp) // Make the icon significantly larger
+                        .padding(end = 16.dp) // Move it slightly to the left
                     )
                 Text(
                     text = subFolder.name,
@@ -296,19 +355,22 @@ fun FileSystemPopup(
   Dialog(onDismissRequest = { onDismiss() }) {
     Box(
         modifier =
-            Modifier.testTag("FileSystemPopup")
-                .fillMaxWidth(0.95f) // Adjust the popup width
-                .fillMaxHeight(0.7f)
-                .padding(16.dp)
-                .background(
-                    color = MaterialTheme.colorScheme.background,
-                    shape = RoundedCornerShape(12.dp))) {
+        Modifier
+            .testTag("FileSystemPopup")
+            .fillMaxWidth(0.95f) // Adjust the popup width
+            .fillMaxHeight(0.7f)
+            .padding(16.dp)
+            .background(
+                color = MaterialTheme.colorScheme.background,
+                shape = RoundedCornerShape(12.dp)
+            )) {
           Column(modifier = Modifier.fillMaxSize()) {
             Box(
                 modifier =
-                    Modifier.fillMaxWidth()
-                        .background(MaterialTheme.colorScheme.primary)
-                        .padding(vertical = 12.dp, horizontal = 16.dp)) {
+                Modifier
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.primary)
+                    .padding(vertical = 12.dp, horizontal = 16.dp)) {
                   Row(
                       modifier = Modifier.fillMaxWidth(),
                       verticalAlignment = Alignment.CenterVertically) {
@@ -351,9 +413,10 @@ fun FileSystemPopup(
 
             Column(
                 modifier =
-                    Modifier.weight(1f)
-                        .padding(start = 16.dp, end = 16.dp, top = 8.dp)
-                        .verticalScroll(rememberScrollState()),
+                Modifier
+                    .weight(1f)
+                    .padding(start = 16.dp, end = 16.dp, top = 8.dp)
+                    .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(4.dp)) {
                   if (selectedFolder == null) {
                     userRootFolders.value.forEach { folder -> subFolder(folder) }
@@ -362,7 +425,9 @@ fun FileSystemPopup(
                   }
                 }
             Box(
-                modifier = Modifier.fillMaxWidth().padding(16.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
                 contentAlignment = Alignment.Center) {
                   Button(
                       onClick = {
@@ -403,7 +468,9 @@ fun EnterTextPopup(
       title = { Text("$action $type") },
       text = {
         Column(
-            modifier = Modifier.padding(16.dp).testTag("${type}Dialog"),
+            modifier = Modifier
+                .padding(16.dp)
+                .testTag("${type}Dialog"),
             verticalArrangement = Arrangement.spacedBy(8.dp),
             horizontalAlignment = Alignment.CenterHorizontally) {
               OutlinedTextField(
