@@ -214,17 +214,20 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
    * @param isDeckView A flag indicating if the folder is a deck view.
    * @param onSuccess The function to call when the root folders are retrieved successfully.
    * @param onFailure The function to call when the root folders fail to be retrieved.
+   * @param useCache Whether to update data from cache. Should be true only if [userId] is the
+   *   current user.
    */
   fun getRootFoldersFromUserId(
       userId: String,
       isDeckView: Boolean = false,
       onSuccess: (List<Folder>) -> Unit = {},
       onFailure: (Exception) -> Unit = {},
+      useCache: Boolean = false
   ) {
     if (isDeckView) {
-      getRootDeckFoldersFromUserId(userId, onSuccess, onFailure)
+      getRootDeckFoldersFromUserId(userId, onSuccess, onFailure, useCache)
     } else {
-      getRootNoteFoldersFromUserId(userId, onSuccess, onFailure)
+      getRootNoteFoldersFromUserId(userId, onSuccess, onFailure, useCache)
     }
   }
 
@@ -235,6 +238,7 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
    * @param onSuccess The function to call when the root folders are retrieved successfully.
    * @param onFailure The function to call when the root folders fail to be retrieved.
    * @param useCache Whether to update data from cache. Should be true only if [userId] is the
+   *   current user.
    */
   fun getRootNoteFoldersFromUserId(
       userId: String,
@@ -289,6 +293,8 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
    * @param onFolderNotFound The function to call when the folder is not found.
    * @param onSuccess The function to call when the folders are retrieved successfully.
    * @param onFailure The function to call when the folder fails to be retrieved.
+   * @param useCache Whether to update data from cache. Should be true only if userId of the folder
+   *   is the current user.
    */
   fun getDeckFoldersByName(
       name: String,
@@ -398,7 +404,6 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
    * @param onFailure The function to call when the folder fails to be updated.
    * @param useCache Whether to update data from cache. Should be true only if userId of the folder
    *   is the current user.
-   * @param isDeckView A flag indicating if the folder is a deck view.
    */
   fun updateFolderNoStateUpdate(
       folder: Folder,
@@ -446,6 +451,8 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
    * @param onSuccess A callback that receives a list of `Folder` objects on successful retrieval.
    * @param onFailure A callback that receives an `Exception` in case of a failure. Defaults to an
    *   empty lambda if not provided.
+   *     @param useCache Whether to update data from cache. Should be true only if userId of the
+   *       folder is the current user.
    */
   fun getSubFoldersOfNoStateUpdate(
       parentFolderId: String,
