@@ -165,6 +165,7 @@ dependencies {
     implementation(libs.androidx.credentials)
     implementation(libs.androidx.credentials.play.services.auth)
     implementation(libs.google.id)
+    implementation(libs.androidx.datastore.preferences)
 
     // -------------- Firebase ---------------------
     implementation(libs.firebase.database.ktx)
