@@ -475,9 +475,9 @@ fun FolderContentTopBar(
                 folderViewModel.clearSelectedFolder()
                 showFlashcardCreationPopup = false
                 navigationActions.navigateTo(TopLevelDestinations.DECK_OVERVIEW)
-                  navigationActions.navigateTo(
-                      Screen.FOLDER_CONTENTS.replace(
-                          oldValue = "{folderId}", newValue = it.folderId!!))
+                navigationActions.navigateTo(
+                    Screen.FOLDER_CONTENTS.replace(
+                        oldValue = "{folderId}", newValue = it.folderId!!))
               },
           )
         }
