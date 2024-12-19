@@ -28,8 +28,10 @@ import com.github.onlynotesswent.model.authentication.Authenticator
 import com.github.onlynotesswent.model.deck.DeckRepository
 import com.github.onlynotesswent.model.deck.DeckViewModel
 import com.github.onlynotesswent.model.common.Visibility
+import com.github.onlynotesswent.model.deck.Deck
 import com.github.onlynotesswent.model.file.FileRepository
 import com.github.onlynotesswent.model.file.FileViewModel
+import com.github.onlynotesswent.model.flashcard.Flashcard
 import com.github.onlynotesswent.model.folder.FolderRepository
 import com.github.onlynotesswent.model.folder.FolderViewModel
 import com.github.onlynotesswent.model.note.Note
@@ -140,6 +142,27 @@ class EndToEndTest {
           visibility = Visibility.PUBLIC)
 
   private val newTitle = "New Title"
+
+  private val testFlashcard =
+        Flashcard(
+            id = "testFlashcardId",
+            front = "front",
+            back = "back",
+            userId = testUid,
+            folderId = null,
+            noteId = testNote.id
+        )
+
+  private val testDeck = Deck(
+      id = "1",
+      name = "deckName",
+      userId = testUid,
+      folderId = null,
+      visibility = Visibility.PRIVATE,
+      lastModified = Timestamp.now(),
+      description = "deckDescription",
+      flashcardIds = listOf(testFlashcard.id)
+  )
 
   // Setup Compose test rule for UI testing
   @get:Rule val composeTestRule = createComposeRule()
@@ -581,11 +604,12 @@ class EndToEndTest {
     composeTestRule.runOnUiThread { navController.navigate(Route.NOTE_OVERVIEW) }
   }
 
+  // Test the end-to-end flow of creating a note, converting it into a flashcard and playing its decks
   @Test
   fun testEndToEndFlow3() {
     testEndToEndFlow3_init()
 
-    // create a root note
+    // Create a root note
     composeTestRule.onNodeWithTag("createNoteOrFolder").assertIsDisplayed()
     composeTestRule.onNodeWithTag("createNoteOrFolder").performClick()
     composeTestRule.onNodeWithTag("createNote").performClick()
@@ -596,12 +620,47 @@ class EndToEndTest {
     composeTestRule.onNodeWithTag("nextVisibility").performClick()
     composeTestRule.onNodeWithTag("confirmNoteAction").assertIsDisplayed()
     composeTestRule.onNodeWithTag("confirmNoteAction").performClick()
+    composeTestRule.onNodeWithTag("saveNoteButton").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("saveNoteButton").performClick()
+    composeTestRule.onNodeWithTag("closeButton").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("closeButton").performClick()
 
-    // Go to screen with button to create flashcard, click on it and then ...
+    // Verify the notes are displayed
+    composeTestRule.onNodeWithTag("noteAndFolderList").assertIsDisplayed()
 
-    // It is either move to other destinations inside edit note or the button is in the main edit
-    // note screen
+    // Verify that the note card is displayed
+    composeTestRule.onNodeWithTag("noteCard").assertIsDisplayed()
 
+    // Display the note bottom sheet and convert to flashcard
+    composeTestRule.onNodeWithTag("showBottomSheetButton").performClick()
+    composeTestRule.onNodeWithTag("noteModalBottomSheet").assertIsDisplayed()
+
+    composeTestRule.onNodeWithTag("convertToFlashcardButton").assertIsDisplayed() // change node name to the correct one
+    composeTestRule.onNodeWithTag("convertToFlashcardButton").performClick()
+
+    // (Imagining it goes directly to deck play menu)
+    // Show deck play bottom sheet
+    composeTestRule.onNodeWithTag("deckPlayButton").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("deckPlayButton").performClick()
+    composeTestRule.onNodeWithTag("playModesBottomSheet").assertIsDisplayed()
+
+    // Play the deck
+    composeTestRule.onNodeWithTag("playMode--TEST").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("playMode--TEST").performClick()
+
+    // Flip card, select got it right and submit
+    composeTestRule.onNodeWithTag("flashcardColumn").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("flashcard").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("flashcardFront").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("flashcard").performClick()
+    composeTestRule.onNodeWithTag("flashcardBack").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("gotItRightButton").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("gotItRightButton").performClick()
+
+    composeTestRule.onNodeWithTag("submitButton").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("submitButton").performClick()
+    composeTestRule.onNodeWithTag("FinishedScreenColumn").assertIsDisplayed()
+    // probably end the test here
   }
 
   private fun testEndToEndFlow4_init() {
@@ -643,12 +702,15 @@ class EndToEndTest {
     // mock the note repository method called when going into the saved notes screen
     // `when`(mockNoteRepository.)
 
-    // potentially alwo mock update note if we modify the saved note
+    // potentially also mock update note if we modify the saved note
 
     // Start at overview screen
     composeTestRule.runOnUiThread { navController.navigate(Route.NOTE_OVERVIEW) }
   }
 
+  // Test the end-to-end flow of saving a note and viewing it in the current user saved overview screen,
+  // checking the note is there and cannot be modified, and unsaving it and checking it is no longer
+  // there
   @Test
   fun testEndToEndFlow4() {
     testEndToEndFlow4_init()
