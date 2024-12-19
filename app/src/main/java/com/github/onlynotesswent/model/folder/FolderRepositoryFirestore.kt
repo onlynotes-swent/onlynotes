@@ -126,7 +126,7 @@ class FolderRepositoryFirestore(
   ) {
     // Update the cache if needed
     if (useCache) {
-      withContext(Dispatchers.IO) { folderDao.deleteFoldersFromUid() }
+      withContext(Dispatchers.IO) { folderDao.deleteFoldersFromUid(userId) }
     }
 
     db.collection(folderCollectionPath).get().addOnCompleteListener { task ->
@@ -195,7 +195,7 @@ class FolderRepositoryFirestore(
   ) {
     try {
       val cachedFolders: List<Folder> =
-          if (useCache) withContext(Dispatchers.IO) { folderDao.getFoldersFromUserId() }
+          if (useCache) withContext(Dispatchers.IO) { folderDao.getFoldersFromUserId(userId) }
           else emptyList()
 
       // If device is offline, fetch from local database
@@ -235,7 +235,7 @@ class FolderRepositoryFirestore(
   ) {
     try {
       val cachedFolders: List<Folder> =
-          if (useCache) withContext(Dispatchers.IO) { folderDao.getRootNoteFoldersFromUserId() }
+          if (useCache) withContext(Dispatchers.IO) { folderDao.getRootNoteFoldersFromUserId(userId) }
           else emptyList()
 
       // If device is offline, fetch from local database
@@ -275,7 +275,7 @@ class FolderRepositoryFirestore(
   ) {
     try {
       val cachedFolders: List<Folder> =
-          if (useCache) withContext(Dispatchers.IO) { folderDao.getRootDeckFoldersFromUserId() }
+          if (useCache) withContext(Dispatchers.IO) { folderDao.getRootDeckFoldersFromUserId(userId) }
           else emptyList()
 
       // If device is offline, fetch from local database
@@ -317,12 +317,11 @@ class FolderRepositoryFirestore(
   ) {
     try {
       val cachedFolders: List<Folder> =
-          if (useCache) withContext(Dispatchers.IO) { folderDao.getRootDeckFoldersFromUserId() }
+          if (useCache) withContext(Dispatchers.IO) { folderDao.getRootDeckFoldersFromUserId(userId) }
           else emptyList()
 
       // If device is offline, fetch from local database
       if (!NetworkUtils.isInternetAvailable(context)) {
-        println("isInternetAvailable: ${NetworkUtils.isInternetAvailable(context)}")
         if (cachedFolders.isEmpty()) {
           onFolderNotFound()
           return
