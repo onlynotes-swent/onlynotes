@@ -160,7 +160,7 @@ fun SendCommentBar(
           OutlinedTextField(
               value = commentText,
               onValueChange = { commentText = it },
-              modifier = Modifier.weight(1f),
+              modifier = Modifier.weight(1f).padding(bottom = 8.dp),
               label = { Text(stringResource(R.string.enter_comment_here)) },
               placeholder = { Text(stringResource(R.string.enter_comment_here)) })
 
