@@ -53,8 +53,6 @@ class NotificationRepositoryFirestoreTest {
 
     `when`(mockCollectionReference.whereEqualTo("receiverId", "1")).thenReturn(mockQuery)
 
-
-
     `when`(mockCollectionReference.get()).thenReturn(mockQuerySnapshotTask)
     `when`(mockDocumentSnapshot.id).thenReturn("1")
 
@@ -156,11 +154,11 @@ class NotificationRepositoryFirestoreTest {
     assert(wasCalled)
   }
 
-    @Test
-    fun `deleteNotificationsFromUserId should delete all notifications`() {
-        var wasCalled = false
-        notificationRepositoryFirestore.deleteNotificationsFromUserId(
-          userID = "1", onSuccess = { wasCalled = true }, onFailure = { fail() })
-        assert(wasCalled)
-    }
+  @Test
+  fun `deleteNotificationsFromUserId should delete all notifications`() {
+    var wasCalled = false
+    notificationRepositoryFirestore.deleteNotificationsFromUserId(
+        userID = "1", onSuccess = { wasCalled = true }, onFailure = { fail() })
+    assert(wasCalled)
+  }
 }

@@ -417,8 +417,6 @@ class FlashcardRepositoryFirestoreTest {
   }
 }
 
-
-
 private fun verifyErrorLog(msg: String) {
   // Get all the logs
   val logs = ShadowLog.getLogs()
