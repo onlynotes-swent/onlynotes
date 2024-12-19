@@ -89,8 +89,14 @@ class NotesToFlashcard(
         onSuccess = { downloadedFile ->
           CoroutineScope(Dispatchers.IO).launch {
             val prompt = promptPrefix + downloadedFile.readText()
-            val response = openAIClient.sendRequestSuspend(prompt)
-            parseFlashcardsFromJson(response, note, folderId, onSuccess, onFailure)
+            try {
+              val response = openAIClient.sendRequestSuspend(prompt)
+              parseFlashcardsFromJson(response, note, folderId, onSuccess, onFailure)
+            } catch (e: Exception) {
+              Log.e(TAG, "Error sending request to OpenAI API", e)
+              onFailure(e)
+              return@launch
+            }
           }
         },
         onFileNotFound = onFileNotFoundException,

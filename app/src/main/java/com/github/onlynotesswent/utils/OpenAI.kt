@@ -4,6 +4,7 @@ import com.github.onlynotesswent.BuildConfig
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import java.io.IOException
+import java.util.concurrent.TimeUnit
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
@@ -18,7 +19,14 @@ import okhttp3.RequestBody.Companion.toRequestBody
  * @param client the OkHttpClient instance to use for sending requests (default: OkHttpClient()),
  *   used for testing
  */
-class OpenAI(private val client: OkHttpClient = OkHttpClient()) {
+class OpenAI(
+    private val client: OkHttpClient =
+        OkHttpClient.Builder()
+            .connectTimeout(20, TimeUnit.SECONDS) // Time to establish a connection
+            .readTimeout(30, TimeUnit.SECONDS) // Time to wait for server response
+            .writeTimeout(30, TimeUnit.SECONDS) // Time to send data to the server
+            .build()
+) {
   private val apiKey: String = BuildConfig.OPEN_AI_API_KEY
   private val endpoint = "https://api.openai.com/v1/chat/completions"
 
