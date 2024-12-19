@@ -18,9 +18,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.LibraryBooks
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -276,7 +276,7 @@ fun NoteOptionsBottomSheet(
                 Spacer(modifier = Modifier.width(16.dp))
                 Text(
                     text = stringResource(R.string.move_note),
-                    style = MaterialTheme.typography.bodyLarge)
+                    style = MaterialTheme.typography.titleMedium)
               }
 
           if (notesToFlashcard != null) {
@@ -331,7 +331,7 @@ fun NoteOptionsBottomSheet(
                   Spacer(modifier = Modifier.width(16.dp))
                   Text(
                       text = stringResource(R.string.convert_note_to_flashcards),
-                      style = MaterialTheme.typography.bodyLarge)
+                      style = MaterialTheme.typography.titleMedium)
                   Spacer(modifier = Modifier.width(16.dp))
                 }
           }
@@ -346,13 +346,13 @@ fun NoteOptionsBottomSheet(
                       .testTag("deleteNoteBottomSheet"),
               verticalAlignment = Alignment.CenterVertically) {
                 Icon(
-                    imageVector = Icons.Default.Delete,
+                    imageVector = Icons.Outlined.Delete,
                     contentDescription = stringResource(R.string.delete_note),
                     tint = MaterialTheme.colorScheme.error)
                 Spacer(modifier = Modifier.width(16.dp))
                 Text(
                     text = stringResource(R.string.delete_note),
-                    style = MaterialTheme.typography.bodyLarge,
+                    style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.error)
               }
         }
