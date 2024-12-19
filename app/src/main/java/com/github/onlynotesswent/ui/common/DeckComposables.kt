@@ -55,7 +55,7 @@ import com.github.onlynotesswent.model.folder.FolderViewModel
 import com.github.onlynotesswent.model.user.User
 import com.github.onlynotesswent.model.user.UserViewModel
 import com.github.onlynotesswent.ui.navigation.NavigationActions
-import com.github.onlynotesswent.ui.navigation.Route.NOTE_OVERVIEW
+import com.github.onlynotesswent.ui.navigation.Route.DECK_OVERVIEW
 import com.github.onlynotesswent.ui.navigation.Screen
 import com.google.firebase.Timestamp
 import java.text.SimpleDateFormat
@@ -205,7 +205,7 @@ fun DeckOptionsBottomSheet(
                 Screen.FOLDER_CONTENTS.replace(
                     oldValue = "{folderId}", newValue = selectedFolder.id))
           } else {
-            navigationActions.navigateTo(NOTE_OVERVIEW)
+            navigationActions.navigateTo(DECK_OVERVIEW)
           }
 
           onDismiss() // Dismiss the bottom sheet after moving the note
