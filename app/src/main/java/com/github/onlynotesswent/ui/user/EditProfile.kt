@@ -334,14 +334,30 @@ fun EditProfileScreen(
                                 modifier = Modifier.testTag("confirmDeleteButton"),
                                 onClick = {
                                   showDeleteAccountAlert.value = false
-
-                                  noteViewModel.deleteNotesFromUid(user.value!!.uid)
                                   folderViewModel.deleteAllFoldersFromUserId(user.value!!.uid)
-                                  noteViewModel.getNotesFromUid(user.value!!.uid)
-                                  noteViewModel.userNotes.value.forEach {
-                                    fileViewModel.deleteFile(it.id, FileType.NOTE_PDF)
-                                  }
-                                  fileViewModel.deleteFile(
+                                  noteViewModel.getNotesFromUid(user.value!!.uid,
+                                      onSuccess = { notes ->
+                                        notes.forEach {
+                                            fileViewModel.deleteFile(it.id, FileType.NOTE_PDF)
+                                            fileViewModel.deleteFile(it.id, FileType.NOTE_TEXT)
+                                        }
+                                          noteViewModel.deleteNotesFromUid(user.value!!.uid)
+                                      },
+                                      )
+                                    deckViewModel.deleteAllDecksFromUserId(user.value!!.uid)
+
+                                    flashcardViewModel.getFlashcardsFromUser(
+                                        user.value!!.uid,
+                                        onSuccess = { flashcards ->
+                                            flashcards.forEach {
+                                            fileViewModel.deleteFile(it.id, FileType.FLASHCARD_IMAGE)
+                                            }
+                                            flashcardViewModel.deleteFlashcardsFromUser(user.value!!.uid)
+                                        },
+                                    )
+                                    notificationViewModel.deleteNotificationsFromUserId(user.value!!.uid)
+
+                                    fileViewModel.deleteFile(
                                       user.value!!.uid, FileType.PROFILE_PIC_JPEG)
                                   userViewModel.deleteUserById(
                                       user.value!!.uid,

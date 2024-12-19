@@ -192,4 +192,30 @@ class FlashcardRepositoryFirestore(private val db: FirebaseFirestore) : Flashcar
           Log.e(TAG, "Error deleting flashcard", exception)
         }
   }
+
+    override fun deleteFlashcardsFromUser(
+        userID: String,
+        onSuccess: () -> Unit,
+        onFailure: (Exception) -> Unit
+    ) {
+        db.collection(collectionPath)
+            .whereEqualTo("userId", userID)
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                querySnapshot.documents.forEach { document ->
+                    db.collection(collectionPath)
+                        .document(document.id)
+                        .delete()
+                        .addOnFailureListener { exception ->
+                            onFailure(exception)
+                            Log.e(TAG, "Error deleting flashcard", exception)
+                        }
+                }
+                onSuccess()
+            }
+            .addOnFailureListener { exception ->
+                onFailure(exception)
+                Log.e(TAG, "Error deleting flashcard", exception)
+            }
+    }
 }
