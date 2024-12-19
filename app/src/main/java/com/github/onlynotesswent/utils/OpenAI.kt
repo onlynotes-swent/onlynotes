@@ -4,6 +4,10 @@ import com.github.onlynotesswent.BuildConfig
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import java.io.IOException
+import java.util.concurrent.TimeUnit
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
+import kotlin.coroutines.suspendCoroutine
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -15,7 +19,14 @@ import okhttp3.RequestBody.Companion.toRequestBody
  * @param client the OkHttpClient instance to use for sending requests (default: OkHttpClient()),
  *   used for testing
  */
-class OpenAI(private val client: OkHttpClient = OkHttpClient()) {
+class OpenAI(
+    private val client: OkHttpClient =
+        OkHttpClient.Builder()
+            .connectTimeout(20, TimeUnit.SECONDS) // Time to establish a connection
+            .readTimeout(30, TimeUnit.SECONDS) // Time to wait for server response
+            .writeTimeout(30, TimeUnit.SECONDS) // Time to send data to the server
+            .build()
+) {
   private val apiKey: String = BuildConfig.OPEN_AI_API_KEY
   private val endpoint = "https://api.openai.com/v1/chat/completions"
 
@@ -45,13 +56,13 @@ class OpenAI(private val client: OkHttpClient = OkHttpClient()) {
    * @param prompt the prompt to generate text from
    * @param onSuccess the callback function to invoke on a successful response
    * @param onFailure the callback function to invoke on a failed response
-   * @param model the model to use for generating text (default: "gpt-3.5-turbo")
+   * @param model the model to use for generating text (default: "gpt-4o-mini")
    */
   fun sendRequest(
       prompt: String,
       onSuccess: (String) -> Unit,
       onFailure: (IOException) -> Unit,
-      model: String = "gpt-3.5-turbo",
+      model: String = "gpt-4o-mini" // The model to use for generating text
   ) {
     // Create the JSON body using Gson
     val messageObject =
@@ -97,5 +108,23 @@ class OpenAI(private val client: OkHttpClient = OkHttpClient()) {
                 onSuccess(body) // Invoke the success callback
               }
             })
+  }
+
+  /**
+   * Is a synchronous version of the sendRequest function that suspends the coroutine until the
+   * response is received. This function is useful when you want to call the sendRequest function
+   * from a coroutine and wait for the response.
+   *
+   * @param prompt the prompt to generate text from
+   * @param model the model to use for generating text (default: "gpt-4o-mini")
+   */
+  suspend fun sendRequestSuspend(prompt: String, model: String = "gpt-4o-mini"): String {
+    return suspendCoroutine { continuation ->
+      sendRequest(
+          prompt = prompt,
+          onSuccess = { response -> continuation.resume(response) },
+          onFailure = { exception -> continuation.resumeWithException(exception) },
+          model = model)
+    }
   }
 }
