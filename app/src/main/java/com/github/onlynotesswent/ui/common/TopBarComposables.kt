@@ -1,6 +1,7 @@
 package com.github.onlynotesswent.ui.common
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -34,23 +35,25 @@ fun ScreenTopBar(
     icon: @Composable () -> Unit,
     iconTestTag: String
 ) {
-  TopAppBar(
-      colors =
-          TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface),
-      title = {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center) {
-              Spacer(modifier = Modifier.weight(1.4f))
-              Text(
-                  title,
-                  color = MaterialTheme.colorScheme.onSurface,
-                  modifier = Modifier.testTag(titleTestTag))
-              Spacer(modifier = Modifier.weight(2f))
-            }
-      },
-      navigationIcon = {
-        IconButton(onClick = onBackClick, Modifier.testTag(iconTestTag), content = icon)
-      })
+  Column {
+    TopAppBar(
+        colors =
+            TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface),
+        title = {
+          Row(
+              modifier = Modifier.fillMaxWidth(),
+              verticalAlignment = Alignment.CenterVertically,
+              horizontalArrangement = Arrangement.Center) {
+                Spacer(modifier = Modifier.weight(1.4f))
+                Text(
+                    title,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.testTag(titleTestTag))
+                Spacer(modifier = Modifier.weight(2f))
+              }
+        },
+        navigationIcon = {
+          IconButton(onClick = onBackClick, Modifier.testTag(iconTestTag), content = icon)
+        })
+  }
 }

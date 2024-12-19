@@ -1,5 +1,6 @@
 package com.github.onlynotesswent.model.folder
 
+import com.github.onlynotesswent.model.flashcard.deck.DeckViewModel
 import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.model.user.Friends
 import com.github.onlynotesswent.model.user.UserViewModel
@@ -237,6 +238,24 @@ interface FolderRepository {
   suspend fun deleteFolderContents(
       folder: Folder,
       noteViewModel: NoteViewModel,
+      onSuccess: () -> Unit,
+      onFailure: (Exception) -> Unit,
+      useCache: Boolean
+  )
+
+  /**
+   * Deletes all elements of a folder.
+   *
+   * @param folder The folder to delete elements from.
+   * @param deckViewModel: DeckViewModel The ViewModel that provides the list of decks to delete.
+   * @param onSuccess Callback to be invoked when the subfolders are deleted successfully.
+   * @param onFailure Callback to be invoked if an error occurs.
+   * @param useCache Whether to update data from cache. Should be true only if userId of the folder
+   *   is the current user.
+   */
+  suspend fun deleteFolderContents(
+      folder: Folder,
+      deckViewModel: DeckViewModel,
       onSuccess: () -> Unit,
       onFailure: (Exception) -> Unit,
       useCache: Boolean

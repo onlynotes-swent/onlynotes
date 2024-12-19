@@ -35,6 +35,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -263,6 +264,10 @@ fun EditProfileScreen(
                     FilterChip(
                         modifier =
                             Modifier.width(130.dp).height(40.dp).testTag("publicAccountChip"),
+                        colors =
+                            FilterChipDefaults.filterChipColors(
+                                selectedContainerColor =
+                                    MaterialTheme.colorScheme.primaryContainer),
                         selected = newIsAccountPublic.value,
                         onClick = { newIsAccountPublic.value = true },
                         label = {
@@ -285,6 +290,10 @@ fun EditProfileScreen(
                     FilterChip(
                         modifier =
                             Modifier.width(130.dp).height(40.dp).testTag("privateAccountChip"),
+                        colors =
+                            FilterChipDefaults.filterChipColors(
+                                selectedContainerColor =
+                                    MaterialTheme.colorScheme.primaryContainer),
                         selected = !newIsAccountPublic.value,
                         onClick = { newIsAccountPublic.value = false },
                         label = {
@@ -465,13 +474,16 @@ fun EditableProfilePicture(
         })
 
     if (showSheet.value) {
-      ModalBottomSheet(onDismissRequest = { showSheet.value = false }, sheetState = sheetState) {
-        BottomSheetContent(
-            onClose = { showSheet.value = false },
-            pictureTaker,
-            profilePictureUri,
-            hasProfilePictureBeenChanged)
-      }
+      ModalBottomSheet(
+          onDismissRequest = { showSheet.value = false },
+          containerColor = MaterialTheme.colorScheme.onPrimary,
+          sheetState = sheetState) {
+            BottomSheetContent(
+                onClose = { showSheet.value = false },
+                pictureTaker,
+                profilePictureUri,
+                hasProfilePictureBeenChanged)
+          }
     }
   }
 }

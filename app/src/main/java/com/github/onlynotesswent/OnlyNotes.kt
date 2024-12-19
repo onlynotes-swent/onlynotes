@@ -21,6 +21,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import com.github.onlynotesswent.model.authentication.Authenticator
@@ -38,8 +39,9 @@ import com.github.onlynotesswent.ui.deck.DeckScreen
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Route
 import com.github.onlynotesswent.ui.navigation.Screen
+import com.github.onlynotesswent.ui.overview.DeckOverviewScreen
 import com.github.onlynotesswent.ui.overview.FolderContentScreen
-import com.github.onlynotesswent.ui.overview.OverviewScreen
+import com.github.onlynotesswent.ui.overview.NoteOverviewScreen
 import com.github.onlynotesswent.ui.overview.editnote.CommentsScreen
 import com.github.onlynotesswent.ui.overview.editnote.EditMarkdownScreen
 import com.github.onlynotesswent.ui.overview.editnote.EditNoteScreen
@@ -54,7 +56,7 @@ import com.github.onlynotesswent.ui.user.UserProfileScreen
 import com.github.onlynotesswent.utils.PictureTaker
 import com.github.onlynotesswent.utils.Scanner
 
-class MainActivity : ComponentActivity() {
+class OnlyNotes : ComponentActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
 
@@ -99,11 +101,23 @@ fun OnlyNotesApp(
     }
 
     navigation(
-        startDestination = Screen.OVERVIEW,
-        route = Route.OVERVIEW,
+        startDestination = Screen.NOTE_OVERVIEW,
+        route = Route.NOTE_OVERVIEW,
     ) {
-      composable(Screen.OVERVIEW) {
-        OverviewScreen(navigationActions, noteViewModel, userViewModel, folderViewModel)
+      composable(Screen.NOTE_OVERVIEW) {
+        val user = userViewModel.currentUser.collectAsState().value
+        val currentBackStackEntry = navController.currentBackStackEntryAsState().value
+
+        LaunchedEffect(currentBackStackEntry) {
+          if (user != null) {
+            folderViewModel.getRootNoteFoldersFromUserId(user.uid)
+            noteViewModel.getRootNotesFromUid(user.uid)
+            noteViewModel.getCurrentUserSavedNotes(userViewModel)
+            folderViewModel.getCurrentUserSavedFolders(userViewModel)
+          }
+        }
+
+        NoteOverviewScreen(navigationActions, noteViewModel, userViewModel, folderViewModel)
       }
       composable(Screen.EDIT_NOTE) {
         EditNoteScreen(navigationActions, noteViewModel, userViewModel)
@@ -133,11 +147,79 @@ fun OnlyNotesApp(
             LaunchedEffect(folderId) {
               if (folderId != null && folderId != "{folderId}") {
                 folderViewModel.getFolderById(folderId)
+                noteViewModel.getNotesFromFolder(folderId, userViewModel)
+                folderViewModel.getSubFoldersOf(folderId, userViewModel)
               }
             }
             // Wait until selected folder is updated to display the screen
             if (selectedFolder != null) {
-              FolderContentScreen(navigationActions, folderViewModel, noteViewModel, userViewModel)
+              FolderContentScreen(
+                  navigationActions = navigationActions,
+                  folderViewModel = folderViewModel,
+                  userViewModel = userViewModel,
+                  noteViewModel = noteViewModel)
+            }
+          }
+    }
+
+    navigation(
+        startDestination = Screen.DECK_OVERVIEW,
+        route = Route.DECK_OVERVIEW,
+    ) {
+      composable(Screen.DECK_OVERVIEW) {
+        val user = userViewModel.currentUser.collectAsState().value
+        val currentBackStackEntry = navController.currentBackStackEntryAsState().value
+
+        LaunchedEffect(currentBackStackEntry) {
+          if (user != null) {
+            folderViewModel.getRootDeckFoldersFromUserId(user.uid)
+            deckViewModel.getRootDecksFromUserId(user.uid)
+          }
+        }
+
+        DeckOverviewScreen(navigationActions, deckViewModel, userViewModel, folderViewModel)
+      }
+      composable(Screen.DECK_MENU) {
+        DeckScreen(
+            userViewModel,
+            deckViewModel,
+            flashcardViewModel,
+            fileViewModel,
+            pictureTaker,
+            navigationActions)
+      }
+      composable(Screen.DECK_PLAY) {
+        DeckPlayScreen(
+            navigationActions, userViewModel, deckViewModel, flashcardViewModel, fileViewModel)
+      }
+      composable(
+          route = Screen.FOLDER_CONTENTS,
+          enterTransition = { scaleIn(animationSpec = tween(300, easing = EaseIn)) },
+          popExitTransition = {
+            fadeOut(animationSpec = tween(300, easing = LinearEasing)) +
+                slideOutOfContainer(
+                    animationSpec = tween(300, easing = EaseOut),
+                    towards = AnimatedContentTransitionScope.SlideDirection.End)
+          },
+          popEnterTransition = { null }) { navBackStackEntry ->
+            val folderId = navBackStackEntry.arguments?.getString("folderId")
+            val selectedFolder by folderViewModel.selectedFolder.collectAsState()
+            // Update the selected folder when the folder ID changes
+            LaunchedEffect(folderId) {
+              if (folderId != null && folderId != "{folderId}") {
+                folderViewModel.getFolderById(folderId)
+                deckViewModel.getDecksByFolder(folderId)
+                folderViewModel.getSubFoldersOf(folderId, userViewModel)
+              }
+            }
+            // Wait until selected folder is updated to display the screen
+            if (selectedFolder != null) {
+              FolderContentScreen(
+                  navigationActions = navigationActions,
+                  folderViewModel = folderViewModel,
+                  userViewModel = userViewModel,
+                  deckViewModel = deckViewModel,
+                  isDeckView = true)
             }
           }
     }
