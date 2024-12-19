@@ -51,8 +51,8 @@ import com.github.onlynotesswent.model.user.UserViewModel
 import com.github.onlynotesswent.ui.common.ConfirmationPopup
 import com.github.onlynotesswent.ui.common.CustomDropDownMenu
 import com.github.onlynotesswent.ui.common.CustomDropDownMenuItem
-import com.github.onlynotesswent.ui.common.EditDeckDialog
 import com.github.onlynotesswent.ui.common.DecksCreationDialog
+import com.github.onlynotesswent.ui.common.EditDeckDialog
 import com.github.onlynotesswent.ui.common.FileSystemPopup
 import com.github.onlynotesswent.ui.common.FolderDialog
 import com.github.onlynotesswent.ui.common.NoteDialog
@@ -336,70 +336,73 @@ fun FolderContentTopBar(
       },
       actions = {
         if (folder!!.isOwner(currentUser.value!!.uid)) {
+          val menuItems =
+              mutableListOf(
+                  CustomDropDownMenuItem(
+                      text = { Text(stringResource(R.string.update_folder)) },
+                      icon = {
+                        Icon(imageVector = Icons.Default.Edit, contentDescription = "UpdateFolder")
+                      },
+                      onClick = {
+                        onExpandedChange(false)
+                        showUpdateDialog(true)
+                      },
+                      modifier = Modifier.testTag("updateFolderButton")),
+                  CustomDropDownMenuItem(
+                      text = { Text("Move Folder") },
+                      icon = {
+                        Icon(
+                            imageVector = Icons.Default.FolderOpen,
+                            contentDescription = "moveFolder")
+                      },
+                      onClick = {
+                        onExpandedChange(false)
+                        showFileSystemPopup = true
+                      },
+                      modifier = Modifier.testTag("moveFolderButton")),
+                  CustomDropDownMenuItem(
+                      text = { Text(stringResource(R.string.delete_folder)) },
+                      icon = {
+                        Icon(
+                            painter = painterResource(id = R.drawable.folder_delete_icon),
+                            contentDescription = "DeleteFolder")
+                      },
+                      onClick = {
+                        onExpandedChange(false)
+                        showDeleteFolderConfirmation = true
+                      },
+                      modifier = Modifier.testTag("deleteFolderButton")),
+                  CustomDropDownMenuItem(
+                      text = { Text(stringResource(R.string.delete_folder_contents)) },
+                      icon = {
+                        Icon(
+                            painter = painterResource(id = R.drawable.delete_folder_contents),
+                            contentDescription = "DeleteFolderContents")
+                      },
+                      onClick = {
+                        onExpandedChange(false)
+                        showDeleteFolderContentsConfirmation = true
+                      },
+                      modifier = Modifier.testTag("deleteFolderContentsButton")))
+
+          if (!isDeckView) {
+            menuItems +=
+                CustomDropDownMenuItem(
+                    text = { Text(stringResource(R.string.convert_folder_to_decks)) },
+                    icon = {
+                      Icon(
+                          imageVector = Icons.AutoMirrored.Outlined.LibraryBooks,
+                          contentDescription = "CreateFlashcards")
+                    },
+                    onClick = {
+                      onExpandedChange(false)
+                      showFlashcardCreationPopup = true
+                    },
+                    modifier = Modifier.testTag("createFlashcardsButton"))
+          }
           CustomDropDownMenu(
               modifier = Modifier.testTag("folderSettingsButton"),
-              menuItems =
-                  listOf(
-                      CustomDropDownMenuItem(
-                          text = { Text(stringResource(R.string.update_folder)) },
-                          icon = {
-                            Icon(
-                                imageVector = Icons.Default.Edit,
-                                contentDescription = "UpdateFolder")
-                          },
-                          onClick = {
-                            onExpandedChange(false)
-                            showUpdateDialog(true)
-                          },
-                          modifier = Modifier.testTag("updateFolderButton")),
-                      CustomDropDownMenuItem(
-                          text = { Text("Move Folder") },
-                          icon = {
-                            Icon(
-                                imageVector = Icons.Default.FolderOpen,
-                                contentDescription = "moveFolder")
-                          },
-                          onClick = {
-                            onExpandedChange(false)
-                            showFileSystemPopup = true
-                          },
-                          modifier = Modifier.testTag("moveFolderButton")),
-                      CustomDropDownMenuItem(
-                          text = { Text(stringResource(R.string.convert_folder_to_decks)) },
-                          icon = {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Outlined.LibraryBooks,
-                                contentDescription = "CreateFlashcards")
-                          },
-                          onClick = {
-                            onExpandedChange(false)
-                            showFlashcardCreationPopup = true
-                          },
-                          modifier = Modifier.testTag("createFlashcardsButton")),
-                      CustomDropDownMenuItem(
-                          text = { Text(stringResource(R.string.delete_folder)) },
-                          icon = {
-                            Icon(
-                                painter = painterResource(id = R.drawable.folder_delete_icon),
-                                contentDescription = "DeleteFolder")
-                          },
-                          onClick = {
-                            onExpandedChange(false)
-                            showDeleteFolderConfirmation = true
-                          },
-                          modifier = Modifier.testTag("deleteFolderButton")),
-                      CustomDropDownMenuItem(
-                          text = { Text(stringResource(R.string.delete_folder_contents)) },
-                          icon = {
-                            Icon(
-                                painter = painterResource(id = R.drawable.delete_folder_contents),
-                                contentDescription = "DeleteFolderContents")
-                          },
-                          onClick = {
-                            onExpandedChange(false)
-                            showDeleteFolderContentsConfirmation = true
-                          },
-                          modifier = Modifier.testTag("deleteFolderContentsButton"))),
+              menuItems = menuItems,
               fabIcon = {
                 Icon(imageVector = Icons.Default.MoreVert, contentDescription = "settings")
               },
