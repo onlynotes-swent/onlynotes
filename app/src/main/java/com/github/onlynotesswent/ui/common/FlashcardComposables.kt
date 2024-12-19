@@ -205,7 +205,7 @@ fun FlashcardDialog(
 
   Dialog(onDismissRequest = onDismissRequest) {
     Card(modifier = Modifier.testTag("flashcardDialog--$mode").padding(5.dp)) {
-      if (flashcard.value == null && mode == stringResource(R.string.edit_maj)) {
+      if (flashcard.value == null && mode == stringResource(R.string.update)) {
         LoadingIndicator(stringResource(R.string.loading_flashcard))
       } else {
         Column(
@@ -393,7 +393,7 @@ fun FlashcardDialog(
                                 verticalAlignment = Alignment.CenterVertically) {
                                   IconButton(
                                       modifier = Modifier.testTag("addFakeBackButton"),
-                                      onClick = { fakeBacks.value = fakeBacks.value + "" }) {
+                                      onClick = { fakeBacks.value += "" }) {
                                         Icon(
                                             imageVector = Icons.Default.Add,
                                             contentDescription = "Add fake back")
@@ -507,7 +507,7 @@ fun FlashcardItemDropdownMenu(
       expanded = dropdownMenuExpanded.value,
       onDismissRequest = { dropdownMenuExpanded.value = false }) {
         DropdownMenuItem(
-            text = @Composable { Text(stringResource(R.string.edit_maj)) },
+            text = @Composable { Text(stringResource(R.string.update)) },
             onClick = {
               flashcardViewModel.selectFlashcard(flashcard.value)
               editDialogExpanded.value = true
