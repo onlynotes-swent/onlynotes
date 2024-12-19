@@ -29,6 +29,8 @@ import com.github.onlynotesswent.model.deck.DeckRepository
 import com.github.onlynotesswent.model.deck.DeckViewModel
 import com.github.onlynotesswent.model.file.FileRepository
 import com.github.onlynotesswent.model.file.FileViewModel
+import com.github.onlynotesswent.model.flashcard.FlashcardRepository
+import com.github.onlynotesswent.model.flashcard.FlashcardViewModel
 import com.github.onlynotesswent.model.folder.FolderRepository
 import com.github.onlynotesswent.model.folder.FolderViewModel
 import com.github.onlynotesswent.model.note.Note
@@ -76,12 +78,16 @@ class EndToEndTest {
   @Mock private lateinit var deckRepository: DeckRepository
   @Mock private lateinit var fileRepository: FileRepository
   @Mock private lateinit var pictureTaker: PictureTaker
-  private lateinit var userViewModel: UserViewModel
+   @Mock private lateinit var flashcardRepository: FlashcardRepository
+    @Mock private lateinit var mockNotificationRepository: NotificationRepository
+
+
+    private lateinit var userViewModel: UserViewModel
   private lateinit var noteViewModel: NoteViewModel
   private lateinit var folderViewModel: FolderViewModel
   private lateinit var deckViewModel: DeckViewModel
   private lateinit var fileViewModel: FileViewModel
-  @Mock private lateinit var mockNotificationRepository: NotificationRepository
+    private lateinit var flashcardViewModel: FlashcardViewModel
   private lateinit var notificationViewModel: NotificationViewModel
 
   @Mock private lateinit var authenticator: Authenticator
@@ -145,6 +151,8 @@ class EndToEndTest {
     deckViewModel = DeckViewModel(deckRepository)
     fileViewModel = FileViewModel(fileRepository)
     notificationViewModel = NotificationViewModel(mockNotificationRepository)
+    flashcardViewModel = FlashcardViewModel(flashcardRepository)
+
 
     // Initialize Intents for handling navigation intents in the test
     Intents.init()

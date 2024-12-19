@@ -15,8 +15,12 @@ import androidx.compose.ui.test.performTextClearance
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTextReplacement
 import androidx.core.net.toUri
+import com.github.onlynotesswent.model.deck.DeckRepository
+import com.github.onlynotesswent.model.deck.DeckViewModel
 import com.github.onlynotesswent.model.file.FileRepository
 import com.github.onlynotesswent.model.file.FileViewModel
+import com.github.onlynotesswent.model.flashcard.FlashcardRepository
+import com.github.onlynotesswent.model.flashcard.FlashcardViewModel
 import com.github.onlynotesswent.model.folder.FolderRepository
 import com.github.onlynotesswent.model.folder.FolderViewModel
 import com.github.onlynotesswent.model.note.NoteRepository
@@ -53,11 +57,16 @@ class EditProfileScreenTest {
   @Mock private lateinit var mockFileRepository: FileRepository
   @Mock private lateinit var mockFolderRepository: FolderRepository
   @Mock private lateinit var mockNotificationRepository: NotificationRepository
+  @Mock private lateinit var mockDeckRepository: DeckRepository
+    @Mock private lateinit var mockFlashcardRepository: FlashcardRepository
+
   private lateinit var noteViewModel: NoteViewModel
   private lateinit var userViewModel: UserViewModel
   private lateinit var fileViewModel: FileViewModel
   private lateinit var folderViewModel: FolderViewModel
   private lateinit var notificationViewModel: NotificationViewModel
+  private lateinit var deckViewModel: DeckViewModel
+    private lateinit var flashcardViewModel: FlashcardViewModel
   private val testUid = "testUid123"
   private val testUser =
       User(
@@ -82,6 +91,8 @@ class EditProfileScreenTest {
     fileViewModel = FileViewModel(mockFileRepository)
     folderViewModel = FolderViewModel(mockFolderRepository)
     notificationViewModel = NotificationViewModel(mockNotificationRepository)
+    deckViewModel = DeckViewModel(mockDeckRepository)
+    flashcardViewModel = FlashcardViewModel(mockFlashcardRepository)
 
     // Mock the current route to be the user create screen
     `when`(mockNavigationActions.currentRoute()).thenReturn(Screen.EDIT_PROFILE)
