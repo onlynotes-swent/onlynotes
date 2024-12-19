@@ -10,9 +10,11 @@ import com.github.onlynotesswent.model.note.Note
 interface NoteDao {
   @Query("SELECT * FROM note WHERE id = :noteId") fun getNoteById(noteId: String): Note?
 
-  @Query("SELECT * FROM note WHERE userid = :userId") fun getNotesFromUid(userId: String): List<Note>
+  @Query("SELECT * FROM note WHERE userid = :userId")
+  fun getNotesFromUid(userId: String): List<Note>
 
-  @Query("SELECT * FROM note WHERE folderid IS NULL AND userid = :userId") fun getRootNotesFromUid(userId: String): List<Note>
+  @Query("SELECT * FROM note WHERE folderid IS NULL AND userid = :userId")
+  fun getRootNotesFromUid(userId: String): List<Note>
 
   @Query("SELECT * FROM note WHERE folderid = :folderId")
   fun getNotesFromFolder(folderId: String): List<Note>

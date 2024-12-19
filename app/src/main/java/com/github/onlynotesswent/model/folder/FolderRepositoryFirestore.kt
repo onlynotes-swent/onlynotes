@@ -235,7 +235,8 @@ class FolderRepositoryFirestore(
   ) {
     try {
       val cachedFolders: List<Folder> =
-          if (useCache) withContext(Dispatchers.IO) { folderDao.getRootNoteFoldersFromUserId(userId) }
+          if (useCache)
+              withContext(Dispatchers.IO) { folderDao.getRootNoteFoldersFromUserId(userId) }
           else emptyList()
 
       // If device is offline, fetch from local database
@@ -275,7 +276,8 @@ class FolderRepositoryFirestore(
   ) {
     try {
       val cachedFolders: List<Folder> =
-          if (useCache) withContext(Dispatchers.IO) { folderDao.getRootDeckFoldersFromUserId(userId) }
+          if (useCache)
+              withContext(Dispatchers.IO) { folderDao.getRootDeckFoldersFromUserId(userId) }
           else emptyList()
 
       // If device is offline, fetch from local database
@@ -317,7 +319,8 @@ class FolderRepositoryFirestore(
   ) {
     try {
       val cachedFolders: List<Folder> =
-          if (useCache) withContext(Dispatchers.IO) { folderDao.getRootDeckFoldersFromUserId(userId) }
+          if (useCache)
+              withContext(Dispatchers.IO) { folderDao.getRootDeckFoldersFromUserId(userId) }
           else emptyList()
 
       // If device is offline, fetch from local database

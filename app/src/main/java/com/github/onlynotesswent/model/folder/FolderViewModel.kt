@@ -215,7 +215,7 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
    * @param onSuccess The function to call when the root folders are retrieved successfully.
    * @param onFailure The function to call when the root folders fail to be retrieved.
    * @param useCache Whether to update data from cache. Should be true only if [userId] is the
-   *  current user.
+   *   current user.
    */
   fun getRootFoldersFromUserId(
       userId: String,
@@ -238,7 +238,7 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
    * @param onSuccess The function to call when the root folders are retrieved successfully.
    * @param onFailure The function to call when the root folders fail to be retrieved.
    * @param useCache Whether to update data from cache. Should be true only if [userId] is the
-   *  current user.
+   *   current user.
    */
   fun getRootNoteFoldersFromUserId(
       userId: String,
@@ -294,7 +294,7 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
    * @param onSuccess The function to call when the folders are retrieved successfully.
    * @param onFailure The function to call when the folder fails to be retrieved.
    * @param useCache Whether to update data from cache. Should be true only if userId of the folder
-   *  is the current user.
+   *   is the current user.
    */
   fun getDeckFoldersByName(
       name: String,
@@ -452,8 +452,8 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
    * @param onSuccess A callback that receives a list of `Folder` objects on successful retrieval.
    * @param onFailure A callback that receives an `Exception` in case of a failure. Defaults to an
    *   empty lambda if not provided.
-   *  @param useCache Whether to update data from cache. Should be true only if userId of the folder
-   *   is the current user.
+   *     @param useCache Whether to update data from cache. Should be true only if userId of the
+   *       folder is the current user.
    */
   fun getSubFoldersOfNoStateUpdate(
       parentFolderId: String,

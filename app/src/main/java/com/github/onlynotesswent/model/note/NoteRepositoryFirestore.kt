@@ -108,7 +108,8 @@ class NoteRepositoryFirestore(
   ) {
     try {
       val cachedNotes: List<Note> =
-          if (useCache) withContext(Dispatchers.IO) { noteDao.getNotesFromUid(userId) } else emptyList()
+          if (useCache) withContext(Dispatchers.IO) { noteDao.getNotesFromUid(userId) }
+          else emptyList()
 
       // If device is offline, fetch from from local database
       if (!NetworkUtils.isInternetAvailable(context)) {
