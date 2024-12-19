@@ -289,6 +289,21 @@ class FolderRepositoryFirestoreTest {
   }
 
   @Test
+  fun getDeckFoldersByName_checkCacheReturnsEmptyList() = runTest {
+    mockHasInternetConnection(false)
+    var onFolderNotFoundCalled = false
+    folderRepositoryFirestore.getDeckFoldersByName(
+        testFolder.name,
+        testFolder.userId,
+        onFolderNotFound = { onFolderNotFoundCalled = true },
+        onSuccess = { assert(false) },
+        onFailure = { assert(false) },
+        useCache = true)
+
+    assert(onFolderNotFoundCalled)
+  }
+
+  @Test
   fun getFolderById_callsDocument() = runTest {
     `when`(mockDocumentReference.get()).thenReturn(Tasks.forResult(mockDocumentSnapshot))
 
