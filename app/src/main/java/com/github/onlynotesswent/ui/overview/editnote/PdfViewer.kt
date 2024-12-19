@@ -194,13 +194,14 @@ fun PdfViewerScreen(
             navigationActions = navigationActions)
       },
       bottomBar = {
-          Column {
-              HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f), thickness = 0.5.dp)
+        Column {
+          HorizontalDivider(
+              color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f), thickness = 0.5.dp)
 
-              // Navigation menu at the bottom
-              EditNoteNavigationMenu(
-                  navigationActions = navigationActions, selectedItem = Screen.EDIT_NOTE_PDF)
-          }
+          // Navigation menu at the bottom
+          EditNoteNavigationMenu(
+              navigationActions = navigationActions, selectedItem = Screen.EDIT_NOTE_PDF)
+        }
       }) { paddingValues ->
         if (isLoading) {
           LoadingIndicator(

@@ -111,29 +111,29 @@ fun FolderContentScreen(
     Scaffold(
         modifier = Modifier.testTag("folderContentScreen"),
         topBar = {
-            Column {
-                FolderContentTopBar(
-                    folder = folder.value,
-                    updatedName = updatedName,
-                    onUpdateName = { updatedName = it },
-                    navigationActions = navigationActions,
-                    folderViewModel = folderViewModel,
-                    noteViewModel = noteViewModel,
-                    userViewModel = userViewModel,
-                    currentUser = currentUser,
-                    context = context,
-                    userFolderSubFolders = userFolderSubFolders,
-                    userFolderNotes = userFolderNotes,
-                    expanded = expanded,
-                    onExpandedChange = { expanded = it },
-                    showUpdateDialog = { showUpdateDialog = it },
-                    isDeckView = isDeckView,
-                    deckViewModel = deckViewModel,
-                    userFolderDecks = userFolderDecks)
+          Column {
+            FolderContentTopBar(
+                folder = folder.value,
+                updatedName = updatedName,
+                onUpdateName = { updatedName = it },
+                navigationActions = navigationActions,
+                folderViewModel = folderViewModel,
+                noteViewModel = noteViewModel,
+                userViewModel = userViewModel,
+                currentUser = currentUser,
+                context = context,
+                userFolderSubFolders = userFolderSubFolders,
+                userFolderNotes = userFolderNotes,
+                expanded = expanded,
+                onExpandedChange = { expanded = it },
+                showUpdateDialog = { showUpdateDialog = it },
+                isDeckView = isDeckView,
+                deckViewModel = deckViewModel,
+                userFolderDecks = userFolderDecks)
 
-                HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f), thickness = 0.5.dp)
-            }
-
+            HorizontalDivider(
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f), thickness = 0.5.dp)
+          }
         },
         floatingActionButton = {
           if (folder.value!!.isOwner(currentUser.value!!.uid)) {

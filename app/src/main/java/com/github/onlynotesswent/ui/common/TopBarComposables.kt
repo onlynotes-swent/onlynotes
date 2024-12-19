@@ -57,6 +57,7 @@ fun ScreenTopBar(
         navigationIcon = {
           IconButton(onClick = onBackClick, Modifier.testTag(iconTestTag), content = icon)
         })
-    HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f), thickness = 0.5.dp)
+    HorizontalDivider(
+        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f), thickness = 0.5.dp)
   }
 }

@@ -301,20 +301,20 @@ fun SearchScreen(
                   userViewModel = userViewModel)
 
               HorizontalDivider(
-                  color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f), thickness = 0.5.dp)
+                  color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
+                  thickness = 0.5.dp)
             }
       },
       bottomBar = {
-          Column {
-              HorizontalDivider(
-                  color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
-                  thickness = 0.5.dp)
+        Column {
+          HorizontalDivider(
+              color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f), thickness = 0.5.dp)
 
-              BottomNavigationMenu(
-                  onTabSelect = { route -> navigationActions.navigateTo(route) },
-                  tabList = LIST_TOP_LEVEL_DESTINATION,
-                  selectedItem = navigationActions.currentRoute())
-          }
+          BottomNavigationMenu(
+              onTabSelect = { route -> navigationActions.navigateTo(route) },
+              tabList = LIST_TOP_LEVEL_DESTINATION,
+              selectedItem = navigationActions.currentRoute())
+        }
       }) { padding ->
 
         // To skip large nested if-else blocks, we can use a boolean to determine which list to

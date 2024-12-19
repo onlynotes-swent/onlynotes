@@ -100,41 +100,39 @@ fun NoteOverviewScreen(
             }
       },
       bottomBar = {
-          Column {
-              HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f), thickness = 0.5.dp)
-              BottomNavigationMenu(
-                  onTabSelect = { route -> navigationActions.navigateTo(route) },
-                  tabList = LIST_TOP_LEVEL_DESTINATION,
-                  selectedItem = navigationActions.currentRoute())
-          }
-
+        Column {
+          HorizontalDivider(
+              color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f), thickness = 0.5.dp)
+          BottomNavigationMenu(
+              onTabSelect = { route -> navigationActions.navigateTo(route) },
+              tabList = LIST_TOP_LEVEL_DESTINATION,
+              selectedItem = navigationActions.currentRoute())
+        }
       }) { paddingValues ->
         Column(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
-            SingleChoiceSegmentedButtonRow(
-                modifier =
-                Modifier.fillMaxWidth(fraction = 0.8f).align(Alignment.CenterHorizontally)) {
+          SingleChoiceSegmentedButtonRow(
+              modifier =
+                  Modifier.fillMaxWidth(fraction = 0.8f).align(Alignment.CenterHorizontally)) {
                 pageLabels.forEachIndexed { index, label ->
-                    SegmentedButton(
-                        selected = pagerState.currentPage == index,
-                        shape =
-                        SegmentedButtonDefaults.itemShape(
-                            index = index,
-                            count = pageLabels.size,
-                            baseShape = RoundedCornerShape(10)
-                        ),
-                        border = ButtonDefaults.outlinedButtonBorder(false),
-                        colors =
-                        SegmentedButtonDefaults.colors(
-                            activeContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                            inactiveContainerColor =
-                            MaterialTheme.colorScheme.secondaryContainer),
-                        label = { Text(label) },
-                        onClick = {
-                            // Animate to the selected page when clicked
-                            coroutineScope.launch { pagerState.animateScrollToPage(index) }
-                        })
+                  SegmentedButton(
+                      selected = pagerState.currentPage == index,
+                      shape =
+                          SegmentedButtonDefaults.itemShape(
+                              index = index,
+                              count = pageLabels.size,
+                              baseShape = RoundedCornerShape(10)),
+                      border = ButtonDefaults.outlinedButtonBorder(false),
+                      colors =
+                          SegmentedButtonDefaults.colors(
+                              activeContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                              inactiveContainerColor = MaterialTheme.colorScheme.surface),
+                      label = { Text(label) },
+                      onClick = {
+                        // Animate to the selected page when clicked
+                        coroutineScope.launch { pagerState.animateScrollToPage(index) }
+                      })
                 }
-            }
+              }
           HorizontalPager(state = pagerState, modifier = Modifier.fillMaxSize()) {
             when (it) {
               0 -> {
