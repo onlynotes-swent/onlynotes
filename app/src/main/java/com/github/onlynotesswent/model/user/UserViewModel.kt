@@ -5,8 +5,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import com.github.onlynotesswent.model.deck.Deck
 import com.github.onlynotesswent.model.flashcard.UserFlashcard
-import com.github.onlynotesswent.model.flashcard.deck.Deck
 import com.github.onlynotesswent.model.notification.Notification
 import com.github.onlynotesswent.model.notification.NotificationRepository
 import com.github.onlynotesswent.model.notification.NotificationRepositoryFirestore
@@ -550,8 +550,19 @@ class UserViewModel(
       onSuccess: () -> Unit = {},
       onFailure: (Exception) -> Unit = {}
   ) {
+
     _currentUser.value?.let {
-      repository.addUserFlashcard(it.uid, userFlashcard, onSuccess, onFailure)
+      repository.addUserFlashcard(
+          it.uid,
+          userFlashcard,
+          {
+            _deckUserFlashcards.value =
+                _deckUserFlashcards.value.toMutableMap().apply {
+                  put(userFlashcard.id, userFlashcard)
+                }
+            onSuccess()
+          },
+          onFailure)
     }
   }
 
@@ -577,8 +588,8 @@ class UserViewModel(
                   _deckUserFlashcards.value.toMutableMap().apply {
                     put(userFlashcard.id, userFlashcard)
                   }
-              onSuccess()
             }
+            onSuccess()
           },
           onFailure)
     }
