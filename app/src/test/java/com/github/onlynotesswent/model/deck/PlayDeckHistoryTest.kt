@@ -1,6 +1,5 @@
 package com.github.onlynotesswent.model.deck
 
-import com.github.onlynotesswent.model.deck.PlayDeckHistory
 import org.junit.Test
 
 class PlayDeckHistoryTest {

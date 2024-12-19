@@ -2,8 +2,6 @@ package com.github.onlynotesswent.model.deck
 
 import android.util.Log
 import com.github.onlynotesswent.model.common.Visibility
-import com.github.onlynotesswent.model.deck.Deck
-import com.github.onlynotesswent.model.deck.DeckRepositoryFirestore
 import com.google.android.gms.tasks.OnFailureListener
 import com.google.android.gms.tasks.OnSuccessListener
 import com.google.android.gms.tasks.Task

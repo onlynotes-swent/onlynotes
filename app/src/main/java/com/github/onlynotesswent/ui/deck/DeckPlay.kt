@@ -173,8 +173,7 @@ fun ReviewMode(
     mutableStateOf(
         PlayDeckHistory(
             currentFlashcardId =
-                UserFlashcard.selectRandomFlashcardLinear(userFlashcardList.value).id)
-    )
+                UserFlashcard.selectRandomFlashcardLinear(userFlashcardList.value).id))
   }
   Column(
       modifier = Modifier.testTag("ReviewModeColumn"),
