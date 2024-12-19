@@ -60,8 +60,9 @@ class NotesToFlashcard(
        You can create flashcards as either:
        1. Regular flashcards with 'question' and 'answer', or
        2. MCQs with 'question', 'answer', and at least two 'fakeBacks'.
-       Return only the JSON array with no additional text. If the note content is empty, return an 
-       empty JSON array and no additional text. Here is the note content: """
+       Return ONLY the JSON array with no additional text, markdown formatting, or code block syntax. 
+       If the note content is empty, return an empty JSON array with no additional text.
+       Here is the note content: """
 
   /**
    * Converts a note into a deck of flashcards using the OpenAI API.
@@ -87,7 +88,9 @@ class NotesToFlashcard(
         onSuccess = { downloadedFile ->
           openAIClient.sendRequest(
               promptPrefix + downloadedFile.readText(),
-              { parseFlashcardsFromJson(it, note, folderId, onSuccess, onFailure) },
+              {
+                  Log.d(TAG, "Response from OpenAI: $it")
+                  parseFlashcardsFromJson(it, note, folderId, onSuccess, onFailure) },
               { onFailure(it) })
         },
         onFileNotFound = onFileNotFoundException,

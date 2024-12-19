@@ -45,13 +45,13 @@ class OpenAI(private val client: OkHttpClient = OkHttpClient()) {
    * @param prompt the prompt to generate text from
    * @param onSuccess the callback function to invoke on a successful response
    * @param onFailure the callback function to invoke on a failed response
-   * @param model the model to use for generating text (default: "gpt-3.5-turbo")
+   * @param model the model to use for generating text (default: "gpt-4o-mini")
    */
   fun sendRequest(
       prompt: String,
       onSuccess: (String) -> Unit,
       onFailure: (IOException) -> Unit,
-      model: String = "gpt-3.5-turbo",
+      model: String = "gpt-4o-mini" // The model to use for generating text
   ) {
     // Create the JSON body using Gson
     val messageObject =
