@@ -188,8 +188,6 @@ fun NoteOptionsBottomSheet(
     note: Note,
     noteViewModel: NoteViewModel,
     folderViewModel: FolderViewModel,
-    onDismiss: () -> Unit,
-    navigationActions: NavigationActions
     navigationActions: NavigationActions,
     notesToFlashcard: NotesToFlashcard?,
     onDismiss: () -> Unit
