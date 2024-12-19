@@ -335,29 +335,32 @@ fun EditProfileScreen(
                                 onClick = {
                                   showDeleteAccountAlert.value = false
                                   folderViewModel.deleteAllFoldersFromUserId(user.value!!.uid)
-                                  noteViewModel.getNotesFromUid(user.value!!.uid,
+                                  noteViewModel.getNotesFromUid(
+                                      user.value!!.uid,
                                       onSuccess = { notes ->
                                         notes.forEach {
-                                            fileViewModel.deleteFile(it.id, FileType.NOTE_PDF)
-                                            fileViewModel.deleteFile(it.id, FileType.NOTE_TEXT)
+                                          fileViewModel.deleteFile(it.id, FileType.NOTE_PDF)
+                                          fileViewModel.deleteFile(it.id, FileType.NOTE_TEXT)
                                         }
-                                          noteViewModel.deleteNotesFromUid(user.value!!.uid)
+                                        noteViewModel.deleteNotesFromUid(user.value!!.uid)
                                       },
-                                      )
-                                    deckViewModel.deleteAllDecksFromUserId(user.value!!.uid)
+                                  )
+                                  deckViewModel.deleteAllDecksFromUserId(user.value!!.uid)
 
-                                    flashcardViewModel.getFlashcardsFromUser(
-                                        user.value!!.uid,
-                                        onSuccess = { flashcards ->
-                                            flashcards.forEach {
-                                            fileViewModel.deleteFile(it.id, FileType.FLASHCARD_IMAGE)
-                                            }
-                                            flashcardViewModel.deleteFlashcardsFromUser(user.value!!.uid)
-                                        },
-                                    )
-                                    notificationViewModel.deleteNotificationsFromUserId(user.value!!.uid)
+                                  flashcardViewModel.getFlashcardsFromUser(
+                                      user.value!!.uid,
+                                      onSuccess = { flashcards ->
+                                        flashcards.forEach {
+                                          fileViewModel.deleteFile(it.id, FileType.FLASHCARD_IMAGE)
+                                        }
+                                        flashcardViewModel.deleteFlashcardsFromUser(
+                                            user.value!!.uid)
+                                      },
+                                  )
+                                  notificationViewModel.deleteNotificationsFromUserId(
+                                      user.value!!.uid)
 
-                                    fileViewModel.deleteFile(
+                                  fileViewModel.deleteFile(
                                       user.value!!.uid, FileType.PROFILE_PIC_JPEG)
                                   userViewModel.deleteUserById(
                                       user.value!!.uid,

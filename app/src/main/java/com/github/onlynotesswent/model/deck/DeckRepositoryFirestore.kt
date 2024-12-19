@@ -221,23 +221,21 @@ class DeckRepositoryFirestore(private val db: FirebaseFirestore) : DeckRepositor
         }
   }
 
-    override fun deleteAllDecksFromUserId(
-        userid: String,
-        onSuccess: () -> Unit,
-        onFailure: (Exception) -> Unit
-    ) {
-        db.collection(collectionPath)
-            .whereEqualTo("userId", userid)
-            .get()
-            .addOnSuccessListener { querySnapshot ->
-                querySnapshot.documents.forEach { document ->
-                    document.reference.delete()
-                }
-                onSuccess()
-            }
-            .addOnFailureListener { exception ->
-                onFailure(exception)
-                Log.e(TAG, "Error deleting all decks from user", exception)
-            }
-    }
+  override fun deleteAllDecksFromUserId(
+      userid: String,
+      onSuccess: () -> Unit,
+      onFailure: (Exception) -> Unit
+  ) {
+    db.collection(collectionPath)
+        .whereEqualTo("userId", userid)
+        .get()
+        .addOnSuccessListener { querySnapshot ->
+          querySnapshot.documents.forEach { document -> document.reference.delete() }
+          onSuccess()
+        }
+        .addOnFailureListener { exception ->
+          onFailure(exception)
+          Log.e(TAG, "Error deleting all decks from user", exception)
+        }
+  }
 }

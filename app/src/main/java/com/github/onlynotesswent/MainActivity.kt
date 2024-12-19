@@ -214,7 +214,6 @@ fun OnlyNotesApp(
             deckViewModel,
             flashcardViewModel,
             notificationViewModel,
-
         )
       }
       composable(Screen.NOTIFICATIONS) {

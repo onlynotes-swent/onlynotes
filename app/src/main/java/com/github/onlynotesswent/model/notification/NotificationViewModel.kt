@@ -98,15 +98,18 @@ class NotificationViewModel(private val repository: NotificationRepository) : Vi
     return repository.getNewUid()
   }
 
-    /**
-     * Deletes all notifications for a receiver.
-     *
-     * @param userID The ID of the receiver.
-     * @param onSuccess Callback to be invoked when the deletion is successful.
-     * @param onFailure Callback to be invoked if an error occurs.
-     */
-    fun deleteNotificationsFromUserId(userID: String, onSuccess: () -> Unit = {}, onFailure: (Exception) -> Unit = {}) {
-        repository.deleteNotificationsFromUserId(userID, onSuccess, onFailure)
-
-    }
+  /**
+   * Deletes all notifications for a receiver.
+   *
+   * @param userID The ID of the receiver.
+   * @param onSuccess Callback to be invoked when the deletion is successful.
+   * @param onFailure Callback to be invoked if an error occurs.
+   */
+  fun deleteNotificationsFromUserId(
+      userID: String,
+      onSuccess: () -> Unit = {},
+      onFailure: (Exception) -> Unit = {}
+  ) {
+    repository.deleteNotificationsFromUserId(userID, onSuccess, onFailure)
+  }
 }

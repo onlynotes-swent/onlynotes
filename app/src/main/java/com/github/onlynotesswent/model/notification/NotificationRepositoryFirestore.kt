@@ -123,33 +123,31 @@ class NotificationRepositoryFirestore(private val db: FirebaseFirestore) : Notif
         }
   }
 
-    override fun deleteNotificationsFromUserId(
-        userID: String,
-        onSuccess: () -> Unit,
-        onFailure: (Exception) -> Unit
-    ) {
-        db.collection(collectionPath)
-            .whereEqualTo("receiverId", userID)
-            .get()
-            .addOnSuccessListener { querySnapshot ->
-                querySnapshot.documents.forEach { document ->
-                    db.collection(collectionPath)
-                        .document(document.id)
-                        .delete()
-                        .addOnFailureListener { exception ->
-                            onFailure(exception)
-                            Log.e(TAG, "Error deleting notification", exception)
-                        }
-                }
-                onSuccess()
+  override fun deleteNotificationsFromUserId(
+      userID: String,
+      onSuccess: () -> Unit,
+      onFailure: (Exception) -> Unit
+  ) {
+    db.collection(collectionPath)
+        .whereEqualTo("receiverId", userID)
+        .get()
+        .addOnSuccessListener { querySnapshot ->
+          querySnapshot.documents.forEach { document ->
+            db.collection(collectionPath).document(document.id).delete().addOnFailureListener {
+                exception ->
+              onFailure(exception)
+              Log.e(TAG, "Error deleting notification", exception)
             }
-            .addOnFailureListener { exception ->
-                onFailure(exception)
-                Log.e(TAG, "Error deleting notification", exception)
-            }
-    }
+          }
+          onSuccess()
+        }
+        .addOnFailureListener { exception ->
+          onFailure(exception)
+          Log.e(TAG, "Error deleting notification", exception)
+        }
+  }
 
-    companion object {
+  companion object {
     private const val TAG = "NotificationRepositoryFirestore"
   }
 }

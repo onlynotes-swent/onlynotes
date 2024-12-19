@@ -78,16 +78,15 @@ class EndToEndTest {
   @Mock private lateinit var deckRepository: DeckRepository
   @Mock private lateinit var fileRepository: FileRepository
   @Mock private lateinit var pictureTaker: PictureTaker
-   @Mock private lateinit var flashcardRepository: FlashcardRepository
-    @Mock private lateinit var mockNotificationRepository: NotificationRepository
+  @Mock private lateinit var flashcardRepository: FlashcardRepository
+  @Mock private lateinit var mockNotificationRepository: NotificationRepository
 
-
-    private lateinit var userViewModel: UserViewModel
+  private lateinit var userViewModel: UserViewModel
   private lateinit var noteViewModel: NoteViewModel
   private lateinit var folderViewModel: FolderViewModel
   private lateinit var deckViewModel: DeckViewModel
   private lateinit var fileViewModel: FileViewModel
-    private lateinit var flashcardViewModel: FlashcardViewModel
+  private lateinit var flashcardViewModel: FlashcardViewModel
   private lateinit var notificationViewModel: NotificationViewModel
 
   @Mock private lateinit var authenticator: Authenticator
@@ -152,7 +151,6 @@ class EndToEndTest {
     fileViewModel = FileViewModel(fileRepository)
     notificationViewModel = NotificationViewModel(mockNotificationRepository)
     flashcardViewModel = FlashcardViewModel(flashcardRepository)
-
 
     // Initialize Intents for handling navigation intents in the test
     Intents.init()
@@ -240,8 +238,7 @@ class EndToEndTest {
                         folderViewModel,
                         deckViewModel,
                         flashcardViewModel,
-                        notificationViewModel
-                    )
+                        notificationViewModel)
                   }
                 }
               }

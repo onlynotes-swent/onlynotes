@@ -105,16 +105,16 @@ interface FlashcardRepository {
    */
   fun deleteFlashcard(flashcard: Flashcard, onSuccess: () -> Unit, onFailure: (Exception) -> Unit)
 
-    /**
-     * Deletes all flashcards from the given user.
-     *
-     * @param userID The identifier of the user.
-     * @param onSuccess The callback to be executed when the flashcards are deleted.
-     * @param onFailure The callback to be executed when an error occurs.
-     */
-    fun deleteFlashcardsFromUser(
-        userID: String,
-        onSuccess: () -> Unit,
-        onFailure: (Exception) -> Unit
-    )
+  /**
+   * Deletes all flashcards from the given user.
+   *
+   * @param userID The identifier of the user.
+   * @param onSuccess The callback to be executed when the flashcards are deleted.
+   * @param onFailure The callback to be executed when an error occurs.
+   */
+  fun deleteFlashcardsFromUser(
+      userID: String,
+      onSuccess: () -> Unit,
+      onFailure: (Exception) -> Unit
+  )
 }
