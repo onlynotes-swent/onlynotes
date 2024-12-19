@@ -57,51 +57,59 @@ fun CommentsScreen(
     noteViewModel: NoteViewModel,
     userViewModel: UserViewModel
 ) {
-  val note by noteViewModel.selectedNote.collectAsState()
-  val currentUser by userViewModel.currentUser.collectAsState()
-  var updatedComments by remember { mutableStateOf(note!!.comments) }
-  LaunchedEffect(Unit) {
-    while (true) {
-      kotlinx.coroutines.delay(1000L) // Delay for 1 second to not saturate firestore
-      noteViewModel.updateNote(
-          note = note!!.copy(comments = Note.CommentCollection(updatedComments.commentsList)))
-    }
-  }
-  Scaffold(
-      floatingActionButton = {},
-      modifier = Modifier.testTag("commentsScreen"),
-      topBar = {
-        EditNoteTopBar(
-            title = stringResource(R.string.comments),
-            titleTestTag = "commentsTitle",
-            noteViewModel = noteViewModel,
-            navigationActions = navigationActions)
-      },
-      bottomBar = {
-        Column(modifier = Modifier.background(MaterialTheme.colorScheme.surface)) {
-          HorizontalDivider(
-              color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f), thickness = 0.5.dp)
+    val note by noteViewModel.selectedNote.collectAsState()
+    val currentUser by userViewModel.currentUser.collectAsState()
+    var updatedComments by remember { mutableStateOf(note!!.comments) }
+    LaunchedEffect(Unit) {
+        while (true) {
+            kotlinx.coroutines.delay(1000L) // Delay for 1 second to not saturate firestore
+            if (note != null) {
 
-          SendCommentBar(
-              currentUser = currentUser,
-              note = note,
-              updatedComments = updatedComments,
-              { updatedComments = it },
-              modifier = Modifier.fillMaxWidth().padding(horizontal = 2.dp, vertical = 2.dp))
-
-          HorizontalDivider(
-              color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f), thickness = 0.5.dp)
-
-          EditNoteNavigationMenu(
-              navigationActions = navigationActions,
-              selectedItem = Screen.EDIT_NOTE_COMMENT,
-              onClick = {
-                val commentsNotEmpty =
-                    updatedComments.commentsList.filter { it.content.isNotEmpty() }
                 noteViewModel.updateNote(
-                    note = note!!.copy(comments = Note.CommentCollection(commentsNotEmpty)))
-                noteViewModel.getNoteById(note!!.id)
-              })
+                    note = note!!.copy(comments = Note.CommentCollection(updatedComments.commentsList))
+                )
+            }
+
+        }
+    }
+    Scaffold(
+        floatingActionButton = {
+
+        },
+
+        modifier = Modifier.testTag("commentsScreen"),
+        topBar = {
+            EditNoteTopBar(
+                title = stringResource(R.string.comments),
+                titleTestTag = "commentsTitle",
+                noteViewModel = noteViewModel,
+                navigationActions = navigationActions
+            )
+        },
+        bottomBar = {
+            Column(modifier = Modifier.background(MaterialTheme.colorScheme.surface)) {
+
+                HorizontalDivider(
+                  color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f), thickness = 0.5.dp)
+
+                SendCommentBar(
+                    currentUser = currentUser,
+                    note = note,
+                    updatedComments = updatedComments,
+                    { updatedComments = it },
+                    modifier = Modifier
+                        .fillMaxWidth().padding(horizontal = 2.dp, vertical = 2.dp))
+
+                HorizontalDivider(
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f), thickness = 0.5.dp)        
+
+                EditNoteNavigationMenu(
+                    navigationActions = navigationActions,
+                    selectedItem = Screen.EDIT_NOTE_COMMENT,
+                    onClick = {
+                    }
+                )
+            }
         }
       }) { paddingValues ->
         if (currentUser == null) {
