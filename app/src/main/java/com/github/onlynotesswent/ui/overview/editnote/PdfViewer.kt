@@ -32,6 +32,7 @@ import com.github.onlynotesswent.model.file.FileType
 import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.model.user.UserViewModel
+import com.github.onlynotesswent.ui.common.BottomEditNoteNavigationBarWithDivider
 import com.github.onlynotesswent.ui.common.ConfirmationPopup
 import com.github.onlynotesswent.ui.common.LoadingIndicator
 import com.github.onlynotesswent.ui.navigation.NavigationActions
@@ -192,8 +193,7 @@ fun PdfViewerScreen(
             navigationActions = navigationActions)
       },
       bottomBar = {
-        // Navigation menu at the bottom
-        EditNoteNavigationMenu(
+        BottomEditNoteNavigationBarWithDivider(
             navigationActions = navigationActions, selectedItem = Screen.EDIT_NOTE_PDF)
       }) { paddingValues ->
         if (isLoading) {

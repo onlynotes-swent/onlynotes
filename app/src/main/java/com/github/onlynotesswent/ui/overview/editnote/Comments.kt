@@ -38,6 +38,7 @@ import com.github.onlynotesswent.model.note.Note
 import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.model.user.User
 import com.github.onlynotesswent.model.user.UserViewModel
+import com.github.onlynotesswent.ui.common.BottomEditNoteNavigationBarWithDivider
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
 import java.text.SimpleDateFormat
@@ -74,13 +75,13 @@ fun CommentsScreen(
             })
       },
       bottomBar = {
-        EditNoteNavigationMenu(
+        BottomEditNoteNavigationBarWithDivider(
             navigationActions = navigationActions,
             selectedItem = Screen.EDIT_NOTE_COMMENT,
             onClick = {
               val commentsNotEmpty = updatedComments.commentsList.filter { it.content.isNotEmpty() }
               noteViewModel.updateNote(
-                  note!!.copy(comments = Note.CommentCollection(commentsNotEmpty)))
+                  note = note!!.copy(comments = Note.CommentCollection(commentsNotEmpty)))
               noteViewModel.getNoteById(note!!.id)
             })
       }) { paddingValues ->

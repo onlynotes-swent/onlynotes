@@ -19,6 +19,7 @@ import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -46,11 +47,10 @@ import com.github.onlynotesswent.model.folder.FolderViewModel
 import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.model.user.User
 import com.github.onlynotesswent.model.user.UserViewModel
+import com.github.onlynotesswent.ui.common.BottomNavigationBarWithDivider
 import com.github.onlynotesswent.ui.common.CustomSeparatedLazyGrid
 import com.github.onlynotesswent.ui.common.DeckSearchItem
 import com.github.onlynotesswent.ui.common.NoteItem
-import com.github.onlynotesswent.ui.navigation.BottomNavigationMenu
-import com.github.onlynotesswent.ui.navigation.LIST_TOP_LEVEL_DESTINATION
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
 import com.github.onlynotesswent.ui.user.UserItem
@@ -298,14 +298,13 @@ fun SearchScreen(
                   folderViewModel = folderViewModel,
                   deckViewModel = deckViewModel,
                   userViewModel = userViewModel)
+
+              HorizontalDivider(
+                  color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.12f),
+                  thickness = 0.5.dp)
             }
       },
-      bottomBar = {
-        BottomNavigationMenu(
-            onTabSelect = { route -> navigationActions.navigateTo(route) },
-            tabList = LIST_TOP_LEVEL_DESTINATION,
-            selectedItem = navigationActions.currentRoute())
-      }) { padding ->
+      bottomBar = { BottomNavigationBarWithDivider(navigationActions) }) { padding ->
 
         // To skip large nested if-else blocks, we can use a boolean to determine which list to
         // display.

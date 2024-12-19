@@ -25,6 +25,7 @@ import androidx.compose.material.icons.filled.FormatBold
 import androidx.compose.material.icons.filled.FormatItalic
 import androidx.compose.material.icons.filled.FormatStrikethrough
 import androidx.compose.material.icons.filled.FormatUnderlined
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.FloatingActionButton
@@ -58,11 +59,13 @@ import com.github.onlynotesswent.model.file.FileType
 import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.model.user.UserViewModel
+import com.github.onlynotesswent.ui.common.BottomEditNoteNavigationBarWithDivider
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
 import com.mohamedrejeb.richeditor.model.RichTextState
 import com.mohamedrejeb.richeditor.model.rememberRichTextState
 import com.mohamedrejeb.richeditor.ui.material3.RichTextEditor
+import com.mohamedrejeb.richeditor.ui.material3.RichTextEditorDefaults
 import java.io.File
 import java.io.IOException
 import kotlinx.coroutines.delay
@@ -81,6 +84,7 @@ import kotlinx.coroutines.delay
  * @param fileViewModel ViewModel to handle file downloads and uploads for markdown files.
  * @param userViewModel ViewModel to manage the user's state and interactions.
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditMarkdownScreen(
     navigationActions: NavigationActions,
@@ -143,7 +147,8 @@ fun EditMarkdownScreen(
             navigationActions = navigationActions)
       },
       bottomBar = {
-        EditNoteNavigationMenu(navigationActions, selectedItem = Screen.EDIT_NOTE_MARKDOWN)
+        BottomEditNoteNavigationBarWithDivider(
+            navigationActions, selectedItem = Screen.EDIT_NOTE_MARKDOWN)
       },
       floatingActionButton = {
         if (!isEditing && selectedNote != null && selectedNote!!.isOwner(currentUser!!.uid)) {
@@ -183,7 +188,8 @@ fun EditMarkdownScreen(
                           isEditing = false // Switch back to view mode after saving
                         })
                   }
-                })
+                },
+                colors = RichTextEditorDefaults.richTextEditorColors(containerColor = Color.White))
           }
         }
       }
@@ -240,24 +246,32 @@ fun EditorControls(modifier: Modifier, state: RichTextState, onSaveClick: () -> 
         ControlWrapper(
             modifier = Modifier.testTag("BoldControl"),
             selected = boldSelected,
+            selectedColor = MaterialTheme.colorScheme.primaryContainer,
+            unselectedColor = MaterialTheme.colorScheme.onPrimary,
             onChangeClick = { boldSelected = it }) {
               Icon(imageVector = Icons.Filled.FormatBold, contentDescription = "Bold")
             }
         ControlWrapper(
             modifier = Modifier.testTag("ItalicControl"),
             selected = italicSelected,
+            selectedColor = MaterialTheme.colorScheme.primaryContainer,
+            unselectedColor = MaterialTheme.colorScheme.onPrimary,
             onChangeClick = { italicSelected = it }) {
               Icon(imageVector = Icons.Filled.FormatItalic, contentDescription = "Italic")
             }
         ControlWrapper(
             modifier = Modifier.testTag("UnderlinedControl"),
             selected = underlineSelected,
+            selectedColor = MaterialTheme.colorScheme.primaryContainer,
+            unselectedColor = MaterialTheme.colorScheme.onPrimary,
             onChangeClick = { underlineSelected = it }) {
               Icon(imageVector = Icons.Filled.FormatUnderlined, contentDescription = "Underlined")
             }
         ControlWrapper(
             modifier = Modifier.testTag("StrikethroughControl"),
             selected = strikethroughSelected,
+            selectedColor = MaterialTheme.colorScheme.primaryContainer,
+            unselectedColor = MaterialTheme.colorScheme.onPrimary,
             onChangeClick = { strikethroughSelected = it }) {
               Icon(
                   imageVector = Icons.Filled.FormatStrikethrough,
@@ -270,7 +284,7 @@ fun EditorControls(modifier: Modifier, state: RichTextState, onSaveClick: () -> 
                     .align(Alignment.CenterVertically)
                     .testTag("SaveButton")
                     .background(
-                        color = MaterialTheme.colorScheme.primary,
+                        color = MaterialTheme.colorScheme.primaryContainer,
                         shape = RoundedCornerShape(6.dp),
                     )
                     .padding(0.dp),
@@ -278,7 +292,7 @@ fun EditorControls(modifier: Modifier, state: RichTextState, onSaveClick: () -> 
               Icon(
                   imageVector = Icons.Default.Check,
                   contentDescription = "Save",
-                  tint = MaterialTheme.colorScheme.onPrimary)
+                  tint = Color.Black)
             }
       }
 }

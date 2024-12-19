@@ -32,6 +32,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -71,11 +72,10 @@ import com.github.onlynotesswent.model.notification.Notification
 import com.github.onlynotesswent.model.notification.NotificationViewModel
 import com.github.onlynotesswent.model.user.User
 import com.github.onlynotesswent.model.user.UserViewModel
+import com.github.onlynotesswent.ui.common.BottomNavigationBarWithDivider
 import com.github.onlynotesswent.ui.common.EnterTextPopup
 import com.github.onlynotesswent.ui.common.NonModifiableProfilePicture
 import com.github.onlynotesswent.ui.common.ThumbnailDynamicPic
-import com.github.onlynotesswent.ui.navigation.BottomNavigationMenu
-import com.github.onlynotesswent.ui.navigation.LIST_TOP_LEVEL_DESTINATION
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
 import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
@@ -221,12 +221,7 @@ private fun ProfileScaffold(
   Scaffold(
       modifier = Modifier.testTag("profileScaffold"),
       floatingActionButton = floatingActionButton,
-      bottomBar = {
-        BottomNavigationMenu(
-            onTabSelect = { route -> navigationActions.navigateTo(route) },
-            tabList = LIST_TOP_LEVEL_DESTINATION,
-            selectedItem = navigationActions.currentRoute())
-      },
+      bottomBar = { BottomNavigationBarWithDivider(navigationActions) },
       topBar = {
         TopProfileBar(
             title = topBarTitle,
@@ -298,6 +293,9 @@ fun TopProfileBar(
             SendMessageButton(userViewModel, notificationViewModel, onSendMessageClick)
           }
         })
+
+    HorizontalDivider(
+        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f), thickness = 0.5.dp)
   }
 }
 

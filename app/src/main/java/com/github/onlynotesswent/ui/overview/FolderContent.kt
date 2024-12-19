@@ -18,6 +18,7 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -115,21 +116,26 @@ fun FolderContentScreen(
     Scaffold(
         modifier = Modifier.testTag("folderContentScreen"),
         topBar = {
-          FolderContentTopBar(
-              folder = folder.value,
-              updatedName = updatedName,
-              onUpdateName = { updatedName = it },
-              navigationActions = navigationActions,
-              folderViewModel = folderViewModel,
-              noteViewModel = noteViewModel,
-              userViewModel = userViewModel,
-              currentUser = currentUser,
-              context = context,
-              userFolderSubFolders = userFolderSubFolders,
-              userFolderNotes = userFolderNotes,
-              expanded = expanded,
-              onExpandedChange = { expanded = it },
-              showUpdateDialog = { showUpdateDialog = it })
+          Column {
+            FolderContentTopBar(
+                folder = folder.value,
+                updatedName = updatedName,
+                onUpdateName = { updatedName = it },
+                navigationActions = navigationActions,
+                folderViewModel = folderViewModel,
+                noteViewModel = noteViewModel,
+                userViewModel = userViewModel,
+                currentUser = currentUser,
+                context = context,
+                userFolderSubFolders = userFolderSubFolders,
+                userFolderNotes = userFolderNotes,
+                expanded = expanded,
+                onExpandedChange = { expanded = it },
+                showUpdateDialog = { showUpdateDialog = it })
+
+            HorizontalDivider(
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f), thickness = 0.5.dp)
+          }
         },
         floatingActionButton = {
           if (folder.value!!.isOwner(currentUser.value!!.uid)) {

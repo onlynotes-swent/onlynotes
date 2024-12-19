@@ -36,6 +36,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -73,8 +74,7 @@ import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.model.user.User
 import com.github.onlynotesswent.model.user.UserRepositoryFirestore
 import com.github.onlynotesswent.model.user.UserViewModel
-import com.github.onlynotesswent.ui.navigation.BottomNavigationMenu
-import com.github.onlynotesswent.ui.navigation.LIST_TOP_LEVEL_DESTINATION
+import com.github.onlynotesswent.ui.common.BottomNavigationBarWithDivider
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Route
 import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
@@ -130,109 +130,111 @@ fun EditProfileScreen(
   } else
       Scaffold(
           modifier = Modifier.testTag("ProfileScreen"),
-          bottomBar = {
-            BottomNavigationMenu(
-                onTabSelect = { route -> navigationActions.navigateTo(route) },
-                tabList = LIST_TOP_LEVEL_DESTINATION,
-                selectedItem = navigationActions.currentRoute())
-          },
+          bottomBar = { BottomNavigationBarWithDivider(navigationActions) },
           topBar = {
-            TopAppBar(
-                title = { Text(stringResource(R.string.edit_profile)) },
-                navigationIcon = {
-                  IconButton(
-                      onClick = {
-                        if (newFirstName.value != user.value?.firstName ||
-                            newLastName.value != user.value?.lastName ||
-                            newUserName.value != user.value?.userName ||
-                            newBio.value != user.value?.bio ||
-                            newIsAccountPublic.value != user.value?.isAccountPublic ||
-                            hasProfilePictureBeenChanged.value) {
-                          showGoingBackWithoutSavingChanges.value = true
-                        } else {
-                          navigationActions.goBack()
+            Column {
+              TopAppBar(
+                  title = { Text(stringResource(R.string.edit_profile)) },
+                  navigationIcon = {
+                    IconButton(
+                        onClick = {
+                          if (newFirstName.value != user.value?.firstName ||
+                              newLastName.value != user.value?.lastName ||
+                              newUserName.value != user.value?.userName ||
+                              newBio.value != user.value?.bio ||
+                              newIsAccountPublic.value != user.value?.isAccountPublic ||
+                              hasProfilePictureBeenChanged.value) {
+                            showGoingBackWithoutSavingChanges.value = true
+                          } else {
+                            navigationActions.goBack()
+                          }
+                        },
+                        Modifier.testTag("goBackButton")) {
+                          Icon(
+                              imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
+                              contentDescription = "Back")
                         }
-                      },
-                      Modifier.testTag("goBackButton")) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                            contentDescription = "Back")
-                      }
-                },
-                actions = {
-                  IconButton(
-                      onClick = {
-                        val updatedUser =
-                            user.value!!.copy(
-                                firstName = newFirstName.value.trim(),
-                                lastName = newLastName.value.trim(),
-                                userName = newUserName.value.trim(),
-                                bio = newBio.value.trim(),
-                                hasProfilePicture = profilePictureUri.value.isNotBlank(),
-                                isAccountPublic = newIsAccountPublic.value,
-                            )
+                  },
+                  actions = {
+                    IconButton(
+                        onClick = {
+                          val updatedUser =
+                              user.value!!.copy(
+                                  firstName = newFirstName.value.trim(),
+                                  lastName = newLastName.value.trim(),
+                                  userName = newUserName.value.trim(),
+                                  bio = newBio.value.trim(),
+                                  hasProfilePicture = profilePictureUri.value.isNotBlank(),
+                                  isAccountPublic = newIsAccountPublic.value,
+                              )
 
-                        userViewModel.updateUser(
-                            user = updatedUser,
-                            onSuccess = {
-                              navigationActions.navigateTo(TopLevelDestinations.PROFILE)
-                              // Upload or delete the profile picture if it has been changed
-                              if (hasProfilePictureBeenChanged.value) {
-                                if (profilePictureUri.value.isNotBlank()) {
-                                  if (user.value!!.hasProfilePicture) {
-                                    fileViewModel.updateFile(
-                                        uid = userViewModel.currentUser.value!!.uid,
-                                        fileUri = profilePictureUri.value.toUri(),
-                                        fileType = FileType.PROFILE_PIC_JPEG,
-                                        onFailure = {
-                                          Toast.makeText(
-                                                  localContext,
-                                                  "Error updating profile picture",
-                                                  Toast.LENGTH_SHORT)
-                                              .show()
-                                        },
-                                    )
+                          userViewModel.updateUser(
+                              user = updatedUser,
+                              onSuccess = {
+                                navigationActions.navigateTo(TopLevelDestinations.PROFILE)
+                                // Upload or delete the profile picture if it has been changed
+                                if (hasProfilePictureBeenChanged.value) {
+                                  if (profilePictureUri.value.isNotBlank()) {
+                                    if (user.value!!.hasProfilePicture) {
+                                      fileViewModel.updateFile(
+                                          uid = userViewModel.currentUser.value!!.uid,
+                                          fileUri = profilePictureUri.value.toUri(),
+                                          fileType = FileType.PROFILE_PIC_JPEG,
+                                          onFailure = {
+                                            Toast.makeText(
+                                                    localContext,
+                                                    "Error updating profile picture",
+                                                    Toast.LENGTH_SHORT)
+                                                .show()
+                                          },
+                                      )
+                                    } else {
+                                      fileViewModel.uploadFile(
+                                          uid = userViewModel.currentUser.value!!.uid,
+                                          fileUri = profilePictureUri.value.toUri(),
+                                          fileType = FileType.PROFILE_PIC_JPEG,
+                                          onFailure = {
+                                            Toast.makeText(
+                                                    localContext,
+                                                    "Error uploading profile picture",
+                                                    Toast.LENGTH_SHORT)
+                                                .show()
+                                          })
+                                    }
                                   } else {
-                                    fileViewModel.uploadFile(
-                                        uid = userViewModel.currentUser.value!!.uid,
-                                        fileUri = profilePictureUri.value.toUri(),
-                                        fileType = FileType.PROFILE_PIC_JPEG,
-                                        onFailure = {
-                                          Toast.makeText(
-                                                  localContext,
-                                                  "Error uploading profile picture",
-                                                  Toast.LENGTH_SHORT)
-                                              .show()
-                                        })
+                                    fileViewModel.deleteFile(
+                                        userViewModel.currentUser.value!!.uid,
+                                        FileType.PROFILE_PIC_JPEG,
+                                    )
                                   }
-                                } else {
-                                  fileViewModel.deleteFile(
-                                      userViewModel.currentUser.value!!.uid,
-                                      FileType.PROFILE_PIC_JPEG,
-                                  )
                                 }
-                              }
-                            },
-                            onFailure = { exception ->
-                              val errorMessage =
-                                  when (exception) {
-                                    is UserRepositoryFirestore.UsernameTakenException ->
-                                        "Username is already taken. Please choose a different one."
-                                    else -> "Oops! Something went wrong. Please try again later."
-                                  }
-                              Toast.makeText(localContext, errorMessage, Toast.LENGTH_SHORT).show()
-                              userNameError.value =
-                                  exception is UserRepositoryFirestore.UsernameTakenException
-                            })
-                      },
-                      modifier = Modifier.testTag("saveButton"),
-                      enabled = saveEnabled.value) {
-                        Icon(
-                            imageVector = Icons.Default.Check,
-                            contentDescription = "Save Note",
-                            tint = MaterialTheme.colorScheme.onSurface)
-                      }
-                })
+                              },
+                              onFailure = { exception ->
+                                val errorMessage =
+                                    when (exception) {
+                                      is UserRepositoryFirestore.UsernameTakenException ->
+                                          "Username is already taken. Please choose a different one."
+                                      else -> "Oops! Something went wrong. Please try again later."
+                                    }
+                                Toast.makeText(localContext, errorMessage, Toast.LENGTH_SHORT)
+                                    .show()
+                                userNameError.value =
+                                    exception is UserRepositoryFirestore.UsernameTakenException
+                              })
+                        },
+                        modifier = Modifier.testTag("saveButton"),
+                        enabled = saveEnabled.value) {
+                          Icon(
+                              imageVector = Icons.Default.Check,
+                              contentDescription = "Save Note",
+                              tint = MaterialTheme.colorScheme.onSurface)
+                        }
+                  })
+
+              HorizontalDivider(
+                  color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
+                  thickness = 0.5.dp)
+            }
           },
           content = { paddingValues ->
             Column(
