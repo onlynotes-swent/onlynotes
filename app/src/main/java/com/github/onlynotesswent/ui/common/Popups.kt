@@ -49,6 +49,7 @@ import com.github.onlynotesswent.model.common.Visibility
 import com.github.onlynotesswent.model.flashcard.deck.Deck
 import com.github.onlynotesswent.model.folder.Folder
 import com.github.onlynotesswent.model.folder.FolderViewModel
+import com.github.onlynotesswent.model.note.Note
 import com.github.onlynotesswent.utils.NotesToFlashcard
 
 /**
@@ -154,7 +155,7 @@ fun DecksCreationDialog(
  * @param onConfirm callback to be invoked when the user confirms the new name and visibility
  * @param action the action to be performed (e.g., "Create" or "Update")
  * @param oldVisibility the previous visibility of the item (if renaming), defaults to
- *   [Visibility.PRIVATE]
+ *   [Visibility.DEFAULT]
  * @param oldName the previous name of the item (if renaming), defaults to an empty string
  * @param type the type of item (e.g., "Folder" or "Note") displayed in the dialog
  * @param currentUserId the Id of the current user
@@ -165,14 +166,14 @@ fun CreationDialog(
     onDismiss: () -> Unit,
     onConfirm: (String, Visibility) -> Unit,
     action: String,
-    oldVisibility: Visibility? = Visibility.PRIVATE,
+    oldVisibility: Visibility = Visibility.DEFAULT,
     oldName: String = "",
     type: String,
     currentUserId: String = "",
     noteUserId: String = ""
 ) {
   var name by remember { mutableStateOf(oldName) }
-  var visibility: Visibility? by remember { mutableStateOf(oldVisibility) }
+  var visibility by remember { mutableStateOf(oldVisibility) }
 
   AlertDialog(
       onDismissRequest = onDismiss,
@@ -184,19 +185,26 @@ fun CreationDialog(
             horizontalAlignment = Alignment.CenterHorizontally) {
               OutlinedTextField(
                   value = name,
-                  onValueChange = { name = Folder.formatName(it) },
-                  label = { Text("$type Name") },
+                  onValueChange = {
+                    name =
+                        if (type == "Folder") {
+                          Folder.formatName(it)
+                        } else {
+                          Note.formatTitle(it)
+                        }
+                  },
+                  label = { Text(stringResource(R.string.name)) },
                   modifier = Modifier.testTag("input${type}Name"))
 
               // Spacing
               Spacer(modifier = Modifier.height(8.dp))
-              SelectVisibility(visibility, currentUserId, noteUserId) { visibility = it }
+              SelectVisibility(visibility, currentUserId == noteUserId) { visibility = it }
             }
       },
       confirmButton = {
         Button(
-            enabled = name.isNotEmpty() && visibility != null,
-            onClick = { onConfirm(name, visibility ?: Visibility.DEFAULT) },
+            enabled = name.isNotEmpty(),
+            onClick = { onConfirm(name, visibility) },
             modifier = Modifier.testTag("confirm${type}Action")) {
               Text(action)
             }
@@ -225,7 +233,7 @@ fun FileSystemPopup(
     folderViewModel: FolderViewModel,
     onMoveHere: (Folder?) -> Unit = {}
 ) {
-  var selectedFolder by remember { mutableStateOf<Folder?>(folderViewModel.selectedFolder.value) }
+  var selectedFolder by remember { mutableStateOf(folderViewModel.selectedFolder.value) }
   var folderSubFolders by remember { mutableStateOf<List<Folder>>(emptyList()) }
   val userRootFolders = folderViewModel.userRootFolders.collectAsState()
 
