@@ -1,7 +1,6 @@
 package com.github.onlynotesswent.ui.common
 
 import android.content.ClipData
-import android.widget.Toast
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.draganddrop.dragAndDropSource
@@ -17,10 +16,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.LibraryBooks
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -43,7 +43,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import com.github.onlynotesswent.R
 import com.github.onlynotesswent.model.common.Course
@@ -55,8 +58,8 @@ import com.github.onlynotesswent.model.user.User
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Route.NOTE_OVERVIEW
 import com.github.onlynotesswent.ui.navigation.Screen
-import com.google.firebase.Timestamp
 import com.github.onlynotesswent.utils.NotesToFlashcard
+import com.google.firebase.Timestamp
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -188,162 +191,208 @@ fun NoteOptionsBottomSheet(
     note: Note,
     noteViewModel: NoteViewModel,
     folderViewModel: FolderViewModel,
+    onDismiss: () -> Unit,
     navigationActions: NavigationActions,
     notesToFlashcard: NotesToFlashcard?,
-    onDismiss: () -> Unit
 ) {
-  var showFileSystemPopup by remember { mutableStateOf(false) }
-  var showDeletePopup by remember { mutableStateOf(false) }
-  var showFlashcardCreationPopup by remember { mutableStateOf(false) }
-  val context = LocalContext.current
+    var showFileSystemPopup by remember { mutableStateOf(false) }
+    var showDeletePopup by remember { mutableStateOf(false) }
+    var showFlashcardDialog by remember { mutableStateOf(false) }
+    var flashcardErrorMessage by remember { mutableStateOf<String?>(null) }
+    var isFlashcardLoading by remember { mutableStateOf(false) }
+    val context = LocalContext.current
 
-  if (showFileSystemPopup) {
-    FileSystemPopup(
-        onDismiss = { showFileSystemPopup = false },
-        folderViewModel = folderViewModel,
-        onMoveHere = { selectedFolder ->
-          noteViewModel.updateNote(
-              note.copy(folderId = selectedFolder?.id, lastModified = Timestamp.now()))
-          showFileSystemPopup = false
-          folderViewModel.clearSelectedFolder()
-          if (selectedFolder != null) {
-            navigationActions.navigateTo(
-                Screen.FOLDER_CONTENTS.replace(
-                    oldValue = "{folderId}", newValue = selectedFolder.id))
-          } else {
-            navigationActions.navigateTo(NOTE_OVERVIEW)
-          }
+    if (showFileSystemPopup) {
+        FileSystemPopup(
+            onDismiss = { showFileSystemPopup = false },
+            folderViewModel = folderViewModel,
+            onMoveHere = { selectedFolder ->
+                noteViewModel.updateNote(
+                    note.copy(folderId = selectedFolder?.id, lastModified = Timestamp.now()))
+                showFileSystemPopup = false
+                folderViewModel.clearSelectedFolder()
+                if (selectedFolder != null) {
+                    navigationActions.navigateTo(
+                        Screen.FOLDER_CONTENTS.replace(
+                            oldValue = "{folderId}", newValue = selectedFolder.id))
+                } else {
+                    navigationActions.navigateTo(NOTE_OVERVIEW)
+                }
 
-          onDismiss() // Dismiss the bottom sheet after moving the note
-        })
-  }
+                onDismiss() // Dismiss the bottom sheet after moving the note
+            })
+    }
 
-  if (showDeletePopup) {
-    ConfirmationPopup(
-        title = stringResource(R.string.delete_note),
-        text = stringResource(R.string.delete_note_text),
-        onConfirm = {
-          noteViewModel.deleteNoteById(note.id, note.userId)
-          if (folderViewModel.selectedFolder.value != null) {
-            noteViewModel.getNotesFromFolder(folderViewModel.selectedFolder.value!!.id)
-          }
-          showDeletePopup = false // Close the dialog after deleting
-        },
-        onDismiss = {
-          showDeletePopup = false // Close the dialog without deleting
-        })
-  }
+    if (showDeletePopup) {
+        ConfirmationPopup(
+            title = stringResource(R.string.delete_note),
+            text = stringResource(R.string.delete_note_text),
+            onConfirm = {
+                noteViewModel.deleteNoteById(note.id, note.userId)
+                if (folderViewModel.selectedFolder.value != null) {
+                    noteViewModel.getNotesFromFolder(folderViewModel.selectedFolder.value!!.id)
+                } else {
+                    noteViewModel.getRootNotesFromUid(note.userId)
+                }
+                showDeletePopup = false // Close the dialog after deleting
+            },
+            onDismiss = {
+                showDeletePopup = false // Close the dialog without deleting
+            })
+    }
 
-  if (showFlashcardCreationPopup) {
-    AlertDialog(
-        modifier = Modifier.testTag("popup"),
-        onDismissRequest = {},
-        title = {},
-        text = {
-          LoadingIndicator(
-              text = stringResource(R.string.converting_note_to_flashcards),
-              modifier = Modifier.padding(16.dp))
-        },
-        confirmButton = {})
-  }
+    if (showFlashcardDialog) {
+        NoteToFlashcardDialog(
+            isLoading = isFlashcardLoading,
+            errorMessage = flashcardErrorMessage,
+            onDismiss = {
+                showFlashcardDialog = false
+                flashcardErrorMessage = null
+            }
+        )
+    }
 
-  ModalBottomSheet(
-      modifier = Modifier.testTag("noteModalBottomSheet"),
-      onDismissRequest = onDismiss,
-      content = {
-        Column(modifier = Modifier.padding(16.dp)) {
-          Row(
-              modifier =
-                  Modifier.fillMaxWidth()
-                      .clickable { showFileSystemPopup = true }
-                      .padding(vertical = 8.dp)
-                      .testTag("moveNoteBottomSheet"),
-              verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    imageVector = Icons.Default.FolderOpen,
-                    contentDescription = stringResource(R.string.move_note))
-                Spacer(modifier = Modifier.width(16.dp))
-                Text(
-                    text = stringResource(R.string.move_note),
-                    style = MaterialTheme.typography.bodyLarge)
-              }
-
-          if (notesToFlashcard != null) {
-            Row(
-                modifier =
+    ModalBottomSheet(
+        modifier = Modifier.testTag("noteModalBottomSheet"),
+        containerColor = MaterialTheme.colorScheme.onPrimary,
+        onDismissRequest = onDismiss,
+        content = {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Row(
+                    modifier =
                     Modifier.fillMaxWidth()
-                        .clickable {
-                          showFlashcardCreationPopup = true
-                          notesToFlashcard.convertNoteToDeck(
-                              note,
-                              onSuccess = {
-                                showFlashcardCreationPopup = false
-                                onDismiss()
-                                if (it != null) {
-                                  navigationActions.navigateTo(
-                                      Screen.DECK_MENU.replace(
-                                          oldValue = "{deckId}", newValue = it.id))
-                                } else {
-                                  Toast.makeText(
-                                          context,
-                                          R.string.no_flashcards_created,
-                                          Toast.LENGTH_SHORT)
-                                      .show()
-                                }
-                              },
-                              onFileNotFoundException = {
-                                showFlashcardCreationPopup = false
-                                onDismiss()
-                                Toast.makeText(
-                                        context, R.string.no_note_text_found, Toast.LENGTH_SHORT)
-                                    .show()
-                              },
-                              onFailure = {
-                                showFlashcardCreationPopup = false
-                                onDismiss()
-                                Toast.makeText(
-                                        context,
-                                        R.string.error_creating_flashcards,
-                                        Toast.LENGTH_SHORT)
-                                    .show()
-                              })
-                        }
+                        .clickable { showFileSystemPopup = true }
                         .padding(vertical = 8.dp)
                         .testTag("moveNoteBottomSheet"),
-                verticalAlignment = Alignment.CenterVertically) {
-                  Spacer(modifier = Modifier.width(16.dp))
-                  Text(
-                      text = stringResource(R.string.convert_note_to_flashcards),
-                      style = MaterialTheme.typography.bodyLarge)
-                  Spacer(modifier = Modifier.width(16.dp))
-                  Icon(
-                      imageVector = Icons.AutoMirrored.Outlined.LibraryBooks,
-                      contentDescription = stringResource(R.string.convert_note_to_flashcards))
+                    verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Default.FolderOpen,
+                        contentDescription = stringResource(R.string.move_note))
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Text(
+                        text = stringResource(R.string.move_note),
+                        style = MaterialTheme.typography.titleMedium)
                 }
-          }
 
-          HorizontalDivider(Modifier.padding(vertical = 10.dp), 1.dp)
+                // Convert Note to Flashcards
+                if (notesToFlashcard != null) {
+                    Row(
+                        modifier =
+                        Modifier.fillMaxWidth()
+                            .clickable {
+                                showFlashcardDialog = true
+                                isFlashcardLoading = true
+                                notesToFlashcard.convertNoteToDeck(
+                                    note,
+                                    onSuccess = {
+                                        isFlashcardLoading = false
+                                        showFlashcardDialog = false
+                                        if (it != null) {
+                                            navigationActions.navigateTo(
+                                                Screen.DECK_MENU.replace(
+                                                    oldValue = "{deckId}", newValue = it.id
+                                                )
+                                            )
+                                        } else {
+                                            flashcardErrorMessage = context.getString(R.string.no_flashcards_created)
+                                        }
+                                    },
+                                    onFileNotFoundException = {
+                                        isFlashcardLoading = false
+                                        flashcardErrorMessage = context.getString(R.string.no_note_text_found)
+                                    },
+                                    onFailure = {
+                                        isFlashcardLoading = false
+                                        flashcardErrorMessage = context.getString(R.string.error_creating_flashcards)
+                                    }
+                                )
+                            }
+                            .padding(vertical = 8.dp)
+                            .testTag("convertNoteBottomSheet"),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Outlined.LibraryBooks,
+                            contentDescription = stringResource(R.string.convert_note_to_flashcards)
+                        )
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Text(
+                            text = stringResource(R.string.convert_note_to_flashcards),
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                    }
+                }
 
-          Row(
-              modifier =
-                  Modifier.fillMaxWidth()
-                      .clickable { showDeletePopup = true }
-                      .padding(vertical = 8.dp)
-                      .testTag("deleteNoteBottomSheet"),
-              verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    imageVector = Icons.Default.Delete,
-                    contentDescription = stringResource(R.string.delete_note),
-                    tint = MaterialTheme.colorScheme.error)
-                Spacer(modifier = Modifier.width(16.dp))
-                Text(
-                    text = stringResource(R.string.delete_note),
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.error)
-              }
-        }
-      })
+                HorizontalDivider(Modifier.padding(vertical = 10.dp), 1.dp)
+
+                Row(
+                    modifier =
+                    Modifier.fillMaxWidth()
+                        .clickable { showDeletePopup = true }
+                        .padding(vertical = 8.dp)
+                        .testTag("deleteNoteBottomSheet"),
+                    verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Outlined.Delete,
+                        contentDescription = stringResource(R.string.delete_note),
+                        tint = MaterialTheme.colorScheme.error)
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Text(
+                        text = stringResource(R.string.delete_note),
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.error)
+                }
+            }
+        })
 }
+
+/**
+ * Dialog that displays a loading indicator while converting a note to flashcards.
+ *
+ * @param isLoading A boolean indicating whether the note is being converted to flashcards.
+ * @param errorMessage The error message to display if the conversion fails.
+ * @param onDismiss The callback to be invoked when the dialog is dismissed.
+ */
+@Composable
+fun NoteToFlashcardDialog(
+    isLoading: Boolean,
+    errorMessage: String?,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = {},
+        title = {
+            if (isLoading) {
+                Text(text = stringResource(R.string.converting_note_to_flashcards))
+            }
+        },
+        text = {
+            if (isLoading) {
+                LoadingIndicator(
+                    text = stringResource(R.string.converting_note_to_flashcards),
+                    modifier = Modifier.padding(16.dp)
+                )
+            } else {
+                Text(
+                    text =
+                    buildAnnotatedString {
+                        withStyle(style = SpanStyle(color = MaterialTheme.colorScheme.error)) {
+                            append(stringResource(R.string.error_while_converting))
+                        }
+                        append(": $errorMessage")
+                    })
+            }
+        },
+        confirmButton = {
+            if (!isLoading) {
+                Button(onClick = onDismiss) {
+                    Text(text = stringResource(R.string.close))
+                }
+            }
+        }
+    )
+}
+
 
 /**
  * Dialog that allows the user to create a note.

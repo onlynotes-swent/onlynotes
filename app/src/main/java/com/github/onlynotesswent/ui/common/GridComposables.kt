@@ -126,6 +126,7 @@ fun CustomSeparatedLazyGrid(
                     currentUser = userViewModel.currentUser.collectAsState(),
                     noteViewModel = noteViewModel!!,
                     folderViewModel = folderViewModel,
+                    notesToFlashcard = notesToFlashcard,
                     navigationActions = navigationActions) {
                       noteViewModel.selectedNote(note)
                       navigationActions.navigateTo(Screen.EDIT_NOTE)

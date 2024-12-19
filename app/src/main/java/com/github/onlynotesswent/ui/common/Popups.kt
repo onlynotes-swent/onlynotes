@@ -40,7 +40,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -104,44 +107,90 @@ fun ConfirmationPopup(title: String, text: String, onConfirm: () -> Unit, onDism
 @Composable
 fun DecksCreationDialog(
     notesToFlashcard: NotesToFlashcard,
+    closePopup: () -> Unit,
     onConversionComplete: (Deck) -> Unit,
 ) {
   var progressMessage by remember { mutableStateOf("Initializing conversion...") }
   var isLoading by remember { mutableStateOf(true) }
-  var errorMessage by remember { mutableStateOf<String?>(null) }
+  var listOfErrorMessages by remember { mutableStateOf(emptyList<String>()) }
+  var deck by remember { mutableStateOf<Deck?>(null) }
 
   val context = LocalContext.current
 
   AlertDialog(
-      onDismissRequest = {},
-      title = { Text(stringResource(R.string.convert_folder_to_decks)) },
-      text = {
-        if (isLoading) {
-          LoadingIndicator(progressMessage)
-        }
-        if (errorMessage != null) {
-          Text(errorMessage!!, color = MaterialTheme.colorScheme.error)
+      onDismissRequest = {
+        if (!isLoading) {
+          closePopup()
         }
       },
-      confirmButton = {})
+      title = { Text(stringResource(R.string.convert_folder_to_decks)) },
+      text = {
+        Column {
+          if (isLoading) {
+            LoadingIndicator(
+                text = progressMessage, modifier = Modifier.fillMaxWidth(), spacerHeight = 8.dp)
+          } else {
+            if (deck != null) {
+              Text(text = progressMessage, style = MaterialTheme.typography.titleMedium)
+            } else {
+              Text(text = stringResource(R.string.no_flashcards_created))
+            }
+          }
+
+          if (listOfErrorMessages.isNotEmpty()) {
+            Spacer(modifier = Modifier.height(16.dp))
+            Column {
+              listOfErrorMessages.forEach {
+                Text(
+                    text =
+                        buildAnnotatedString {
+                          withStyle(style = SpanStyle(color = MaterialTheme.colorScheme.error)) {
+                            append(stringResource(R.string.error_while_converting))
+                          }
+                          append(": $it")
+                        })
+              }
+            }
+          }
+        }
+      },
+      confirmButton = {
+        if (!isLoading && deck != null) {
+          TextButton(
+              onClick = {
+                onConversionComplete(deck!!)
+                closePopup()
+              },
+              modifier = Modifier.testTag("goToDeckFolderAction")) {
+                Text(stringResource(R.string.go_to_deck_folder))
+              }
+        }
+      },
+      dismissButton = {
+        if (!isLoading) {
+          TextButton(onClick = { closePopup() }, modifier = Modifier.testTag("closeAction")) {
+            Text(stringResource(R.string.close), color = MaterialTheme.colorScheme.error)
+          }
+        }
+      })
 
   if (isLoading) {
     LaunchedEffect(Unit) {
       notesToFlashcard.convertFolderToDecks(
           onProgress = { notes, folders, exception ->
             if (exception != null) {
-              errorMessage = "Error: ${exception.localizedMessage}"
+              listOfErrorMessages += exception.localizedMessage
             } else {
               progressMessage =
                   context.getString(R.string.flashcards_conversion_progress, notes, folders)
             }
           },
-          onSuccess = { deck ->
+          onSuccess = { finalDeck ->
             isLoading = false
-            onConversionComplete(deck)
+            deck = finalDeck
           },
           onFailure = { exception ->
-            errorMessage = "Conversion failed: ${exception.localizedMessage}"
+            listOfErrorMessages += exception.localizedMessage
             isLoading = false
           })
     }

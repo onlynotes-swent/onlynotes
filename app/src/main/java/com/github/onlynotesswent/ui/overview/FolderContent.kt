@@ -163,7 +163,8 @@ fun FolderContentScreen(
                 folderViewModel = folderViewModel,
                 noteViewModel = noteViewModel,
                 userViewModel = userViewModel,
-                navigationActions = navigationActions)
+                navigationActions = navigationActions,
+                notesToFlashcard = notesToFlashcard!!)
           }
           // Logic to show the dialog to update a folder
 
@@ -414,9 +415,14 @@ fun FolderContentTopBar(
           // Popup for flashcard creation
           DecksCreationDialog(
               notesToFlashcard!!,
+              closePopup = { showFlashcardCreationPopup = false },
               onConversionComplete = {
+                folderViewModel.clearSelectedFolder()
                 showFlashcardCreationPopup = false
-                Toast.makeText(context, "Flashcards created", Toast.LENGTH_SHORT).show()
+                navigationActions.navigateTo(TopLevelDestinations.DECK_OVERVIEW)
+                navigationActions.navigateTo(
+                    Screen.FOLDER_CONTENTS.replace(
+                        oldValue = "{folderId}", newValue = it.folderId!!))
               },
           )
         }

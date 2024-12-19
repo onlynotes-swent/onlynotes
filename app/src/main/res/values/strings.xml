@@ -150,4 +150,7 @@
     <string name="converting_folder_to_decks">Converting folder to decks…</string>
     <string name="flashcards_conversion_progress">%1$d notes and %2$d folders processed</string>
     <string name="move_deck">Move deck</string>
+    <string name="error_while_converting">Error while converting</string>
+    <string name="close">Close</string>
+    <string name="go_to_deck_folder">Go to deck folder</string>
 </resources>
