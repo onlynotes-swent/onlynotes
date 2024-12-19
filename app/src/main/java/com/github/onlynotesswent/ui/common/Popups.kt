@@ -23,7 +23,7 @@ import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -186,71 +186,66 @@ fun FileSystemPopup(
     folderViewModel: FolderViewModel,
     onMoveHere: (Folder?) -> Unit = {}
 ) {
-    var selectedFolder by remember { mutableStateOf<Folder?>(folderViewModel.selectedFolder.value) }
-    var folderSubFolders by remember { mutableStateOf<List<Folder>>(emptyList()) }
-    val userRootFolders = folderViewModel.userRootFolders.collectAsState()
+  var selectedFolder by remember { mutableStateOf<Folder?>(folderViewModel.selectedFolder.value) }
+  var folderSubFolders by remember { mutableStateOf<List<Folder>>(emptyList()) }
+  val userRootFolders = folderViewModel.userRootFolders.collectAsState()
 
-    //local helper function for displaying the subfolders items
-    @Composable
-    fun subFolder(subFolder: Folder) =
-        Column {
-            Box(
-                modifier = Modifier
-                    .testTag("FileSystemPopupFolderChoiceBox" + subFolder.id)
-                    .fillMaxWidth()
-                    .background(
-                        color = MaterialTheme.colorScheme.background,
-                        shape = RoundedCornerShape(8.dp)
-                    )
-                    .clickable {
-                        folderViewModel.getSubFoldersOfNoStateUpdate(
-                            subFolder.id,
-                            onSuccess = { subFolders -> folderSubFolders = subFolders }
-                        )
-                        selectedFolder = subFolder
-                    }
-                    .padding(4.dp) // Adjust padding for better spacing
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Start
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Folder, // Use a folder icon
-                        contentDescription = "Folder Icon",
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier
-                            .size(50.dp) // Make the icon significantly larger
+  // local helper function for displaying the subfolders items
+  @Composable
+  fun subFolder(subFolder: Folder) = Column {
+    Box(
+        modifier =
+            Modifier.testTag("FileSystemPopupFolderChoiceBox" + subFolder.id)
+                .fillMaxWidth()
+                .background(
+                    color = MaterialTheme.colorScheme.background, shape = RoundedCornerShape(8.dp))
+                .clickable {
+                  folderViewModel.getSubFoldersOfNoStateUpdate(
+                      subFolder.id, onSuccess = { subFolders -> folderSubFolders = subFolders })
+                  selectedFolder = subFolder
+                }
+                .padding(4.dp) // Adjust padding for better spacing
+        ) {
+          Row(
+              verticalAlignment = Alignment.CenterVertically,
+              horizontalArrangement = Arrangement.Start) {
+                Icon(
+                    imageVector = Icons.Default.Folder, // Use a folder icon
+                    contentDescription = "Folder Icon",
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier =
+                        Modifier.size(50.dp) // Make the icon significantly larger
                             .padding(end = 16.dp) // Move it slightly to the left
                     )
-                    Text(
-                        text = subFolder.name,
-                        style = MaterialTheme.typography.bodyLarge.copy(fontSize = 20.sp), // Larger text
-                        color = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.weight(1f) // Let text take up remaining space
+                Text(
+                    text = subFolder.name,
+                    style =
+                        MaterialTheme.typography.bodyLarge.copy(fontSize = 20.sp), // Larger text
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.weight(1f) // Let text take up remaining space
                     )
-                }
-            }
-            Divider(
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f), // Subtle divider color
-                thickness = 1.dp, // Thickness of the divider
-                modifier = Modifier.fillMaxWidth() // Ensure divider spans the full width
-            )
+              }
         }
+    HorizontalDivider(
+        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f), // Subtle divider color
+        thickness = 1.dp, // Thickness of the divider
+        modifier = Modifier.fillMaxWidth() // Ensure divider spans the full width
+        )
+  }
 
-    // Modify the subfolder when selected Folder changes, best way I found how to do it as when done
-    // sequentially it takes a bit of time for the selected Folder to change which causes a bug
-    // where the subfolders don't update. Could fix this problem using a wait but that would depend
-    // on the internet speed of the user.
-    LaunchedEffect(selectedFolder) {
-        if (selectedFolder != null) {
-            folderViewModel.getSubFoldersOfNoStateUpdate(
-                selectedFolder!!.id, onSuccess = { subFolders -> folderSubFolders = subFolders })
-        }
+  // Modify the subfolder when selected Folder changes, best way I found how to do it as when done
+  // sequentially it takes a bit of time for the selected Folder to change which causes a bug
+  // where the subfolders don't update. Could fix this problem using a wait but that would depend
+  // on the internet speed of the user.
+  LaunchedEffect(selectedFolder) {
+    if (selectedFolder != null) {
+      folderViewModel.getSubFoldersOfNoStateUpdate(
+          selectedFolder!!.id, onSuccess = { subFolders -> folderSubFolders = subFolders })
     }
-    Dialog(onDismissRequest = { onDismiss() }) {
-        Box(
-            modifier =
+  }
+  Dialog(onDismissRequest = { onDismiss() }) {
+    Box(
+        modifier =
             Modifier.testTag("FileSystemPopup")
                 .fillMaxWidth(0.95f) // Adjust the popup width
                 .fillMaxHeight(0.7f)
@@ -258,38 +253,38 @@ fun FileSystemPopup(
                 .background(
                     color = MaterialTheme.colorScheme.background,
                     shape = RoundedCornerShape(12.dp))) {
-            Column(modifier = Modifier.fillMaxSize()) {
-                Box(
-                    modifier =
+          Column(modifier = Modifier.fillMaxSize()) {
+            Box(
+                modifier =
                     Modifier.fillMaxWidth()
                         .background(MaterialTheme.colorScheme.primary)
                         .padding(vertical = 12.dp, horizontal = 16.dp)) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically) {
+                  Row(
+                      modifier = Modifier.fillMaxWidth(),
+                      verticalAlignment = Alignment.CenterVertically) {
                         IconButton(
                             modifier = Modifier.testTag("goBackFileSystemPopup"),
                             onClick = {
-                                if (selectedFolder != null) {
-                                    if (selectedFolder!!.parentFolderId != null) {
-                                        folderViewModel.getFolderByIdNoStateUpdate(
-                                            selectedFolder!!.parentFolderId!!,
-                                            onSuccess = { parentFolder -> selectedFolder = parentFolder })
-                                    } else {
-                                        selectedFolder = null
-                                    }
+                              if (selectedFolder != null) {
+                                if (selectedFolder!!.parentFolderId != null) {
+                                  folderViewModel.getFolderByIdNoStateUpdate(
+                                      selectedFolder!!.parentFolderId!!,
+                                      onSuccess = { parentFolder -> selectedFolder = parentFolder })
+                                } else {
+                                  selectedFolder = null
                                 }
+                              }
                             }) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = "Back")
-                        }
+                              Icon(
+                                  imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                  contentDescription = "Back")
+                            }
                         Spacer(modifier = Modifier.weight(1f))
                         Text(
                             text =
-                            if (selectedFolder == null)
-                                stringResource(R.string.file_system_folders_in_root)
-                            else selectedFolder!!.name,
+                                if (selectedFolder == null)
+                                    stringResource(R.string.file_system_folders_in_root)
+                                else selectedFolder!!.name,
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onPrimary)
 
@@ -299,40 +294,38 @@ fun FileSystemPopup(
                         IconButton(
                             modifier = Modifier.testTag("goToOverviewFileSystemPopup"),
                             onClick = { selectedFolder = null }) {
-                            Icon(imageVector = Icons.Default.Home, contentDescription = "Home")
-                        }
-                    }
+                              Icon(imageVector = Icons.Default.Home, contentDescription = "Home")
+                            }
+                      }
                 }
 
-
-                Column(
-                    modifier =
+            Column(
+                modifier =
                     Modifier.weight(1f)
                         .padding(start = 16.dp, end = 16.dp, top = 8.dp)
                         .verticalScroll(rememberScrollState()),
-                    verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    if (selectedFolder == null) {
-                        userRootFolders.value.forEach { subFolder(it)}
-
-                    } else {
-                        folderSubFolders.forEach {subFolder(it) }
-                    }
+                verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                  if (selectedFolder == null) {
+                    userRootFolders.value.forEach { subFolder(it) }
+                  } else {
+                    folderSubFolders.forEach { subFolder(it) }
+                  }
                 }
-                Box(
-                    modifier = Modifier.fillMaxWidth().padding(16.dp),
-                    contentAlignment = Alignment.Center) {
-                    Button(
-                        onClick = {
-                            onMoveHere(selectedFolder)
-                            onDismiss()
-                        },
-                        modifier = Modifier.testTag("MoveHereButton")) {
+            Box(
+                modifier = Modifier.fillMaxWidth().padding(16.dp),
+                contentAlignment = Alignment.Center) {
+                  Button(
+                      onClick = {
+                        onMoveHere(selectedFolder)
+                        onDismiss()
+                      },
+                      modifier = Modifier.testTag("MoveHereButton")) {
                         Text(text = stringResource(R.string.move_here))
-                    }
+                      }
                 }
-            }
+          }
         }
-    }
+  }
 }
 /**
  * Generic dialog for entering text.

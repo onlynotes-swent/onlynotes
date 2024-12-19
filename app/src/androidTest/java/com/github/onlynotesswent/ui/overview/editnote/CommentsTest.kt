@@ -1,6 +1,8 @@
 package com.github.onlynotesswent.ui.overview.editnote
 
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsNotDisplayed
+import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
@@ -60,7 +62,6 @@ class CommentsTest {
     folderViewModel = FolderViewModel(folderRepository)
     fileViewModel = FileViewModel(fileRepository)
 
-
     // Mock the addUser method to call the onSuccess callback
     `when`(userRepository.addUser(any(), any(), any())).thenAnswer { invocation ->
       val onSuccess = invocation.getArgument<() -> Unit>(1)
@@ -68,7 +69,6 @@ class CommentsTest {
     }
 
     val testUser = User("", "", "testUserName", "", "1", Timestamp.now(), 0.0)
-    userViewModel.addUser(testUser, {}, {})
 
     // Mock the current route to be the note edit screen
     `when`(navigationActions.currentRoute()).thenReturn(Screen.EDIT_NOTE_COMMENT)
@@ -80,8 +80,7 @@ class CommentsTest {
             lastModified = Timestamp.now(), // Use current timestamp
             visibility = Visibility.DEFAULT,
             userId = "1",
-            noteCourse = Course("CS-100", "Sample Class", 2024, "path"),
-        )
+            noteCourse = Course("CS-100", "Sample Class", 2024, "path"))
 
     val mockNote2 =
         Note(
@@ -93,8 +92,28 @@ class CommentsTest {
             userId = "1",
             folderId = "1",
             noteCourse = Course("CS-100", "Sample Class", 2024, "path"),
-        )
+            comments =
+                Note.CommentCollection(
+                    listOf(
+                        Note.Comment(
+                            "1",
+                            "1",
+                            "Test Comment",
+                            "random Content",
+                            Timestamp.now(),
+                            Timestamp.now()))))
 
+    `when`(userRepository.getUserById(eq("1"), any(), any(), any())).thenAnswer { invocation ->
+      val onSuccess = invocation.getArgument<(User) -> Unit>(1)
+      onSuccess(testUser)
+    }
+
+    `when`(userRepository.getUserById(eq("2"), any(), any(), any())).thenAnswer { invocation ->
+      val onSuccess = invocation.getArgument<(User) -> Unit>(1)
+      onSuccess(testUser) // Use the same mock user for simplicity
+    }
+
+    userViewModel.addUser(testUser, {}, {})
     `when`(noteRepository.getNoteById(eq("1"), any(), any(), any())).thenAnswer { invocation ->
       val onSuccess = invocation.getArgument<(Note) -> Unit>(1)
       onSuccess(mockNote1)
@@ -113,7 +132,9 @@ class CommentsTest {
 
   private fun init(noteId: String) = runTest {
     noteViewModel.getNoteById(noteId)
-    composeTestRule.setContent { CommentsScreen(navigationActions, noteViewModel, userViewModel, fileViewModel) }
+    composeTestRule.setContent {
+      CommentsScreen(navigationActions, noteViewModel, userViewModel, fileViewModel)
+    }
   }
 
   @Test
@@ -134,11 +155,10 @@ class CommentsTest {
   }
 
   @Test
-  fun sendAComment() = runTest{
+  fun sendAComment() = runTest {
     init("1")
 
-    `when`(noteRepository.updateNote(any(), any(), any(), eq(true))).thenAnswer {
-        invocation ->
+    `when`(noteRepository.updateNote(any(), any(), any(), eq(true))).thenAnswer { invocation ->
       val onSuccess = invocation.getArgument<() -> Unit>(1)
       onSuccess()
     }
@@ -149,18 +169,38 @@ class CommentsTest {
     composeTestRule.onNodeWithTag("SendCommentButton").performClick()
     verify(noteRepository).updateNote(any(), any(), any(), any())
   }
-/*
-  @Test
-  fun addAndDeleteComment() {
-    init("1")
-    // Add a comment
-    composeTestRule.onNodeWithTag("addCommentButton").performClick()
-    composeTestRule.onNodeWithTag("EditCommentTextField").performTextInput("New comment")
-    composeTestRule.onNodeWithTag("DeleteCommentButton").assertIsDisplayed()
 
-    // Delete the comment
-    composeTestRule.onNodeWithTag("DeleteCommentButton").performClick()
-    composeTestRule.onNodeWithTag("DeleteCommentButton").assertDoesNotExist()
-    composeTestRule.onNodeWithTag("EditCommentTextField").assertDoesNotExist()
-  }*/
+  @Test
+  fun editComments() = runTest {
+    init("2")
+    composeTestRule.onNodeWithTag("NoCommentsText").assertIsNotDisplayed()
+    composeTestRule.onNodeWithTag("CommentContent").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("CommentContent").assertTextContains("random Content")
+    composeTestRule.onNodeWithTag("CommentOptionsButton").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("CommentOptionsButton").performClick()
+    composeTestRule.onNodeWithTag("CommentOptionsMenu").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("EditCommentMenuItem").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("DeleteCommentMenuItem").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("EditCommentMenuItem").performClick()
+    composeTestRule.onNodeWithTag("EditCommentTextField").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("EditCommentTextField").performTextInput("Edited comment")
+    composeTestRule.onNodeWithTag("SaveCommentButton").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("SaveCommentButton").performClick()
+    verify(noteRepository).updateNote(any(), any(), any(), any())
+  }
+
+  @Test
+  fun deleteComments() = runTest {
+    init("2")
+    composeTestRule.onNodeWithTag("NoCommentsText").assertIsNotDisplayed()
+    composeTestRule.onNodeWithTag("CommentContent").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("CommentContent").assertTextContains("random Content")
+    composeTestRule.onNodeWithTag("CommentOptionsButton").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("CommentOptionsButton").performClick()
+    composeTestRule.onNodeWithTag("CommentOptionsMenu").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("EditCommentMenuItem").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("DeleteCommentMenuItem").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("DeleteCommentMenuItem").performClick()
+    verify(noteRepository).updateNote(any(), any(), any(), any())
+  }
 }
