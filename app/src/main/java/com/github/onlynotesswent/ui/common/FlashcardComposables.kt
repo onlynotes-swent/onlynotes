@@ -10,6 +10,7 @@ import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -76,6 +77,8 @@ import com.github.onlynotesswent.model.file.FileType
 import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.flashcard.Flashcard
 import com.github.onlynotesswent.model.flashcard.FlashcardViewModel
+import com.github.onlynotesswent.ui.theme.DarkCards
+import com.github.onlynotesswent.ui.theme.LightCards
 import com.github.onlynotesswent.ui.theme.Typography
 import com.github.onlynotesswent.utils.PictureTaker
 
@@ -120,7 +123,10 @@ fun FlashcardViewItem(
       modifier =
           Modifier.testTag("flashcardItem--${flashcard.value.id}")
               .fillMaxWidth()
-              .heightIn(min = 160.dp)) {
+              .heightIn(min = 160.dp),
+      colors =
+          CardDefaults.elevatedCardColors(
+              containerColor = if (!isSystemInDarkTheme()) LightCards else DarkCards)) {
         Box(contentAlignment = Alignment.Center, modifier = Modifier.padding(10.dp)) {
           if (flashcard.value.isMCQ()) {
             Text(

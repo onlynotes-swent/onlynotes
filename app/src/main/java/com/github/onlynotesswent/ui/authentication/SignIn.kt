@@ -32,7 +32,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
-import com.github.onlynotesswent.MainActivity
+import com.github.onlynotesswent.OnlyNotes
 import com.github.onlynotesswent.R
 import com.github.onlynotesswent.model.authentication.Authenticator
 import com.github.onlynotesswent.model.user.UserViewModel
@@ -64,7 +64,7 @@ fun SignInScreen(
   // Handle back button press
   BackHandler {
     // Exit the app
-    ActivityCompat.finishAffinity(context as MainActivity)
+    ActivityCompat.finishAffinity(context as OnlyNotes)
   }
 
   // UI:

@@ -5,6 +5,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.draganddrop.dragAndDropSource
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -19,6 +20,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -51,6 +53,8 @@ import com.github.onlynotesswent.model.user.User
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Route.NOTE_OVERVIEW
 import com.github.onlynotesswent.ui.navigation.Screen
+import com.github.onlynotesswent.ui.theme.DarkCards
+import com.github.onlynotesswent.ui.theme.LightCards
 import com.google.firebase.Timestamp
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -109,7 +113,10 @@ fun NoteItem(
                           DragAndDropTransferData(ClipData.newPlainText("Note", note.id)))
                     },
                 )
-              }) {
+              },
+      colors =
+          CardDefaults.cardColors(
+              containerColor = if (!isSystemInDarkTheme()) LightCards else DarkCards)) {
         Column(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
           Row(
               modifier = Modifier.fillMaxWidth(),
@@ -224,6 +231,7 @@ fun NoteOptionsBottomSheet(
 
   ModalBottomSheet(
       modifier = Modifier.testTag("noteModalBottomSheet"),
+      containerColor = MaterialTheme.colorScheme.onPrimary,
       onDismissRequest = onDismiss,
       content = {
         Column(modifier = Modifier.padding(16.dp)) {

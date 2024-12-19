@@ -1,5 +1,6 @@
 package com.github.onlynotesswent.ui.common
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -11,6 +12,7 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -38,15 +40,18 @@ fun CustomDropDownMenu(
 ) {
   Box {
     FloatingActionButton(onClick = onFabClick, modifier = modifier) { fabIcon() }
-    DropdownMenu(expanded = expanded, onDismissRequest = onDismissRequest) {
-      menuItems.forEach { item ->
-        DropdownMenuItem(
-            text = item.text,
-            leadingIcon = item.icon,
-            onClick = item.onClick,
-            modifier = item.modifier)
-      }
-    }
+    DropdownMenu(
+        expanded = expanded,
+        onDismissRequest = onDismissRequest,
+        modifier = Modifier.background(MaterialTheme.colorScheme.onPrimary)) {
+          menuItems.forEach { item ->
+            DropdownMenuItem(
+                text = item.text,
+                leadingIcon = item.icon,
+                onClick = item.onClick,
+                modifier = item.modifier)
+          }
+        }
   }
 }
 

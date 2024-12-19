@@ -8,7 +8,7 @@ import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.github.onlynotesswent.MainActivity
+import com.github.onlynotesswent.OnlyNotes
 import com.github.onlynotesswent.R
 import com.github.onlynotesswent.model.authentication.Authenticator
 import com.github.onlynotesswent.model.user.UserRepository
@@ -24,7 +24,7 @@ import org.mockito.Mockito.`when`
 
 @RunWith(AndroidJUnit4::class)
 class SignInScreenTest {
-  @get:Rule val activityRule = createAndroidComposeRule<MainActivity>()
+  @get:Rule val activityRule = createAndroidComposeRule<OnlyNotes>()
 
   private lateinit var navigationActions: NavigationActions
   private lateinit var userViewModel: UserViewModel
@@ -47,7 +47,7 @@ class SignInScreenTest {
     // Mock the current route to ensure it's on the AUTH route
     `when`(navigationActions.currentRoute()).thenReturn(Route.AUTH)
 
-    // Set the SignInScreen content in the MainActivity
+    // Set the SignInScreen content in the OnlyNotes activity
     activityRule.activity.setContent {
       SignInScreen(navigationActions, userViewModel, mockAuthenticator)
     }
