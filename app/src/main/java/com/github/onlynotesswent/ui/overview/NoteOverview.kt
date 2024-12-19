@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SegmentedButton
@@ -103,21 +105,31 @@ fun NoteOverviewScreen(
             selectedItem = navigationActions.currentRoute())
       }) { paddingValues ->
         Column(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
-          SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
-            pageLabels.forEachIndexed { index, label ->
-              SegmentedButton(
-                  selected = pagerState.currentPage == index,
-                  shape = SegmentedButtonDefaults.itemShape(index = index, count = pageLabels.size),
-                  label = { Text(label) },
-                  colors =
-                      SegmentedButtonDefaults.colors(
-                          activeContainerColor = MaterialTheme.colorScheme.primary),
-                  onClick = {
-                    // Animate to the selected page when clicked
-                    coroutineScope.launch { pagerState.animateScrollToPage(index) }
-                  })
+            SingleChoiceSegmentedButtonRow(
+                modifier =
+                Modifier.fillMaxWidth(fraction = 0.8f).align(Alignment.CenterHorizontally)) {
+                pageLabels.forEachIndexed { index, label ->
+                    SegmentedButton(
+                        selected = pagerState.currentPage == index,
+                        shape =
+                        SegmentedButtonDefaults.itemShape(
+                            index = index,
+                            count = pageLabels.size,
+                            baseShape = RoundedCornerShape(10)
+                        ),
+                        border = ButtonDefaults.outlinedButtonBorder(false),
+                        colors =
+                        SegmentedButtonDefaults.colors(
+                            activeContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                            inactiveContainerColor =
+                            MaterialTheme.colorScheme.secondaryContainer),
+                        label = { Text(label) },
+                        onClick = {
+                            // Animate to the selected page when clicked
+                            coroutineScope.launch { pagerState.animateScrollToPage(index) }
+                        })
+                }
             }
-          }
           HorizontalPager(state = pagerState, modifier = Modifier.fillMaxSize()) {
             when (it) {
               0 -> {
