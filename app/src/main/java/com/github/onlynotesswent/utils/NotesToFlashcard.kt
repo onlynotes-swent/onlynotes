@@ -235,6 +235,7 @@ class NotesToFlashcard(
       noteViewModel.getNotesFromFolder(folderId = currentFolder.id, null)
 
       if (finalDeck != null) {
+        onProgress(notesProcessedCounter.get(), foldersProcessedCounter.incrementAndGet(), null)
         onSuccess(finalDeck)
       } else {
         onFailure(IllegalStateException("No deck was created"))
