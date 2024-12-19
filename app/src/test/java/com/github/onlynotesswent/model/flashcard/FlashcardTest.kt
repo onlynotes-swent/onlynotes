@@ -1,7 +1,7 @@
 package com.github.onlynotesswent.model.flashcard
 
 import com.github.onlynotesswent.model.common.Visibility
-import com.github.onlynotesswent.model.flashcard.deck.Deck
+import com.github.onlynotesswent.model.deck.Deck
 import com.google.firebase.Timestamp
 import org.junit.Test
 

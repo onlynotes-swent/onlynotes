@@ -3,7 +3,7 @@ package com.github.onlynotesswent.model.user
 import android.util.Log
 import com.github.onlynotesswent.model.common.Visibility
 import com.github.onlynotesswent.model.flashcard.UserFlashcard
-import com.github.onlynotesswent.model.flashcard.deck.Deck
+import com.github.onlynotesswent.model.deck.Deck
 import com.google.android.gms.tasks.Task
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth

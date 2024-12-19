@@ -2,7 +2,7 @@ package com.github.onlynotesswent.model.user
 
 import android.util.Log
 import com.github.onlynotesswent.model.flashcard.UserFlashcard
-import com.github.onlynotesswent.model.flashcard.deck.Deck
+import com.github.onlynotesswent.model.deck.Deck
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FieldValue

@@ -1,7 +1,7 @@
 package com.github.onlynotesswent.model.user
 
 import com.github.onlynotesswent.model.flashcard.UserFlashcard
-import com.github.onlynotesswent.model.flashcard.deck.Deck
+import com.github.onlynotesswent.model.deck.Deck
 import com.google.firebase.auth.FirebaseAuth
 
 /** Interface representing a repository for managing user data. */

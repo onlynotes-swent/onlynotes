@@ -1,4 +1,4 @@
-package com.github.onlynotesswent.model.flashcard.deck
+package com.github.onlynotesswent.model.deck
 
 data class PlayDeckHistory(
     // The list of all flashcards in the deck.

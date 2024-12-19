@@ -2,7 +2,7 @@ package com.github.onlynotesswent.model.user
 
 import com.github.onlynotesswent.model.common.Visibility
 import com.github.onlynotesswent.model.flashcard.UserFlashcard
-import com.github.onlynotesswent.model.flashcard.deck.Deck
+import com.github.onlynotesswent.model.deck.Deck
 import com.github.onlynotesswent.model.notification.Notification
 import com.github.onlynotesswent.model.notification.NotificationRepositoryFirestore
 import com.google.firebase.FirebaseApp
