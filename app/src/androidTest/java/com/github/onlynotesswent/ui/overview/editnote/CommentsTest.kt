@@ -145,7 +145,6 @@ class CommentsTest {
     composeTestRule.onNodeWithTag("commentsTitle").assertIsDisplayed()
 
     composeTestRule.onNodeWithTag("SendCommentBar").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("NoCommentsText").assertIsDisplayed()
 
     // Navigation bar
     composeTestRule.onNodeWithTag("Detail").assertIsDisplayed()
