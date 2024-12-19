@@ -10,6 +10,6 @@ val LightShade = Color(0xFFF8F8F8) // Ghost white
 val DarkShade = Color(0xFF191925)
 val LightContainer = Color(0xFF76ACCF) // Carolina blue
 val DarkContainer = Color(0xFF02739A)
-val LightBackground = Color(0xFFF7F3EF) // Isabeline
+val LightBackground = Color(0xFFEEF1F3) // Platinum,  Isabeline Color(0xFFF7F3EF)
 val DarkBackground = Color.Black
 val Danger = Color(0xFFF44336)

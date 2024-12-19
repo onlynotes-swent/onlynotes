@@ -28,6 +28,7 @@ import androidx.compose.material.icons.filled.FormatUnderlined
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -143,7 +144,11 @@ fun EditMarkdownScreen(
             navigationActions = navigationActions)
       },
       bottomBar = {
-        EditNoteNavigationMenu(navigationActions, selectedItem = Screen.EDIT_NOTE_MARKDOWN)
+          Column {
+              HorizontalDivider(
+                  color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f), thickness = 0.5.dp)
+              EditNoteNavigationMenu(navigationActions, selectedItem = Screen.EDIT_NOTE_MARKDOWN)
+          }
       },
       floatingActionButton = {
         if (!isEditing && selectedNote != null && selectedNote!!.isOwner(currentUser!!.uid)) {

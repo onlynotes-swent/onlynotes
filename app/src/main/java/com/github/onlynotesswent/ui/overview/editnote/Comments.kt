@@ -15,6 +15,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -74,15 +75,19 @@ fun CommentsScreen(
             })
       },
       bottomBar = {
-        EditNoteNavigationMenu(
-            navigationActions = navigationActions,
-            selectedItem = Screen.EDIT_NOTE_COMMENT,
-            onClick = {
-              val commentsNotEmpty = updatedComments.commentsList.filter { it.content.isNotEmpty() }
-              noteViewModel.updateNote(
-                  note!!.copy(comments = Note.CommentCollection(commentsNotEmpty)))
-              noteViewModel.getNoteById(note!!.id)
-            })
+          Column {
+              HorizontalDivider(
+                  color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f), thickness = 0.5.dp)
+              EditNoteNavigationMenu(
+                  navigationActions = navigationActions,
+                  selectedItem = Screen.EDIT_NOTE_COMMENT,
+                  onClick = {
+                      val commentsNotEmpty = updatedComments.commentsList.filter { it.content.isNotEmpty() }
+                      noteViewModel.updateNote(
+                          note!!.copy(comments = Note.CommentCollection(commentsNotEmpty)))
+                      noteViewModel.getNoteById(note!!.id)
+                  })
+          }
       }) { paddingValues ->
         if (currentUser == null) {
           ErrorScreen("User not found. Please sign out then in again.")

@@ -28,6 +28,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.outlined.Clear
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -113,36 +114,48 @@ fun EditNoteScreen(
       },
       modifier = Modifier.testTag("editNoteScreen"),
       topBar = {
-        EditNoteGeneralTopBar(
-            noteViewModel = noteViewModel,
-            userViewModel = userViewModel,
-            navigationActions = navigationActions,
-            actions = {
-              if (note != null && currentUser != null && note!!.isOwner(currentUser!!.uid)) {
-                SaveButton(
-                    noteTitle = noteTitle,
-                    note = note!!,
-                    visibility = visibility,
-                    courseCode = courseCode,
-                    courseName = courseName,
-                    courseYear = courseYear,
-                    noteViewModel = noteViewModel)
-                // todo Additional check might be useless if checking is done before
-              } else if (note != null &&
-                  (note!!.visibility == Visibility.PUBLIC ||
-                      (note!!.visibility == Visibility.FRIENDS &&
-                          note!!.userId in currentUser!!.friends.following))) {
-                SavedNotesButton(
-                    note = note!!, userViewModel = userViewModel, noteViewModel = noteViewModel)
-              }
-            },
-            isModified = isModified)
+          Column {
+              EditNoteGeneralTopBar(
+                  noteViewModel = noteViewModel,
+                  userViewModel = userViewModel,
+                  navigationActions = navigationActions,
+                  actions = {
+                      if (note != null && currentUser != null && note!!.isOwner(currentUser!!.uid)) {
+                          SaveButton(
+                              noteTitle = noteTitle,
+                              note = note!!,
+                              visibility = visibility,
+                              courseCode = courseCode,
+                              courseName = courseName,
+                              courseYear = courseYear,
+                              noteViewModel = noteViewModel)
+                          // todo Additional check might be useless if checking is done before
+                      } else if (note != null &&
+                          (note!!.visibility == Visibility.PUBLIC ||
+                                  (note!!.visibility == Visibility.FRIENDS &&
+                                          note!!.userId in currentUser!!.friends.following))) {
+                          SavedNotesButton(
+                              note = note!!, userViewModel = userViewModel, noteViewModel = noteViewModel)
+                      }
+                  },
+                  isModified = isModified)
+
+              HorizontalDivider(
+                  color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f), thickness = 0.5.dp)
+          }
+
       },
       bottomBar = {
-        EditNoteNavigationMenu(
-            navigationActions = navigationActions,
-            selectedItem = Screen.EDIT_NOTE,
-            isModified = isModified)
+          Column {
+              HorizontalDivider(
+                  color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f), thickness = 0.5.dp)
+
+              EditNoteNavigationMenu(
+                  navigationActions = navigationActions,
+                  selectedItem = Screen.EDIT_NOTE,
+                  isModified = isModified)
+          }
+
       }) { paddingValues ->
         if (currentUser == null) {
           ErrorScreen("User not found. Please sign out then in again.")
