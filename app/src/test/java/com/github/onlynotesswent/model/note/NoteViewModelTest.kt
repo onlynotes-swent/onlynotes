@@ -29,7 +29,19 @@ class NoteViewModelTest {
           title = "title",
           date = Timestamp.now(),
           lastModified = Timestamp.now(),
-          visibility = Visibility.DEFAULT,
+          visibility = Visibility.PUBLIC,
+          userId = "1",
+          folderId = "1",
+          noteCourse = Course("CS-100", "Sample Course", 2024, "path"),
+      )
+
+  private val friendNote =
+      Note(
+          id = "2",
+          title = "title2",
+          date = Timestamp.now(),
+          lastModified = Timestamp.now(),
+          visibility = Visibility.FRIENDS,
           userId = "1",
           folderId = "1",
           noteCourse = Course("CS-100", "Sample Course", 2024, "path"),
@@ -60,6 +72,16 @@ class NoteViewModelTest {
     }
     noteViewModel.getPublicNotes()
     assertEquals(noteViewModel.publicNotes.value, listOf(testNote))
+  }
+
+  @Test
+  fun getNotesFromFollowingListCallsRepository() {
+    `when`(mockNoteRepository.getNotesFromFollowingList(any(), any(), any())).thenAnswer {
+      val onSuccess: (List<Note>) -> Unit = it.getArgument(1)
+      onSuccess(listOf(friendNote))
+    }
+    noteViewModel.getNotesFromFollowingList(listOf("1"))
+    assertEquals(noteViewModel.friendsNotes.value, listOf(friendNote))
   }
 
   @Test

@@ -1,6 +1,10 @@
 package com.github.onlynotesswent.ui.common
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.Image
@@ -23,14 +27,19 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.ArrowDropUp
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.CheckBoxOutlineBlank
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.HideImage
 import androidx.compose.material.icons.filled.ImageSearch
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -40,17 +49,22 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.core.net.toUri
@@ -79,7 +93,7 @@ import com.github.onlynotesswent.utils.PictureTaker
  */
 @Composable
 fun FlashcardViewItem(
-    flashcard: Flashcard,
+    flashcard: State<Flashcard>,
     deckViewModel: DeckViewModel,
     flashcardViewModel: FlashcardViewModel,
     fileViewModel: FileViewModel,
@@ -102,78 +116,66 @@ fun FlashcardViewItem(
         mode = "Edit")
   }
 
-  Card(modifier = Modifier.testTag("flashcardItem--${flashcard.id}").fillMaxWidth()) {
-    Box(contentAlignment = Alignment.CenterStart, modifier = Modifier.padding(10.dp)) {
-      if (flashcard.isMCQ()) {
-        Text(
-            stringResource(R.string.mcq),
-            style = Typography.bodyLarge,
-            fontStyle = FontStyle.Italic,
-            modifier = Modifier.align(Alignment.TopStart).testTag("flashcardMCQ--${flashcard.id}"))
-      }
-      // Show front and options icon
-      Box(modifier = Modifier.align(Alignment.TopEnd)) {
-        Icon(
-            modifier =
-                Modifier.testTag("flashcardOptions--${flashcard.id}").clickable(
-                    enabled = belongsToUser) {
-                      dropdownMenuExpanded.value = true
-                    },
-            imageVector = Icons.Filled.MoreVert,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.onPrimaryContainer)
-        if (dropdownMenuExpanded.value) {
-          FlashcardItemDropdownMenu(
-              flashcard,
-              deckViewModel,
-              flashcardViewModel,
-              dropdownMenuExpanded,
-              editDialogExpanded)
+  ElevatedCard(
+      modifier =
+          Modifier.testTag("flashcardItem--${flashcard.value.id}")
+              .fillMaxWidth()
+              .heightIn(min = 160.dp)) {
+        Box(contentAlignment = Alignment.Center, modifier = Modifier.padding(10.dp)) {
+          if (flashcard.value.isMCQ()) {
+            Text(
+                stringResource(R.string.mcq),
+                style = Typography.bodyLarge,
+                fontStyle = FontStyle.Italic,
+                modifier =
+                    Modifier.align(Alignment.TopStart)
+                        .testTag("flashcardMCQ--${flashcard.value.id}"))
+          }
+          // Show front and options icon
+          Column(modifier = Modifier.align(Alignment.TopEnd)) {
+            Icon(
+                modifier =
+                    Modifier.testTag("flashcardOptions--${flashcard.value.id}").clickable(
+                        enabled = belongsToUser) {
+                          dropdownMenuExpanded.value = true
+                        },
+                imageVector = Icons.Filled.MoreVert,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onPrimaryContainer)
+            AnimatedVisibility(
+                dropdownMenuExpanded.value,
+                enter = expandVertically(tween(700)),
+                exit = shrinkVertically(tween(700))) {
+                  FlashcardItemDropdownMenu(
+                      flashcard,
+                      deckViewModel,
+                      flashcardViewModel,
+                      dropdownMenuExpanded,
+                      editDialogExpanded)
+                }
+          }
+          Column(
+              horizontalAlignment = Alignment.CenterHorizontally,
+              verticalArrangement = Arrangement.SpaceAround,
+              modifier =
+                  Modifier.testTag("flashcardItemColumn")
+                      .semantics(mergeDescendants = true, properties = {})) {
+                Text(
+                    flashcard.value.front,
+                    style = Typography.bodyMedium,
+                    modifier =
+                        Modifier.testTag("flashcardFront--${flashcard.value.id}").padding(10.dp))
+                FlashcardImage(flashcard, fileViewModel)
+                HorizontalDivider(modifier = Modifier.height(5.dp).padding(5.dp))
+                // Show back
+                Text(
+                    flashcard.value.back,
+                    style = Typography.bodyMedium,
+                    modifier =
+                        Modifier.testTag("flashcardBack--${flashcard.value.id}").padding(20.dp))
+              }
         }
       }
-      Column(
-          horizontalAlignment = Alignment.CenterHorizontally,
-          verticalArrangement = Arrangement.spacedBy(10.dp),
-          modifier =
-              Modifier.testTag("flashcardItemColumn")
-                  .semantics(mergeDescendants = true, properties = {})) {
-            Text(
-                flashcard.front,
-                style = Typography.bodyMedium,
-                modifier = Modifier.testTag("flashcardFront--${flashcard.id}"))
-            if (flashcard.hasImage) {
-              // Show image
-              val imageUri: MutableState<String?> = remember { mutableStateOf(null) }
-              if (imageUri.value == null) {
-                LoadingIndicator(
-                    stringResource(R.string.image_is_being_downloaded),
-                    modifier =
-                        Modifier.fillMaxWidth().testTag("flashcardImageLoading--${flashcard.id}"),
-                    loadingIndicatorSize = 24.dp,
-                    spacerHeight = 5.dp,
-                    style = MaterialTheme.typography.bodySmall)
-                fileViewModel.downloadFile(
-                    flashcard.id,
-                    FileType.FLASHCARD_IMAGE,
-                    context = LocalContext.current,
-                    onSuccess = { file -> imageUri.value = file.absolutePath })
-              }
-              imageUri.value?.let {
-                Image(
-                    painter = rememberAsyncImagePainter(it),
-                    contentDescription = "Flashcard image",
-                    modifier = Modifier.height(100.dp).testTag("flashcardImage--${flashcard.id}"))
-              }
-            }
-            HorizontalDivider(modifier = Modifier.height(5.dp).padding(5.dp))
-            // Show back
-            Text(
-                flashcard.back,
-                style = Typography.bodyMedium,
-                modifier = Modifier.testTag("flashcardBack--${flashcard.id}"))
-          }
-    }
-  }
 }
 
 /**
@@ -415,6 +417,9 @@ fun FlashcardDialog(
                         if (hasImageBeenChanged.value) imageUri.value != null
                         else flashcard.value?.hasImage == true
 
+                    // Remove empty fake backs
+                    fakeBacks.value = fakeBacks.value.filter { it.isNotBlank() }
+
                     val newFlashcard: Flashcard =
                         flashcard.value?.copy(
                             front = front.value,
@@ -493,7 +498,7 @@ fun FlashcardDialog(
  */
 @Composable
 fun FlashcardItemDropdownMenu(
-    flashcard: Flashcard,
+    flashcard: State<Flashcard>,
     deckViewModel: DeckViewModel,
     flashcardViewModel: FlashcardViewModel,
     dropdownMenuExpanded: MutableState<Boolean>,
@@ -506,7 +511,7 @@ fun FlashcardItemDropdownMenu(
         DropdownMenuItem(
             text = @Composable { Text(stringResource(R.string.edit_maj)) },
             onClick = {
-              flashcardViewModel.selectFlashcard(flashcard)
+              flashcardViewModel.selectFlashcard(flashcard.value)
               editDialogExpanded.value = true
               dropdownMenuExpanded.value = false
             },
@@ -519,14 +524,269 @@ fun FlashcardItemDropdownMenu(
                   deckViewModel.selectedDeck.value?.copy(
                       flashcardIds =
                           deckViewModel.selectedDeck.value!!.flashcardIds.filter {
-                            it != flashcard.id
+                            it != flashcard.value.id
                           })
               newDeck?.let {
                 deckViewModel.updateDeck(it)
                 deckViewModel.selectDeck(it)
               }
-              flashcardViewModel.deleteFlashcard(flashcard)
+              flashcardViewModel.deleteFlashcard(flashcard.value)
               dropdownMenuExpanded.value = false
             })
       }
+}
+
+/**
+ * Composable function that displays a flashcard item for playing. The flashcard can be either a
+ * normal flashcard or a multiple choice question (MCQ). If the flashcard is null, a loading
+ * indicator is displayed.
+ *
+ * @param flashcardState The state of the flashcard to be displayed.
+ * @param fileViewModel The ViewModel for file-related data.
+ * @param onCorrect The callback to be invoked when the correct choice is selected (for MCQ).
+ * @param onIncorrect The callback to be invoked when an incorrect choice is selected (for MCQ).
+ */
+@Composable
+fun FlashcardPlayItem(
+    flashcardState: State<Flashcard?>,
+    fileViewModel: FileViewModel,
+    onCorrect: () -> Unit = {},
+    onIncorrect: () -> Unit = {},
+) {
+  if (flashcardState.value == null) {
+    LoadingIndicator(stringResource(R.string.loading_flashcard))
+  } else {
+    val flashcard = remember { derivedStateOf { flashcardState.value!! } }
+    if (flashcard.value.isMCQ()) {
+      McqPlayItem(flashcard, fileViewModel, onCorrect, onIncorrect)
+    } else {
+      NormalFlashcardPlayItem(flashcard, fileViewModel)
+    }
+  }
+}
+
+/**
+ * Enum class representing the flip state of a flashcard.
+ *
+ * @property angle The angle of rotation for the flip state.
+ */
+enum class FlipState(val angle: Float) {
+  FRONT(0f),
+  BACK(180f);
+  /** Gets the next flip state. */
+  val next: FlipState
+    get() =
+        when (this) {
+          FRONT -> BACK
+          BACK -> FRONT
+        }
+}
+
+/**
+ * Composable function that displays a normal flashcard item for playing. The flashcard can be
+ * flipped to show the front and back sides.
+ *
+ * @param flashcard The flashcard to be displayed.
+ * @param fileViewModel The ViewModel for file-related data.
+ */
+@Composable
+fun NormalFlashcardPlayItem(
+    flashcard: State<Flashcard>,
+    fileViewModel: FileViewModel,
+) {
+  val flipState = remember { mutableStateOf(FlipState.FRONT) }
+  val rotation =
+      animateFloatAsState(
+              targetValue = flipState.value.angle,
+              animationSpec = tween(durationMillis = 600, easing = FastOutSlowInEasing),
+              label = "rotationFloatState")
+          .value
+
+  ElevatedCard(
+      modifier =
+          Modifier.fillMaxWidth(0.9f)
+              .testTag("flashcard")
+              .padding(5.dp)
+              .graphicsLayer {
+                rotationY =
+                    when (flipState.value) {
+                      FlipState.FRONT -> 360f - rotation // same rotation for both sides
+                      FlipState.BACK -> rotation
+                    }
+                cameraDistance = 15 * density
+              }
+              .clickable { flipState.value = flipState.value.next }) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.SpaceEvenly,
+            modifier =
+                Modifier.fillMaxWidth()
+                    .padding(vertical = 30.dp)
+                    .heightIn(min = 200.dp, max = 400.dp)) {
+              if (rotation <= 90f || rotation >= 270f) {
+                Text(
+                    flashcard.value.front,
+                    style = Typography.bodyLarge,
+                    fontWeight = FontWeight(450),
+                    modifier = Modifier.testTag("flashcardFront"))
+                FlashcardImage(flashcard, fileViewModel)
+              } else {
+                Text(
+                    flashcard.value.back,
+                    style = Typography.bodyLarge,
+                    fontWeight = FontWeight(450),
+                    modifier = Modifier.testTag("flashcardBack").graphicsLayer { rotationY = 180f })
+              }
+            }
+      }
+}
+
+/**
+ * Composable function that displays a multiple choice question (MCQ) flashcard item. The flashcard
+ * item includes the front of the flashcard, and multiple choices for the back, randomly shuffled.
+ * The user can select one of the choices, and the item will display whether the choice was correct
+ * or incorrect.
+ *
+ * @param flashcard The flashcard to be displayed.
+ * @param fileViewModel The ViewModel for file-related data.
+ * @param onCorrect The callback to be invoked when the correct choice is selected.
+ * @param onIncorrect The callback to be invoked when an incorrect choice is selected.
+ * @param choice The state for the selected choice.
+ */
+@Composable
+fun McqPlayItem(
+    flashcard: State<Flashcard>,
+    fileViewModel: FileViewModel,
+    onCorrect: () -> Unit,
+    onIncorrect: () -> Unit,
+    choice: MutableState<Int?> = remember { mutableStateOf(null) }
+) {
+  val backs =
+      listOf(flashcard.value.back) +
+          flashcard.value.fakeBacks.filter { it != flashcard.value.back && it.isNotBlank() }
+  val shuffledIndexes = backs.indices.shuffled()
+
+  ElevatedCard(modifier = Modifier.fillMaxWidth(0.9f).padding(5.dp).testTag("flashcard")) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(20.dp),
+        modifier =
+            Modifier.fillMaxWidth()
+                .padding(vertical = 30.dp, horizontal = 10.dp)
+                .heightIn(min = 200.dp, max = 600.dp)) {
+          Text(
+              flashcard.value.front,
+              style = Typography.bodyLarge,
+              fontWeight = FontWeight(550),
+              modifier = Modifier.testTag("flashcardFront"))
+          FlashcardImage(flashcard, fileViewModel)
+          HorizontalDivider(modifier = Modifier.height(5.dp).fillMaxWidth().padding(8.dp))
+          shuffledIndexes.forEach { index ->
+            val color = remember { mutableStateOf(Color.Gray) }
+            color.value =
+                if (choice.value != null && index == 0) {
+                  Color.Green.copy(green = 0.6f, blue = 0.3f, red = 0.3f)
+                } else if (choice.value == index) {
+                  Color.Red.copy(red = 0.7f, blue = 0.3f)
+                } else {
+                  MaterialTheme.colorScheme.onSurface
+                }
+            ElevatedCard(
+                modifier =
+                    Modifier.fillMaxWidth(0.7f)
+                        .padding(horizontal = 10.dp)
+                        .testTag("flashcardChoice"),
+                onClick = {
+                  if (choice.value == null) {
+                    choice.value = index
+                    if (index == 0) {
+                      onCorrect()
+                    } else {
+                      onIncorrect()
+                    }
+                  }
+                },
+                elevation =
+                    if (choice.value == index)
+                        CardDefaults.elevatedCardElevation(defaultElevation = 4.dp)
+                    else CardDefaults.elevatedCardElevation(defaultElevation = 2.dp)) {
+                  Row(
+                      modifier = Modifier.fillMaxWidth().padding(5.dp),
+                      horizontalArrangement = Arrangement.spacedBy(10.dp),
+                      verticalAlignment = Alignment.CenterVertically) {
+                        AnimatedContent(choice.value?.let { index == 0 }, label = "") {
+                          when (it) {
+                            null ->
+                                Icon(
+                                    imageVector = Icons.Default.CheckBoxOutlineBlank,
+                                    contentDescription = null,
+                                    tint = color.value,
+                                    modifier =
+                                        Modifier.padding(5.dp).testTag("flashcardChoiceIcon"))
+                            true ->
+                                Icon(
+                                    imageVector = Icons.Default.Check,
+                                    contentDescription = null,
+                                    tint = color.value,
+                                    modifier = Modifier.padding(5.dp).testTag("flashcardCheckIcon"))
+                            false ->
+                                Icon(
+                                    imageVector = Icons.Default.Close,
+                                    contentDescription = null,
+                                    tint = color.value,
+                                    modifier = Modifier.padding(5.dp).testTag("flashcardWrongIcon"))
+                          }
+                        }
+                        Text(
+                            backs[index],
+                            style = Typography.bodyMedium,
+                            color = color.value,
+                            modifier = Modifier.testTag("flashcardChoice--$index"))
+                      }
+                }
+          }
+        }
+  }
+}
+
+/**
+ * Composable function that displays an image for a flashcard. The image is downloaded from Firebase
+ * Storage if it hasn't been downloaded yet.
+ *
+ * @param flashcard The flashcard to display the image for.
+ * @param fileViewModel The ViewModel for file-related data.
+ * @param imageUri The URI of the image.
+ * @param padding The padding around the image.
+ */
+@Composable
+fun FlashcardImage(
+    flashcard: State<Flashcard>,
+    fileViewModel: FileViewModel,
+    imageUri: MutableState<String?> = remember { mutableStateOf(null) },
+    padding: Dp = 10.dp,
+) {
+  if (compareUID(imageUri.value, flashcard.value.id, FileType.FLASHCARD_IMAGE.fileExtension)) {
+    Image(
+        painter = rememberAsyncImagePainter(imageUri.value!!),
+        contentDescription = "Flashcard image",
+        modifier =
+            Modifier.height(100.dp)
+                .testTag("flashcardImage--${flashcard.value.id}")
+                .padding(padding))
+  } else if (flashcard.value.hasImage) {
+    fileViewModel.downloadFile(
+        flashcard.value.id,
+        FileType.FLASHCARD_IMAGE,
+        context = LocalContext.current,
+        onSuccess = { file -> imageUri.value = file.absolutePath })
+    LoadingIndicator(
+        stringResource(R.string.image_is_being_downloaded),
+        modifier =
+            Modifier.fillMaxWidth()
+                .testTag("flashcardImageLoading--${flashcard.value.id}")
+                .padding(padding),
+        loadingIndicatorSize = 24.dp,
+        spacerHeight = 5.dp,
+        style = MaterialTheme.typography.bodySmall)
+  }
 }
