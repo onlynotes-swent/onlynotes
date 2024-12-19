@@ -93,7 +93,7 @@ fun EditMarkdownScreen(
   val selectedNote by noteViewModel.selectedNote.collectAsState()
   val currentUser by userViewModel.currentUser.collectAsState()
   var markdownContent: File? by remember { mutableStateOf(null) }
-  var isEditing by rememberSaveable { mutableStateOf(false) } // Add this line
+  var isEditing by rememberSaveable { mutableStateOf(false) }
 
   // Function to download and set the Markdown file
   LaunchedEffect(Unit) {
@@ -111,15 +111,22 @@ fun EditMarkdownScreen(
               File(context.cacheDir, "${selectedNote!!.id}.md").apply {
                 if (!exists()) createNewFile()
               }
-
           markdownContent = file
         },
         onFailure = { exception ->
-          Toast.makeText(context, "Error downloading file: ${exception.message}", Toast.LENGTH_LONG)
+          Toast.makeText(context, "An error occurred while downloading the file", Toast.LENGTH_LONG)
               .show()
+          Log.e("EditMarkdownScreen", "Error downloading file: ${exception.message}")
         })
   }
 
+  /**
+   * Function to update (overwrite) the markdown file with the current state of the RichTextEditor.
+   *
+   * @param context The context used to display error messages.
+   * @param uid The unique identifier of the note. This is also the uid of the file.
+   * @param fileViewModel The ViewModel used to update the file in the repository.
+   */
   @Suppress("kotlin:S6300") // as there is no need to encrypt file
   fun updateMarkdownFile(context: Context, uid: String, fileViewModel: FileViewModel) {
     try {
@@ -129,7 +136,7 @@ fun EditMarkdownScreen(
         fileViewModel.updateFile(uid = uid, fileUri = fileUri, fileType = FileType.NOTE_TEXT)
       }
     } catch (e: IOException) {
-      Toast.makeText(context, "Error updating file: ${e.message}", Toast.LENGTH_LONG).show()
+      Toast.makeText(context, "An error occurred while updating the file", Toast.LENGTH_LONG).show()
       Log.e("FileUpdate", "Error updating file: ${e.message}")
     }
   }
@@ -213,7 +220,6 @@ fun EditorControls(modifier: Modifier, state: RichTextState, onSaveClick: () -> 
       } else {
         state.addSpanStyle(SpanStyle(fontWeight = FontWeight.Bold))
       }
-
       if (italicSelected) {
         state.addSpanStyle(SpanStyle(fontStyle = FontStyle.Italic))
       } else {
