@@ -1,4 +1,4 @@
-package com.github.onlynotesswent.model.flashcard.deck
+package com.github.onlynotesswent.model.deck
 
 import com.github.onlynotesswent.model.common.Visibility
 import com.google.firebase.Timestamp
