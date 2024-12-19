@@ -71,6 +71,8 @@ import androidx.compose.ui.window.Dialog
 import androidx.core.net.toUri
 import coil.compose.rememberAsyncImagePainter
 import com.github.onlynotesswent.R
+import com.github.onlynotesswent.model.deck.Deck
+import com.github.onlynotesswent.model.deck.DeckViewModel
 import com.github.onlynotesswent.model.file.FileType
 import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.flashcard.Flashcard
@@ -209,11 +211,11 @@ fun FlashcardDialog(
   val front = remember { mutableStateOf(flashcard.value?.front ?: "") }
   val back = remember { mutableStateOf(flashcard.value?.back ?: "") }
   val fakeBacks = remember { mutableStateOf(flashcard.value?.fakeBacks ?: listOf()) }
-  var showFakeBacksDetails = remember { mutableStateOf(false) }
+  val showFakeBacksDetails = remember { mutableStateOf(false) }
 
   Dialog(onDismissRequest = onDismissRequest) {
     Card(modifier = Modifier.testTag("flashcardDialog--$mode").padding(5.dp)) {
-      if (flashcard.value == null && mode == stringResource(R.string.edit_maj)) {
+      if (flashcard.value == null && mode == stringResource(R.string.update)) {
         LoadingIndicator(stringResource(R.string.loading_flashcard))
       } else {
         Column(
@@ -401,7 +403,7 @@ fun FlashcardDialog(
                                 verticalAlignment = Alignment.CenterVertically) {
                                   IconButton(
                                       modifier = Modifier.testTag("addFakeBackButton"),
-                                      onClick = { fakeBacks.value = fakeBacks.value + "" }) {
+                                      onClick = { fakeBacks.value += "" }) {
                                         Icon(
                                             imageVector = Icons.Default.Add,
                                             contentDescription = "Add fake back")
@@ -515,7 +517,7 @@ fun FlashcardItemDropdownMenu(
       expanded = dropdownMenuExpanded.value,
       onDismissRequest = { dropdownMenuExpanded.value = false }) {
         DropdownMenuItem(
-            text = @Composable { Text(stringResource(R.string.edit_maj)) },
+            text = @Composable { Text(stringResource(R.string.update)) },
             onClick = {
               flashcardViewModel.selectFlashcard(flashcard.value)
               editDialogExpanded.value = true
@@ -542,29 +544,21 @@ fun FlashcardItemDropdownMenu(
       }
 }
 
-/**
- * Composable function that displays a flashcard item for playing. The flashcard can be either a
- * normal flashcard or a multiple choice question (MCQ). If the flashcard is null, a loading
- * indicator is displayed.
- *
- * @param flashcardState The state of the flashcard to be displayed.
- * @param fileViewModel The ViewModel for file-related data.
- * @param onCorrect The callback to be invoked when the correct choice is selected (for MCQ).
- * @param onIncorrect The callback to be invoked when an incorrect choice is selected (for MCQ).
- */
 @Composable
 fun FlashcardPlayItem(
     flashcardState: State<Flashcard?>,
     fileViewModel: FileViewModel,
     onCorrect: () -> Unit = {},
     onIncorrect: () -> Unit = {},
+    choice: MutableState<Int?> = remember { mutableStateOf(null) },
+    isReview: Boolean = false
 ) {
   if (flashcardState.value == null) {
     LoadingIndicator(stringResource(R.string.loading_flashcard))
   } else {
     val flashcard = remember { derivedStateOf { flashcardState.value!! } }
-    if (flashcard.value.isMCQ()) {
-      McqPlayItem(flashcard, fileViewModel, onCorrect, onIncorrect)
+    if (flashcard.value.isMCQ() && !isReview) {
+      McqPlayItem(flashcard, fileViewModel, onCorrect, onIncorrect, choice)
     } else {
       NormalFlashcardPlayItem(flashcard, fileViewModel)
     }
@@ -670,7 +664,7 @@ fun McqPlayItem(
   val backs =
       listOf(flashcard.value.back) +
           flashcard.value.fakeBacks.filter { it != flashcard.value.back && it.isNotBlank() }
-  val shuffledIndexes = backs.indices.shuffled()
+  val shuffledIndexes = remember { backs.indices.shuffled() }
 
   ElevatedCard(modifier = Modifier.fillMaxWidth(0.9f).padding(5.dp).testTag("flashcard")) {
     Column(

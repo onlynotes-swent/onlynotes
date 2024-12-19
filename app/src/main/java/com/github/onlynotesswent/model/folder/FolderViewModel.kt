@@ -7,13 +7,17 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.github.onlynotesswent.model.cache.CacheDatabase
+import com.github.onlynotesswent.model.deck.DeckViewModel
 import com.github.onlynotesswent.model.note.NoteViewModel
 import com.google.firebase.Firebase
+import com.google.firebase.Timestamp
 import com.google.firebase.firestore.firestore
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
 
 class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
 
@@ -214,17 +218,20 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
    * @param isDeckView A flag indicating if the folder is a deck view.
    * @param onSuccess The function to call when the root folders are retrieved successfully.
    * @param onFailure The function to call when the root folders fail to be retrieved.
+   * @param useCache Whether to update data from cache. Should be true only if [userId] is the
+   *   current user.
    */
   fun getRootFoldersFromUserId(
       userId: String,
       isDeckView: Boolean = false,
       onSuccess: (List<Folder>) -> Unit = {},
       onFailure: (Exception) -> Unit = {},
+      useCache: Boolean = false
   ) {
     if (isDeckView) {
-      getRootDeckFoldersFromUserId(userId, onSuccess, onFailure)
+      getRootDeckFoldersFromUserId(userId, onSuccess, onFailure, useCache)
     } else {
-      getRootNoteFoldersFromUserId(userId, onSuccess, onFailure)
+      getRootNoteFoldersFromUserId(userId, onSuccess, onFailure, useCache)
     }
   }
 
@@ -235,6 +242,7 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
    * @param onSuccess The function to call when the root folders are retrieved successfully.
    * @param onFailure The function to call when the root folders fail to be retrieved.
    * @param useCache Whether to update data from cache. Should be true only if [userId] is the
+   *   current user.
    */
   fun getRootNoteFoldersFromUserId(
       userId: String,
@@ -289,6 +297,8 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
    * @param onFolderNotFound The function to call when the folder is not found.
    * @param onSuccess The function to call when the folders are retrieved successfully.
    * @param onFailure The function to call when the folder fails to be retrieved.
+   * @param useCache Whether to update data from cache. Should be true only if userId of the folder
+   *   is the current user.
    */
   fun getDeckFoldersByName(
       name: String,
@@ -390,27 +400,6 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
           useCache = useCache)
     }
   }
-  /**
-   * Updates an existing folder without changing the state of the ViewModel.
-   *
-   * @param folder The folder with updated information.
-   * @param onSuccess The function to call when the folder is updated successfully.
-   * @param onFailure The function to call when the folder fails to be updated.
-   * @param useCache Whether to update data from cache. Should be true only if userId of the folder
-   *   is the current user.
-   * @param isDeckView A flag indicating if the folder is a deck view.
-   */
-  fun updateFolderNoStateUpdate(
-      folder: Folder,
-      onSuccess: () -> Unit = {},
-      onFailure: (Exception) -> Unit = {},
-      useCache: Boolean = false
-  ) {
-    viewModelScope.launch {
-      repository.updateFolder(
-          folder = folder, onSuccess = { onSuccess() }, onFailure = onFailure, useCache = useCache)
-    }
-  }
 
   /**
    * Retrieves all children folders of a parent folder.
@@ -446,6 +435,8 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
    * @param onSuccess A callback that receives a list of `Folder` objects on successful retrieval.
    * @param onFailure A callback that receives an `Exception` in case of a failure. Defaults to an
    *   empty lambda if not provided.
+   *     @param useCache Whether to update data from cache. Should be true only if userId of the
+   *       folder is the current user.
    */
   fun getSubFoldersOfNoStateUpdate(
       parentFolderId: String,
@@ -528,6 +519,89 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
           },
           onFailure = onFailure,
           useCache = useCache)
+    }
+  }
+
+  /**
+   * Deletes all elements from a folder.
+   *
+   * @param folder The folder to delete notes from.
+   * @param deckViewModel The Deck view model used to delete the folder decks.
+   * @param onSuccess The function to call when the folder contents are deleted successfully.
+   * @param onFailure The function to call when the folder contents fail to be deleted.
+   * @param useCache Whether to update data from cache. Should be true only if userId of the folder
+   *   is the current user.
+   */
+  fun deleteFolderContents(
+      folder: Folder,
+      deckViewModel: DeckViewModel,
+      onSuccess: () -> Unit = {},
+      onFailure: (Exception) -> Unit = {},
+      useCache: Boolean = false
+  ) {
+    viewModelScope.launch {
+      repository.deleteFolderContents(
+          folder = folder,
+          deckViewModel = deckViewModel,
+          onSuccess = {
+            getSubFoldersOf(folder.id)
+            onSuccess()
+          },
+          onFailure = onFailure,
+          useCache = useCache)
+    }
+  }
+
+  /** Retrieves a folder by its ID asynchronously. */
+  @OptIn(ExperimentalCoroutinesApi::class)
+  suspend fun getFolderByIdNoStateUpdateAsync(folderId: String): Folder? {
+    return suspendCancellableCoroutine { continuation ->
+      getFolderByIdNoStateUpdate(
+          folderId,
+          onSuccess = { folder ->
+            continuation.resume(folder) { throwable -> continuation.cancel(throwable) }
+          })
+    }
+  }
+
+  /**
+   * Function checks if the folder is a subfolder of another folder.
+   *
+   * @param folder The folder to check if it is a subfolder.
+   * @param parentFolderId The ID of the parent folder.
+   * @return True if the folder is a subfolder, false otherwise.
+   */
+  private suspend fun isSubFolder(folder: Folder, parentFolderId: String): Boolean {
+    var currentFolder = folder
+    while (currentFolder.parentFolderId != null) {
+      if (currentFolder.parentFolderId == parentFolderId) {
+        return true
+      }
+      currentFolder =
+          getFolderByIdNoStateUpdateAsync(currentFolder.parentFolderId!!) ?: return false
+    }
+    return false
+  }
+
+  /**
+   * Moves a folder to another folder.
+   *
+   * @param chosenFolder The folder to move the selected folder to.
+   * @param onSubFolderError The function to call when the chosen folder is a subfolder of the
+   *   selected folder.
+   * @param onSuccess The function to call when the folder is moved successfully.
+   */
+  fun moveFolder(chosenFolder: Folder?, onSubFolderError: () -> Unit, onSuccess: () -> Unit) {
+    viewModelScope.launch {
+      if (chosenFolder != null && isSubFolder(chosenFolder, selectedFolder.value!!.id)) {
+        onSubFolderError()
+      } else {
+        updateFolder(
+            selectedFolder.value!!.copy(
+                parentFolderId = chosenFolder?.id, lastModified = Timestamp.now()))
+        clearSelectedFolder()
+        onSuccess()
+      }
     }
   }
 }

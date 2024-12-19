@@ -1,4 +1,4 @@
-package com.github.onlynotesswent.model.flashcard.deck
+package com.github.onlynotesswent.model.deck
 
 interface DeckRepository {
 
@@ -41,6 +41,19 @@ interface DeckRepository {
    * @return all decks for the given user.
    */
   fun getDecksFrom(userId: String, onSuccess: (List<Deck>) -> Unit, onFailure: (Exception) -> Unit)
+
+  /**
+   * Retrieves all root decks from a user (folderId == null).
+   *
+   * @param userId The ID of the user to retrieve root decks for.
+   * @param onSuccess Callback to be invoked with the retrieved root decks.
+   * @param onFailure Callback to be invoked if an error occurs.
+   */
+  fun getRootDecksFromUserId(
+      userId: String,
+      onSuccess: (List<Deck>) -> Unit,
+      onFailure: (Exception) -> Unit,
+  )
 
   /**
    * Retrieves the deck with the given identifier.
@@ -128,4 +141,17 @@ interface DeckRepository {
    * @param onFailure The callback to be invoked if an error occurs.
    */
   fun deleteDeck(deck: Deck, onSuccess: () -> Unit, onFailure: (Exception) -> Unit)
+
+  /**
+   * Deletes all decks from a folder.
+   *
+   * @param folderId The ID of the folder to delete decks from.
+   * @param onSuccess Callback to be invoked if the decks are deleted successfully.
+   * @param onFailure Callback to be invoked if an error occurs.
+   */
+  fun deleteDecksFromFolder(
+      folderId: String,
+      onSuccess: () -> Unit,
+      onFailure: (Exception) -> Unit,
+  )
 }

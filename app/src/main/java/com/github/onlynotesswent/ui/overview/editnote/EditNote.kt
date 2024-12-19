@@ -250,7 +250,7 @@ fun EditNoteGeneralTopBar(
                     oldValue = "{folderId}",
                     newValue = noteViewModel.selectedNote.value?.folderId!!))
           } else {
-            navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
+            navigationActions.navigateTo(TopLevelDestinations.NOTE_OVERVIEW)
           }
           noteViewModel.selectedNote(null)
         },
@@ -316,7 +316,7 @@ fun NoteSection(
 
   Column(modifier = Modifier.fillMaxWidth()) {
     Text(text = "Visibility", style = MaterialTheme.typography.titleMedium)
-    SelectVisibility(visibility, currentUserId, note.userId) { onVisibilityChange(it) }
+    SelectVisibility(visibility, currentUserId == note.userId) { onVisibilityChange(it) }
   }
 
   Spacer(modifier = Modifier.height(8.dp))
@@ -501,8 +501,15 @@ fun DeleteButton(
           text = stringResource(R.string.delete_note_text),
           onConfirm = {
             noteViewModel.deleteNoteById(note.id, note.userId)
+            if (noteViewModel.selectedNote.value?.folderId != null) {
+              navigationActions.navigateTo(
+                  Screen.FOLDER_CONTENTS.replace(
+                      oldValue = "{folderId}",
+                      newValue = noteViewModel.selectedNote.value?.folderId!!))
+            } else {
+              navigationActions.navigateTo(TopLevelDestinations.NOTE_OVERVIEW)
+            }
             noteViewModel.selectedNote(null)
-            navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
           },
           onDismiss = {
             // Close the dialog without deleting
