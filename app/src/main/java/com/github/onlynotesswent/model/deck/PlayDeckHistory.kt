@@ -14,18 +14,18 @@ data class PlayDeckHistory(
   ) : this(
       listOfAllFlashcard =
           List(MAX_LIST_LENGTH) {
-            if (it == 1) {
+            if (it == 0) {
               currentFlashcardId
             } else {
               null
             }
           },
       currentFlashcardId = currentFlashcardId,
-      indexOfCurrentFlashcard = 1,
+      indexOfCurrentFlashcard = 0,
       size = 1)
 
   companion object {
-    const val MAX_LIST_LENGTH = 100
+    const val MAX_LIST_LENGTH = 6
     // because the first and last element are always null  and
     // one null element witch limit the next and previous flashcard
     const val MAX_SIZE = MAX_LIST_LENGTH - 3
@@ -68,7 +68,8 @@ data class PlayDeckHistory(
           listOfAllFlashcard =
               listOfAllFlashcard
                   .replaceAt(twiceNextIndex, twiceNextId)
-                  .replaceAt(thriceNextIndex, null),
+                  .replaceAt(thriceNextIndex, null) // use thrice next flashcard as buffer
+                  .replaceAt(0, null), // use first page as buffer when max size is reached
           currentFlashcardId = listOfAllFlashcard[nextIndex]!!,
           indexOfCurrentFlashcard = nextIndex,
       )
@@ -121,7 +122,7 @@ data class PlayDeckHistory(
    */
   fun canGoBack(): Boolean {
     val index = getIndexBackward()
-    return listOfAllFlashcard[index] != null
+    return if (index == -1) false else listOfAllFlashcard[index] != null
   }
 
   /**
@@ -158,7 +159,7 @@ data class PlayDeckHistory(
    * @param index The index of the current flashcard.
    */
   private fun getIndexBackward(index: Int = indexOfCurrentFlashcard) =
-      if (index == 1) MAX_LIST_LENGTH - 2 else index - 1
+      if (index == 1 && listOfAllFlashcard[0] == null) MAX_LIST_LENGTH - 2 else index - 1
 }
 
 /**

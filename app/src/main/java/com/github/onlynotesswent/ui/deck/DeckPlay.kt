@@ -181,7 +181,7 @@ fun ReviewMode(
     val listOfPagerFlashcards = remember {
       derivedStateOf { playDeckHistory.value.listOfAllFlashcard }
     }
-    val pagerState = rememberPagerState(initialPage = 1) { listOfPagerFlashcards.value.size }
+    val pagerState = rememberPagerState { listOfPagerFlashcards.value.size }
     val scrollScope = rememberCoroutineScope()
 
     HorizontalPager(pagerState, modifier = Modifier.testTag("Pager")) { pageIndex ->
@@ -190,7 +190,15 @@ fun ReviewMode(
           horizontalAlignment = Alignment.CenterHorizontally,
           verticalArrangement = Arrangement.spacedBy(16.dp)) {
             val flashcardState = remember {
-              derivedStateOf { flashcardMap[listOfPagerFlashcards.value[pageIndex]] }
+              derivedStateOf {
+                flashcardMap[
+                    listOfPagerFlashcards.value[
+                            if (pageIndex == PlayDeckHistory.MAX_LIST_LENGTH - 1) 1
+                            else if (pageIndex == 0 &&
+                                playDeckHistory.value.listOfAllFlashcard[0] == null)
+                                PlayDeckHistory.MAX_LIST_LENGTH - 2
+                            else pageIndex]]
+              }
             }
             FlashcardPlayItem(
                 flashcardState,
@@ -230,10 +238,13 @@ fun ReviewMode(
         } else if (diff < 0) {
           if (playDeckHistory.value.canGoBack()) {
             playDeckHistory.value = playDeckHistory.value.goBack()
-            if (pagerState.settledPage == 0) {
+            if (pagerState.settledPage == 0 &&
+                playDeckHistory.value.listOfAllFlashcard[0] == null) {
               pagerState.scrollToPage(listOfPagerFlashcards.value.size - 2)
             }
           } else {
+            // When going back to before the first flashcard and size=max
+            // this prevents the user from going back further
             pagerState.scrollToPage(playDeckHistory.value.indexOfCurrentFlashcard)
           }
         } else if (!playDeckHistory.value.canGoForward()) {
