@@ -69,9 +69,13 @@ fun CommentsScreen(
     LaunchedEffect(Unit) {
         while (true) {
             kotlinx.coroutines.delay(1000L) // Delay for 1 second to not saturate firestore
-            noteViewModel.updateNote(
-                note = note!!.copy(comments = Note.CommentCollection(updatedComments.commentsList))
-            )
+            if (note != null) {
+
+                noteViewModel.updateNote(
+                    note = note!!.copy(comments = Note.CommentCollection(updatedComments.commentsList))
+                )
+            }
+
         }
     }
     Scaffold(
@@ -103,12 +107,6 @@ fun CommentsScreen(
                     navigationActions = navigationActions,
                     selectedItem = Screen.EDIT_NOTE_COMMENT,
                     onClick = {
-                        val commentsNotEmpty =
-                            updatedComments.commentsList.filter { it.content.isNotEmpty() }
-                        noteViewModel.updateNote(
-                            note = note!!.copy(comments = Note.CommentCollection(commentsNotEmpty))
-                        )
-                        noteViewModel.getNoteById(note!!.id)
                     }
                 )
             }
