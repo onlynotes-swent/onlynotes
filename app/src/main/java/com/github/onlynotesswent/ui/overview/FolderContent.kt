@@ -38,6 +38,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import com.github.onlynotesswent.R
 import com.github.onlynotesswent.model.common.Course
 import com.github.onlynotesswent.model.deck.Deck
@@ -124,9 +125,9 @@ fun FolderContentScreen(
                 expanded = expanded,
                 onExpandedChange = { expanded = it },
                 showUpdateDialog = { showUpdateDialog = it },
-              isDeckView = isDeckView,
-              deckViewModel = deckViewModel,
-              userFolderDecks = userFolderDecks)
+                isDeckView = isDeckView,
+                deckViewModel = deckViewModel,
+                userFolderDecks = userFolderDecks)
 
             HorizontalDivider(
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f), thickness = 0.5.dp)
