@@ -87,7 +87,7 @@ class NotesToFlashcard(
         onSuccess = { downloadedFile ->
           openAIClient.sendRequest(
               promptPrefix + downloadedFile.readText(),
-              {parseFlashcardsFromJson(it, note, folderId, onSuccess, onFailure) },
+              { parseFlashcardsFromJson(it, note, folderId, onSuccess, onFailure) },
               { onFailure(it) })
         },
         onFileNotFound = onFileNotFoundException,

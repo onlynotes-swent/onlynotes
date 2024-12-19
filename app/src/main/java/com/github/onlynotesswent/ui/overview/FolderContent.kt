@@ -140,6 +140,8 @@ fun FolderContentScreen(
             HorizontalDivider(
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f), thickness = 0.5.dp)
           }
+          HorizontalDivider(
+              color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f), thickness = 0.5.dp)
         },
         floatingActionButton = {
           if (folder.value!!.isOwner(currentUser.value!!.uid)) {

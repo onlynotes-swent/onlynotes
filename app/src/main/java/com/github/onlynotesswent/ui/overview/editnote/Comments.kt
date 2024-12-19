@@ -91,6 +91,10 @@ fun CommentsScreen(
               updatedComments = updatedComments,
               { updatedComments = it },
               modifier = Modifier.fillMaxWidth().padding(horizontal = 2.dp, vertical = 2.dp))
+
+          HorizontalDivider(
+              color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f), thickness = 0.5.dp)
+
           EditNoteNavigationMenu(
               navigationActions = navigationActions,
               selectedItem = Screen.EDIT_NOTE_COMMENT,
@@ -172,13 +176,12 @@ fun SendCommentBar(
                 }
               },
               containerColor =
-                  if (commentText.isNotEmpty()) {
-                    MaterialTheme.colorScheme.primary
-                  } else {
-                    MaterialTheme.colorScheme.surfaceDim
-                  },
+                  if (commentText.isNotEmpty()) MaterialTheme.colorScheme.primary
+                  else MaterialTheme.colorScheme.surface,
               contentColor = MaterialTheme.colorScheme.onPrimary) {
-                Icon(imageVector = Icons.AutoMirrored.Filled.Send, contentDescription = "Add Comment")
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.Send,
+                    contentDescription = "Add Comment")
               }
         }
   }
@@ -301,12 +304,10 @@ fun CommentRow(
                       modifier =
                           Modifier.weight(
                                   1f) // Ensures the text takes up all available space before the
-                                      // Spacer
+                              // Spacer
                               .padding(
-                                  end =
-                                      8
-                                          .dp) // Optional: adds some space between text and options
-                                               // menu
+                                  end = 8.dp) // Optional: adds some space between text and options
+                      // menu
                       )
                   Spacer(modifier = Modifier.weight(0.1f)) // Add this to push the menu to the end
                   if (comment.isOwner(currentUser.uid) || note.isOwner(currentUser.uid)) {
@@ -342,6 +343,7 @@ fun CommentOptionsMenu(
       ) {
         if (comment.isOwner(currentUser.uid)) {
           DropdownMenuItem(
+              modifier = Modifier.background(MaterialTheme.colorScheme.onPrimary),
               text = { Text("Edit comment") },
               onClick = {
                 onDismissRequest()
