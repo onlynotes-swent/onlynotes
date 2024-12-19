@@ -32,13 +32,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
+import com.github.onlynotesswent.model.deck.Deck
+import com.github.onlynotesswent.model.deck.DeckViewModel
+import com.github.onlynotesswent.model.deck.PlayDeckHistory
 import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.flashcard.Flashcard
 import com.github.onlynotesswent.model.flashcard.FlashcardViewModel
 import com.github.onlynotesswent.model.flashcard.UserFlashcard
-import com.github.onlynotesswent.model.deck.Deck
-import com.github.onlynotesswent.model.deck.DeckViewModel
-import com.github.onlynotesswent.model.deck.PlayDeckHistory
 import com.github.onlynotesswent.model.user.UserViewModel
 import com.github.onlynotesswent.ui.common.FlashcardPlayItem
 import com.github.onlynotesswent.ui.common.LoadingIndicator

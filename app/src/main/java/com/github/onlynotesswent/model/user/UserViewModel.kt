@@ -5,8 +5,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
-import com.github.onlynotesswent.model.flashcard.UserFlashcard
 import com.github.onlynotesswent.model.deck.Deck
+import com.github.onlynotesswent.model.flashcard.UserFlashcard
 import com.github.onlynotesswent.model.notification.Notification
 import com.github.onlynotesswent.model.notification.NotificationRepository
 import com.github.onlynotesswent.model.notification.NotificationRepositoryFirestore

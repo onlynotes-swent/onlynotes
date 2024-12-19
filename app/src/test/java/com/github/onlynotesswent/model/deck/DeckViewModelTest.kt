@@ -29,8 +29,7 @@ class DeckViewModelTest {
           folderId = "3",
           visibility = Visibility.PUBLIC,
           lastModified = Timestamp.now(),
-          flashcardIds = listOf("4", "5")
-      )
+          flashcardIds = listOf("4", "5"))
 
   private val testDeckFriends: Deck =
       Deck(
@@ -40,8 +39,7 @@ class DeckViewModelTest {
           folderId = "4",
           visibility = Visibility.FRIENDS,
           lastModified = Timestamp.now(),
-          flashcardIds = listOf("6", "7")
-      )
+          flashcardIds = listOf("6", "7"))
 
   @Before
   fun setUp() {

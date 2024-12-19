@@ -56,8 +56,7 @@ class DeckRepositoryFirestoreTest {
           visibility = Visibility.PUBLIC,
           lastModified = Timestamp.now(),
           flashcardIds = listOf("4", "5"),
-          description = "Description"
-      )
+          description = "Description")
 
   private fun verifyErrorLog(msg: String) {
     // Get all the logs
@@ -65,7 +64,9 @@ class DeckRepositoryFirestoreTest {
 
     // Check for the debug log that should be generated
     val errorLog =
-        logs.find { it.type == Log.ERROR && it.tag == DeckRepositoryFirestore.Companion.TAG && it.msg == msg }
+        logs.find {
+          it.type == Log.ERROR && it.tag == DeckRepositoryFirestore.Companion.TAG && it.msg == msg
+        }
     assert(errorLog != null) { "Expected error log was not found!" }
   }
 
