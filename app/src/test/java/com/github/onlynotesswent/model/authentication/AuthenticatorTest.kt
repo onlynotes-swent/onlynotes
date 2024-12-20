@@ -1,47 +1,47 @@
-//package com.github.onlynotesswent.model.authentication
+// package com.github.onlynotesswent.model.authentication
 //
-//import android.content.Context
-//import android.content.Intent
-//import android.os.Bundle
-//import android.util.Log
-//import androidx.credentials.Credential
-//import androidx.credentials.CredentialManager
-//import androidx.credentials.CustomCredential
-//import androidx.credentials.GetCredentialRequest
-//import androidx.credentials.GetCredentialResponse
-//import androidx.credentials.exceptions.GetCredentialCancellationException
-//import androidx.credentials.exceptions.GetCredentialException
-//import androidx.credentials.exceptions.GetCredentialUnknownException
-//import androidx.credentials.exceptions.NoCredentialException
-//import com.github.onlynotesswent.model.authentication.Authenticator.Companion.generateNonce
-//import com.google.android.libraries.identity.googleid.GetGoogleIdOption
-//import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
-//import com.google.firebase.FirebaseApp
-//import com.google.firebase.auth.FirebaseAuth
-//import kotlinx.coroutines.test.runTest
-//import org.junit.Assert.assertEquals
-//import org.junit.Assert.assertFalse
-//import org.junit.Assert.assertNotEquals
-//import org.junit.Assert.assertNotNull
-//import org.junit.Assert.assertTrue
-//import org.junit.Assert.fail
-//import org.junit.Before
-//import org.junit.Test
-//import org.junit.runner.RunWith
-//import org.mockito.Mock
-//import org.mockito.Mockito.mockStatic
-//import org.mockito.Mockito.`when`
-//import org.mockito.MockitoAnnotations
-//import org.mockito.kotlin.any
-//import org.mockito.kotlin.argumentCaptor
-//import org.mockito.kotlin.doAnswer
-//import org.mockito.kotlin.mock
-//import org.mockito.kotlin.verify
-//import org.robolectric.RobolectricTestRunner
-//import org.robolectric.shadows.ShadowLog
+// import android.content.Context
+// import android.content.Intent
+// import android.os.Bundle
+// import android.util.Log
+// import androidx.credentials.Credential
+// import androidx.credentials.CredentialManager
+// import androidx.credentials.CustomCredential
+// import androidx.credentials.GetCredentialRequest
+// import androidx.credentials.GetCredentialResponse
+// import androidx.credentials.exceptions.GetCredentialCancellationException
+// import androidx.credentials.exceptions.GetCredentialException
+// import androidx.credentials.exceptions.GetCredentialUnknownException
+// import androidx.credentials.exceptions.NoCredentialException
+// import com.github.onlynotesswent.model.authentication.Authenticator.Companion.generateNonce
+// import com.google.android.libraries.identity.googleid.GetGoogleIdOption
+// import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
+// import com.google.firebase.FirebaseApp
+// import com.google.firebase.auth.FirebaseAuth
+// import kotlinx.coroutines.test.runTest
+// import org.junit.Assert.assertEquals
+// import org.junit.Assert.assertFalse
+// import org.junit.Assert.assertNotEquals
+// import org.junit.Assert.assertNotNull
+// import org.junit.Assert.assertTrue
+// import org.junit.Assert.fail
+// import org.junit.Before
+// import org.junit.Test
+// import org.junit.runner.RunWith
+// import org.mockito.Mock
+// import org.mockito.Mockito.mockStatic
+// import org.mockito.Mockito.`when`
+// import org.mockito.MockitoAnnotations
+// import org.mockito.kotlin.any
+// import org.mockito.kotlin.argumentCaptor
+// import org.mockito.kotlin.doAnswer
+// import org.mockito.kotlin.mock
+// import org.mockito.kotlin.verify
+// import org.robolectric.RobolectricTestRunner
+// import org.robolectric.shadows.ShadowLog
 //
-//@RunWith(RobolectricTestRunner::class)
-//class AuthenticatorTest {
+// @RunWith(RobolectricTestRunner::class)
+// class AuthenticatorTest {
 //
 //  @Mock private lateinit var mockContext: Context
 //  @Mock private lateinit var mockCredentialManager: CredentialManager
@@ -213,13 +213,14 @@
 //    assertEquals(64, nonce1.length) // SHA-256 hash length in hex is 64 characters
 //    assertEquals(64, nonce2.length)
 //  }
-//}
+// }
 //
-//private fun verifyErrorLog(msg: String) {
+// private fun verifyErrorLog(msg: String) {
 //  // Get all the logs
 //  val logs = ShadowLog.getLogs()
 //
 //  // Check for the debug log that should be generated
-//  val errorLog = logs.find { it.type == Log.ERROR && it.tag == Authenticator.TAG && it.msg == msg }
+//  val errorLog = logs.find { it.type == Log.ERROR && it.tag == Authenticator.TAG && it.msg == msg
+// }
 //  assert(errorLog != null) { "Expected error log was not found!" }
-//}
+// }
