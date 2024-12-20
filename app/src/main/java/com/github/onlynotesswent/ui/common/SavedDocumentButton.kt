@@ -28,11 +28,11 @@ fun SavedDocumentButton(isSaved: Boolean, onSave: () -> Unit, onDelete: () -> Un
     IconButton(onClick = { onDelete() }, modifier = Modifier.testTag("removeSavedDocumentButton")) {
       Icon(
           imageVector = Icons.Default.Bookmark,
-          contentDescription = "Remove Note",
+          contentDescription = "Remove Document",
           tint = MaterialTheme.colorScheme.onSurface)
     }
   } else {
-    IconButton(onClick = { onSave() }, modifier = Modifier.testTag("saveNoteButton")) {
+    IconButton(onClick = { onSave() }, modifier = Modifier.testTag("saveSavedDocumentButton")) {
       Icon(
           imageVector = Icons.Default.BookmarkBorder,
           contentDescription = "Save Note",
