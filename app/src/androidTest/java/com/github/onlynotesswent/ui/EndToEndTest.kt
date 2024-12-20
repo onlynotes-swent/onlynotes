@@ -70,6 +70,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.mockito.Mock
+import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
@@ -231,7 +232,11 @@ class EndToEndTest {
                 ) {
                   composable(Screen.NOTE_OVERVIEW) {
                     NoteOverviewScreen(
-                        navigationActions, noteViewModel, userViewModel, folderViewModel)
+                        navigationActions,
+                        noteViewModel,
+                        userViewModel,
+                        folderViewModel,
+                        notesToFlashcard)
                   }
                   composable(Screen.EDIT_NOTE) {
                     EditNoteScreen(navigationActions, noteViewModel, userViewModel)
