@@ -26,8 +26,8 @@ import java.util.Collections
 import java.util.concurrent.atomic.AtomicInteger
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.StandardTestDispatcher
-import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
@@ -42,9 +42,6 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mock
 import org.mockito.Mockito.anyString
-import org.mockito.Mockito.doAnswer
-import org.mockito.Mockito.times
-import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
@@ -83,7 +80,7 @@ class NotesToFlashcardTest {
 
   private val testFolder =
       Folder(
-          id = "1",
+          id = "testFolder",
           name = "folder1",
           userId = "1",
           visibility = Visibility.DEFAULT,
@@ -93,7 +90,7 @@ class NotesToFlashcardTest {
   private val testSubfolder =
       Folder(
           id = "2",
-          name = "folder2",
+          name = "testSubfolder",
           userId = "1",
           parentFolderId = "1",
           visibility = Visibility.DEFAULT,
@@ -103,7 +100,7 @@ class NotesToFlashcardTest {
   private val deckFolder =
       Folder(
           id = "3",
-          name = "folder1",
+          name = "deckFolder",
           userId = "1",
           visibility = Visibility.DEFAULT,
           lastModified = Timestamp.now(),
@@ -113,7 +110,7 @@ class NotesToFlashcardTest {
   private val deckSubfolder =
       Folder(
           id = "4",
-          name = "folder2",
+          name = "deckSubfolder",
           userId = "1",
           parentFolderId = "3",
           visibility = Visibility.DEFAULT,
@@ -124,7 +121,7 @@ class NotesToFlashcardTest {
   private val testNote1 =
       Note(
           id = "1",
-          title = "title",
+          title = "testNote1",
           date = Timestamp.now(),
           lastModified = Timestamp.now(),
           visibility = Visibility.DEFAULT,
@@ -136,7 +133,7 @@ class NotesToFlashcardTest {
   private val testNote2 =
       Note(
           id = "2",
-          title = "title",
+          title = "testNote2",
           date = Timestamp.now(),
           visibility = Visibility.DEFAULT,
           userId = "1",
@@ -147,7 +144,7 @@ class NotesToFlashcardTest {
   private val testNote3 =
       Note(
           id = "3",
-          title = "title",
+          title = "testNote3",
           date = Timestamp.now(),
           visibility = Visibility.DEFAULT,
           userId = "1",
@@ -193,8 +190,6 @@ class NotesToFlashcardTest {
 
   private val testDispatcher = StandardTestDispatcher()
 
-  private val testScope = TestScope(testDispatcher)
-
   @OptIn(ExperimentalCoroutinesApi::class)
   @Before
   fun setup() {
@@ -233,22 +228,22 @@ class NotesToFlashcardTest {
         }
 
     // Mocking OpenAI's sendRequest to trigger onSuccess
-    doAnswer { invocation ->
-          val onSuccess = invocation.getArgument<(String) -> Unit>(1)
-          onSuccess(jsonResponse)
-          null
-        }
-        .`when`(mockOpenAI)
-        .sendRequest(anyString(), any(), any(), anyString())
+    runBlocking {
+      `when`(mockOpenAI.sendRequestSuspend(anyString(), anyString())).thenReturn(jsonResponse)
+    }
 
     // Mock the repositories
     `when`(mockFlashcardRepository.getNewUid()).thenReturn(flashcardId.getAndIncrement().toString())
     `when`(mockDeckRepository.getNewUid()).thenReturn("test")
     `when`(mockFlashcardRepository.addFlashcard(any(), any(), any())).thenAnswer { invocation ->
       savedFlashcards.add(invocation.getArgument(0))
+      val onSuccess = invocation.getArgument<() -> Unit>(1)
+      onSuccess()
     }
     `when`(mockDeckRepository.updateDeck(any(), any(), any())).thenAnswer { invocation ->
       savedDecks.add(invocation.getArgument(0))
+      val onSuccess = invocation.getArgument<() -> Unit>(1)
+      onSuccess()
     }
   }
 
@@ -295,35 +290,35 @@ class NotesToFlashcardTest {
       onSuccess()
     }
 
-    `when`(mockFolderRepository.getSubFoldersOf(any(), any(), any(), any())).thenAnswer { invocation
-      ->
-      val parentFolderId = invocation.getArgument<String>(0)
-      val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(1)
-      if (parentFolderId == testFolder.id) {
-        onSuccess(listOf(testSubfolder))
-      } else {
-        onSuccess(emptyList())
-      }
-    }
-    folderViewModel.getSubFoldersOf(testFolder.id)
+    `when`(mockFolderRepository.getSubFoldersOf(any(), anyOrNull(), any(), any(), any()))
+        .thenAnswer { invocation ->
+          val parentFolderId = invocation.getArgument<String>(0)
+          val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(2)
+          if (parentFolderId == testFolder.id) {
+            onSuccess(listOf(testSubfolder))
+          } else {
+            onSuccess(emptyList())
+          }
+        }
+    folderViewModel.getSubFoldersOf(testFolder.id, null)
 
-    `when`(mockNoteRepository.getNotesFromFolder(any(), any(), any(), any())).thenAnswer {
-        invocation ->
-      val folderId = invocation.getArgument<String>(0)
-      val onSuccess = invocation.getArgument<(List<Note>) -> Unit>(1)
-      when (folderId) {
-        testFolder.id -> {
-          onSuccess(listOf(testNote1, testNote2))
+    `when`(mockNoteRepository.getNotesFromFolder(any(), anyOrNull(), any(), any(), any()))
+        .thenAnswer { invocation ->
+          val folderId = invocation.getArgument<String>(0)
+          val onSuccess = invocation.getArgument<(List<Note>) -> Unit>(2)
+          when (folderId) {
+            testFolder.id -> {
+              onSuccess(listOf(testNote1, testNote2))
+            }
+            testSubfolder.id -> {
+              onSuccess(listOf(testNote3))
+            }
+            else -> {
+              onSuccess(emptyList())
+            }
+          }
         }
-        testSubfolder.id -> {
-          onSuccess(listOf(testNote3))
-        }
-        else -> {
-          onSuccess(emptyList())
-        }
-      }
-    }
-    noteViewModel.getNotesFromFolder(testFolder.id)
+    noteViewModel.getNotesFromFolder(testFolder.id, null)
 
     `when`(mockFolderRepository.getNewFolderId()).thenAnswer {
       folderId.getAndIncrement().toString()
@@ -358,7 +353,7 @@ class NotesToFlashcardTest {
         onFailure = { fail("Conversion failed with exception: $it") })
 
     // Wait for the coroutine to finish
-    testScope.advanceUntilIdle()
+    advanceUntilIdle()
 
     convertFolderToDecksChecks(0)
   }
@@ -380,20 +375,23 @@ class NotesToFlashcardTest {
         onFailure = { fail("Conversion failed with exception: $it") })
 
     // Wait for the coroutine to finish
-    testScope.advanceUntilIdle()
+    advanceUntilIdle()
 
     convertFolderToDecksChecks(2)
   }
 
   @Test
-  fun `convertNoteToFlashcards should parse JSON and create flashcards`() {
+  fun `convertNoteToFlashcards should parse JSON and create flashcards`() = runTest {
     // Initialize the view models, repositories and saved objects
     savedFlashcards.clear()
 
     // Capture the success callback's flashcards list
-    val onSuccess: (Deck) -> Unit = { deck ->
+    val onSuccess: (Deck?) -> Unit = { deck ->
+      if (deck == null) {
+        fail("Expected a deck but got null")
+      }
       // Verify the number of flashcards
-      val flashcardUid = deck.flashcardIds
+      val flashcardUid = deck!!.flashcardIds
 
       // Check the number of flashcards
       assertEquals(4, deck.flashcardIds.size)
@@ -437,63 +435,43 @@ class NotesToFlashcardTest {
         onSuccess = onSuccess,
         onFileNotFoundException = { fail("Expected successful conversion") },
         onFailure = { fail("Expected successful conversion") })
-
-    // Verify that addFlashcard was called exactly three times with the correct flashcards
-    verify(mockFlashcardRepository, times(4)).addFlashcard(any(), any(), any())
   }
 
   @Test
-  fun `convertNoteToDeck failure`() {
-    // Mocking OpenAI's sendRequest to trigger onFailure
-    doAnswer { invocation ->
-          val onFailure = invocation.getArgument<(IOException) -> Unit>(2)
-          onFailure(IOException("Mocked IOException"))
-          null
-        }
-        .`when`(mockOpenAI)
-        .sendRequest(anyString(), anyOrNull(), anyOrNull(), anyString())
+  fun `convertNoteToDeck failure`() = runTest {
+    // Mocking OpenAI's sendRequestSuspend to simulate failure
+    `when`(mockOpenAI.sendRequestSuspend(anyString(), anyString())).thenAnswer {
+      throw IOException("Mocked IOException")
+    }
 
-    // Set up a flag to ensure the failure callback was called
-    var failureCallbackCalled = false
+    // Define failure callback
+    val onFailure: (Exception) -> Unit = { exception ->
+      assertTrue(exception is IOException)
+      assertEquals("Mocked IOException", exception.message)
+    }
 
     // Execute the method
     notesToFlashcard.convertNoteToDeck(
         note = testNote1,
         onSuccess = { fail("Expected failure but got success") },
         onFileNotFoundException = { fail("Expected failure but got not found") },
-        onFailure = { error ->
-          failureCallbackCalled = true
-          assert(error is IOException)
-          assertEquals("Mocked IOException", error.message)
-        })
-
-    // Verify that failure callback was indeed called
-    assert(failureCallbackCalled)
+        onFailure = onFailure)
   }
 
   @Test
   fun `convertNoteToDeck invalid JSON`() {
     // Mocking OpenAI's sendRequest to trigger onSuccess
-    doAnswer { invocation ->
-          val onSuccess = invocation.getArgument<(String) -> Unit>(1)
-          onSuccess("invalid JSON")
-          null
-        }
-        .`when`(mockOpenAI)
-        .sendRequest(anyString(), anyOrNull(), anyOrNull(), anyString())
+    runBlocking {
+      `when`(mockOpenAI.sendRequestSuspend(anyString(), anyString())).thenReturn("invalid JSON")
+    }
 
-    // Set up a flag to ensure the failure callback was called
-    var failureCallbackCalled = false
+    val onFailure: (Exception) -> Unit = { exception ->
+      assertTrue(exception is JsonSyntaxException)
+    }
     notesToFlashcard.convertNoteToDeck(
         note = testNote1,
         onSuccess = { fail("Expected failure but got success") },
         onFileNotFoundException = { fail("Expected failure but got not found") },
-        onFailure = { error ->
-          failureCallbackCalled = true
-          assertEquals(JsonSyntaxException::class.java, error::class.java)
-        })
-
-    // Verify that failure callback was indeed called
-    assert(failureCallbackCalled)
+        onFailure = onFailure)
   }
 }

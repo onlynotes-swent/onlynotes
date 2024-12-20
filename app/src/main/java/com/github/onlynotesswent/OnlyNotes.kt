@@ -53,6 +53,8 @@ import com.github.onlynotesswent.ui.user.EditProfileScreen
 import com.github.onlynotesswent.ui.user.NotificationScreen
 import com.github.onlynotesswent.ui.user.PublicProfileScreen
 import com.github.onlynotesswent.ui.user.UserProfileScreen
+import com.github.onlynotesswent.utils.NotesToFlashcard
+import com.github.onlynotesswent.utils.OpenAI
 import com.github.onlynotesswent.utils.PictureTaker
 import com.github.onlynotesswent.utils.Scanner
 import com.github.onlynotesswent.utils.TextExtractor
@@ -91,6 +93,16 @@ fun OnlyNotesApp(scanner: Scanner, pictureTaker: PictureTaker, textExtractor: Te
       viewModel(factory = NotificationViewModel.Factory)
   val deckViewModel: DeckViewModel = viewModel(factory = DeckViewModel.Factory)
   val flashcardViewModel: FlashcardViewModel = viewModel(factory = FlashcardViewModel.Factory)
+  val openAI = OpenAI()
+  val notesToFlashcard =
+      NotesToFlashcard(
+          flashcardViewModel = flashcardViewModel,
+          fileViewModel = fileViewModel,
+          deckViewModel = deckViewModel,
+          noteViewModel = noteViewModel,
+          folderViewModel = folderViewModel,
+          openAIClient = openAI,
+          context = context)
 
   NavHost(navController = navController, startDestination = Route.AUTH) {
     navigation(
@@ -116,13 +128,14 @@ fun OnlyNotesApp(scanner: Scanner, pictureTaker: PictureTaker, textExtractor: Te
           }
         }
 
-        NoteOverviewScreen(navigationActions, noteViewModel, userViewModel, folderViewModel)
+        NoteOverviewScreen(
+            navigationActions, noteViewModel, userViewModel, folderViewModel, notesToFlashcard)
       }
       composable(Screen.EDIT_NOTE) {
         EditNoteScreen(navigationActions, noteViewModel, userViewModel)
       }
       composable(Screen.EDIT_NOTE_COMMENT) {
-        CommentsScreen(navigationActions, noteViewModel, userViewModel)
+        CommentsScreen(navigationActions, noteViewModel, userViewModel, fileViewModel)
       }
       composable(Screen.EDIT_NOTE_PDF) {
         PdfViewerScreen(
@@ -147,8 +160,8 @@ fun OnlyNotesApp(scanner: Scanner, pictureTaker: PictureTaker, textExtractor: Te
             LaunchedEffect(folderId) {
               if (folderId != null && folderId != "{folderId}") {
                 folderViewModel.getFolderById(folderId)
-                noteViewModel.getNotesFromFolder(folderId)
-                folderViewModel.getSubFoldersOf(folderId)
+                noteViewModel.getNotesFromFolder(folderId, userViewModel)
+                folderViewModel.getSubFoldersOf(folderId, userViewModel)
               }
             }
             // Wait until selected folder is updated to display the screen
@@ -157,7 +170,8 @@ fun OnlyNotesApp(scanner: Scanner, pictureTaker: PictureTaker, textExtractor: Te
                   navigationActions = navigationActions,
                   folderViewModel = folderViewModel,
                   userViewModel = userViewModel,
-                  noteViewModel = noteViewModel)
+                  noteViewModel = noteViewModel,
+                  notesToFlashcard = notesToFlashcard)
             }
           }
     }
@@ -179,16 +193,28 @@ fun OnlyNotesApp(scanner: Scanner, pictureTaker: PictureTaker, textExtractor: Te
 
         DeckOverviewScreen(navigationActions, deckViewModel, userViewModel, folderViewModel)
       }
-      composable(Screen.DECK_MENU) {
+      composable(Screen.DECK_MENU) { navBackStackEntry ->
+        val deckId = navBackStackEntry.arguments?.getString("deckId")
+        deckId?.let { deckViewModel.getDeckById(it) }
         DeckScreen(
             userViewModel,
             deckViewModel,
             flashcardViewModel,
             fileViewModel,
+            folderViewModel,
             pictureTaker,
             navigationActions)
       }
-      composable(Screen.DECK_PLAY) {
+      composable(Screen.DECK_PLAY) { navBackStackEntry ->
+        val deckId = navBackStackEntry.arguments?.getString("deckId")
+        val mode = navBackStackEntry.arguments?.getString("mode")
+
+        // Refresh deck if it is not null
+        LaunchedEffect(deckId) {
+          if (deckId != null && deckId != "{deckId}")
+              deckViewModel.getDeckById(
+                  deckId, { deckViewModel.playDeckWithMode(it, Deck.PlayMode.fromString(mode)) })
+        }
         DeckPlayScreen(
             navigationActions, userViewModel, deckViewModel, flashcardViewModel, fileViewModel)
       }
@@ -209,7 +235,7 @@ fun OnlyNotesApp(scanner: Scanner, pictureTaker: PictureTaker, textExtractor: Te
               if (folderId != null && folderId != "{folderId}") {
                 folderViewModel.getFolderById(folderId)
                 deckViewModel.getDecksByFolder(folderId)
-                folderViewModel.getSubFoldersOf(folderId)
+                folderViewModel.getSubFoldersOf(folderId, userViewModel)
               }
             }
             // Wait until selected folder is updated to display the screen
@@ -236,30 +262,6 @@ fun OnlyNotesApp(scanner: Scanner, pictureTaker: PictureTaker, textExtractor: Te
             folderViewModel,
             deckViewModel,
             fileViewModel)
-      }
-      composable(Screen.DECK_MENU) { navBackStackEntry ->
-        val deckId = navBackStackEntry.arguments?.getString("deckId")
-        deckId?.let { deckViewModel.getDeckById(it) }
-        DeckScreen(
-            userViewModel,
-            deckViewModel,
-            flashcardViewModel,
-            fileViewModel,
-            pictureTaker,
-            navigationActions)
-      }
-      composable(Screen.DECK_PLAY) { navBackStackEntry ->
-        val deckId = navBackStackEntry.arguments?.getString("deckId")
-        val mode = navBackStackEntry.arguments?.getString("mode")
-
-        // Refresh deck if it is not null
-        LaunchedEffect(deckId) {
-          if (deckId != null && deckId != "{deckId}")
-              deckViewModel.getDeckById(
-                  deckId, { deckViewModel.playDeckWithMode(it, Deck.PlayMode.fromString(mode)) })
-        }
-        DeckPlayScreen(
-            navigationActions, userViewModel, deckViewModel, flashcardViewModel, fileViewModel)
       }
     }
 
@@ -293,6 +295,9 @@ fun OnlyNotesApp(scanner: Scanner, pictureTaker: PictureTaker, textExtractor: Te
             fileViewModel,
             noteViewModel,
             folderViewModel,
+            deckViewModel,
+            flashcardViewModel,
+            notificationViewModel,
         )
       }
       composable(Screen.NOTIFICATIONS) {

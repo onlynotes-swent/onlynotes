@@ -1,5 +1,5 @@
 <resources>
-    <string name="file_system_folders_in_root">Folders in: root</string>
+    <string name="file_system_folders_in_root">Root</string>
     <string name="file_system_back_to_root">Back to Root Folder</string>
     <string name="show_file_manager">File Manager</string>
     <string name="app_name">OnlyNotes</string>
@@ -137,9 +137,29 @@
     <string name="re_scan_pdf">Re-scan PDF</string>
     <string name="review_the_flashcards">Review the flashcards</string>
     <string name="test_your_knowledge">Test your knowledge</string>
-    <string name="move_here">Move item here</string>
+    <string name="move_here">Move</string>
     <string name="folder_cannot_be_moved_to_subfolder">Folder cannot be moved to a subfolder</string>
     <string name="edit_note">Edit note</string>
     <string name="move_note">Move note</string>
+    <string name="convert_note_to_flashcards">Convert note to flashcards</string>
+    <string name="converting_note_to_flashcards">Converting note to flashcards…</string>
+    <string name="no_flashcards_created">No flashcards created</string>
+    <string name="no_note_text_found">The note has no text to convert to flashcards. Please either convert the PDF to text or add text to the note.</string>
+    <string name="error_creating_flashcards">Error creating flashcards</string>
+    <string name="convert_folder_to_decks">Convert folder to decks</string>
+    <string name="converting_folder_to_decks">Converting folder to decks…</string>
+    <string name="flashcards_conversion_progress">%1$d notes and %2$d folders processed</string>
     <string name="move_deck">Move deck</string>
+    <string name="deck_finish_test_text">You have finished the deck with a score of %1$s%% !</string>
+    <string name="i_got_it_right">I got it right</string>
+    <string name="i_got_it_wrong">I got it wrong</string>
+    <string name="finish_test">Finish Test</string>
+    <string name="retry">Retry</string>
+    <string name="loading_deck">Loading deck…</string>
+    <string name="no_mode_selected">No mode selected</string>
+    <string name="error_while_converting">Error while converting</string>
+    <string name="close">Close</string>
+    <string name="go_to_deck_folder">Go to deck folder</string>
+    <string name="your_notes">Your notes</string>
+    <string name="saved">Saved</string>
 </resources>

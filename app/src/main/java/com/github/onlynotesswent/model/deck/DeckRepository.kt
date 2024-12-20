@@ -143,6 +143,19 @@ interface DeckRepository {
   fun deleteDeck(deck: Deck, onSuccess: () -> Unit, onFailure: (Exception) -> Unit)
 
   /**
+   * Deletes all decks from the given user.
+   *
+   * @param userId The identifier of the user.
+   * @param onSuccess The callback to be invoked when the decks are successfully deleted.
+   * @param onFailure The callback to be invoked if an error occurs.
+   */
+  fun deleteAllDecksFromUserId(
+      userId: String,
+      onSuccess: () -> Unit,
+      onFailure: (Exception) -> Unit
+  )
+
+  /**
    * Deletes all decks from a folder.
    *
    * @param folderId The ID of the folder to delete decks from.
