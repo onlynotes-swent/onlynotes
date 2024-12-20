@@ -18,6 +18,8 @@ import java.util.Locale
  * @property friends The user's friends.
  * @property hasProfilePicture A flag indicating if the user has a profile picture.
  * @property bio The user's biography.
+ * @property pendingFriends The user's pending friends.
+ * @property isAccountPublic A flag indicating if the user's account is public.
  */
 data class User(
     val firstName: String,
@@ -31,8 +33,6 @@ data class User(
     val hasProfilePicture: Boolean = false,
     val bio: String = "",
     val pendingFriends: Friends = Friends(),
-    // for now it's set to true, will be set to false when the notification feature is
-    // implemented
     @get:PropertyName("isAccountPublic") val isAccountPublic: Boolean = false
 ) {
   /**

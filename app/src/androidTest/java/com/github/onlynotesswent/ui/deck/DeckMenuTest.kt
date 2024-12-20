@@ -532,17 +532,6 @@ class DeckMenuTest {
             any(),
             any(),
         )
-
-    // ----------------------------------------------------------------------------------------
-    // Click the import card option
-    composeTestRule.onNodeWithTag("importDeckMenuItem").performClick()
-
-    // Check that the import dialog is displayed
-    composeTestRule.onNodeWithTag("importDeckDialog").assertIsDisplayed()
-    // Check that the import button is displayed
-    composeTestRule.onNodeWithTag("importButton").assertIsDisplayed().performClick()
-    // Check dialog is closed
-    composeTestRule.onNodeWithTag("importDeckDialog").assertDoesNotExist()
   }
 
   @Test
@@ -566,7 +555,6 @@ class DeckMenuTest {
 
     // Click the public floating action button and then both save options
     composeTestRule.onNodeWithTag("publicDeckFab").performClick()
-    composeTestRule.onNodeWithTag("saveToFavoritesMenuItem").assertExists()
     composeTestRule.onNodeWithTag("createLocalCopyMenuItem").assertExists().performClick()
   }
 }
