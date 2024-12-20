@@ -70,13 +70,6 @@ fun NoteOverviewScreen(
   val userRootFolders = folderViewModel.userRootFolders.collectAsState()
   val userSavedFolders = folderViewModel.userSavedFolders.collectAsState()
 
-  userViewModel.currentUser.collectAsState().value?.let {
-    noteViewModel.getRootNotesFromUid(it.uid)
-    noteViewModel.getCurrentUserSavedNotes(userViewModel)
-    folderViewModel.getRootFoldersFromUserId(it.uid)
-    folderViewModel.getCurrentUserSavedFolders(userViewModel)
-  }
-
   val parentFolderId = folderViewModel.parentFolderId.collectAsState()
   val context = LocalContext.current
 
@@ -173,21 +166,21 @@ fun NoteOverviewScreen(
                       action = stringResource(R.string.create))
                 }
 
-        // Logic to show the dialog to create a folder
-        if (showCreateFolderDialog) {
-          FolderDialog(
-              onDismiss = { showCreateFolderDialog = false },
-              onConfirm = { newName, visibility ->
-                val folderId = folderViewModel.getNewFolderId()
-                folderViewModel.addFolder(
-                    Folder(
-                        id = folderId,
-                        name = newName,
-                        userId = userViewModel.currentUser.value!!.uid,
-                        parentFolderId = parentFolderId.value,
-                        visibility = visibility,
-                        lastModified = Timestamp.now()),
-                    isDeckView = false)
+                // Logic to show the dialog to create a folder
+                if (showCreateFolderDialog) {
+                  FolderDialog(
+                      onDismiss = { showCreateFolderDialog = false },
+                      onConfirm = { newName, visibility ->
+                        val folderId = folderViewModel.getNewFolderId()
+                        folderViewModel.addFolder(
+                            Folder(
+                                id = folderId,
+                                name = newName,
+                                userId = userViewModel.currentUser.value!!.uid,
+                                parentFolderId = parentFolderId.value,
+                                visibility = visibility,
+                                lastModified = Timestamp.now()),
+                            isDeckView = false)
 
                         showCreateFolderDialog = false
                         navigationActions.navigateTo(
