@@ -24,7 +24,7 @@ import kotlinx.coroutines.flow.asStateFlow
  *
  * @property repository The repository for managing user data.
  */
-class UserViewModel(
+open class UserViewModel(
     private val repository: UserRepository,
     private val notificationRepository: NotificationRepository =
         NotificationRepositoryFirestore(Firebase.firestore)

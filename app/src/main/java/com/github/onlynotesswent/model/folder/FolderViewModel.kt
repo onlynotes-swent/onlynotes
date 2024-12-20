@@ -1,7 +1,6 @@
 package com.github.onlynotesswent.model.folder
 
 import android.content.Context
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -22,7 +21,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 
-class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
+open class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
 
   private val _publicFolders = MutableStateFlow<List<Folder>>(emptyList())
   val publicFolders: StateFlow<List<Folder>> = _publicFolders.asStateFlow()
@@ -636,7 +635,7 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
       onFailure: (Exception) -> Unit = {}
   ) {
     // If the user's saved folders list is empty, retrieve it from the userViewModel to avoid
-    // overriding it (in case the user hasn't tried viewing his saved folders yet, and so the list
+    // overriding it (in case the user hasn't tried viewing their saved folders yet, and so the list
     // is not yet fetched). Otherwise, use the saved folders list already in the viewModel.
     if (_userSavedFolders.value.isEmpty()) {
       getCurrentUserSavedFolders(
@@ -667,7 +666,7 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
       onFailure: (Exception) -> Unit = {}
   ) {
     // If the user's saved folders list is empty, retrieve it from the userViewModel to avoid
-    // overriding it (in case the user hasn't tried viewing his saved folders yet, and so the list
+    // overriding it (in case the user hasn't tried viewing their saved folders yet, and so the list
     // is not yet fetched). Otherwise, use the saved folders list already in the viewModel.
     if (_userSavedFolders.value.isEmpty()) {
       getCurrentUserSavedFolders(
@@ -708,7 +707,6 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
                 savedFoldersIds = documentIds,
                 currentUser = userViewModel.currentUser.value!!,
                 onSuccess = { savedFolders, nonSaveableFoldersIds ->
-                  Log.d("FolderViewModel", "Saved folders: $savedFolders")
                   _userSavedFolders.value = savedFolders
 
                   // Delete the no longer saveable (deleted or privated) folders from
@@ -736,7 +734,7 @@ class FolderViewModel(private val repository: FolderRepository) : ViewModel() {
    * @param onSuccess The function to call when the addition is successful.
    * @param onFailure The function to call when the addition fails.
    */
-  private fun setCurrentUserSavedFolders(
+  fun setCurrentUserSavedFolders(
       userViewModel: UserViewModel,
       folders: List<Folder>,
       onSuccess: () -> Unit = {},
