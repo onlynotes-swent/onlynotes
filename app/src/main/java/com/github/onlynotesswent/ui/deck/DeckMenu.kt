@@ -26,8 +26,6 @@ import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.SaveAlt
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardColors
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -55,7 +53,6 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
 import com.github.onlynotesswent.R
 import com.github.onlynotesswent.model.deck.Deck
 import com.github.onlynotesswent.model.deck.Deck.SortMode
@@ -177,27 +174,6 @@ fun DeckScreen(
                         flashcardViewModel.deselectFlashcard()
                       },
                       mode = stringResource(R.string.create))
-                } else if (importDialogExpanded.value) {
-                  Dialog(onDismissRequest = { importDialogExpanded.value = false }) {
-                    Card {
-                      Column(
-                          modifier = Modifier.padding(10.dp).testTag("importDeckDialog"),
-                          horizontalAlignment = Alignment.CenterHorizontally,
-                          verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                            Text(
-                                stringResource(R.string.import_deck),
-                                style = Typography.headlineSmall)
-                            // TODO: Import deck functionality
-                            Text("Not Implemented yet", style = Typography.bodyMedium)
-                            // Import button
-                            Button(
-                                modifier = Modifier.testTag("importButton"),
-                                onClick = { importDialogExpanded.value = false }) {
-                                  Text(stringResource(R.string.import_button_text))
-                                }
-                          }
-                    }
-                  }
                 } else if (editDialogExpanded.value) {
                   EditDeckDialog(deckViewModel, userViewModel, { editDialogExpanded.value = false })
                 }
@@ -286,13 +262,6 @@ private fun PublicDeckFab(
       menuItems =
           listOf(
               CustomDropDownMenuItem(
-                  text = { Text(stringResource(R.string.save_to_favorites)) },
-                  icon = {
-                    Icon(imageVector = Icons.Default.Star, contentDescription = "Save deck")
-                  },
-                  onClick = onSaveClick,
-                  modifier = Modifier.testTag("saveToFavoritesMenuItem")),
-              CustomDropDownMenuItem(
                   text = { Text(stringResource(R.string.create_local_copy)) },
                   icon = {
                     Icon(imageVector = Icons.Default.SaveAlt, contentDescription = "Save copy")
@@ -332,13 +301,6 @@ private fun DeckFab(
                   icon = { Icon(imageVector = Icons.Default.Add, contentDescription = "Add card") },
                   onClick = onAddCardClick,
                   modifier = Modifier.testTag("addCardMenuItem")),
-              CustomDropDownMenuItem(
-                  text = { Text(stringResource(R.string.import_deck)) },
-                  icon = {
-                    Icon(imageVector = Icons.Default.Download, contentDescription = "Import deck")
-                  },
-                  onClick = onImportDeckClick,
-                  modifier = Modifier.testTag("importDeckMenuItem")),
               CustomDropDownMenuItem(
                   text = { Text(stringResource(R.string.edit_deck)) },
                   icon = {
