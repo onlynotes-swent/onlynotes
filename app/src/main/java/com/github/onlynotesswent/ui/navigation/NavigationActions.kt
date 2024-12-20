@@ -151,18 +151,16 @@ open class NavigationActions(
    * @param isDeckView Whether the current view is a deck view
    */
   open fun goBackFolderContents(folder: Folder, currentUser: User, isDeckView: Boolean = false) {
-    if (!folder.isOwner(currentUser.uid)) {
-      navigateTo(TopLevelDestinations.SEARCH)
-    } else if (folder.parentFolderId != null) {
-      navigateTo(
-          Screen.FOLDER_CONTENTS.replace(oldValue = "{folderId}", newValue = folder.parentFolderId))
-    } else {
-      if (isDeckView) {
-        navigateTo(TopLevelDestinations.DECK_OVERVIEW)
-      } else {
-        navigateTo(TopLevelDestinations.NOTE_OVERVIEW)
-      }
-    }
+    goBack()
+    //      if (!folder.isOwner(currentUser.uid) || folder.parentFolderId != null) {
+    //
+    //    } else {
+    //      if (isDeckView) {
+    //        navigateTo(TopLevelDestinations.DECK_OVERVIEW)
+    //      } else {
+    //        navigateTo(TopLevelDestinations.NOTE_OVERVIEW)
+    //      }
+    //    }
   }
 
   /**

@@ -124,7 +124,9 @@ fun OnlyNotesApp(scanner: Scanner, pictureTaker: PictureTaker, textExtractor: Te
         LaunchedEffect(currentBackStackEntry) {
           if (user != null) {
             folderViewModel.getRootNoteFoldersFromUserId(user.uid)
+            folderViewModel.getCurrentUserSavedFolders(userViewModel)
             noteViewModel.getRootNotesFromUid(user.uid)
+            noteViewModel.getCurrentUserSavedNotes(userViewModel)
           }
         }
 
