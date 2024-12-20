@@ -28,7 +28,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.StandardTestDispatcher
-import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
@@ -80,7 +79,7 @@ class NotesToFlashcardTest {
 
   private val testFolder =
       Folder(
-          id = "1",
+          id = "testFolder",
           name = "folder1",
           userId = "1",
           visibility = Visibility.DEFAULT,
@@ -90,7 +89,7 @@ class NotesToFlashcardTest {
   private val testSubfolder =
       Folder(
           id = "2",
-          name = "folder2",
+          name = "testSubfolder",
           userId = "1",
           parentFolderId = "1",
           visibility = Visibility.DEFAULT,
@@ -100,7 +99,7 @@ class NotesToFlashcardTest {
   private val deckFolder =
       Folder(
           id = "3",
-          name = "folder1",
+          name = "deckFolder",
           userId = "1",
           visibility = Visibility.DEFAULT,
           lastModified = Timestamp.now(),
@@ -110,7 +109,7 @@ class NotesToFlashcardTest {
   private val deckSubfolder =
       Folder(
           id = "4",
-          name = "folder2",
+          name = "deckSubfolder",
           userId = "1",
           parentFolderId = "3",
           visibility = Visibility.DEFAULT,
@@ -121,7 +120,7 @@ class NotesToFlashcardTest {
   private val testNote1 =
       Note(
           id = "1",
-          title = "title",
+          title = "testNote1",
           date = Timestamp.now(),
           lastModified = Timestamp.now(),
           visibility = Visibility.DEFAULT,
@@ -133,7 +132,7 @@ class NotesToFlashcardTest {
   private val testNote2 =
       Note(
           id = "2",
-          title = "title",
+          title = "testNote2",
           date = Timestamp.now(),
           visibility = Visibility.DEFAULT,
           userId = "1",
@@ -144,7 +143,7 @@ class NotesToFlashcardTest {
   private val testNote3 =
       Note(
           id = "3",
-          title = "title",
+          title = "testNote3",
           date = Timestamp.now(),
           visibility = Visibility.DEFAULT,
           userId = "1",
@@ -189,8 +188,6 @@ class NotesToFlashcardTest {
   private val folderId = AtomicInteger(3)
 
   private val testDispatcher = StandardTestDispatcher()
-
-  private val testScope = TestScope(testDispatcher)
 
   @OptIn(ExperimentalCoroutinesApi::class)
   @Before
@@ -239,9 +236,13 @@ class NotesToFlashcardTest {
     `when`(mockDeckRepository.getNewUid()).thenReturn("test")
     `when`(mockFlashcardRepository.addFlashcard(any(), any(), any())).thenAnswer { invocation ->
       savedFlashcards.add(invocation.getArgument(0))
+      val onSuccess = invocation.getArgument<() -> Unit>(1)
+      onSuccess()
     }
     `when`(mockDeckRepository.updateDeck(any(), any(), any())).thenAnswer { invocation ->
       savedDecks.add(invocation.getArgument(0))
+      val onSuccess = invocation.getArgument<() -> Unit>(1)
+      onSuccess()
     }
   }
 
@@ -351,7 +352,7 @@ class NotesToFlashcardTest {
         onFailure = { fail("Conversion failed with exception: $it") })
 
     // Wait for the coroutine to finish
-    testScope.advanceUntilIdle()
+    advanceUntilIdle()
 
     convertFolderToDecksChecks(0)
   }
@@ -373,7 +374,7 @@ class NotesToFlashcardTest {
         onFailure = { fail("Conversion failed with exception: $it") })
 
     // Wait for the coroutine to finish
-    testScope.advanceUntilIdle()
+    advanceUntilIdle()
 
     convertFolderToDecksChecks(2)
   }
