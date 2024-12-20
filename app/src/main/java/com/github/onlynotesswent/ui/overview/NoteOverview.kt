@@ -127,7 +127,8 @@ fun NoteOverviewScreen(
                         userId = userViewModel.currentUser.value!!.uid,
                         parentFolderId = parentFolderId.value,
                         visibility = visibility,
-                        lastModified = Timestamp.now()))
+                        lastModified = Timestamp.now()),
+                    isDeckView = false)
 
                 showCreateFolderDialog = false
                 navigationActions.navigateTo(

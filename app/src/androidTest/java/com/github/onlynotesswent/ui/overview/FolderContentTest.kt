@@ -112,7 +112,7 @@ class FolderContentTest {
     userViewModel.addUser(testUser, {}, {})
 
     noteViewModel.getRootNotesFromUid("1")
-    folderViewModel.getRootFoldersFromUserId("1")
+    folderViewModel.getRootFoldersFromUserId("1", isDeckView = false)
 
     folderViewModel.selectedFolder(selectedFolder)
     composeTestRule.setContent {

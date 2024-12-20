@@ -125,7 +125,7 @@ class NoteOverviewTest {
       onSuccess(folderList)
     }
     noteViewModel.getRootNotesFromUid("1")
-    folderViewModel.getRootFoldersFromUserId("1")
+    folderViewModel.getRootFoldersFromUserId("1", isDeckView = false)
     composeTestRule.onNodeWithTag("noteAndFolderList").assertIsDisplayed()
   }
 
@@ -168,7 +168,7 @@ class NoteOverviewTest {
       val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(1)
       onSuccess(folderList)
     }
-    folderViewModel.getRootFoldersFromUserId("1")
+    folderViewModel.getRootFoldersFromUserId("1", isDeckView = false)
     composeTestRule.onAllNodesWithTag("folderCard").onFirst().assertIsDisplayed()
     composeTestRule.onAllNodesWithTag("folderCard").onFirst().performClick()
     val folderContentsScreen =
@@ -257,7 +257,7 @@ class NoteOverviewTest {
       onSuccess(folderList)
     }
     noteViewModel.getRootNotesFromUid("1")
-    folderViewModel.getRootFoldersFromUserId("1")
+    folderViewModel.getRootFoldersFromUserId("1", isDeckView = false)
     composeTestRule.onNodeWithTag("noteAndFolderList").assertIsDisplayed()
 
     composeTestRule.onNodeWithTag("noteCard").assertIsDisplayed()
@@ -287,7 +287,7 @@ class NoteOverviewTest {
       onSuccess(folderList)
     }
     noteViewModel.getRootNotesFromUid("1")
-    folderViewModel.getRootFoldersFromUserId("1")
+    folderViewModel.getRootFoldersFromUserId("1", isDeckView = false)
     composeTestRule.onNodeWithTag("noteModalBottomSheet").assertIsNotDisplayed()
     composeTestRule.onNodeWithTag("showBottomSheetButton").assertIsDisplayed()
     composeTestRule.onNodeWithTag("showBottomSheetButton").performClick()

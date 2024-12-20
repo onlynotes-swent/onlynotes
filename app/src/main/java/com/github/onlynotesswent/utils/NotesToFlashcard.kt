@@ -355,7 +355,8 @@ class NotesToFlashcard(
           folderViewModel.addFolder(
               newDeckFolder,
               onSuccess = { continuation.resume(newDeckFolder) },
-              onFailure = { continuation.resumeWithException(it) })
+              onFailure = { continuation.resumeWithException(it) },
+              isDeckView = false)
         },
         onSuccess = { existingFolders ->
           if (parentDeckFolder == null) {
@@ -378,7 +379,8 @@ class NotesToFlashcard(
               folderViewModel.addFolder(
                   newDeckFolder,
                   onSuccess = { continuation.resume(newDeckFolder) },
-                  onFailure = { continuation.resumeWithException(it) })
+                  onFailure = { continuation.resumeWithException(it) },
+                  isDeckView = false)
             }
           }
         },
