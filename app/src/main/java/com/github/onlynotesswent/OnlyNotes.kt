@@ -59,7 +59,7 @@ import com.github.onlynotesswent.utils.PictureTaker
 import com.github.onlynotesswent.utils.Scanner
 import com.github.onlynotesswent.utils.TextExtractor
 
-class MainActivity : ComponentActivity() {
+class OnlyNotes : ComponentActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
 
