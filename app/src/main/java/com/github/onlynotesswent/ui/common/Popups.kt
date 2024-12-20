@@ -300,7 +300,9 @@ fun FileSystemPopup(
                     color = MaterialTheme.colorScheme.background, shape = RoundedCornerShape(8.dp))
                 .clickable {
                   folderViewModel.getSubFoldersOfNoStateUpdate(
-                      subFolder.id, onSuccess = { subFolders -> folderSubFolders = subFolders })
+                      subFolder.id,
+                      null,
+                      onSuccess = { subFolders -> folderSubFolders = subFolders })
                   selectedFolder = subFolder
                 }
                 .padding(4.dp) // Adjust padding for better spacing
@@ -339,7 +341,7 @@ fun FileSystemPopup(
   LaunchedEffect(selectedFolder) {
     if (selectedFolder != null) {
       folderViewModel.getSubFoldersOfNoStateUpdate(
-          selectedFolder!!.id, onSuccess = { subFolders -> folderSubFolders = subFolders })
+          selectedFolder!!.id, null, onSuccess = { subFolders -> folderSubFolders = subFolders })
     }
   }
   Dialog(onDismissRequest = { onDismiss() }) {

@@ -241,7 +241,7 @@ class NotesToFlashcard(
               onProgress = onProgress)
 
       // Reset note lists
-      noteViewModel.getNotesFromFolder(folderId = currentFolder.id)
+      noteViewModel.getNotesFromFolder(folderId = currentFolder.id, null)
 
       if (finalDeck != null) {
         onProgress(notesProcessedCounter.get(), foldersProcessedCounter.incrementAndGet(), null)
@@ -280,6 +280,7 @@ class NotesToFlashcard(
     val notes = suspendCoroutine { continuation ->
       noteViewModel.getNotesFromFolder(
           folder.id,
+          null,
           onSuccess = { continuation.resume(it) },
           onFailure = { continuation.resumeWithException(it) })
     }
@@ -308,6 +309,7 @@ class NotesToFlashcard(
     val subfolders = suspendCoroutine { continuation ->
       folderViewModel.getSubFoldersOfNoStateUpdate(
           parentFolderId = folder.id,
+          userViewModel = null,
           onSuccess = { continuation.resume(it) },
           onFailure = { continuation.resumeWithException(it) })
     }

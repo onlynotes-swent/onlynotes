@@ -56,6 +56,7 @@ import com.github.onlynotesswent.ui.common.EditDeckDialog
 import com.github.onlynotesswent.ui.common.FileSystemPopup
 import com.github.onlynotesswent.ui.common.FolderDialog
 import com.github.onlynotesswent.ui.common.NoteDialog
+import com.github.onlynotesswent.ui.common.SavedDocumentButton
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
 import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
@@ -255,6 +256,46 @@ fun UserNotFoundFolderContentScreen() {
 }
 
 /**
+ * Displays a button that adds or removes the folder to the user's saved folders.
+ *
+ * @param folder The folder to be saved or removed.
+ * @param userViewModel The ViewModel that provides the current user.
+ * @param folderViewModel The ViewModel that provides the current folder to be edited and handles
+ *   folder updates.
+ */
+@Composable
+fun SavedFoldersButton(
+    folder: Folder,
+    userViewModel: UserViewModel,
+    folderViewModel: FolderViewModel
+) {
+  val savedFolders by folderViewModel.userSavedFolders.collectAsState()
+
+  val context = LocalContext.current
+
+  SavedDocumentButton(
+      isSaved = folder.id in savedFolders.map { it.id },
+      onSave = {
+        folderViewModel.addCurrentUserSavedFolder(
+            folder,
+            userViewModel,
+            onFailure = {
+              Toast.makeText(context, "Failed to save folder", Toast.LENGTH_SHORT).show()
+            })
+      },
+      onDelete = {
+        folderViewModel.deleteCurrentUserSavedFolder(
+            folder.id,
+            userViewModel,
+            onFailure = {
+              Toast.makeText(
+                      context, "Failed to remove folder from saved folders", Toast.LENGTH_SHORT)
+                  .show()
+            })
+      })
+}
+
+/**
  * Display the top bar of the folder content screen.
  *
  * @param folder the folder to display
@@ -412,6 +453,9 @@ fun FolderContentTopBar(
               expanded = expanded,
               onFabClick = { onExpandedChange(true) },
               onDismissRequest = { onExpandedChange(false) })
+        } else if (folder.isVisibleTo(currentUser.value!!)) {
+          // Display the saved folders button if the folder is viewable by the current user.
+          SavedFoldersButton(folder, userViewModel, folderViewModel)
         }
         if (showFlashcardCreationPopup) {
           // Popup for flashcard creation

@@ -5,6 +5,7 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.github.onlynotesswent.model.common.Course
 import com.github.onlynotesswent.model.common.Visibility
+import com.github.onlynotesswent.model.user.User
 import com.google.firebase.Timestamp
 import java.security.MessageDigest
 
@@ -43,6 +44,19 @@ data class Note(
    */
   fun isOwner(uid: String): Boolean {
     return userId == uid
+  }
+
+  /**
+   * Checks if the note is visible to the given user. This is the case if the user is the owner, if
+   * the note is public, or if it is shared with friends and the user is following the owner.
+   *
+   * @param user The user to check.
+   * @return True if the note is visible to the user, false otherwise.
+   */
+  fun isVisibleTo(user: User): Boolean {
+    return isOwner(user.uid) ||
+        visibility == Visibility.PUBLIC ||
+        (visibility == Visibility.FRIENDS && userId in user.friends.following)
   }
 
   companion object {

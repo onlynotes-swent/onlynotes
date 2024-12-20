@@ -337,7 +337,7 @@ class FolderRepositoryFirestoreTest {
   }
 
   @Test
-  fun deleteAllFoldersFromUserId_callsDocuments() = runTest {
+  fun deleteFoldersFromUid_callsDocuments() = runTest {
     `when`(mockQuerySnapshot.documents)
         .thenReturn(listOf(mockDocumentSnapshot, mockDocumentSnapshot2))
 
@@ -347,7 +347,7 @@ class FolderRepositoryFirestoreTest {
   }
 
   @Test
-  fun deleteAllFoldersFromUserId_fail() = runTest {
+  fun deleteFoldersFromUid_fail() = runTest {
     val errorMessage = "TestError"
     `when`(mockQuerySnapshotTask.isSuccessful).thenReturn(false)
     `when`(mockQuerySnapshotTask.exception).thenReturn(Exception(errorMessage))
@@ -381,7 +381,7 @@ class FolderRepositoryFirestoreTest {
   fun getSubFoldersOf_callsCollection() = runTest {
     `when`(mockDocumentReference.get()).thenReturn(Tasks.forResult(mockDocumentSnapshot2))
 
-    folderRepositoryFirestore.getSubFoldersOf("1", {}, {}, false)
+    folderRepositoryFirestore.getSubFoldersOf("1", null, {}, {}, false)
 
     shadowOf(Looper.getMainLooper()).idle()
 

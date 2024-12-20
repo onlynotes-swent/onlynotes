@@ -160,8 +160,8 @@ fun OnlyNotesApp(scanner: Scanner, pictureTaker: PictureTaker, textExtractor: Te
             LaunchedEffect(folderId) {
               if (folderId != null && folderId != "{folderId}") {
                 folderViewModel.getFolderById(folderId)
-                noteViewModel.getNotesFromFolder(folderId)
-                folderViewModel.getSubFoldersOf(folderId)
+                noteViewModel.getNotesFromFolder(folderId, userViewModel)
+                folderViewModel.getSubFoldersOf(folderId, userViewModel)
               }
             }
             // Wait until selected folder is updated to display the screen
@@ -235,7 +235,7 @@ fun OnlyNotesApp(scanner: Scanner, pictureTaker: PictureTaker, textExtractor: Te
               if (folderId != null && folderId != "{folderId}") {
                 folderViewModel.getFolderById(folderId)
                 deckViewModel.getDecksByFolder(folderId)
-                folderViewModel.getSubFoldersOf(folderId)
+                folderViewModel.getSubFoldersOf(folderId, userViewModel)
               }
             }
             // Wait until selected folder is updated to display the screen
