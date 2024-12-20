@@ -131,9 +131,9 @@ fun EditNoteScreen(
                       courseYear = courseYear,
                       noteViewModel = noteViewModel)
                   // todo Additional check might be useless if checking is done before
-                } else if (note != null && note!!.isVisibleTo(currentUser!!)){
-                    SavedNotesButton(
-                        note = note!!, userViewModel = userViewModel, noteViewModel = noteViewModel)
+                } else if (note != null && note!!.isVisibleTo(currentUser!!)) {
+                  SavedNotesButton(
+                      note = note!!, userViewModel = userViewModel, noteViewModel = noteViewModel)
                 }
               },
               isModified = isModified)

@@ -114,10 +114,10 @@ fun CommentsScreen(
           HorizontalDivider(
               color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f), thickness = 0.5.dp)
 
-            BottomEditNoteNavigationBarWithDivider(
-                navigationActions = navigationActions,
-                selectedItem = Screen.EDIT_NOTE_COMMENT,
-                onClick = {})
+          BottomEditNoteNavigationBarWithDivider(
+              navigationActions = navigationActions,
+              selectedItem = Screen.EDIT_NOTE_COMMENT,
+              onClick = {})
         }
       }) { paddingValues ->
         if (currentUser == null) {

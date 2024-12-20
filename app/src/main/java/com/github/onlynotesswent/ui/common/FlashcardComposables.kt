@@ -125,63 +125,66 @@ fun FlashcardViewItem(
       colors =
           CardDefaults.elevatedCardColors(
               containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
-        Box(contentAlignment = Alignment.Center, modifier = Modifier.padding(10.dp).fillMaxWidth()) {
-          if (flashcard.value.isMCQ()) {
-            Text(
-                stringResource(R.string.mcq),
-                style = Typography.bodyLarge,
-                fontStyle = FontStyle.Italic,
-                modifier =
-                    Modifier.align(Alignment.TopStart)
-                        .testTag("flashcardMCQ--${flashcard.value.id}"))
-          }
-          // Show front and options icon
-          Column(modifier = Modifier.align(Alignment.TopEnd)) {
-            Icon(
-                modifier =
-                    Modifier.testTag("flashcardOptions--${flashcard.value.id}").clickable(
-                        enabled = belongsToUser) {
-                          dropdownMenuExpanded.value = true
-                        },
-                imageVector = Icons.Filled.MoreVert,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onPrimaryContainer)
-            AnimatedVisibility(
-                dropdownMenuExpanded.value,
-                enter = expandVertically(tween(700)),
-                exit = shrinkVertically(tween(700))) {
-                  FlashcardItemDropdownMenu(
-                      flashcard,
-                      deckViewModel,
-                      flashcardViewModel,
-                      dropdownMenuExpanded,
-                      editDialogExpanded)
-                }
-          }
-          Column(
-              horizontalAlignment = Alignment.CenterHorizontally,
-              verticalArrangement = Arrangement.SpaceAround,
-              modifier =
-                  Modifier.testTag("flashcardItemColumn")
-                      .fillMaxWidth()
-                      .heightIn(min = 160.dp)
-                      .padding(top = 10.dp)
-                      .semantics(mergeDescendants = true, properties = {})) {
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier.padding(10.dp).fillMaxWidth()) {
+              if (flashcard.value.isMCQ()) {
                 Text(
-                    flashcard.value.front,
-                    style = Typography.bodyMedium,
+                    stringResource(R.string.mcq),
+                    style = Typography.bodyLarge,
+                    fontStyle = FontStyle.Italic,
                     modifier =
-                        Modifier.testTag("flashcardFront--${flashcard.value.id}").padding(10.dp))
-                FlashcardImage(flashcard, fileViewModel)
-                HorizontalDivider(modifier = Modifier.height(5.dp).padding(5.dp))
-                // Show back
-                Text(
-                    flashcard.value.back,
-                    style = Typography.bodyMedium,
-                    modifier =
-                        Modifier.testTag("flashcardBack--${flashcard.value.id}").padding(20.dp))
+                        Modifier.align(Alignment.TopStart)
+                            .testTag("flashcardMCQ--${flashcard.value.id}"))
               }
-        }
+              // Show front and options icon
+              Column(modifier = Modifier.align(Alignment.TopEnd)) {
+                Icon(
+                    modifier =
+                        Modifier.testTag("flashcardOptions--${flashcard.value.id}").clickable(
+                            enabled = belongsToUser) {
+                              dropdownMenuExpanded.value = true
+                            },
+                    imageVector = Icons.Filled.MoreVert,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onPrimaryContainer)
+                AnimatedVisibility(
+                    dropdownMenuExpanded.value,
+                    enter = expandVertically(tween(700)),
+                    exit = shrinkVertically(tween(700))) {
+                      FlashcardItemDropdownMenu(
+                          flashcard,
+                          deckViewModel,
+                          flashcardViewModel,
+                          dropdownMenuExpanded,
+                          editDialogExpanded)
+                    }
+              }
+              Column(
+                  horizontalAlignment = Alignment.CenterHorizontally,
+                  verticalArrangement = Arrangement.SpaceAround,
+                  modifier =
+                      Modifier.testTag("flashcardItemColumn")
+                          .fillMaxWidth()
+                          .heightIn(min = 160.dp)
+                          .padding(top = 10.dp)
+                          .semantics(mergeDescendants = true, properties = {})) {
+                    Text(
+                        flashcard.value.front,
+                        style = Typography.bodyMedium,
+                        modifier =
+                            Modifier.testTag("flashcardFront--${flashcard.value.id}")
+                                .padding(10.dp))
+                    FlashcardImage(flashcard, fileViewModel)
+                    HorizontalDivider(modifier = Modifier.height(5.dp).padding(5.dp))
+                    // Show back
+                    Text(
+                        flashcard.value.back,
+                        style = Typography.bodyMedium,
+                        modifier =
+                            Modifier.testTag("flashcardBack--${flashcard.value.id}").padding(20.dp))
+                  }
+            }
       }
 }
 
