@@ -56,6 +56,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
@@ -117,64 +118,67 @@ fun FlashcardViewItem(
   }
 
   ElevatedCard(
-      modifier =
-          Modifier.testTag("flashcardItem--${flashcard.value.id}")
-              .fillMaxWidth()
-              .heightIn(min = 160.dp)) {
-        Box(contentAlignment = Alignment.Center, modifier = Modifier.padding(10.dp)) {
-          if (flashcard.value.isMCQ()) {
-            Text(
-                stringResource(R.string.mcq),
-                style = Typography.bodyLarge,
-                fontStyle = FontStyle.Italic,
-                modifier =
-                    Modifier.align(Alignment.TopStart)
-                        .testTag("flashcardMCQ--${flashcard.value.id}"))
-          }
-          // Show front and options icon
-          Column(modifier = Modifier.align(Alignment.TopEnd)) {
-            Icon(
-                modifier =
-                    Modifier.testTag("flashcardOptions--${flashcard.value.id}").clickable(
-                        enabled = belongsToUser) {
-                          dropdownMenuExpanded.value = true
-                        },
-                imageVector = Icons.Filled.MoreVert,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onPrimaryContainer)
-            AnimatedVisibility(
-                dropdownMenuExpanded.value,
-                enter = expandVertically(tween(700)),
-                exit = shrinkVertically(tween(700))) {
-                  FlashcardItemDropdownMenu(
-                      flashcard,
-                      deckViewModel,
-                      flashcardViewModel,
-                      dropdownMenuExpanded,
-                      editDialogExpanded)
-                }
-          }
-          Column(
-              horizontalAlignment = Alignment.CenterHorizontally,
-              verticalArrangement = Arrangement.SpaceAround,
-              modifier =
-                  Modifier.testTag("flashcardItemColumn")
-                      .semantics(mergeDescendants = true, properties = {})) {
+      modifier = Modifier.testTag("flashcardItem--${flashcard.value.id}").fillMaxWidth(),
+      colors = CardDefaults.elevatedCardColors(containerColor = Color.White)) {
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier.padding(10.dp).fillMaxWidth()) {
+              if (flashcard.value.isMCQ()) {
                 Text(
-                    flashcard.value.front,
-                    style = Typography.bodyMedium,
+                    stringResource(R.string.mcq),
+                    style = MaterialTheme.typography.titleMedium,
                     modifier =
-                        Modifier.testTag("flashcardFront--${flashcard.value.id}").padding(10.dp))
-                FlashcardImage(flashcard, fileViewModel)
-                HorizontalDivider(modifier = Modifier.height(5.dp).padding(5.dp))
-                // Show back
-                Text(
-                    flashcard.value.back,
-                    style = Typography.bodyMedium,
-                    modifier =
-                        Modifier.testTag("flashcardBack--${flashcard.value.id}").padding(20.dp))
+                        Modifier.align(Alignment.TopStart)
+                            .testTag("flashcardMCQ--${flashcard.value.id}"))
               }
-        }
+              // Show front and options icon
+              Column(modifier = Modifier.align(Alignment.TopEnd)) {
+                Icon(
+                    modifier =
+                        Modifier.testTag("flashcardOptions--${flashcard.value.id}").clickable(
+                            enabled = belongsToUser) {
+                              dropdownMenuExpanded.value = true
+                            },
+                    imageVector = Icons.Filled.MoreVert,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onPrimaryContainer)
+                AnimatedVisibility(
+                    dropdownMenuExpanded.value,
+                    enter = expandVertically(tween(700)),
+                    exit = shrinkVertically(tween(700))) {
+                      FlashcardItemDropdownMenu(
+                          flashcard,
+                          deckViewModel,
+                          flashcardViewModel,
+                          dropdownMenuExpanded,
+                          editDialogExpanded)
+                    }
+              }
+              Column(
+                  horizontalAlignment = Alignment.CenterHorizontally,
+                  verticalArrangement = Arrangement.SpaceAround,
+                  modifier =
+                      Modifier.testTag("flashcardItemColumn")
+                          .fillMaxWidth()
+                          .heightIn(min = 160.dp)
+                          .padding(top = 10.dp)
+                          .semantics(mergeDescendants = true, properties = {})) {
+                    Text(
+                        flashcard.value.front,
+                        style = Typography.bodyMedium,
+                        modifier =
+                            Modifier.testTag("flashcardFront--${flashcard.value.id}")
+                                .padding(10.dp))
+                    FlashcardImage(flashcard, fileViewModel)
+                    HorizontalDivider(modifier = Modifier.height(5.dp).padding(5.dp))
+                    // Show back
+                    Text(
+                        flashcard.value.back,
+                        style = Typography.bodyMedium,
+                        modifier =
+                            Modifier.testTag("flashcardBack--${flashcard.value.id}").padding(20.dp))
+                  }
+            }
       }
 }
 
@@ -251,7 +255,7 @@ fun FlashcardDialog(
                                           hasImageBeenChanged.value = true
                                         }
                                       }
-                                      pictureTaker.pickImage()
+                                      pictureTaker.pickImage(cropToSquare = false)
                                     }) {
                                       Icon(
                                           imageVector = Icons.Default.ImageSearch,
@@ -536,6 +540,19 @@ fun FlashcardItemDropdownMenu(
       }
 }
 
+/**
+ * Composable function that displays a flashcard item for playing. The flashcard can be either a
+ * normal flashcard or a multiple choice question (MCQ). If the flashcard is null, a loading
+ * indicator is displayed. When reviewing flashcards, all flashcards are displayed as normal
+ * flashcards.
+ *
+ * @param flashcardState The state of the flashcard to be displayed.
+ * @param fileViewModel The ViewModel for file-related data.
+ * @param onCorrect The callback to be invoked when the correct choice is selected (for MCQ).
+ * @param onIncorrect The callback to be invoked when an incorrect choice is selected (for MCQ).
+ * @param choice The state for the selected choice (for MCQ).
+ * @param isReview Indicates whether the flashcard is in review mode.
+ */
 @Composable
 fun FlashcardPlayItem(
     flashcardState: State<Flashcard?>,
@@ -545,14 +562,17 @@ fun FlashcardPlayItem(
     choice: MutableState<Int?> = remember { mutableStateOf(null) },
     isReview: Boolean = false
 ) {
-  if (flashcardState.value == null) {
-    LoadingIndicator(stringResource(R.string.loading_flashcard))
-  } else {
-    val flashcard = remember { derivedStateOf { flashcardState.value!! } }
-    if (flashcard.value.isMCQ() && !isReview) {
-      McqPlayItem(flashcard, fileViewModel, onCorrect, onIncorrect, choice)
+  AnimatedContent(flashcardState.value == null, label = "") { displayLoader ->
+    if (displayLoader) {
+      LoadingIndicator(
+          stringResource(R.string.loading_flashcard), Modifier.fillMaxWidth().height(200.dp))
     } else {
-      NormalFlashcardPlayItem(flashcard, fileViewModel)
+      val flashcard = remember { derivedStateOf { flashcardState.value!! } }
+      if (flashcard.value.isMCQ() && !isReview) {
+        McqPlayItem(flashcard, fileViewModel, onCorrect, onIncorrect, choice)
+      } else {
+        NormalFlashcardPlayItem(flashcard, fileViewModel)
+      }
     }
   }
 }
@@ -596,7 +616,7 @@ fun NormalFlashcardPlayItem(
 
   ElevatedCard(
       modifier =
-          Modifier.fillMaxWidth(0.9f)
+          Modifier.fillMaxWidth(0.95f)
               .testTag("flashcard")
               .padding(5.dp)
               .graphicsLayer {
@@ -763,6 +783,7 @@ fun FlashcardImage(
         contentDescription = "Flashcard image",
         modifier =
             Modifier.height(100.dp)
+                .clipToBounds()
                 .testTag("flashcardImage--${flashcard.value.id}")
                 .padding(padding))
   } else if (flashcard.value.hasImage) {
