@@ -116,13 +116,13 @@ open class FolderViewModel(private val repository: FolderRepository) : ViewModel
       onSuccess: () -> Unit = {},
       onFailure: (Exception) -> Unit = {},
       isDeckView: Boolean,
-      useCache: Boolean = false
+      useCache: Boolean = true
   ) {
     viewModelScope.launch {
       repository.addFolder(
           folder = folder,
           onSuccess = {
-            getRootFoldersFromUserId(folder.userId, isDeckView)
+            getRootFoldersFromUserId(folder.userId, isDeckView, useCache = true)
             onSuccess()
           },
           onFailure = onFailure,
@@ -146,14 +146,14 @@ open class FolderViewModel(private val repository: FolderRepository) : ViewModel
       userId: String,
       onSuccess: () -> Unit = {},
       onFailure: (Exception) -> Unit = {},
-      useCache: Boolean = false,
+      useCache: Boolean = true,
       isDeckView: Boolean
   ) {
     viewModelScope.launch {
       repository.deleteFolderById(
           folderId = folderId,
           onSuccess = {
-            getRootFoldersFromUserId(userId, isDeckView)
+            getRootFoldersFromUserId(userId, isDeckView, useCache = true)
             onSuccess()
           },
           onFailure = onFailure,
@@ -175,14 +175,14 @@ open class FolderViewModel(private val repository: FolderRepository) : ViewModel
       userId: String,
       onSuccess: () -> Unit = {},
       onFailure: (Exception) -> Unit = {},
-      useCache: Boolean = false,
+      useCache: Boolean = true,
       isDeckView: Boolean? = null
   ) {
     viewModelScope.launch {
       repository.deleteAllFoldersFromUserId(
           userId = userId,
           onSuccess = {
-            isDeckView?.let { getRootFoldersFromUserId(userId, it) }
+            isDeckView?.let { getRootFoldersFromUserId(userId, it, useCache = true) }
             onSuccess()
           },
           onFailure = onFailure,
@@ -232,7 +232,7 @@ open class FolderViewModel(private val repository: FolderRepository) : ViewModel
       isDeckView: Boolean,
       onSuccess: (List<Folder>) -> Unit = {},
       onFailure: (Exception) -> Unit = {},
-      useCache: Boolean = false
+      useCache: Boolean = true
   ) {
     if (isDeckView) {
       getRootDeckFoldersFromUserId(userId, onSuccess, onFailure, useCache)
@@ -254,7 +254,7 @@ open class FolderViewModel(private val repository: FolderRepository) : ViewModel
       userId: String,
       onSuccess: (List<Folder>) -> Unit = {},
       onFailure: (Exception) -> Unit = {},
-      useCache: Boolean = false
+      useCache: Boolean = true
   ) {
     viewModelScope.launch {
       repository.getRootNoteFoldersFromUserId(
@@ -281,7 +281,7 @@ open class FolderViewModel(private val repository: FolderRepository) : ViewModel
       userId: String,
       onSuccess: (List<Folder>) -> Unit = {},
       onFailure: (Exception) -> Unit = {},
-      useCache: Boolean = false
+      useCache: Boolean = true
   ) {
     viewModelScope.launch {
       repository.getRootDeckFoldersFromUserId(
@@ -389,7 +389,7 @@ open class FolderViewModel(private val repository: FolderRepository) : ViewModel
       folder: Folder,
       onSuccess: () -> Unit = {},
       onFailure: (Exception) -> Unit = {},
-      useCache: Boolean = false,
+      useCache: Boolean = true,
       isDeckView: Boolean
   ) {
     viewModelScope.launch {
@@ -398,7 +398,7 @@ open class FolderViewModel(private val repository: FolderRepository) : ViewModel
           onSuccess = {
             getRootFoldersFromUserId(folder.userId, isDeckView)
             if (folder.parentFolderId != null) {
-              getSubFoldersOf(folder.parentFolderId, null)
+              getSubFoldersOf(folder.parentFolderId, null, useCache = true)
             }
             onSuccess()
           },
@@ -521,14 +521,14 @@ open class FolderViewModel(private val repository: FolderRepository) : ViewModel
       noteViewModel: NoteViewModel,
       onSuccess: () -> Unit = {},
       onFailure: (Exception) -> Unit = {},
-      useCache: Boolean = false
+      useCache: Boolean = true
   ) {
     viewModelScope.launch {
       repository.deleteFolderContents(
           folder = folder,
           noteViewModel = noteViewModel,
           onSuccess = {
-            getSubFoldersOf(folder.id, null)
+            getSubFoldersOf(folder.id, null, useCache = true)
             onSuccess()
           },
           onFailure = onFailure,
@@ -551,14 +551,14 @@ open class FolderViewModel(private val repository: FolderRepository) : ViewModel
       deckViewModel: DeckViewModel,
       onSuccess: () -> Unit = {},
       onFailure: (Exception) -> Unit = {},
-      useCache: Boolean = false
+      useCache: Boolean = true
   ) {
     viewModelScope.launch {
       repository.deleteFolderContents(
           folder = folder,
           deckViewModel = deckViewModel,
           onSuccess = {
-            getSubFoldersOf(folder.id, null)
+            getSubFoldersOf(folder.id, null, useCache = true)
             onSuccess()
           },
           onFailure = onFailure,

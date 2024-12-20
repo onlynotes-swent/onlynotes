@@ -230,13 +230,13 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
       note: Note,
       onSuccess: () -> Unit = {},
       onFailure: (Exception) -> Unit = {},
-      useCache: Boolean = false
+      useCache: Boolean = true
   ) {
     viewModelScope.launch {
       repository.addNote(
           note = note,
           onSuccess = {
-            getRootNotesFromUid(note.userId)
+            getRootNotesFromUid(note.userId, useCache = true)
             onSuccess()
           },
           onFailure = onFailure,
@@ -257,7 +257,7 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
       note: Note,
       onSuccess: () -> Unit = {},
       onFailure: (Exception) -> Unit = {},
-      useCache: Boolean = false
+      useCache: Boolean = true
   ) {
     viewModelScope.launch {
       repository.updateNote(
@@ -265,7 +265,7 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
           onSuccess = {
             getRootNotesFromUid(note.userId)
             if (note.folderId != null) {
-              getNotesFromFolder(note.folderId, null)
+              getNotesFromFolder(note.folderId, null, useCache = true)
             }
             onSuccess()
           },
@@ -287,7 +287,7 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
       userId: String,
       onSuccess: () -> Unit = {},
       onFailure: (Exception) -> Unit = {},
-      useCache: Boolean = false
+      useCache: Boolean = true
   ) {
     viewModelScope.launch {
       repository.deleteNoteById(
@@ -314,7 +314,7 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
       userId: String,
       onSuccess: () -> Unit = {},
       onFailure: (Exception) -> Unit = {},
-      useCache: Boolean = false
+      useCache: Boolean = true
   ) {
     viewModelScope.launch {
       repository.deleteAllNotesFromUserId(
@@ -372,13 +372,13 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
       folderId: String,
       onSuccess: () -> Unit = {},
       onFailure: (Exception) -> Unit = {},
-      useCache: Boolean = false
+      useCache: Boolean = true
   ) {
     viewModelScope.launch {
       repository.deleteNotesFromFolder(
           folderId = folderId,
           onSuccess = {
-            getNotesFromFolder(folderId, null)
+            getNotesFromFolder(folderId, null, useCache = true)
             onSuccess()
           },
           onFailure = onFailure,

@@ -123,8 +123,8 @@ fun OnlyNotesApp(scanner: Scanner, pictureTaker: PictureTaker, textExtractor: Te
 
         LaunchedEffect(currentBackStackEntry) {
           if (user != null) {
-            folderViewModel.getRootNoteFoldersFromUserId(user.uid)
-            noteViewModel.getRootNotesFromUid(user.uid)
+            folderViewModel.getRootNoteFoldersFromUserId(user.uid, useCache = true)
+            noteViewModel.getRootNotesFromUid(user.uid, useCache = true)
           }
         }
 
@@ -159,9 +159,9 @@ fun OnlyNotesApp(scanner: Scanner, pictureTaker: PictureTaker, textExtractor: Te
             // Update the selected folder when the folder ID changes
             LaunchedEffect(folderId) {
               if (folderId != null && folderId != "{folderId}") {
-                folderViewModel.getFolderById(folderId)
-                noteViewModel.getNotesFromFolder(folderId, userViewModel)
-                folderViewModel.getSubFoldersOf(folderId, userViewModel)
+                folderViewModel.getFolderById(folderId, useCache = true)
+                noteViewModel.getNotesFromFolder(folderId, userViewModel, useCache = true)
+                folderViewModel.getSubFoldersOf(folderId, userViewModel, useCache = true)
               }
             }
             // Wait until selected folder is updated to display the screen
@@ -233,9 +233,9 @@ fun OnlyNotesApp(scanner: Scanner, pictureTaker: PictureTaker, textExtractor: Te
             // Update the selected folder when the folder ID changes
             LaunchedEffect(folderId) {
               if (folderId != null && folderId != "{folderId}") {
-                folderViewModel.getFolderById(folderId)
+                folderViewModel.getFolderById(folderId, useCache = true)
                 deckViewModel.getDecksByFolder(folderId)
-                folderViewModel.getSubFoldersOf(folderId, userViewModel)
+                folderViewModel.getSubFoldersOf(folderId, userViewModel, useCache = true)
               }
             }
             // Wait until selected folder is updated to display the screen

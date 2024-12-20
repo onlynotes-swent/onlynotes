@@ -370,7 +370,8 @@ fun FileSystemPopup(
                                 if (selectedFolder!!.parentFolderId != null) {
                                   folderViewModel.getFolderByIdNoStateUpdate(
                                       selectedFolder!!.parentFolderId!!,
-                                      onSuccess = { parentFolder -> selectedFolder = parentFolder })
+                                      onSuccess = { parentFolder -> selectedFolder = parentFolder },
+                                      useCache = true)
                                 } else {
                                   selectedFolder = null
                                 }

@@ -234,9 +234,9 @@ fun NoteOptionsBottomSheet(
         onConfirm = {
           noteViewModel.deleteNoteById(note.id, note.userId)
           if (folderViewModel.selectedFolder.value != null) {
-            noteViewModel.getNotesFromFolder(folderViewModel.selectedFolder.value!!.id, null)
+            noteViewModel.getNotesFromFolder(folderViewModel.selectedFolder.value!!.id, null, useCache = true)
           } else {
-            noteViewModel.getRootNotesFromUid(note.userId)
+            noteViewModel.getRootNotesFromUid(note.userId, useCache = true)
           }
           showDeletePopup = false // Close the dialog after deleting
           onDismiss() // Dismiss the bottom sheet after deleting the note
