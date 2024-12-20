@@ -161,7 +161,7 @@ class FolderViewModelTest {
     }
 
     var onSuccessCalled = false
-    folderViewModel.addFolder(testFolder, { onSuccessCalled = true })
+    folderViewModel.addFolder(testFolder, { onSuccessCalled = true }, isDeckView = false)
     assert(onSuccessCalled)
   }
 
@@ -173,7 +173,7 @@ class FolderViewModelTest {
     }
 
     var onSuccessCalled = false
-    folderViewModel.updateFolder(testFolder, { onSuccessCalled = true })
+    folderViewModel.updateFolder(testFolder, { onSuccessCalled = true }, isDeckView = false)
     assert(onSuccessCalled)
   }
 
@@ -185,7 +185,8 @@ class FolderViewModelTest {
     }
 
     var onSuccessCalled = false
-    folderViewModel.deleteFolderById(testFolder.id, testFolder.userId, { onSuccessCalled = true })
+    folderViewModel.deleteFolderById(
+        testFolder.id, testFolder.userId, { onSuccessCalled = true }, isDeckView = false)
     assert(onSuccessCalled)
   }
 
@@ -235,7 +236,7 @@ class FolderViewModelTest {
       val onSuccess = invocation.getArgument<() -> Unit>(1)
       onSuccess()
     }
-    folderViewModel.updateFolder(testFolder)
+    folderViewModel.updateFolder(testFolder, isDeckView = false)
 
     verify(mockFolderRepository).updateFolder(eq(testFolder), any(), any(), any())
     verify(mockFolderRepository).getRootNoteFoldersFromUserId(eq("1"), any(), any(), any())
