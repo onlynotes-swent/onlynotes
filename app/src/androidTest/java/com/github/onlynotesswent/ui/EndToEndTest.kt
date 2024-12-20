@@ -63,17 +63,20 @@ import com.github.onlynotesswent.utils.NotesToFlashcard
 import com.github.onlynotesswent.utils.OpenAI
 import com.github.onlynotesswent.utils.PictureTaker
 import com.google.firebase.Timestamp
+import kotlinx.coroutines.runBlocking
 import java.io.File
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.mockito.ArgumentMatchers.anyString
 import org.mockito.Mock
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.eq
 
 class EndToEndTest {
@@ -92,7 +95,6 @@ class EndToEndTest {
   private lateinit var noteViewModel: NoteViewModel
   private lateinit var folderViewModel: FolderViewModel
   private lateinit var deckViewModel: DeckViewModel
-  private lateinit var fileViewModel: FileViewModel
 
   private lateinit var notificationViewModel: NotificationViewModel
 
@@ -663,24 +665,24 @@ class EndToEndTest {
     """
             .trimIndent()
 
+    `when`(mockFlashcardRepository.getNewUid()).thenReturn("testFlashcardId")
+    `when`(mockDeckRepository.getNewUid()).thenReturn("testDeckId")
+
     val testFile = File.createTempFile("test", ".md")
     testFile.deleteOnExit()
     `when`(
             mockFileViewModel.downloadFile(
-                any<String>(), eq(FileType.NOTE_TEXT), eq(mockContext), any(), any(), any()))
+                eq(testNote.id), eq(FileType.NOTE_TEXT), eq(mockContext), eq { }, eq { }, eq { }))
         .thenAnswer { invocation ->
           val onSuccess = invocation.getArgument<(File) -> Unit>(3)
           onSuccess(testFile)
         }
 
     // Mocking OpenAI's sendRequest to trigger onSuccess
-    //      runBlocking {
-    //          `when`(mockOpenAI.sendRequestSuspend(anyString(),
-    // anyString())).thenReturn(jsonResponse)
-    //      }
+          runBlocking {
+              `when`(mockOpenAI.sendRequestSuspend(anyString(), anyString())).thenReturn(jsonResponse)
+          }
 
-    `when`(mockFlashcardRepository.getNewUid()).thenReturn("testFlashcardId")
-    `when`(mockDeckRepository.getNewUid()).thenReturn("testDeckId")
     `when`(mockFlashcardRepository.addFlashcard(any(), any(), any())).thenAnswer { invocation ->
       val onSuccess = invocation.getArgument<() -> Unit>(1)
       onSuccess()
@@ -725,9 +727,9 @@ class EndToEndTest {
     composeTestRule.onNodeWithTag("noteModalBottomSheet").assertIsDisplayed()
 
     composeTestRule
-        .onNodeWithTag("convertToFlashcardButton")
+        .onNodeWithTag("onvertNoteBottomSheet")
         .assertIsDisplayed() // change node name to the correct one
-    composeTestRule.onNodeWithTag("convertToFlashcardButton").performClick()
+    composeTestRule.onNodeWithTag("onvertNoteBottomSheet").performClick()
 
     // (Imagining it goes directly to deck play menu)
     // Show deck play bottom sheet
@@ -753,7 +755,7 @@ class EndToEndTest {
     composeTestRule.onNodeWithTag("FinishedScreenColumn").assertIsDisplayed()
   }
 
-  private fun testEndToEndFlow4_init() {
+  /*private fun testEndToEndFlow4_init() {
 
     `when`(mockUserRepository.getAllUsers(any(), any())).thenAnswer { invocation ->
       val onSuccess = invocation.getArgument<(List<User>) -> Unit>(0)
@@ -863,5 +865,5 @@ class EndToEndTest {
         .onAllNodesWithTag("noteCard")
         .filter(hasText(testNoteUser2.title))
         .assertCountEquals(0)
-  }
+  }*/
 }
