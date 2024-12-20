@@ -62,11 +62,13 @@ import com.github.onlynotesswent.model.deck.Deck.SortMode
 import com.github.onlynotesswent.model.deck.DeckViewModel
 import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.flashcard.FlashcardViewModel
+import com.github.onlynotesswent.model.folder.FolderViewModel
 import com.github.onlynotesswent.model.user.User
 import com.github.onlynotesswent.model.user.UserViewModel
 import com.github.onlynotesswent.ui.common.CustomDropDownMenu
 import com.github.onlynotesswent.ui.common.CustomDropDownMenuItem
 import com.github.onlynotesswent.ui.common.EditDeckDialog
+import com.github.onlynotesswent.ui.common.FileSystemPopup
 import com.github.onlynotesswent.ui.common.FlashcardDialog
 import com.github.onlynotesswent.ui.common.FlashcardViewItem
 import com.github.onlynotesswent.ui.common.LoadingIndicator
@@ -94,6 +96,7 @@ fun DeckScreen(
     deckViewModel: DeckViewModel,
     flashcardViewModel: FlashcardViewModel,
     fileViewModel: FileViewModel,
+    folderViewModel: FolderViewModel,
     pictureTaker: PictureTaker,
     navigationActions: NavigationActions
 ) {
@@ -110,7 +113,7 @@ fun DeckScreen(
   val editDialogExpanded = remember { mutableStateOf(false) }
 
   val publicFabDropdownMenuShown = remember { mutableStateOf(false) }
-  // TODO: add mutable states for save to favourites and create local copy dialogs
+  val saveCopyDialogExpanded = remember { mutableStateOf(false) }
 
   val sortOptionsShown = remember { mutableStateOf(false) }
   val sortMode = remember { mutableStateOf(SortMode.ALPHABETICAL) }
@@ -150,7 +153,7 @@ fun DeckScreen(
                 Toast.makeText(context, "Not Implemented", Toast.LENGTH_LONG).show()
               },
               onSaveCopyClick = {
-                Toast.makeText(context, "Not Implemented", Toast.LENGTH_LONG).show()
+                saveCopyDialogExpanded.value = true
               })
         }
       }) { innerPadding ->
@@ -200,7 +203,10 @@ fun DeckScreen(
                   }
                 } else if (editDialogExpanded.value) {
                   EditDeckDialog(deckViewModel, userViewModel, { editDialogExpanded.value = false })
+                } else if (saveCopyDialogExpanded.value) {
+                    FileSystemPopup({ saveCopyDialogExpanded.value = false }, folderViewModel, {} )
                 }
+
 
                 // Play modes bottom sheet:
                 if (playModesShown.value)
