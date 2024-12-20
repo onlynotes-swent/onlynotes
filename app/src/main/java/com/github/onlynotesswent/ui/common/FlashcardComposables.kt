@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -118,62 +117,69 @@ fun FlashcardViewItem(
         mode = "Edit")
   }
 
-  ElevatedCard(modifier = Modifier.testTag("flashcardItem--${flashcard.value.id}").fillMaxWidth()) {
-    Box(contentAlignment = Alignment.Center, modifier = Modifier.padding(10.dp).fillMaxWidth()) {
-      if (flashcard.value.isMCQ()) {
-        Text(
-            stringResource(R.string.mcq),
-            style = Typography.bodyLarge,
-            fontStyle = FontStyle.Italic,
-            modifier =
-                Modifier.align(Alignment.TopStart).testTag("flashcardMCQ--${flashcard.value.id}"))
-      }
-      // Show front and options icon
-      Column(modifier = Modifier.align(Alignment.TopEnd)) {
-        Icon(
-            modifier =
-                Modifier.testTag("flashcardOptions--${flashcard.value.id}").clickable(
-                    enabled = belongsToUser) {
-                      dropdownMenuExpanded.value = true
-                    },
-            imageVector = Icons.Filled.MoreVert,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.onPrimaryContainer)
-        AnimatedVisibility(
-            dropdownMenuExpanded.value,
-            enter = expandVertically(tween(700)),
-            exit = shrinkVertically(tween(700))) {
-              FlashcardItemDropdownMenu(
-                  flashcard,
-                  deckViewModel,
-                  flashcardViewModel,
-                  dropdownMenuExpanded,
-                  editDialogExpanded)
+  ElevatedCard(
+      modifier = Modifier.testTag("flashcardItem--${flashcard.value.id}").fillMaxWidth(),
+      colors = CardDefaults.elevatedCardColors(containerColor = Color.White)) {
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier.padding(10.dp).fillMaxWidth()) {
+              if (flashcard.value.isMCQ()) {
+                Text(
+                    stringResource(R.string.mcq),
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier =
+                        Modifier.align(Alignment.TopStart)
+                            .testTag("flashcardMCQ--${flashcard.value.id}"))
+              }
+              // Show front and options icon
+              Column(modifier = Modifier.align(Alignment.TopEnd)) {
+                Icon(
+                    modifier =
+                        Modifier.testTag("flashcardOptions--${flashcard.value.id}").clickable(
+                            enabled = belongsToUser) {
+                              dropdownMenuExpanded.value = true
+                            },
+                    imageVector = Icons.Filled.MoreVert,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onPrimaryContainer)
+                AnimatedVisibility(
+                    dropdownMenuExpanded.value,
+                    enter = expandVertically(tween(700)),
+                    exit = shrinkVertically(tween(700))) {
+                      FlashcardItemDropdownMenu(
+                          flashcard,
+                          deckViewModel,
+                          flashcardViewModel,
+                          dropdownMenuExpanded,
+                          editDialogExpanded)
+                    }
+              }
+              Column(
+                  horizontalAlignment = Alignment.CenterHorizontally,
+                  verticalArrangement = Arrangement.SpaceAround,
+                  modifier =
+                      Modifier.testTag("flashcardItemColumn")
+                          .fillMaxWidth()
+                          .heightIn(min = 160.dp)
+                          .padding(top = 10.dp)
+                          .semantics(mergeDescendants = true, properties = {})) {
+                    Text(
+                        flashcard.value.front,
+                        style = Typography.bodyMedium,
+                        modifier =
+                            Modifier.testTag("flashcardFront--${flashcard.value.id}")
+                                .padding(10.dp))
+                    FlashcardImage(flashcard, fileViewModel)
+                    HorizontalDivider(modifier = Modifier.height(5.dp).padding(5.dp))
+                    // Show back
+                    Text(
+                        flashcard.value.back,
+                        style = Typography.bodyMedium,
+                        modifier =
+                            Modifier.testTag("flashcardBack--${flashcard.value.id}").padding(20.dp))
+                  }
             }
       }
-      Column(
-          horizontalAlignment = Alignment.CenterHorizontally,
-          verticalArrangement = Arrangement.SpaceAround,
-          modifier =
-              Modifier.testTag("flashcardItemColumn")
-                  .fillMaxWidth()
-                  .heightIn(min = 160.dp)
-                  .absoluteOffset(y = 5.dp)
-                  .semantics(mergeDescendants = true, properties = {})) {
-            Text(
-                flashcard.value.front,
-                style = Typography.bodyMedium,
-                modifier = Modifier.testTag("flashcardFront--${flashcard.value.id}").padding(10.dp))
-            FlashcardImage(flashcard, fileViewModel)
-            HorizontalDivider(modifier = Modifier.height(5.dp).padding(5.dp))
-            // Show back
-            Text(
-                flashcard.value.back,
-                style = Typography.bodyMedium,
-                modifier = Modifier.testTag("flashcardBack--${flashcard.value.id}").padding(20.dp))
-          }
-    }
-  }
 }
 
 /**

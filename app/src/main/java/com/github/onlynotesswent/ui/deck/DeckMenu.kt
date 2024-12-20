@@ -229,10 +229,11 @@ fun DeckScreen(
                         Text(
                             stringResource(R.string.play_button_text),
                             style = MaterialTheme.typography.headlineMedium)
-                        Icon(
-                            Icons.Default.PlayArrow,
-                            contentDescription = "play",
-                            modifier = Modifier.padding(start = 5.dp).size(20.dp))
+                        Spacer(modifier = Modifier.size(7.dp))
+                          Icon(
+                              Icons.Default.PlayArrow,
+                              contentDescription = "play",
+                              modifier = Modifier.size(32.dp))
                       }
                     }
 
