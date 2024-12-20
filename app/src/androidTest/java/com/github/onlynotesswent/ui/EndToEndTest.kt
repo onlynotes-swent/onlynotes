@@ -10,6 +10,7 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotDisplayed
 import androidx.compose.ui.test.assertTextContains
+import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.filter
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
@@ -32,7 +33,6 @@ import com.github.onlynotesswent.model.deck.Deck
 import com.github.onlynotesswent.model.deck.DeckRepository
 import com.github.onlynotesswent.model.deck.DeckViewModel
 import com.github.onlynotesswent.model.file.FileRepository
-import com.github.onlynotesswent.model.file.FileType
 import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.flashcard.Flashcard
 import com.github.onlynotesswent.model.flashcard.FlashcardRepository
@@ -69,21 +69,15 @@ import com.github.onlynotesswent.utils.NotesToFlashcard
 import com.github.onlynotesswent.utils.OpenAI
 import com.github.onlynotesswent.utils.PictureTaker
 import com.google.firebase.Timestamp
-import kotlinx.coroutines.runBlocking
-import java.io.File
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.mockito.ArgumentCaptor
-import org.mockito.ArgumentMatchers.anyString
 import org.mockito.Mock
-import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
-import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.eq
 
 class EndToEndTest {
@@ -97,7 +91,7 @@ class EndToEndTest {
     @Mock private lateinit var mockNotificationRepository: NotificationRepository
     @Mock private lateinit var mockPictureTaker: PictureTaker
     @Mock private lateinit var mockFileRepository: FileRepository
-    @Mock private lateinit var pictureTaker: PictureTaker
+    @Mock private lateinit var mockNavigationActions: NavigationActions
 
     private lateinit var fileViewModel: FileViewModel
     private lateinit var userViewModel: UserViewModel
@@ -177,6 +171,13 @@ class EndToEndTest {
             userId = testUid,
             folderId = null,
             noteId = testNote.id)
+
+    private val userFlashcard =
+        UserFlashcard(
+            id = testFlashcard.id,
+            level = 2,
+            lastReviewed = Timestamp.now(),
+        )
 
     private val testDeck =
         Deck(
@@ -265,7 +266,8 @@ class EndToEndTest {
                                     deckViewModel,
                                     flashcardViewModel,
                                     fileViewModel,
-                                    pictureTaker,
+                                    folderViewModel,
+                                    mockPictureTaker,
                                     navigationActions)
                             }
                             composable(Screen.DECK_PLAY) {
@@ -690,7 +692,18 @@ class EndToEndTest {
             onSuccess(testFlashcard)
         }
 
-        // Start at overview screen
+        `when`(mockUserRepository.updateUserFlashcard(any(), any(), any(), any())).thenAnswer {
+            val onSuccess = it.getArgument<() -> Unit>(2)
+            onSuccess()
+        }
+
+        `when`(mockUserRepository.getUserFlashcardFromDeck(any(), any(), any(), any())).thenAnswer {
+            val onSuccess = it.getArgument<(Map<String, UserFlashcard>) -> Unit>(2)
+            onSuccess(
+                mapOf(
+                    testFlashcard.id to userFlashcard))
+        }
+
         composeTestRule.runOnUiThread { navController.navigate(Route.DECK_OVERVIEW) }
     }
 
@@ -737,26 +750,26 @@ class EndToEndTest {
         // Flip card, select got it right and submit
         composeTestRule.onNodeWithTag("flashcardColumn").assertIsDisplayed()
         composeTestRule.onNodeWithTag("flashcard").assertIsDisplayed()
-        composeTestRule.onNodeWithTag("flashcardFront").assertIsDisplayed()
+        composeTestRule.onNodeWithTag("flashcardFront", true).assertTextEquals("front")
         composeTestRule.onNodeWithTag("flashcard").performClick()
-        composeTestRule.onNodeWithTag("flashcardBack").assertIsDisplayed()
-        composeTestRule.onNodeWithTag("gotItRightButton").assertIsDisplayed()
-        composeTestRule.onNodeWithTag("gotItRightButton").performClick()
+        composeTestRule.onNodeWithTag("flashcardBack", true).assertTextEquals("back")
+        composeTestRule.onNodeWithTag("correctButton").assertIsDisplayed()
+        composeTestRule.onNodeWithTag("correctButton").performClick()
 
         composeTestRule.onNodeWithTag("submitButton").assertIsDisplayed()
         composeTestRule.onNodeWithTag("submitButton").performClick()
         composeTestRule.onNodeWithTag("FinishedScreenColumn").assertIsDisplayed()
     }
 
-    /*private fun testEndToEndFlow4_init() {
+    private fun testEndToEndFlow4_init() {
 
-      when(mockUserRepository.getAllUsers(any(), any())).thenAnswer { invocation ->
+      `when`(mockUserRepository.getAllUsers(any(), any())).thenAnswer { invocation ->
         val onSuccess = invocation.getArgument<(List<User>) -> Unit>(0)
         onSuccess(testUsers)
       }
 
       // Mock the user repository to return the specified user
-      when(mockUserRepository.getUserById(any(), any(), any(), any())).thenAnswer {
+        `when`(mockUserRepository.getUserById(any(), any(), any(), any())).thenAnswer {
         val onSuccess = it.getArgument<(User) -> Unit>(1)
         val onNotFound = it.getArgument<() -> Unit>(2)
         val uid = it.arguments[0] as String
@@ -764,7 +777,7 @@ class EndToEndTest {
         uidToUser(uid)?.let { it1 -> onSuccess(it1) } ?: onNotFound()
       }
 
-      when(mockUserRepository.getUsersById(any(), any(), any())).thenAnswer {
+        `when`(mockUserRepository.getUsersById(any(), any(), any())).thenAnswer {
         val onSuccess = it.getArgument<(List<User>) -> Unit>(1)
         val userIds = it.getArgument<List<String>>(0)
 
@@ -772,7 +785,7 @@ class EndToEndTest {
       }
 
       // Mock add user to initialize current user
-      when(mockUserRepository.addUser(any(), any(), any())).thenAnswer {
+        `when`(mockUserRepository.addUser(any(), any(), any())).thenAnswer {
         val onSuccess = it.getArgument<() -> Unit>(1)
         onSuccess()
       }
@@ -780,7 +793,7 @@ class EndToEndTest {
       // Initialize current user
       userViewModel.addUser(testUser1, {}, {})
 
-      when(mockNoteRepository.getPublicNotes(any(), any())).thenAnswer {
+        `when`(mockNoteRepository.getPublicNotes(any(), any())).thenAnswer {
         val onSuccess = it.getArgument<(List<Note>) -> Unit>(1)
         onSuccess(listOf(testNoteUser2))
       }
@@ -858,5 +871,5 @@ class EndToEndTest {
           .onAllNodesWithTag("noteCard")
           .filter(hasText(testNoteUser2.title))
           .assertCountEquals(0)
-    }*/
+    }
 }
