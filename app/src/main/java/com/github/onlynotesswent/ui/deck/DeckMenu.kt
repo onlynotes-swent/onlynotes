@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.rememberScrollState
@@ -31,7 +32,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardColors
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -251,14 +251,18 @@ fun DeckScreen(
                     modifier = Modifier.padding(10.dp).testTag("deckDescription"))
 
                 // Deck play mode buttons
-                FilledTonalButton(
+                Button(
                     onClick = { playModesShown.value = !playModesShown.value },
                     modifier = Modifier.padding(vertical = 15.dp).testTag("deckPlayButton")) {
                       Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
                             stringResource(R.string.play_button_text),
                             style = MaterialTheme.typography.headlineMedium)
-                        Icon(Icons.Default.PlayArrow, contentDescription = "play")
+                        Spacer(modifier = Modifier.size(7.dp))
+                        Icon(
+                            Icons.Default.PlayArrow,
+                            contentDescription = "play",
+                            modifier = Modifier.size(32.dp))
                       }
                     }
 

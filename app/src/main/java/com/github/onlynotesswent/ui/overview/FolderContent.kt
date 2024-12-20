@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.automirrored.outlined.LibraryBooks
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material.icons.filled.MoreVert
@@ -50,6 +51,7 @@ import com.github.onlynotesswent.model.user.UserViewModel
 import com.github.onlynotesswent.ui.common.ConfirmationPopup
 import com.github.onlynotesswent.ui.common.CustomDropDownMenu
 import com.github.onlynotesswent.ui.common.CustomDropDownMenuItem
+import com.github.onlynotesswent.ui.common.DecksCreationDialog
 import com.github.onlynotesswent.ui.common.EditDeckDialog
 import com.github.onlynotesswent.ui.common.FileSystemPopup
 import com.github.onlynotesswent.ui.common.FolderDialog
@@ -57,6 +59,7 @@ import com.github.onlynotesswent.ui.common.NoteDialog
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
 import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
+import com.github.onlynotesswent.utils.NotesToFlashcard
 import com.google.firebase.Timestamp
 
 /**
@@ -66,6 +69,7 @@ import com.google.firebase.Timestamp
  * @param folderViewModel view model for the folder
  * @param noteViewModel view model for the note
  * @param userViewModel view model for the user
+ * @param notesToFlashcard the notes to flashcard object
  * @param isDeckView whether the view is for a deck
  * @param deckViewModel view model for the deck
  */
@@ -75,6 +79,7 @@ fun FolderContentScreen(
     folderViewModel: FolderViewModel,
     noteViewModel: NoteViewModel? = null,
     userViewModel: UserViewModel,
+    notesToFlashcard: NotesToFlashcard? = null,
     isDeckView: Boolean = false,
     deckViewModel: DeckViewModel? = null
 ) {
@@ -122,6 +127,7 @@ fun FolderContentScreen(
               expanded = expanded,
               onExpandedChange = { expanded = it },
               showUpdateDialog = { showUpdateDialog = it },
+              notesToFlashcard = notesToFlashcard,
               isDeckView = isDeckView,
               deckViewModel = deckViewModel,
               userFolderDecks = userFolderDecks)
@@ -157,7 +163,8 @@ fun FolderContentScreen(
                 folderViewModel = folderViewModel,
                 noteViewModel = noteViewModel,
                 userViewModel = userViewModel,
-                navigationActions = navigationActions)
+                navigationActions = navigationActions,
+                notesToFlashcard = notesToFlashcard!!)
           }
           // Logic to show the dialog to update a folder
 
@@ -264,6 +271,7 @@ fun UserNotFoundFolderContentScreen() {
  * @param expanded whether the dropdown menu is expanded
  * @param onExpandedChange function to change the expanded state
  * @param showUpdateDialog function to show the update dialog
+ * @param notesToFlashcard the notes to flashcard object
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -284,10 +292,12 @@ fun FolderContentTopBar(
     expanded: Boolean,
     onExpandedChange: (Boolean) -> Unit,
     showUpdateDialog: (Boolean) -> Unit,
-    isDeckView: Boolean
+    isDeckView: Boolean,
+    notesToFlashcard: NotesToFlashcard?
 ) {
   var showDeleteFolderConfirmation by remember { mutableStateOf(false) }
   var showDeleteFolderContentsConfirmation by remember { mutableStateOf(false) }
+  var showFlashcardCreationPopup by remember { mutableStateOf(false) }
   var showFileSystemPopup by remember { mutableStateOf(false) }
   TopAppBar(
       colors =
@@ -329,58 +339,73 @@ fun FolderContentTopBar(
       },
       actions = {
         if (folder!!.isOwner(currentUser.value!!.uid)) {
+          val menuItems =
+              mutableListOf(
+                  CustomDropDownMenuItem(
+                      text = { Text(stringResource(R.string.update_folder)) },
+                      icon = {
+                        Icon(imageVector = Icons.Default.Edit, contentDescription = "UpdateFolder")
+                      },
+                      onClick = {
+                        onExpandedChange(false)
+                        showUpdateDialog(true)
+                      },
+                      modifier = Modifier.testTag("updateFolderButton")),
+                  CustomDropDownMenuItem(
+                      text = { Text("Move Folder") },
+                      icon = {
+                        Icon(
+                            imageVector = Icons.Default.FolderOpen,
+                            contentDescription = "moveFolder")
+                      },
+                      onClick = {
+                        onExpandedChange(false)
+                        showFileSystemPopup = true
+                      },
+                      modifier = Modifier.testTag("moveFolderButton")),
+                  CustomDropDownMenuItem(
+                      text = { Text(stringResource(R.string.delete_folder)) },
+                      icon = {
+                        Icon(
+                            painter = painterResource(id = R.drawable.folder_delete_icon),
+                            contentDescription = "DeleteFolder")
+                      },
+                      onClick = {
+                        onExpandedChange(false)
+                        showDeleteFolderConfirmation = true
+                      },
+                      modifier = Modifier.testTag("deleteFolderButton")),
+                  CustomDropDownMenuItem(
+                      text = { Text(stringResource(R.string.delete_folder_contents)) },
+                      icon = {
+                        Icon(
+                            painter = painterResource(id = R.drawable.delete_folder_contents),
+                            contentDescription = "DeleteFolderContents")
+                      },
+                      onClick = {
+                        onExpandedChange(false)
+                        showDeleteFolderContentsConfirmation = true
+                      },
+                      modifier = Modifier.testTag("deleteFolderContentsButton")))
+
+          if (!isDeckView) {
+            menuItems +=
+                CustomDropDownMenuItem(
+                    text = { Text(stringResource(R.string.convert_folder_to_decks)) },
+                    icon = {
+                      Icon(
+                          imageVector = Icons.AutoMirrored.Outlined.LibraryBooks,
+                          contentDescription = "CreateFlashcards")
+                    },
+                    onClick = {
+                      onExpandedChange(false)
+                      showFlashcardCreationPopup = true
+                    },
+                    modifier = Modifier.testTag("createFlashcardsButton"))
+          }
           CustomDropDownMenu(
               modifier = Modifier.testTag("folderSettingsButton"),
-              menuItems =
-                  listOf(
-                      CustomDropDownMenuItem(
-                          text = { Text(stringResource(R.string.update_folder)) },
-                          icon = {
-                            Icon(
-                                imageVector = Icons.Default.Edit,
-                                contentDescription = "UpdateFolder")
-                          },
-                          onClick = {
-                            onExpandedChange(false)
-                            showUpdateDialog(true)
-                          },
-                          modifier = Modifier.testTag("updateFolderButton")),
-                      CustomDropDownMenuItem(
-                          text = { Text("Move Folder") },
-                          icon = {
-                            Icon(
-                                imageVector = Icons.Default.FolderOpen,
-                                contentDescription = "moveFolder")
-                          },
-                          onClick = {
-                            onExpandedChange(false)
-                            showFileSystemPopup = true
-                          },
-                          modifier = Modifier.testTag("moveFolderButton")),
-                      CustomDropDownMenuItem(
-                          text = { Text(stringResource(R.string.delete_folder)) },
-                          icon = {
-                            Icon(
-                                painter = painterResource(id = R.drawable.folder_delete_icon),
-                                contentDescription = "DeleteFolder")
-                          },
-                          onClick = {
-                            onExpandedChange(false)
-                            showDeleteFolderConfirmation = true
-                          },
-                          modifier = Modifier.testTag("deleteFolderButton")),
-                      CustomDropDownMenuItem(
-                          text = { Text(stringResource(R.string.delete_folder_contents)) },
-                          icon = {
-                            Icon(
-                                painter = painterResource(id = R.drawable.delete_folder_contents),
-                                contentDescription = "DeleteFolderContents")
-                          },
-                          onClick = {
-                            onExpandedChange(false)
-                            showDeleteFolderContentsConfirmation = true
-                          },
-                          modifier = Modifier.testTag("deleteFolderContentsButton"))),
+              menuItems = menuItems,
               fabIcon = {
                 Icon(imageVector = Icons.Default.MoreVert, contentDescription = "settings")
               },
@@ -388,6 +413,22 @@ fun FolderContentTopBar(
               onFabClick = { onExpandedChange(true) },
               onDismissRequest = { onExpandedChange(false) })
         }
+        if (showFlashcardCreationPopup) {
+          // Popup for flashcard creation
+          DecksCreationDialog(
+              notesToFlashcard!!,
+              closePopup = { showFlashcardCreationPopup = false },
+              onConversionComplete = {
+                folderViewModel.clearSelectedFolder()
+                showFlashcardCreationPopup = false
+                navigationActions.navigateTo(TopLevelDestinations.DECK_OVERVIEW)
+                navigationActions.navigateTo(
+                    Screen.FOLDER_CONTENTS.replace(
+                        oldValue = "{folderId}", newValue = it.folderId!!))
+              },
+          )
+        }
+
         // Popup for delete folder confirmation
         if (showDeleteFolderConfirmation) {
           ConfirmationPopup(
