@@ -167,7 +167,8 @@ fun FolderContentScreen(
                 onConfirm = { name, vis ->
                   folderViewModel.updateFolder(
                       folder.value!!.copy(
-                          name = name, visibility = vis, lastModified = Timestamp.now()))
+                          name = name, visibility = vis, lastModified = Timestamp.now()),
+                      isDeckView = isDeckView)
                   updatedName = name
                   showUpdateDialog = false
                 },
