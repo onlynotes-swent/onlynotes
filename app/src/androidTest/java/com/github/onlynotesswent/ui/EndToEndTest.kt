@@ -1,5 +1,6 @@
 package com.github.onlynotesswent.ui
 
+import android.content.Context
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
@@ -25,13 +26,15 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navigation
 import androidx.test.espresso.intent.Intents
 import com.github.onlynotesswent.model.authentication.Authenticator
-import com.github.onlynotesswent.model.deck.DeckRepository
-import com.github.onlynotesswent.model.deck.DeckViewModel
 import com.github.onlynotesswent.model.common.Visibility
 import com.github.onlynotesswent.model.deck.Deck
-import com.github.onlynotesswent.model.file.FileRepository
+import com.github.onlynotesswent.model.deck.DeckRepository
+import com.github.onlynotesswent.model.deck.DeckViewModel
+import com.github.onlynotesswent.model.file.FileType
 import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.flashcard.Flashcard
+import com.github.onlynotesswent.model.flashcard.FlashcardRepository
+import com.github.onlynotesswent.model.flashcard.FlashcardViewModel
 import com.github.onlynotesswent.model.folder.FolderRepository
 import com.github.onlynotesswent.model.folder.FolderViewModel
 import com.github.onlynotesswent.model.note.Note
@@ -56,8 +59,11 @@ import com.github.onlynotesswent.ui.user.CreateUserScreen
 import com.github.onlynotesswent.ui.user.EditProfileScreen
 import com.github.onlynotesswent.ui.user.PublicProfileScreen
 import com.github.onlynotesswent.ui.user.UserProfileScreen
+import com.github.onlynotesswent.utils.NotesToFlashcard
+import com.github.onlynotesswent.utils.OpenAI
 import com.github.onlynotesswent.utils.PictureTaker
 import com.google.firebase.Timestamp
+import java.io.File
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Before
@@ -77,17 +83,22 @@ class EndToEndTest {
   @Mock private lateinit var mockNoteRepository: NoteRepository
   @Mock private lateinit var mockFolderRepository: FolderRepository
   @Mock private lateinit var mockDeckRepository: DeckRepository
-  @Mock private lateinit var mockFileRepository: FileRepository
   @Mock private lateinit var mockNotificationRepository: NotificationRepository
   @Mock private lateinit var mockPictureTaker: PictureTaker
+  @Mock private lateinit var mockFileViewModel: FileViewModel
   private lateinit var userViewModel: UserViewModel
   private lateinit var noteViewModel: NoteViewModel
   private lateinit var folderViewModel: FolderViewModel
   private lateinit var deckViewModel: DeckViewModel
-  private lateinit var fileViewModel: FileViewModel
   private lateinit var notificationViewModel: NotificationViewModel
 
   @Mock private lateinit var mockAuthenticator: Authenticator
+
+  @Mock private lateinit var mockContext: Context
+  @Mock private lateinit var mockOpenAI: OpenAI
+  @Mock private lateinit var mockFlashcardRepository: FlashcardRepository
+  private lateinit var notesToFlashcard: NotesToFlashcard
+  private lateinit var flashcardViewModel: FlashcardViewModel
 
   private lateinit var navController: NavHostController
   private lateinit var navigationActions: NavigationActions
@@ -144,25 +155,24 @@ class EndToEndTest {
   private val newTitle = "New Title"
 
   private val testFlashcard =
-        Flashcard(
-            id = "testFlashcardId",
-            front = "front",
-            back = "back",
-            userId = testUid,
-            folderId = null,
-            noteId = testNote.id
-        )
+      Flashcard(
+          id = "testFlashcardId",
+          front = "front",
+          back = "back",
+          userId = testUid,
+          folderId = null,
+          noteId = testNote.id)
 
-  private val testDeck = Deck(
-      id = "1",
-      name = "deckName",
-      userId = testUid,
-      folderId = null,
-      visibility = Visibility.PRIVATE,
-      lastModified = Timestamp.now(),
-      description = "deckDescription",
-      flashcardIds = listOf(testFlashcard.id)
-  )
+  private val testDeck =
+      Deck(
+          id = "1",
+          name = "deckName",
+          userId = testUid,
+          folderId = null,
+          visibility = Visibility.PRIVATE,
+          lastModified = Timestamp.now(),
+          description = "deckDescription",
+          flashcardIds = listOf(testFlashcard.id))
 
   // Setup Compose test rule for UI testing
   @get:Rule val composeTestRule = createComposeRule()
@@ -176,8 +186,18 @@ class EndToEndTest {
     noteViewModel = NoteViewModel(mockNoteRepository)
     folderViewModel = FolderViewModel(mockFolderRepository)
     deckViewModel = DeckViewModel(mockDeckRepository)
-    fileViewModel = FileViewModel(mockFileRepository)
+    flashcardViewModel = FlashcardViewModel(mockFlashcardRepository)
     notificationViewModel = NotificationViewModel(mockNotificationRepository)
+
+    notesToFlashcard =
+        NotesToFlashcard(
+            flashcardViewModel,
+            mockFileViewModel,
+            deckViewModel,
+            noteViewModel,
+            folderViewModel,
+            mockOpenAI,
+            mockContext)
 
     // Initialize Intents for handling navigation intents in the test
     Intents.init()
@@ -219,7 +239,7 @@ class EndToEndTest {
                   }
                   composable(Screen.EDIT_NOTE_MARKDOWN) {
                     EditMarkdownScreen(
-                        navigationActions, noteViewModel, fileViewModel, userViewModel)
+                        navigationActions, noteViewModel, mockFileViewModel, userViewModel)
                   }
                 }
                 navigation(
@@ -233,7 +253,7 @@ class EndToEndTest {
                         userViewModel,
                         folderViewModel,
                         deckViewModel,
-                        fileViewModel)
+                        mockFileViewModel)
                   }
                 }
                 navigation(
@@ -244,7 +264,7 @@ class EndToEndTest {
                     UserProfileScreen(
                         navigationActions,
                         userViewModel,
-                        fileViewModel,
+                        mockFileViewModel,
                         notificationViewModel,
                         mockAuthenticator)
                   }
@@ -252,7 +272,7 @@ class EndToEndTest {
                     PublicProfileScreen(
                         navigationActions,
                         userViewModel,
-                        fileViewModel,
+                        mockFileViewModel,
                         notificationViewModel,
                         mockAuthenticator)
                   }
@@ -261,7 +281,7 @@ class EndToEndTest {
                         navigationActions,
                         userViewModel,
                         mockPictureTaker,
-                        fileViewModel,
+                        mockFileViewModel,
                         noteViewModel,
                         folderViewModel)
                   }
@@ -604,10 +624,68 @@ class EndToEndTest {
     composeTestRule.runOnUiThread { navController.navigate(Route.NOTE_OVERVIEW) }
   }
 
-  // Test the end-to-end flow of creating a note, converting it into a flashcard and playing its decks
+  private fun noteToFlashcardsMock() {
+    val jsonResponse =
+        """
+    {
+        "id": "chatcmpl-ASApJxQH9B975zpiNEukghJeWKMsd",
+        "object": "chat.completion",
+        "created": 1731278165,
+        "model": "gpt-3.5-turbo-0125",
+        "choices": [
+            {
+                "index": 0,
+                "message": {
+                    "role": "assistant",
+                    "content": "[
+                    {\"question\": \"What is cryptocurrency?\",\"answer\": \"Cryptocurrency is a digital payment system...\"}
+                    ,{\"question\": \"How does cryptocurrency work?\",\"answer\": \"Cryptocurrencies run on a distributed public ledger...\"}
+                    ,{\"question\": \"Cryptocurrency examples\",\"answer\": \"There are thousands of cryptocurrencies. Some of the best known include: Bitcoin, Ethereum...\"}
+                    ,{\"question\": \"Which one of the following is a cryptocurrency?\",\"answer\": \"Bitcoin\",\"fakeBacks\": [\"PayPal\",\"Visa\",\"Mastercard\"]}
+                    ]"
+                },
+                "logprobs": null,
+                "finish_reason": "stop"
+            }
+        ]
+    }
+    """
+            .trimIndent()
+
+    val testFile = File.createTempFile("test", ".md")
+    testFile.deleteOnExit()
+    `when`(
+            mockFileViewModel.downloadFile(
+                any<String>(), eq(FileType.NOTE_TEXT), eq(mockContext), any(), any(), any()))
+        .thenAnswer { invocation ->
+          val onSuccess = invocation.getArgument<(File) -> Unit>(3)
+          onSuccess(testFile)
+        }
+
+    // Mocking OpenAI's sendRequest to trigger onSuccess
+    //      runBlocking {
+    //          `when`(mockOpenAI.sendRequestSuspend(anyString(),
+    // anyString())).thenReturn(jsonResponse)
+    //      }
+
+    `when`(mockFlashcardRepository.getNewUid()).thenReturn("testFlashcardId")
+    `when`(mockDeckRepository.getNewUid()).thenReturn("testDeckId")
+    `when`(mockFlashcardRepository.addFlashcard(any(), any(), any())).thenAnswer { invocation ->
+      val onSuccess = invocation.getArgument<() -> Unit>(1)
+      onSuccess()
+    }
+    `when`(mockDeckRepository.updateDeck(any(), any(), any())).thenAnswer { invocation ->
+      val onSuccess = invocation.getArgument<() -> Unit>(1)
+      onSuccess()
+    }
+  }
+
+  // Test the end-to-end flow of creating a note, converting it into a flashcard and playing its
+  // decks
   @Test
-  fun testEndToEndFlow3() {
+  fun testEndToEndFlow3() = runTest {
     testEndToEndFlow3_init()
+    noteToFlashcardsMock()
 
     // Create a root note
     composeTestRule.onNodeWithTag("createNoteOrFolder").assertIsDisplayed()
@@ -635,7 +713,9 @@ class EndToEndTest {
     composeTestRule.onNodeWithTag("showBottomSheetButton").performClick()
     composeTestRule.onNodeWithTag("noteModalBottomSheet").assertIsDisplayed()
 
-    composeTestRule.onNodeWithTag("convertToFlashcardButton").assertIsDisplayed() // change node name to the correct one
+    composeTestRule
+        .onNodeWithTag("convertToFlashcardButton")
+        .assertIsDisplayed() // change node name to the correct one
     composeTestRule.onNodeWithTag("convertToFlashcardButton").performClick()
 
     // (Imagining it goes directly to deck play menu)
@@ -708,7 +788,8 @@ class EndToEndTest {
     composeTestRule.runOnUiThread { navController.navigate(Route.NOTE_OVERVIEW) }
   }
 
-  // Test the end-to-end flow of saving a note and viewing it in the current user saved overview screen,
+  // Test the end-to-end flow of saving a note and viewing it in the current user saved overview
+  // screen,
   // checking the note is there and cannot be modified, and unsaving it and checking it is no longer
   // there
   @Test
