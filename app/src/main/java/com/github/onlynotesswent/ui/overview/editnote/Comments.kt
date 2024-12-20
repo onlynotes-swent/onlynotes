@@ -46,6 +46,7 @@ import com.github.onlynotesswent.model.note.Note
 import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.model.user.User
 import com.github.onlynotesswent.model.user.UserViewModel
+import com.github.onlynotesswent.ui.common.BottomEditNoteNavigationBarWithDivider
 import com.github.onlynotesswent.ui.common.ThumbnailDynamicPic
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
@@ -113,7 +114,7 @@ fun CommentsScreen(
           HorizontalDivider(
               color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f), thickness = 0.5.dp)
 
-          EditNoteNavigationMenu(
+          BottomEditNoteNavigationBarWithDivider(
               navigationActions = navigationActions,
               selectedItem = Screen.EDIT_NOTE_COMMENT,
               onClick = {})

@@ -14,6 +14,7 @@ import androidx.credentials.exceptions.GetCredentialCancellationException
 import androidx.credentials.exceptions.GetCredentialException
 import androidx.credentials.exceptions.NoCredentialException
 import com.github.onlynotesswent.R
+import com.github.onlynotesswent.model.cache.AuthManager
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException
@@ -40,6 +41,8 @@ open class Authenticator(
 ) {
   // The server client ID for the app
   private val serverClientId = ctx.getString(R.string.default_web_client_id)
+  // The AuthManager which caches the user's credentials
+  val authManager: AuthManager = AuthManager(ctx)
 
   /**
    * Signs in using Google credentials
@@ -83,6 +86,7 @@ open class Authenticator(
   suspend fun signOut() {
     Firebase.auth.signOut()
     credentialManager.clearCredentialState(ClearCredentialStateRequest())
+    authManager.deleteCredentials()
   }
 
   /**
@@ -114,6 +118,7 @@ open class Authenticator(
 
             // Verify the user is correctly retrieved
             if (authResult.user != null && authResult.user?.email != null) {
+              authManager.saveCredentials(authResult.user?.email!!)
               onSuccess(authResult)
             } else {
               Log.e(TAG, "User incorrectly retrieved from Firebase")

@@ -29,7 +29,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.github.onlynotesswent.MainActivity
+import com.github.onlynotesswent.OnlyNotes
 import com.github.onlynotesswent.R
 import com.github.onlynotesswent.model.folder.Folder
 import com.github.onlynotesswent.model.folder.FolderViewModel
@@ -84,7 +84,7 @@ fun NoteOverviewScreen(
   // Handle back press
   BackHandler {
     // Move the app to background
-    (context as MainActivity).moveTaskToBack(true)
+    (context as OnlyNotes).moveTaskToBack(true)
   }
 
   Scaffold(
@@ -113,6 +113,7 @@ fun NoteOverviewScreen(
                 pageLabels.forEachIndexed { index, label ->
                   SegmentedButton(
                       selected = pagerState.currentPage == index,
+                      modifier = Modifier.testTag("segmentedButton--${label}"),
                       shape =
                           SegmentedButtonDefaults.itemShape(
                               index = index,
@@ -122,8 +123,7 @@ fun NoteOverviewScreen(
                       colors =
                           SegmentedButtonDefaults.colors(
                               activeContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                              inactiveContainerColor =
-                                  MaterialTheme.colorScheme.secondaryContainer),
+                              inactiveContainerColor = MaterialTheme.colorScheme.surface),
                       label = { Text(label) },
                       onClick = {
                         // Animate to the selected page when clicked

@@ -57,7 +57,7 @@ import org.robolectric.shadows.ShadowLog
 @RunWith(RobolectricTestRunner::class)
 class ScannerTest {
 
-  @Mock private lateinit var mockMainActivity: ComponentActivity
+  @Mock private lateinit var mockOnlyNotes: ComponentActivity
   @Mock private lateinit var mockDocScanner: GmsDocumentScanner
   @Mock private lateinit var mockTaskIntentSender: Task<IntentSender>
   @Mock private lateinit var mockIntentSender: IntentSender
@@ -77,13 +77,13 @@ class ScannerTest {
 
     // Mock the registration of activity result launcher in the activity
     `when`(
-            mockMainActivity.registerForActivityResult(
+            mockOnlyNotes.registerForActivityResult(
                 any<ActivityResultContract<IntentSenderRequest, ActivityResult>>(),
                 any<ActivityResultCallback<ActivityResult>>()))
         .thenReturn(mockActivityResultLauncher)
 
     // Initialize the scanner with the mocked components
-    scanner = Scanner(mockMainActivity, mockDocScanner)
+    scanner = Scanner(mockOnlyNotes, mockDocScanner)
   }
 
   /**
@@ -102,7 +102,7 @@ class ScannerTest {
     scanner.init()
 
     // Verify that the activity result launcher is registered
-    verify(mockMainActivity)
+    verify(mockOnlyNotes)
         .registerForActivityResult(
             any<ActivityResultContract<IntentSenderRequest, ActivityResult>>(),
             any<ActivityResultCallback<ActivityResult>>())
@@ -116,7 +116,7 @@ class ScannerTest {
   fun scanInProgressTest() {
 
     // Simulate a successful scan
-    `when`(mockDocScanner.getStartScanIntent(mockMainActivity)).thenReturn(mockTaskIntentSender)
+    `when`(mockDocScanner.getStartScanIntent(mockOnlyNotes)).thenReturn(mockTaskIntentSender)
     `when`(mockTaskIntentSender.addOnSuccessListener(any())).thenAnswer {
       val listener = it.arguments[0] as OnSuccessListener<IntentSender>
       listener.onSuccess(mockIntentSender)
@@ -156,7 +156,7 @@ class ScannerTest {
     val captor = ArgumentCaptor.forClass(IntentSenderRequest::class.java)
 
     // Simulate a successful scan
-    `when`(mockDocScanner.getStartScanIntent(mockMainActivity)).thenReturn(mockTaskIntentSender)
+    `when`(mockDocScanner.getStartScanIntent(mockOnlyNotes)).thenReturn(mockTaskIntentSender)
     `when`(mockTaskIntentSender.addOnSuccessListener(any())).thenAnswer {
       val listener = it.arguments[0] as OnSuccessListener<IntentSender>
       listener.onSuccess(mockIntentSender)
@@ -168,7 +168,7 @@ class ScannerTest {
     scanner.scan {}
 
     // Verify that the scanning intent was retrieved and launched
-    verify(mockDocScanner).getStartScanIntent(mockMainActivity)
+    verify(mockDocScanner).getStartScanIntent(mockOnlyNotes)
     verify(mockTaskIntentSender).addOnSuccessListener(any())
     verify(mockActivityResultLauncher).launch(capture(intentSenderRequestCaptor))
     assertEquals(mockIntentSender, intentSenderRequestCaptor.value.intentSender)
@@ -178,7 +178,7 @@ class ScannerTest {
   fun scanLaunchThrowsExceptionTest() {
     // Simulate a successful call, but an exception thrown by the scanner launcher
     `when`(mockActivityResultLauncher.launch(any())).thenThrow(ActivityNotFoundException("test"))
-    `when`(mockDocScanner.getStartScanIntent(mockMainActivity)).thenReturn(mockTaskIntentSender)
+    `when`(mockDocScanner.getStartScanIntent(mockOnlyNotes)).thenReturn(mockTaskIntentSender)
     `when`(mockTaskIntentSender.addOnSuccessListener(any())).thenAnswer {
       val listener = it.arguments[0] as OnSuccessListener<IntentSender>
       listener.onSuccess(mockIntentSender)
@@ -208,7 +208,7 @@ class ScannerTest {
     }
 
     // Verify that the scanning intent was retrieved and launched
-    verify(mockDocScanner).getStartScanIntent(mockMainActivity)
+    verify(mockDocScanner).getStartScanIntent(mockOnlyNotes)
     verify(mockTaskIntentSender).addOnSuccessListener(any())
     verify(mockActivityResultLauncher).launch(capture(intentSenderRequestCaptor))
     assertEquals(mockIntentSender, intentSenderRequestCaptor.value.intentSender)
@@ -221,7 +221,7 @@ class ScannerTest {
   @Test
   fun scanFailTest() {
     // Simulate a failure
-    `when`(mockDocScanner.getStartScanIntent(mockMainActivity)).thenReturn(mockTaskIntentSender)
+    `when`(mockDocScanner.getStartScanIntent(mockOnlyNotes)).thenReturn(mockTaskIntentSender)
     `when`(mockTaskIntentSender.addOnSuccessListener(any())).thenReturn(mockTaskIntentSender)
     `when`(mockTaskIntentSender.addOnFailureListener(any())).thenAnswer {
       (it.arguments[0] as OnFailureListener).onFailure(Exception("Failed to scan"))
@@ -262,7 +262,7 @@ class ScannerTest {
     val captor =
         ArgumentCaptor.forClass(ActivityResultCallback::class.java)
             as ArgumentCaptor<ActivityResultCallback<ActivityResult>>
-    verify(mockMainActivity)
+    verify(mockOnlyNotes)
         .registerForActivityResult(
             any<ActivityResultContract<IntentSenderRequest, ActivityResult>>(), capture(captor))
     val handleActivityResult = captor.value
@@ -281,7 +281,7 @@ class ScannerTest {
       verifyErrorLog("Scanner failed with resultCode: ${Activity.RESULT_OK}")
 
       // Verify that Toast.makeText() was called with the appropriate arguments
-      ToastMock.verify { makeText(eq(mockMainActivity), eq("Scanner failed"), any()) }
+      ToastMock.verify { makeText(eq(mockOnlyNotes), eq("Scanner failed"), any()) }
 
       // Verify that Toast.show() was called on the returned Toast object
       verify(mockToast).show()
@@ -302,7 +302,7 @@ class ScannerTest {
     val captor =
         ArgumentCaptor.forClass(ActivityResultCallback::class.java)
             as ArgumentCaptor<ActivityResultCallback<ActivityResult>>
-    verify(mockMainActivity)
+    verify(mockOnlyNotes)
         .registerForActivityResult(
             any<ActivityResultContract<IntentSenderRequest, ActivityResult>>(), capture(captor))
     val handleActivityResult = captor.value
@@ -320,7 +320,7 @@ class ScannerTest {
       verifyErrorLog("Scanner cancelled")
 
       // Verify that Toast.makeText() was called with the appropriate arguments
-      ToastMock.verify { makeText(eq(mockMainActivity), eq("Scanner cancelled"), any()) }
+      ToastMock.verify { makeText(eq(mockOnlyNotes), eq("Scanner cancelled"), any()) }
 
       // Verify that Toast.show() was called on the returned Toast object
       verify(mockToast).show()
@@ -342,7 +342,7 @@ class ScannerTest {
     val captor =
         ArgumentCaptor.forClass(ActivityResultCallback::class.java)
             as ArgumentCaptor<ActivityResultCallback<ActivityResult>>
-    verify(mockMainActivity)
+    verify(mockOnlyNotes)
         .registerForActivityResult(
             any<ActivityResultContract<IntentSenderRequest, ActivityResult>>(), capture(captor))
     val handleActivityResult = captor.value
@@ -374,7 +374,7 @@ class ScannerTest {
         verifyErrorLog("Path to pdf file is null")
 
         // Verify that Toast.makeText() was called with the appropriate arguments
-        ToastMock.verify { makeText(eq(mockMainActivity), any<String>(), any()) }
+        ToastMock.verify { makeText(eq(mockOnlyNotes), any<String>(), any()) }
 
         // Verify that Toast.show() was called on the returned Toast object
         verify(mockToast).show()
@@ -391,7 +391,7 @@ class ScannerTest {
     val testPath = "test_path.pdf"
 
     // Simulate a successful scan
-    `when`(mockDocScanner.getStartScanIntent(mockMainActivity)).thenReturn(mockTaskIntentSender)
+    `when`(mockDocScanner.getStartScanIntent(mockOnlyNotes)).thenReturn(mockTaskIntentSender)
     `when`(mockTaskIntentSender.addOnSuccessListener(any())).thenAnswer {
       val listener = it.arguments[0] as OnSuccessListener<IntentSender>
       listener.onSuccess(mockIntentSender)
@@ -407,7 +407,7 @@ class ScannerTest {
     val captor =
         ArgumentCaptor.forClass(ActivityResultCallback::class.java)
             as ArgumentCaptor<ActivityResultCallback<ActivityResult>>
-    verify(mockMainActivity)
+    verify(mockOnlyNotes)
         .registerForActivityResult(
             any<ActivityResultContract<IntentSenderRequest, ActivityResult>>(), capture(captor))
     val handleActivityResult = captor.value
@@ -430,7 +430,7 @@ class ScannerTest {
     val FileProviderMock = Mockito.mockStatic(FileProvider::class.java)
     // Stub the static getUriForFile method to return the mock Uri object
     // (no separate mock created for an external URI as it would be unnecessary)
-    FileProviderMock.`when`<Uri> { getUriForFile(eq(mockMainActivity), any(), any()) }
+    FileProviderMock.`when`<Uri> { getUriForFile(eq(mockOnlyNotes), any(), any()) }
         .thenReturn(mockUri)
 
     handleActivityResult.onActivityResult(ActivityResult(Activity.RESULT_OK, Intent()))

@@ -118,15 +118,21 @@ fun FlashcardViewItem(
   }
 
   ElevatedCard(
-      modifier = Modifier.testTag("flashcardItem--${flashcard.value.id}").fillMaxWidth(),
-      colors = CardDefaults.elevatedCardColors(containerColor = Color.White)) {
+      modifier =
+          Modifier.testTag("flashcardItem--${flashcard.value.id}")
+              .fillMaxWidth()
+              .heightIn(min = 160.dp),
+      colors =
+          CardDefaults.elevatedCardColors(
+              containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
         Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier.padding(10.dp).fillMaxWidth()) {
               if (flashcard.value.isMCQ()) {
                 Text(
                     stringResource(R.string.mcq),
-                    style = MaterialTheme.typography.titleMedium,
+                    style = Typography.bodyLarge,
+                    fontStyle = FontStyle.Italic,
                     modifier =
                         Modifier.align(Alignment.TopStart)
                             .testTag("flashcardMCQ--${flashcard.value.id}"))

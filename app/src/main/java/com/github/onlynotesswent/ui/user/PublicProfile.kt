@@ -28,9 +28,11 @@ import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -70,11 +72,10 @@ import com.github.onlynotesswent.model.notification.Notification
 import com.github.onlynotesswent.model.notification.NotificationViewModel
 import com.github.onlynotesswent.model.user.User
 import com.github.onlynotesswent.model.user.UserViewModel
+import com.github.onlynotesswent.ui.common.BottomNavigationBarWithDivider
 import com.github.onlynotesswent.ui.common.EnterTextPopup
 import com.github.onlynotesswent.ui.common.NonModifiableProfilePicture
 import com.github.onlynotesswent.ui.common.ThumbnailDynamicPic
-import com.github.onlynotesswent.ui.navigation.BottomNavigationMenu
-import com.github.onlynotesswent.ui.navigation.LIST_TOP_LEVEL_DESTINATION
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
 import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
@@ -220,12 +221,7 @@ private fun ProfileScaffold(
   Scaffold(
       modifier = Modifier.testTag("profileScaffold"),
       floatingActionButton = floatingActionButton,
-      bottomBar = {
-        BottomNavigationMenu(
-            onTabSelect = { route -> navigationActions.navigateTo(route) },
-            tabList = LIST_TOP_LEVEL_DESTINATION,
-            selectedItem = navigationActions.currentRoute())
-      },
+      bottomBar = { BottomNavigationBarWithDivider(navigationActions) },
       topBar = {
         TopProfileBar(
             title = topBarTitle,
@@ -274,28 +270,33 @@ fun TopProfileBar(
     onSendMessageClick: () -> Unit = {}
 ) {
   val scope = rememberCoroutineScope()
-  TopAppBar(
-      title = { Text(title) },
-      navigationIcon = {
-        if (includeBackButton) {
-          IconButton(onClick = onBackButtonClick, Modifier.testTag("goBackButton")) {
-            Icon(imageVector = Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "Back")
+  Column {
+    TopAppBar(
+        title = { Text(title) },
+        navigationIcon = {
+          if (includeBackButton) {
+            IconButton(onClick = onBackButtonClick, Modifier.testTag("goBackButton")) {
+              Icon(imageVector = Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "Back")
+            }
           }
-        }
-      },
-      actions = {
-        if (!includeBackButton) {
-          NotificationButton(navigationActions, userViewModel, notificationViewModel)
-          LogoutButton {
-            scope.launch {
-              authenticator.signOut()
-            } // Authenticator should be non-null if coded correctly
-            navigationActions.navigateTo(Screen.AUTH)
+        },
+        actions = {
+          if (!includeBackButton) {
+            NotificationButton(navigationActions, userViewModel, notificationViewModel)
+            LogoutButton {
+              scope.launch {
+                authenticator.signOut()
+              } // Authenticator should be non-null if coded correctly
+              navigationActions.navigateTo(Screen.AUTH)
+            }
+          } else {
+            SendMessageButton(userViewModel, notificationViewModel, onSendMessageClick)
           }
-        } else {
-          SendMessageButton(userViewModel, notificationViewModel, onSendMessageClick)
-        }
-      })
+        })
+
+    HorizontalDivider(
+        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f), thickness = 0.5.dp)
+  }
 }
 
 /**
@@ -325,109 +326,111 @@ fun ProfileContent(
   } else {
     ElevatedCard(
         modifier = Modifier.fillMaxSize().padding(40.dp).testTag("profileCard"),
-    ) {
-      val borderPadding = 20.dp
-      Column(
-          modifier = Modifier.padding(borderPadding).fillMaxWidth().testTag("profileCardColumn"),
-          verticalArrangement = Arrangement.Center,
-          horizontalAlignment = Alignment.CenterHorizontally) {
+        colors =
+            CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
+          val borderPadding = 20.dp
+          Column(
+              modifier =
+                  Modifier.padding(borderPadding).fillMaxWidth().testTag("profileCardColumn"),
+              verticalArrangement = Arrangement.Center,
+              horizontalAlignment = Alignment.CenterHorizontally) {
 
-            // Profile picture
-            NonModifiableProfilePicture(user, profilePictureUri, fileViewModel)
+                // Profile picture
+                NonModifiableProfilePicture(user, profilePictureUri, fileViewModel)
 
-            Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(20.dp))
 
-            // Display the user's full name and handle (username)
-            Row {
-              Icon(Icons.Default.AccountCircle, "profileIcon")
-              Text(
-                  user.value!!.fullName(),
-                  fontWeight = FontWeight(500),
-                  modifier = Modifier.testTag("userFullName"))
-            }
-            Spacer(modifier = Modifier.height(5.dp))
-            Text(
-                user.value!!.userHandle(),
-                fontWeight = FontWeight(400),
-                fontStyle = FontStyle.Italic,
-                modifier = Modifier.alpha(0.7f).testTag("userHandle"))
-            Spacer(modifier = Modifier.height(10.dp))
+                // Display the user's full name and handle (username)
+                Row {
+                  Icon(Icons.Default.AccountCircle, "profileIcon")
+                  Text(
+                      user.value!!.fullName(),
+                      fontWeight = FontWeight(500),
+                      modifier = Modifier.testTag("userFullName"))
+                }
+                Spacer(modifier = Modifier.height(5.dp))
+                Text(
+                    user.value!!.userHandle(),
+                    fontWeight = FontWeight(400),
+                    fontStyle = FontStyle.Italic,
+                    modifier = Modifier.alpha(0.7f).testTag("userHandle"))
+                Spacer(modifier = Modifier.height(10.dp))
 
-            // Display the user's date of joining and rating
-            Row {
-              Icon(Icons.Default.Star, "starIcon")
-              Text(
-                  stringResource(R.string.rating, user.value!!.rating),
-                  modifier = Modifier.testTag("userRating"))
-            }
-            Spacer(modifier = Modifier.height(10.dp))
-            Row {
-              Icon(Icons.Default.DateRange, "dateIcon")
-              Text(
-                  stringResource(R.string.member_since, user.value!!.dateToString()),
-                  modifier = Modifier.testTag("userDateOfJoining"))
-            }
-            Spacer(modifier = Modifier.height(10.dp))
+                // Display the user's date of joining and rating
+                Row {
+                  Icon(Icons.Default.Star, "starIcon")
+                  Text(
+                      stringResource(R.string.rating, user.value!!.rating),
+                      modifier = Modifier.testTag("userRating"))
+                }
+                Spacer(modifier = Modifier.height(10.dp))
+                Row {
+                  Icon(Icons.Default.DateRange, "dateIcon")
+                  Text(
+                      stringResource(R.string.member_since, user.value!!.dateToString()),
+                      modifier = Modifier.testTag("userDateOfJoining"))
+                }
+                Spacer(modifier = Modifier.height(10.dp))
 
-            // Display the user's bio
-            if (user.value!!.bio.isNotEmpty()) {
-              DisplayBioCard(user)
-              Spacer(modifier = Modifier.height(10.dp))
-            }
+                // Display the user's bio
+                if (user.value!!.bio.isNotEmpty()) {
+                  DisplayBioCard(user)
+                  Spacer(modifier = Modifier.height(10.dp))
+                }
 
-            // Display the number of following and followers on clickable buttons
-            Row {
-              OutlinedButton(
-                  modifier = Modifier.testTag("followingButton"),
-                  onClick = {
-                    userViewModel.getFollowingFrom(
-                        user.value!!.uid,
-                        {
-                          following.value = it
-                          isFollowingMenuShown.value = true
-                        },
-                        { isFollowingMenuShown.value = false })
-                  }) {
-                    Text(
-                        stringResource(R.string.following, user.value!!.friends.following.size),
-                        modifier = Modifier.testTag("followingText"))
-                  }
-              Spacer(modifier = Modifier.width(10.dp))
-              OutlinedButton(
-                  modifier = Modifier.testTag("followersButton"),
-                  onClick = {
-                    userViewModel.getFollowersFrom(
-                        user.value!!.uid,
-                        {
-                          followers.value = it
-                          isFollowerMenuShown.value = true
-                        },
-                        { isFollowerMenuShown.value = false })
-                  }) {
-                    Text(
-                        stringResource(R.string.followers, user.value!!.friends.followers.size),
-                        modifier = Modifier.testTag("followersText"))
-                  }
-            }
-            // Display bottom sheets for the user's following and followers
-            UserBottomSheet(
-                expanded = isFollowingMenuShown,
-                users = following,
-                userViewModel = userViewModel,
-                fileViewModel = fileViewModel,
-                navigationActions = navigationActions,
-                tag = "following")
-            UserBottomSheet(
-                expanded = isFollowerMenuShown,
-                users = followers,
-                userViewModel = userViewModel,
-                fileViewModel = fileViewModel,
-                navigationActions = navigationActions,
-                tag = "followers",
-                isFollowerSheetOfCurrentUser =
-                    user.value == userViewModel.currentUser.collectAsState().value)
-          }
-    }
+                // Display the number of following and followers on clickable buttons
+                Row {
+                  OutlinedButton(
+                      modifier = Modifier.testTag("followingButton"),
+                      onClick = {
+                        userViewModel.getFollowingFrom(
+                            user.value!!.uid,
+                            {
+                              following.value = it
+                              isFollowingMenuShown.value = true
+                            },
+                            { isFollowingMenuShown.value = false })
+                      }) {
+                        Text(
+                            stringResource(R.string.following, user.value!!.friends.following.size),
+                            modifier = Modifier.testTag("followingText"))
+                      }
+                  Spacer(modifier = Modifier.width(10.dp))
+                  OutlinedButton(
+                      modifier = Modifier.testTag("followersButton"),
+                      onClick = {
+                        userViewModel.getFollowersFrom(
+                            user.value!!.uid,
+                            {
+                              followers.value = it
+                              isFollowerMenuShown.value = true
+                            },
+                            { isFollowerMenuShown.value = false })
+                      }) {
+                        Text(
+                            stringResource(R.string.followers, user.value!!.friends.followers.size),
+                            modifier = Modifier.testTag("followersText"))
+                      }
+                }
+                // Display bottom sheets for the user's following and followers
+                UserBottomSheet(
+                    expanded = isFollowingMenuShown,
+                    users = following,
+                    userViewModel = userViewModel,
+                    fileViewModel = fileViewModel,
+                    navigationActions = navigationActions,
+                    tag = "following")
+                UserBottomSheet(
+                    expanded = isFollowerMenuShown,
+                    users = followers,
+                    userViewModel = userViewModel,
+                    fileViewModel = fileViewModel,
+                    navigationActions = navigationActions,
+                    tag = "followers",
+                    isFollowerSheetOfCurrentUser =
+                        user.value == userViewModel.currentUser.collectAsState().value)
+              }
+        }
   }
 }
 
@@ -542,7 +545,8 @@ fun UserBottomSheet(
   if (expanded.value) {
     ModalBottomSheet(
         onDismissRequest = { expanded.value = false },
-        modifier = Modifier.testTag("${tag}BottomSheet")) {
+        modifier = Modifier.testTag("${tag}BottomSheet"),
+        containerColor = MaterialTheme.colorScheme.onPrimary) {
           Column(
               modifier = Modifier.fillMaxWidth().padding(bottom = 30.dp),
               verticalArrangement = Arrangement.Center,
@@ -726,7 +730,7 @@ fun NotificationButton(
         contentDescription = "Notifications",
         tint =
             if (unreadNotificationsCount > 0) MaterialTheme.colorScheme.primary
-            else Color.Unspecified)
+            else MaterialTheme.colorScheme.onSurface)
   }
 }
 
