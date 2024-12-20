@@ -149,7 +149,7 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
       userId: String,
       onSuccess: (List<Note>) -> Unit = {},
       onFailure: (Exception) -> Unit = {},
-      useCache: Boolean = false
+      useCache: Boolean = true
   ) {
     viewModelScope.launch {
       repository.getNotesFromUid(
@@ -176,7 +176,7 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
       userId: String,
       onSuccess: (List<Note>) -> Unit = {},
       onFailure: (Exception) -> Unit = {},
-      useCache: Boolean = false
+      useCache: Boolean = true
   ) {
     viewModelScope.launch {
       repository.getRootNotesFromUid(
@@ -203,7 +203,7 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
       noteId: String,
       onSuccess: (Note) -> Unit = {},
       onFailure: (Exception) -> Unit = {},
-      useCache: Boolean = false
+      useCache: Boolean = true
   ) {
     viewModelScope.launch {
       repository.getNoteById(
@@ -344,7 +344,7 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
       userViewModel: UserViewModel?,
       onSuccess: (List<Note>) -> Unit = {},
       onFailure: (Exception) -> Unit = {},
-      useCache: Boolean = false
+      useCache: Boolean = true
   ) {
     viewModelScope.launch {
       repository.getNotesFromFolder(

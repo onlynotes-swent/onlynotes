@@ -203,7 +203,7 @@ open class FolderViewModel(private val repository: FolderRepository) : ViewModel
       userId: String,
       onSuccess: (List<Folder>) -> Unit = {},
       onFailure: (Exception) -> Unit = {},
-      useCache: Boolean = false
+      useCache: Boolean = true
   ) {
     viewModelScope.launch {
       repository.getFoldersFromUserId(
@@ -312,7 +312,7 @@ open class FolderViewModel(private val repository: FolderRepository) : ViewModel
       onFolderNotFound: () -> Unit = {},
       onSuccess: (List<Folder>) -> Unit = {},
       onFailure: (Exception) -> Unit = {},
-      useCache: Boolean = false
+      useCache: Boolean = true
   ) {
     viewModelScope.launch {
       repository.getDeckFoldersByName(
@@ -338,7 +338,7 @@ open class FolderViewModel(private val repository: FolderRepository) : ViewModel
       folderId: String,
       onSuccess: (Folder) -> Unit = {},
       onFailure: (Exception) -> Unit = {},
-      useCache: Boolean = false
+      useCache: Boolean = true
   ) {
     viewModelScope.launch {
       repository.getFolderById(
@@ -364,7 +364,7 @@ open class FolderViewModel(private val repository: FolderRepository) : ViewModel
       folderId: String,
       onSuccess: (Folder) -> Unit = {},
       onFailure: (Exception) -> Unit = {},
-      useCache: Boolean = false
+      useCache: Boolean = true
   ) {
     viewModelScope.launch {
       repository.getFolderById(
@@ -423,7 +423,7 @@ open class FolderViewModel(private val repository: FolderRepository) : ViewModel
       userViewModel: UserViewModel?,
       onSuccess: (List<Folder>) -> Unit = {},
       onFailure: (Exception) -> Unit = {},
-      useCache: Boolean = false
+      useCache: Boolean = true
   ) {
     viewModelScope.launch {
       repository.getSubFoldersOf(
@@ -455,7 +455,7 @@ open class FolderViewModel(private val repository: FolderRepository) : ViewModel
       userViewModel: UserViewModel?,
       onSuccess: (List<Folder>) -> Unit,
       onFailure: (Exception) -> Unit = {},
-      useCache: Boolean = false
+      useCache: Boolean = true
   ) {
     viewModelScope.launch {
       repository.getSubFoldersOf(
