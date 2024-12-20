@@ -715,17 +715,17 @@ class EndToEndTest {
   fun testEndToEndFlow4() {
     testEndToEndFlow4_init()
 
-    // Go to search screen
+    // Navigate to search screen
     composeTestRule.onNodeWithTag("Search").performClick()
 
     // Search for a note from testUser2 to save it
     composeTestRule.onNodeWithTag("searchTextField").performTextReplacement("sampleTitle")
     // When selecting the note filter chip, the additional public filter chip is selected by default
-    composeTestRule.onNodeWithTag("noteFilterChip").performClick()
 
     composeTestRule.onNodeWithTag("filteredNoteList").assertIsDisplayed()
     composeTestRule.onNodeWithTag("noSearchResults").assertIsNotDisplayed()
 
+    // Verify the note is displayed
     composeTestRule
         .onAllNodesWithTag("noteCard")
         .filter(hasText(testNoteUser2.title))
@@ -741,9 +741,38 @@ class EndToEndTest {
         .performClick()
 
     // verify the bookmark button is displayed and click it
+    composeTestRule.onNodeWithTag("bookmarkButton").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("bookmarkButton").performClick()
+    composeTestRule.onNodeWithTag("closeButton").performClick()
 
-    // Then go to overview screen, switch to the saved screen and check the note is there
+    // Go to saved overview screen
+    composeTestRule.onNodeWithTag("segmentedButton").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("segmentedButtonSavedOption").performClick()
 
-    // And maybe we could try to modify it or something
+    // Verify the saved note is there
+    composeTestRule.onNodeWithTag("noteAndFolderListSavedScreen").assertIsDisplayed()
+    composeTestRule
+        .onAllNodesWithTag("noteCard")
+        .filter(hasText(testNoteUser2.title))
+        .onFirst()
+        .assertIsDisplayed()
+
+    // Go to the noted and unsave it
+    composeTestRule
+        .onAllNodesWithTag("noteCard")
+        .filter(hasText(testNoteUser2.title))
+        .onFirst()
+        .assertIsDisplayed()
+        .performClick()
+    composeTestRule.onNodeWithTag("bookmarkButton").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("bookmarkButton").performClick()
+    composeTestRule.onNodeWithTag("closeButton").performClick()
+
+    // Verify the note does not display anymore
+    composeTestRule.onNodeWithTag("noteAndFolderListSavedScreen").assertIsDisplayed()
+    composeTestRule
+        .onAllNodesWithTag("noteCard")
+        .filter(hasText(testNoteUser2.title))
+        .assertCountEquals(0)
   }
 }
