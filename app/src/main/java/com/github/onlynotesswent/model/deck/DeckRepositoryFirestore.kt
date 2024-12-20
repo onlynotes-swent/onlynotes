@@ -241,15 +241,20 @@ class DeckRepositoryFirestore(private val db: FirebaseFirestore) : DeckRepositor
   }
 
   override fun deleteAllDecksFromUserId(
-      userid: String,
+      userId: String,
       onSuccess: () -> Unit,
       onFailure: (Exception) -> Unit
   ) {
     db.collection(collectionPath)
-        .whereEqualTo("userId", userid)
+        .whereEqualTo("userId", userId)
         .get()
         .addOnSuccessListener { querySnapshot ->
-          querySnapshot.documents.forEach { document -> document.reference.delete() }
+          querySnapshot.documents.forEach { document ->
+            document.reference.delete().addOnFailureListener { exception ->
+              onFailure(exception)
+              Log.e(TAG, "Error deleting notification", exception)
+            }
+          }
           onSuccess()
         }
         .addOnFailureListener { exception ->

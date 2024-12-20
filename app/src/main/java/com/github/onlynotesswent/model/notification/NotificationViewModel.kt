@@ -101,15 +101,15 @@ class NotificationViewModel(private val repository: NotificationRepository) : Vi
   /**
    * Deletes all notifications for a receiver.
    *
-   * @param userID The ID of the receiver.
+   * @param userId The ID of the receiver.
    * @param onSuccess Callback to be invoked when the deletion is successful.
    * @param onFailure Callback to be invoked if an error occurs.
    */
   fun deleteNotificationsFromUserId(
-      userID: String,
+      userId: String,
       onSuccess: () -> Unit = {},
       onFailure: (Exception) -> Unit = {}
   ) {
-    repository.deleteNotificationsFromUserId(userID, onSuccess, onFailure)
+    repository.deleteNotificationsFromUserId(userId, onSuccess, onFailure)
   }
 }

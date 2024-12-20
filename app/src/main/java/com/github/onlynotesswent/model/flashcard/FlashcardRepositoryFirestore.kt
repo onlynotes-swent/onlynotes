@@ -194,12 +194,12 @@ class FlashcardRepositoryFirestore(private val db: FirebaseFirestore) : Flashcar
   }
 
   override fun deleteFlashcardsFromUser(
-      userID: String,
+      userId: String,
       onSuccess: () -> Unit,
       onFailure: (Exception) -> Unit
   ) {
     db.collection(collectionPath)
-        .whereEqualTo("userId", userID)
+        .whereEqualTo("userId", userId)
         .get()
         .addOnSuccessListener { querySnapshot ->
           querySnapshot.documents.forEach { document ->

@@ -129,7 +129,7 @@ class FolderRepositoryFirestore(
   ) {
     // Update the cache if needed
     if (useCache) {
-      withContext(Dispatchers.IO) { folderDao.deleteFoldersFromUid(userId) }
+      withContext(dispatcher) { folderDao.deleteFoldersFromUid(userId) }
     }
 
     db.collection(folderCollectionPath).get().addOnCompleteListener { task ->

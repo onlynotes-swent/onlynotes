@@ -124,12 +124,12 @@ class NotificationRepositoryFirestore(private val db: FirebaseFirestore) : Notif
   }
 
   override fun deleteNotificationsFromUserId(
-      userID: String,
+      userId: String,
       onSuccess: () -> Unit,
       onFailure: (Exception) -> Unit
   ) {
     db.collection(collectionPath)
-        .whereEqualTo("receiverId", userID)
+        .whereEqualTo("receiverId", userId)
         .get()
         .addOnSuccessListener { querySnapshot ->
           querySnapshot.documents.forEach { document ->
