@@ -122,8 +122,7 @@ fun NoteOverviewScreen(
                       colors =
                           SegmentedButtonDefaults.colors(
                               activeContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                              inactiveContainerColor =
-                                  MaterialTheme.colorScheme.secondaryContainer),
+                              inactiveContainerColor = MaterialTheme.colorScheme.surface),
                       label = { Text(label) },
                       onClick = {
                         // Animate to the selected page when clicked
