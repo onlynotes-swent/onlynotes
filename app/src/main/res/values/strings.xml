@@ -150,6 +150,13 @@
     <string name="converting_folder_to_decks">Converting folder to decks…</string>
     <string name="flashcards_conversion_progress">%1$d notes and %2$d folders processed</string>
     <string name="move_deck">Move deck</string>
+    <string name="deck_finish_test_text">You have finished the deck with a score of %1$s%% !</string>
+    <string name="i_got_it_right">I got it right</string>
+    <string name="i_got_it_wrong">I got it wrong</string>
+    <string name="finish_test">Finish Test</string>
+    <string name="retry">Retry</string>
+    <string name="loading_deck">Loading deck…</string>
+    <string name="no_mode_selected">No mode selected</string>
     <string name="error_while_converting">Error while converting</string>
     <string name="close">Close</string>
     <string name="go_to_deck_folder">Go to deck folder</string>
