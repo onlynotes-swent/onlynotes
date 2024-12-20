@@ -40,17 +40,23 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.github.onlynotesswent.R
 import com.github.onlynotesswent.model.common.Visibility
+import com.github.onlynotesswent.model.deck.Deck
 import com.github.onlynotesswent.model.folder.Folder
 import com.github.onlynotesswent.model.folder.FolderViewModel
 import com.github.onlynotesswent.model.note.Note
+import com.github.onlynotesswent.utils.NotesToFlashcard
 
 /**
  * Composable function to display a popup dialog with a title, text, and confirm and dismiss
@@ -99,6 +105,99 @@ fun ConfirmationPopup(title: String, text: String, onConfirm: () -> Unit, onDism
               Text(text = stringResource(R.string.no))
             }
       })
+}
+
+@Composable
+fun DecksCreationDialog(
+    notesToFlashcard: NotesToFlashcard,
+    closePopup: () -> Unit,
+    onConversionComplete: (Deck) -> Unit,
+) {
+  var progressMessage by remember { mutableStateOf("Initializing conversion...") }
+  var isLoading by remember { mutableStateOf(true) }
+  var listOfErrorMessages by remember { mutableStateOf(emptyList<String>()) }
+  var deck by remember { mutableStateOf<Deck?>(null) }
+
+  val context = LocalContext.current
+
+  AlertDialog(
+      onDismissRequest = {
+        if (!isLoading) {
+          closePopup()
+        }
+      },
+      title = { Text(stringResource(R.string.convert_folder_to_decks)) },
+      text = {
+        Column {
+          if (isLoading) {
+            LoadingIndicator(
+                text = progressMessage, modifier = Modifier.fillMaxWidth(), spacerHeight = 8.dp)
+          } else {
+            if (deck != null) {
+              Text(text = progressMessage, style = MaterialTheme.typography.titleMedium)
+            } else {
+              Text(text = stringResource(R.string.no_flashcards_created))
+            }
+          }
+
+          if (listOfErrorMessages.isNotEmpty()) {
+            Spacer(modifier = Modifier.height(16.dp))
+            Column {
+              listOfErrorMessages.forEach {
+                Text(
+                    text =
+                        buildAnnotatedString {
+                          withStyle(style = SpanStyle(color = MaterialTheme.colorScheme.error)) {
+                            append(stringResource(R.string.error_while_converting))
+                          }
+                          append(": $it")
+                        })
+              }
+            }
+          }
+        }
+      },
+      confirmButton = {
+        if (!isLoading && deck != null) {
+          TextButton(
+              onClick = {
+                onConversionComplete(deck!!)
+                closePopup()
+              },
+              modifier = Modifier.testTag("goToDeckFolderAction")) {
+                Text(stringResource(R.string.go_to_deck_folder))
+              }
+        }
+      },
+      dismissButton = {
+        if (!isLoading) {
+          TextButton(onClick = { closePopup() }, modifier = Modifier.testTag("closeAction")) {
+            Text(stringResource(R.string.close), color = MaterialTheme.colorScheme.error)
+          }
+        }
+      })
+
+  if (isLoading) {
+    LaunchedEffect(Unit) {
+      notesToFlashcard.convertFolderToDecks(
+          onProgress = { notes, folders, exception ->
+            if (exception != null) {
+              listOfErrorMessages += exception.localizedMessage
+            } else {
+              progressMessage =
+                  context.getString(R.string.flashcards_conversion_progress, notes, folders)
+            }
+          },
+          onSuccess = { finalDeck ->
+            isLoading = false
+            deck = finalDeck
+          },
+          onFailure = { exception ->
+            listOfErrorMessages += exception.localizedMessage
+            isLoading = false
+          })
+    }
+  }
 }
 
 /**
@@ -201,7 +300,9 @@ fun FileSystemPopup(
                     color = MaterialTheme.colorScheme.background, shape = RoundedCornerShape(8.dp))
                 .clickable {
                   folderViewModel.getSubFoldersOfNoStateUpdate(
-                      subFolder.id, onSuccess = { subFolders -> folderSubFolders = subFolders })
+                      subFolder.id,
+                      null,
+                      onSuccess = { subFolders -> folderSubFolders = subFolders })
                   selectedFolder = subFolder
                 }
                 .padding(4.dp) // Adjust padding for better spacing
@@ -240,7 +341,7 @@ fun FileSystemPopup(
   LaunchedEffect(selectedFolder) {
     if (selectedFolder != null) {
       folderViewModel.getSubFoldersOfNoStateUpdate(
-          selectedFolder!!.id, onSuccess = { subFolders -> folderSubFolders = subFolders })
+          selectedFolder!!.id, null, onSuccess = { subFolders -> folderSubFolders = subFolders })
     }
   }
   Dialog(onDismissRequest = { onDismiss() }) {

@@ -341,7 +341,7 @@ class FolderRepositoryFirestoreTest {
     `when`(mockQuerySnapshot.documents)
         .thenReturn(listOf(mockDocumentSnapshot, mockDocumentSnapshot2))
 
-    folderRepositoryFirestore.deleteFoldersFromUid("1", onSuccess = {}, onFailure = {}, false)
+    folderRepositoryFirestore.deleteAllFoldersFromUserId("1", onSuccess = {}, onFailure = {}, false)
 
     verify(timeout(100)) { (mockQuerySnapshot).documents }
   }
@@ -360,7 +360,7 @@ class FolderRepositoryFirestoreTest {
     `when`(mockQuerySnapshot.documents)
         .thenReturn(listOf(mockDocumentSnapshot, mockDocumentSnapshot2))
     var exceptionThrown: Exception? = null
-    folderRepositoryFirestore.deleteFoldersFromUid(
+    folderRepositoryFirestore.deleteAllFoldersFromUserId(
         "1", onSuccess = {}, onFailure = { e -> exceptionThrown = e }, false)
     assertNotNull(exceptionThrown)
     assertEquals(errorMessage, exceptionThrown?.message)
@@ -381,7 +381,7 @@ class FolderRepositoryFirestoreTest {
   fun getSubFoldersOf_callsCollection() = runTest {
     `when`(mockDocumentReference.get()).thenReturn(Tasks.forResult(mockDocumentSnapshot2))
 
-    folderRepositoryFirestore.getSubFoldersOf("1", {}, {}, false)
+    folderRepositoryFirestore.getSubFoldersOf("1", null, {}, {}, false)
 
     shadowOf(Looper.getMainLooper()).idle()
 

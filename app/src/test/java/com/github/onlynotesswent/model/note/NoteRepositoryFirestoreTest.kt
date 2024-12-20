@@ -407,7 +407,7 @@ class NoteRepositoryFirestoreTest {
     `when`(mockQuerySnapshot.documents)
         .thenReturn(listOf(mockDocumentSnapshot3, mockDocumentSnapshot4))
 
-    noteRepositoryFirestore.deleteNotesFromUid("1", onSuccess = {}, onFailure = {}, false)
+    noteRepositoryFirestore.deleteAllNotesFromUserId("1", onSuccess = {}, onFailure = {}, false)
 
     verify(timeout(100)) { (mockQuerySnapshot).documents }
   }
@@ -426,7 +426,7 @@ class NoteRepositoryFirestoreTest {
     `when`(mockQuerySnapshot.documents)
         .thenReturn(listOf(mockDocumentSnapshot3, mockDocumentSnapshot4))
     var exceptionThrown: Exception? = null
-    noteRepositoryFirestore.deleteNotesFromUid(
+    noteRepositoryFirestore.deleteAllNotesFromUserId(
         "1", onSuccess = {}, onFailure = { e -> exceptionThrown = e }, false)
     assertNotNull(exceptionThrown)
     assertEquals(errorMessage, exceptionThrown?.message)
@@ -450,7 +450,7 @@ class NoteRepositoryFirestoreTest {
 
     var receivedNotes: List<Note>? = null
     noteRepositoryFirestore.getNotesFromFolder(
-        testSubNotePublic.folderId!!, { receivedNotes = it }, { assert(false) }, false)
+        testSubNotePublic.folderId!!, null, { receivedNotes = it }, { assert(false) }, false)
     assertNotNull(receivedNotes)
 
     verify(timeout(100)) { (mockQuerySnapshot).documents }

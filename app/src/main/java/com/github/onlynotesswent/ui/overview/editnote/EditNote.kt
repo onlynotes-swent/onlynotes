@@ -58,6 +58,7 @@ import com.github.onlynotesswent.model.user.User
 import com.github.onlynotesswent.model.user.UserViewModel
 import com.github.onlynotesswent.ui.common.ConfirmationPopup
 import com.github.onlynotesswent.ui.common.NoteDataTextField
+import com.github.onlynotesswent.ui.common.SavedDocumentButton
 import com.github.onlynotesswent.ui.common.SelectVisibility
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
@@ -126,6 +127,10 @@ fun EditNoteScreen(
                     courseName = courseName,
                     courseYear = courseYear,
                     noteViewModel = noteViewModel)
+                // todo Additional check might be useless if checking is done before
+              } else if (note != null && note!!.isVisibleTo(currentUser!!)) {
+                SavedNotesButton(
+                    note = note!!, userViewModel = userViewModel, noteViewModel = noteViewModel)
               }
             },
             isModified = isModified)
@@ -454,6 +459,41 @@ fun SaveButton(
             contentDescription = "Save Note",
             tint = MaterialTheme.colorScheme.onSurface)
       }
+}
+
+/**
+ * Displays a button that adds or removes the note to the user's saved notes.
+ *
+ * @param note The note to be saved or removed.
+ * @param userViewModel The ViewModel that provides the current user.
+ * @param noteViewModel The ViewModel that provides the current note to be edited and handles note
+ *   updates.
+ */
+@Composable
+fun SavedNotesButton(note: Note, userViewModel: UserViewModel, noteViewModel: NoteViewModel) {
+  val savedNotes by noteViewModel.userSavedNotes.collectAsState()
+
+  val context = LocalContext.current
+
+  SavedDocumentButton(
+      isSaved = note.id in savedNotes.map { it.id },
+      onSave = {
+        noteViewModel.addCurrentUserSavedNote(
+            note,
+            userViewModel,
+            onFailure = {
+              Toast.makeText(context, "Failed to save note", Toast.LENGTH_SHORT).show()
+            })
+      },
+      onDelete = {
+        noteViewModel.deleteCurrentUserSavedNote(
+            note.id,
+            userViewModel,
+            onFailure = {
+              Toast.makeText(context, "Failed to remove note from saved notes", Toast.LENGTH_SHORT)
+                  .show()
+            })
+      })
 }
 
 /**

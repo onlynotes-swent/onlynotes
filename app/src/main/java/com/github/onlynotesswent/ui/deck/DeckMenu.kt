@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.rememberScrollState
@@ -29,7 +30,6 @@ import androidx.compose.material.icons.filled.SaveAlt
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardColors
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -54,16 +54,19 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
 import com.github.onlynotesswent.R
+import com.github.onlynotesswent.model.common.Visibility
 import com.github.onlynotesswent.model.deck.Deck
 import com.github.onlynotesswent.model.deck.Deck.SortMode
 import com.github.onlynotesswent.model.deck.DeckViewModel
 import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.flashcard.FlashcardViewModel
+import com.github.onlynotesswent.model.folder.FolderViewModel
 import com.github.onlynotesswent.model.user.User
 import com.github.onlynotesswent.model.user.UserViewModel
 import com.github.onlynotesswent.ui.common.CustomDropDownMenu
 import com.github.onlynotesswent.ui.common.CustomDropDownMenuItem
 import com.github.onlynotesswent.ui.common.EditDeckDialog
+import com.github.onlynotesswent.ui.common.FileSystemPopup
 import com.github.onlynotesswent.ui.common.FlashcardDialog
 import com.github.onlynotesswent.ui.common.FlashcardViewItem
 import com.github.onlynotesswent.ui.common.LoadingIndicator
@@ -71,9 +74,11 @@ import com.github.onlynotesswent.ui.common.ScreenTopBar
 import com.github.onlynotesswent.ui.common.ThumbnailPic
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
+import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
 import com.github.onlynotesswent.ui.theme.Typography
 import com.github.onlynotesswent.ui.user.switchProfileTo
 import com.github.onlynotesswent.utils.PictureTaker
+import com.google.firebase.Timestamp
 
 /**
  * Composable function that represents the Deck Screen.
@@ -91,14 +96,15 @@ fun DeckScreen(
     deckViewModel: DeckViewModel,
     flashcardViewModel: FlashcardViewModel,
     fileViewModel: FileViewModel,
+    folderViewModel: FolderViewModel,
     pictureTaker: PictureTaker,
     navigationActions: NavigationActions
 ) {
+  val currentUser = userViewModel.currentUser.collectAsState()
   val context = LocalContext.current
   val selectedDeck = deckViewModel.selectedDeck.collectAsState()
   val deckFlashcards = flashcardViewModel.deckFlashcards.collectAsState()
-  val belongsToUser =
-      selectedDeck.value?.userId == userViewModel.currentUser.collectAsState().value?.uid
+  val belongsToUser = selectedDeck.value?.userId == currentUser.value?.uid
   val userFabDropdownMenuShown = remember { mutableStateOf(false) }
   val author: MutableState<User?> = remember { mutableStateOf(null) }
 
@@ -107,7 +113,7 @@ fun DeckScreen(
   val editDialogExpanded = remember { mutableStateOf(false) }
 
   val publicFabDropdownMenuShown = remember { mutableStateOf(false) }
-  // TODO: add mutable states for save to favourites and create local copy dialogs
+  val saveCopyDialogExpanded = remember { mutableStateOf(false) }
 
   val sortOptionsShown = remember { mutableStateOf(false) }
   val sortMode = remember { mutableStateOf(SortMode.ALPHABETICAL) }
@@ -146,9 +152,7 @@ fun DeckScreen(
               onSaveClick = {
                 Toast.makeText(context, "Not Implemented", Toast.LENGTH_LONG).show()
               },
-              onSaveCopyClick = {
-                Toast.makeText(context, "Not Implemented", Toast.LENGTH_LONG).show()
-              })
+              onSaveCopyClick = { saveCopyDialogExpanded.value = true })
         }
       }) { innerPadding ->
         if (selectedDeck.value == null) {
@@ -176,6 +180,31 @@ fun DeckScreen(
                       mode = stringResource(R.string.create))
                 } else if (editDialogExpanded.value) {
                   EditDeckDialog(deckViewModel, userViewModel, { editDialogExpanded.value = false })
+                } else if (saveCopyDialogExpanded.value) {
+                  folderViewModel.getRootDeckFoldersFromUserId(currentUser.value!!.uid)
+                  FileSystemPopup(
+                      { saveCopyDialogExpanded.value = false },
+                      folderViewModel,
+                      { folder ->
+                        val newDeck =
+                            selectedDeck.value!!.copy(
+                                id = deckViewModel.getNewUid(),
+                                userId = currentUser.value!!.uid,
+                                lastModified = Timestamp.now(),
+                                visibility = Visibility.PRIVATE,
+                                name = selectedDeck.value!!.name + " (Copy)",
+                                folderId = folder?.id)
+                        deckViewModel.updateDeck(
+                            newDeck,
+                            onSuccess = {
+                              saveCopyDialogExpanded.value = false
+                              if (folder == null)
+                                  navigationActions.navigateTo(TopLevelDestinations.DECK_OVERVIEW)
+                              else
+                                  navigationActions.navigateTo(
+                                      Screen.FOLDER_CONTENTS.replace("{folderId}", folder.id))
+                            })
+                      })
                 }
 
                 // Play modes bottom sheet:
@@ -198,14 +227,18 @@ fun DeckScreen(
                     modifier = Modifier.padding(10.dp).testTag("deckDescription"))
 
                 // Deck play mode buttons
-                FilledTonalButton(
+                Button(
                     onClick = { playModesShown.value = !playModesShown.value },
                     modifier = Modifier.padding(vertical = 15.dp).testTag("deckPlayButton")) {
                       Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
                             stringResource(R.string.play_button_text),
                             style = MaterialTheme.typography.headlineMedium)
-                        Icon(Icons.Default.PlayArrow, contentDescription = "play")
+                        Spacer(modifier = Modifier.size(7.dp))
+                        Icon(
+                            Icons.Default.PlayArrow,
+                            contentDescription = "play",
+                            modifier = Modifier.size(32.dp))
                       }
                     }
 
