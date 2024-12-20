@@ -57,6 +57,7 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.github.onlynotesswent.R
+import com.github.onlynotesswent.model.common.Visibility
 import com.github.onlynotesswent.model.deck.Deck
 import com.github.onlynotesswent.model.deck.Deck.SortMode
 import com.github.onlynotesswent.model.deck.DeckViewModel
@@ -76,9 +77,11 @@ import com.github.onlynotesswent.ui.common.ScreenTopBar
 import com.github.onlynotesswent.ui.common.ThumbnailPic
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
+import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
 import com.github.onlynotesswent.ui.theme.Typography
 import com.github.onlynotesswent.ui.user.switchProfileTo
 import com.github.onlynotesswent.utils.PictureTaker
+import com.google.firebase.Timestamp
 
 /**
  * Composable function that represents the Deck Screen.
@@ -100,11 +103,11 @@ fun DeckScreen(
     pictureTaker: PictureTaker,
     navigationActions: NavigationActions
 ) {
+  val currentUser = userViewModel.currentUser.collectAsState()
   val context = LocalContext.current
   val selectedDeck = deckViewModel.selectedDeck.collectAsState()
   val deckFlashcards = flashcardViewModel.deckFlashcards.collectAsState()
-  val belongsToUser =
-      selectedDeck.value?.userId == userViewModel.currentUser.collectAsState().value?.uid
+  val belongsToUser = selectedDeck.value?.userId == currentUser.value?.uid
   val userFabDropdownMenuShown = remember { mutableStateOf(false) }
   val author: MutableState<User?> = remember { mutableStateOf(null) }
 
@@ -202,7 +205,30 @@ fun DeckScreen(
                 } else if (editDialogExpanded.value) {
                   EditDeckDialog(deckViewModel, userViewModel, { editDialogExpanded.value = false })
                 } else if (saveCopyDialogExpanded.value) {
-                  FileSystemPopup({ saveCopyDialogExpanded.value = false }, folderViewModel, {})
+                  folderViewModel.getRootDeckFoldersFromUserId(currentUser.value!!.uid)
+                  FileSystemPopup(
+                      { saveCopyDialogExpanded.value = false },
+                      folderViewModel,
+                      { folder ->
+                        val newDeck =
+                            selectedDeck.value!!.copy(
+                                id = deckViewModel.getNewUid(),
+                                userId = currentUser.value!!.uid,
+                                lastModified = Timestamp.now(),
+                                visibility = Visibility.PRIVATE,
+                                name = selectedDeck.value!!.name + " (Copy)",
+                                folderId = folder?.id)
+                        deckViewModel.updateDeck(
+                            newDeck,
+                            onSuccess = {
+                              saveCopyDialogExpanded.value = false
+                              if (folder == null)
+                                  navigationActions.navigateTo(TopLevelDestinations.DECK_OVERVIEW)
+                              else
+                                  navigationActions.navigateTo(
+                                      Screen.FOLDER_CONTENTS.replace("{folderId}", folder.id))
+                            })
+                      })
                 }
 
                 // Play modes bottom sheet:
