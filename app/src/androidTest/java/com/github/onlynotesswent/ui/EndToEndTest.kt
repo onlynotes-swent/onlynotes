@@ -660,7 +660,6 @@ class EndToEndTest {
     composeTestRule.onNodeWithTag("submitButton").assertIsDisplayed()
     composeTestRule.onNodeWithTag("submitButton").performClick()
     composeTestRule.onNodeWithTag("FinishedScreenColumn").assertIsDisplayed()
-    // probably end the test here
   }
 
   private fun testEndToEndFlow4_init() {
@@ -691,6 +690,7 @@ class EndToEndTest {
       val onSuccess = it.getArgument<() -> Unit>(1)
       onSuccess()
     }
+
     // Initialize current user
     userViewModel.addUser(testUser1, {}, {})
 
@@ -699,10 +699,7 @@ class EndToEndTest {
       onSuccess(listOf(testNoteUser2))
     }
 
-    // mock the note repository method called when going into the saved notes screen
-    // `when`(mockNoteRepository.)
-
-    // potentially also mock update note if we modify the saved note
+    // mock the note repository method called when saving and unsaving a note
 
     // Start at overview screen
     composeTestRule.runOnUiThread { navController.navigate(Route.NOTE_OVERVIEW) }
@@ -715,13 +712,11 @@ class EndToEndTest {
   fun testEndToEndFlow4() {
     testEndToEndFlow4_init()
 
-    // Navigate to search screen
+    // Go to search screen
     composeTestRule.onNodeWithTag("Search").performClick()
 
     // Search for a note from testUser2 to save it
     composeTestRule.onNodeWithTag("searchTextField").performTextReplacement("sampleTitle")
-    // When selecting the note filter chip, the additional public filter chip is selected by default
-
     composeTestRule.onNodeWithTag("filteredNoteList").assertIsDisplayed()
     composeTestRule.onNodeWithTag("noSearchResults").assertIsNotDisplayed()
 
@@ -741,11 +736,12 @@ class EndToEndTest {
         .performClick()
 
     // verify the bookmark button is displayed and click it
-    composeTestRule.onNodeWithTag("bookmarkButton").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("bookmarkButton").performClick()
+    composeTestRule.onNodeWithTag("saveNoteButton").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("saveNoteButton").performClick()
     composeTestRule.onNodeWithTag("closeButton").performClick()
 
     // Go to saved overview screen
+    composeTestRule.onNodeWithTag("Note Overview").performClick()
     composeTestRule.onNodeWithTag("segmentedButton").assertIsDisplayed()
     composeTestRule.onNodeWithTag("segmentedButtonSavedOption").performClick()
 
@@ -757,18 +753,19 @@ class EndToEndTest {
         .onFirst()
         .assertIsDisplayed()
 
-    // Go to the noted and unsave it
+    // Go to the note and unsave it
     composeTestRule
         .onAllNodesWithTag("noteCard")
         .filter(hasText(testNoteUser2.title))
         .onFirst()
         .assertIsDisplayed()
         .performClick()
-    composeTestRule.onNodeWithTag("bookmarkButton").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("bookmarkButton").performClick()
+
+    composeTestRule.onNodeWithTag("removeSavedDocumentButton").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("removeSavedDocumentButton").performClick()
     composeTestRule.onNodeWithTag("closeButton").performClick()
 
-    // Verify the note does not display anymore
+    // Verify the note is not displayed anymore
     composeTestRule.onNodeWithTag("noteAndFolderListSavedScreen").assertIsDisplayed()
     composeTestRule
         .onAllNodesWithTag("noteCard")
