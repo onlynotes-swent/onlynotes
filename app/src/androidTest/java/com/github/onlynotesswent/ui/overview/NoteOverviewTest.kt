@@ -46,6 +46,7 @@ import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.eq
 
 class NoteOverviewTest {
@@ -150,7 +151,7 @@ class NoteOverviewTest {
       onSuccess(folderList)
     }
     noteViewModel.getRootNotesFromUid("1")
-    folderViewModel.getRootFoldersFromUserId("1")
+    folderViewModel.getRootFoldersFromUserId("1", isDeckView = false)
     composeTestRule.onNodeWithTag("noteAndFolderList").assertIsDisplayed()
   }
 
@@ -193,7 +194,7 @@ class NoteOverviewTest {
       val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(1)
       onSuccess(folderList)
     }
-    folderViewModel.getRootFoldersFromUserId("1")
+    folderViewModel.getRootFoldersFromUserId("1", isDeckView = false)
     composeTestRule.onAllNodesWithTag("folderCard").onFirst().assertIsDisplayed()
     composeTestRule.onAllNodesWithTag("folderCard").onFirst().performClick()
     val folderContentsScreen =
@@ -282,7 +283,7 @@ class NoteOverviewTest {
       onSuccess(folderList)
     }
     noteViewModel.getRootNotesFromUid("1")
-    folderViewModel.getRootFoldersFromUserId("1")
+    folderViewModel.getRootFoldersFromUserId("1", isDeckView = false)
     composeTestRule.onNodeWithTag("noteAndFolderList").assertIsDisplayed()
 
     composeTestRule.onNodeWithTag("noteCard").assertIsDisplayed()
@@ -312,7 +313,7 @@ class NoteOverviewTest {
       onSuccess(folderList)
     }
     noteViewModel.getRootNotesFromUid("1")
-    folderViewModel.getRootFoldersFromUserId("1")
+    folderViewModel.getRootFoldersFromUserId("1", isDeckView = false)
     composeTestRule.onNodeWithTag("noteModalBottomSheet").assertIsNotDisplayed()
     composeTestRule.onNodeWithTag("showBottomSheetButton").assertIsDisplayed()
     composeTestRule.onNodeWithTag("showBottomSheetButton").performClick()
@@ -367,7 +368,9 @@ class NoteOverviewTest {
                 parentFolderId = "8",
                 lastModified = Timestamp.now()))
 
-    `when`(folderRepository.getSubFoldersOf(eq("8"), any<(List<Folder>) -> Unit>(), any(), any()))
+    `when`(
+            folderRepository.getSubFoldersOf(
+                eq("8"), anyOrNull(), any<(List<Folder>) -> Unit>(), any(), any()))
         .thenAnswer { invocation ->
           val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(1)
           onSuccess(subFolderList)
@@ -434,9 +437,11 @@ class NoteOverviewTest {
                 parentFolderId = "8",
                 lastModified = Timestamp.now()))
 
-    `when`(folderRepository.getSubFoldersOf(eq("8"), any<(List<Folder>) -> Unit>(), any(), any()))
+    `when`(
+            folderRepository.getSubFoldersOf(
+                eq("8"), anyOrNull(), any<(List<Folder>) -> Unit>(), any(), any()))
         .thenAnswer { invocation ->
-          val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(1)
+          val onSuccess = invocation.getArgument<(List<Folder>) -> Unit>(2)
           onSuccess(subFolderList)
         }
     composeTestRule.onNodeWithTag("noteModalBottomSheet").assertIsNotDisplayed()

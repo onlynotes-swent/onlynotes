@@ -160,8 +160,8 @@ fun OnlyNotesApp(scanner: Scanner, pictureTaker: PictureTaker, textExtractor: Te
             LaunchedEffect(folderId) {
               if (folderId != null && folderId != "{folderId}") {
                 folderViewModel.getFolderById(folderId)
-                noteViewModel.getNotesFromFolder(folderId)
-                folderViewModel.getSubFoldersOf(folderId)
+                noteViewModel.getNotesFromFolder(folderId, userViewModel)
+                folderViewModel.getSubFoldersOf(folderId, userViewModel)
               }
             }
             // Wait until selected folder is updated to display the screen
@@ -193,16 +193,28 @@ fun OnlyNotesApp(scanner: Scanner, pictureTaker: PictureTaker, textExtractor: Te
 
         DeckOverviewScreen(navigationActions, deckViewModel, userViewModel, folderViewModel)
       }
-      composable(Screen.DECK_MENU) {
+      composable(Screen.DECK_MENU) { navBackStackEntry ->
+        val deckId = navBackStackEntry.arguments?.getString("deckId")
+        deckId?.let { deckViewModel.getDeckById(it) }
         DeckScreen(
             userViewModel,
             deckViewModel,
             flashcardViewModel,
             fileViewModel,
+            folderViewModel,
             pictureTaker,
             navigationActions)
       }
-      composable(Screen.DECK_PLAY) {
+      composable(Screen.DECK_PLAY) { navBackStackEntry ->
+        val deckId = navBackStackEntry.arguments?.getString("deckId")
+        val mode = navBackStackEntry.arguments?.getString("mode")
+
+        // Refresh deck if it is not null
+        LaunchedEffect(deckId) {
+          if (deckId != null && deckId != "{deckId}")
+              deckViewModel.getDeckById(
+                  deckId, { deckViewModel.playDeckWithMode(it, Deck.PlayMode.fromString(mode)) })
+        }
         DeckPlayScreen(
             navigationActions, userViewModel, deckViewModel, flashcardViewModel, fileViewModel)
       }
@@ -223,7 +235,7 @@ fun OnlyNotesApp(scanner: Scanner, pictureTaker: PictureTaker, textExtractor: Te
               if (folderId != null && folderId != "{folderId}") {
                 folderViewModel.getFolderById(folderId)
                 deckViewModel.getDecksByFolder(folderId)
-                folderViewModel.getSubFoldersOf(folderId)
+                folderViewModel.getSubFoldersOf(folderId, userViewModel)
               }
             }
             // Wait until selected folder is updated to display the screen
@@ -250,30 +262,6 @@ fun OnlyNotesApp(scanner: Scanner, pictureTaker: PictureTaker, textExtractor: Te
             folderViewModel,
             deckViewModel,
             fileViewModel)
-      }
-      composable(Screen.DECK_MENU) { navBackStackEntry ->
-        val deckId = navBackStackEntry.arguments?.getString("deckId")
-        deckId?.let { deckViewModel.getDeckById(it) }
-        DeckScreen(
-            userViewModel,
-            deckViewModel,
-            flashcardViewModel,
-            fileViewModel,
-            pictureTaker,
-            navigationActions)
-      }
-      composable(Screen.DECK_PLAY) { navBackStackEntry ->
-        val deckId = navBackStackEntry.arguments?.getString("deckId")
-        val mode = navBackStackEntry.arguments?.getString("mode")
-
-        // Refresh deck if it is not null
-        LaunchedEffect(deckId) {
-          if (deckId != null && deckId != "{deckId}")
-              deckViewModel.getDeckById(
-                  deckId, { deckViewModel.playDeckWithMode(it, Deck.PlayMode.fromString(mode)) })
-        }
-        DeckPlayScreen(
-            navigationActions, userViewModel, deckViewModel, flashcardViewModel, fileViewModel)
       }
     }
 

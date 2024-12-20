@@ -3,8 +3,14 @@ package com.github.onlynotesswent.model.folder
 import com.github.onlynotesswent.model.common.Visibility
 import com.github.onlynotesswent.model.note.NoteRepository
 import com.github.onlynotesswent.model.note.NoteViewModel
+import com.github.onlynotesswent.model.user.Friends
+import com.github.onlynotesswent.model.user.User
+import com.github.onlynotesswent.model.user.UserRepositoryFirestore.SavedDocumentType.FOLDER
+import com.github.onlynotesswent.model.user.UserViewModel
 import com.google.firebase.Timestamp
 import junit.framework.TestCase.assertEquals
+import junit.framework.TestCase.fail
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.runTest
 import org.hamcrest.CoreMatchers.`is`
 import org.hamcrest.MatcherAssert.assertThat
@@ -16,6 +22,7 @@ import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.eq
 import org.robolectric.RobolectricTestRunner
 
@@ -26,6 +33,8 @@ class FolderViewModelTest {
   private lateinit var folderViewModel: FolderViewModel
   @Mock private lateinit var mockNoteRepository: NoteRepository
   private lateinit var noteViewModel: NoteViewModel
+  // @Mock private lateinit var mockUserRepositoryFirestore: UserRepository
+  @Mock private lateinit var mockUserViewModel: UserViewModel
 
   private val testFolder =
       Folder(
@@ -43,6 +52,17 @@ class FolderViewModelTest {
           parentFolderId = "pid",
           lastModified = Timestamp.now(),
           visibility = Visibility.FRIENDS)
+
+  private val user =
+      User(
+          firstName = "User",
+          lastName = "Name",
+          userName = "username",
+          email = "example@gmail.com",
+          uid = "1",
+          dateOfJoining = Timestamp.now(),
+          rating = 0.0,
+          friends = Friends(following = listOf("3"), followers = listOf("3")))
 
   @Before
   fun setUp() {
@@ -161,7 +181,7 @@ class FolderViewModelTest {
     }
 
     var onSuccessCalled = false
-    folderViewModel.addFolder(testFolder, { onSuccessCalled = true })
+    folderViewModel.addFolder(testFolder, { onSuccessCalled = true }, isDeckView = false)
     assert(onSuccessCalled)
   }
 
@@ -173,7 +193,7 @@ class FolderViewModelTest {
     }
 
     var onSuccessCalled = false
-    folderViewModel.updateFolder(testFolder, { onSuccessCalled = true })
+    folderViewModel.updateFolder(testFolder, { onSuccessCalled = true }, isDeckView = false)
     assert(onSuccessCalled)
   }
 
@@ -185,7 +205,8 @@ class FolderViewModelTest {
     }
 
     var onSuccessCalled = false
-    folderViewModel.deleteFolderById(testFolder.id, testFolder.userId, { onSuccessCalled = true })
+    folderViewModel.deleteFolderById(
+        testFolder.id, testFolder.userId, { onSuccessCalled = true }, isDeckView = false)
     assert(onSuccessCalled)
   }
 
@@ -203,11 +224,12 @@ class FolderViewModelTest {
 
   @Test
   fun getSubFoldersOfCallsRepository() = runTest {
-    `when`(mockFolderRepository.getSubFoldersOf(any(), any(), any(), any())).thenAnswer {
-      val onSuccess: (List<Folder>) -> Unit = it.getArgument(1)
-      onSuccess(listOf(testFolder))
-    }
-    folderViewModel.getSubFoldersOf(testFolder.parentFolderId!!, { assert(true) })
+    `when`(mockFolderRepository.getSubFoldersOf(any(), anyOrNull(), any(), any(), any()))
+        .thenAnswer {
+          val onSuccess: (List<Folder>) -> Unit = it.getArgument(2)
+          onSuccess(listOf(testFolder))
+        }
+    folderViewModel.getSubFoldersOf(testFolder.parentFolderId!!, null, { assert(true) })
     assertEquals(folderViewModel.folderSubFolders.value, listOf(testFolder))
   }
 
@@ -235,10 +257,152 @@ class FolderViewModelTest {
       val onSuccess = invocation.getArgument<() -> Unit>(1)
       onSuccess()
     }
-    folderViewModel.updateFolder(testFolder)
+    folderViewModel.updateFolder(testFolder, isDeckView = false)
 
     verify(mockFolderRepository).updateFolder(eq(testFolder), any(), any(), any())
     verify(mockFolderRepository).getRootNoteFoldersFromUserId(eq("1"), any(), any(), any())
-    verify(mockFolderRepository).getSubFoldersOf(eq("pid"), any(), any(), any())
+    verify(mockFolderRepository).getSubFoldersOf(eq("pid"), anyOrNull(), any(), any(), any())
+  }
+
+  @Test
+  fun addCurrentUserSavedFolderCallsRepositoryIfEmpty() = runTest {
+    val testList = listOf(testFolder)
+
+    `when`(mockUserViewModel.setSavedDocumentIdsOfType(any(), any(), any(), any())).thenAnswer {
+        invocation ->
+      val onSuccess = invocation.getArgument<() -> Unit>(2)
+      onSuccess()
+    }
+
+    `when`(mockUserViewModel.getSavedDocumentIdsOfType(any(), any(), any())).thenAnswer { invocation
+      ->
+      folderViewModel.setCurrentUserSavedFolders(mockUserViewModel, testList)
+    }
+
+    folderViewModel.addCurrentUserSavedFolder(testFolderFriend, mockUserViewModel)
+
+    verify(mockUserViewModel).getSavedDocumentIdsOfType(any(), any(), any())
+  }
+
+  @Test
+  fun addCurrentUserSavedFolderCallsRepositoryIfNonEmpty() = runTest {
+    val testList = listOf(testFolder)
+    `when`(mockUserViewModel.setSavedDocumentIdsOfType(any(), any(), any(), any())).thenAnswer {
+        invocation ->
+      val onSuccess = invocation.getArgument<() -> Unit>(2)
+      onSuccess()
+    }
+
+    var onSuccesCalled = false
+
+    folderViewModel.setCurrentUserSavedFolders(
+        mockUserViewModel,
+        testList,
+        {
+          folderViewModel.addCurrentUserSavedFolder(
+              testFolderFriend,
+              mockUserViewModel,
+              {
+                assert(folderViewModel.userSavedFolders.value == testList + testFolderFriend)
+                onSuccesCalled = true
+              },
+              { fail() })
+        })
+
+    assert(onSuccesCalled)
+  }
+
+  @Test
+  fun deleteCurrentUserSavedFolderCallsRepositoryIfEmpty() = runTest {
+    val testList = listOf(testFolder)
+
+    `when`(mockUserViewModel.setSavedDocumentIdsOfType(any(), any(), any(), any())).thenAnswer {
+        invocation ->
+      val onSuccess = invocation.getArgument<() -> Unit>(2)
+      onSuccess()
+    }
+
+    `when`(mockUserViewModel.getSavedDocumentIdsOfType(any(), any(), any())).thenAnswer { invocation
+      ->
+      folderViewModel.setCurrentUserSavedFolders(mockUserViewModel, testList)
+    }
+
+    folderViewModel.deleteCurrentUserSavedFolder(testFolder.id, mockUserViewModel)
+
+    verify(mockUserViewModel).getSavedDocumentIdsOfType(any(), any(), any())
+  }
+
+  @Test
+  fun deleteCurrentUserSavedFolderCallsRepositoryIfNonEmpty() = runTest {
+    val testList = listOf(testFolder)
+    `when`(mockUserViewModel.setSavedDocumentIdsOfType(any(), any(), any(), any())).thenAnswer {
+        invocation ->
+      val onSuccess = invocation.getArgument<() -> Unit>(2)
+      onSuccess()
+    }
+
+    var onSuccesCalled = false
+
+    folderViewModel.setCurrentUserSavedFolders(
+        mockUserViewModel,
+        testList,
+        {
+          folderViewModel.deleteCurrentUserSavedFolder(
+              testFolder.id,
+              mockUserViewModel,
+              {
+                assert(folderViewModel.userSavedFolders.value == emptyList<Folder>())
+                onSuccesCalled = true
+              },
+              { fail() })
+        })
+
+    assert(onSuccesCalled)
+  }
+
+  @Test
+  fun getCurrentUserSavedFoldersCallsRepositoryOnSuccess() = runTest {
+    val documentIds = listOf("1", "2")
+    val savedFolders = listOf(testFolder, testFolderFriend)
+    val nonSaveableFoldersIds = listOf<String>("test")
+
+    `when`(mockUserViewModel.getSavedDocumentIdsOfType(any(), any(), any())).thenAnswer {
+      val onSuccess: (List<String>) -> Unit = it.getArgument(1)
+      onSuccess(documentIds)
+    }
+
+    `when`(mockFolderRepository.getSavedFoldersByIds(any(), any(), any(), any(), any()))
+        .thenAnswer {
+          val onSuccess: (List<Folder>, List<String>) -> Unit = it.getArgument(2)
+          onSuccess(savedFolders, nonSaveableFoldersIds)
+        }
+
+    `when`(mockUserViewModel.currentUser).thenReturn(MutableStateFlow(user))
+
+    `when`(mockUserViewModel.deleteSavedDocumentIdOfType(eq("test"), eq(FOLDER), any(), any()))
+        .thenAnswer {
+          val onSuccess: () -> Unit = it.getArgument(2)
+          onSuccess()
+        }
+
+    var onSuccessCalled = false
+    folderViewModel.getCurrentUserSavedFolders(mockUserViewModel, { onSuccessCalled = true })
+    assert(onSuccessCalled)
+    assertEquals(folderViewModel.userSavedFolders.value, savedFolders)
+  }
+
+  @Test
+  fun getCurrentUserSavedFoldersCallsRepositoryOnFailure() = runTest {
+    val exception = Exception("Failed to retrieve saved folders")
+
+    `when`(mockUserViewModel.getSavedDocumentIdsOfType(any(), any(), any())).thenAnswer {
+      val onFailure: (Exception) -> Unit = it.getArgument(2)
+      onFailure(exception)
+    }
+
+    var onFailureCalled = false
+    folderViewModel.getCurrentUserSavedFolders(
+        mockUserViewModel, onFailure = { onFailureCalled = true })
+    assert(onFailureCalled)
   }
 }

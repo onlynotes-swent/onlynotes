@@ -21,6 +21,8 @@ import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.flashcard.Flashcard
 import com.github.onlynotesswent.model.flashcard.FlashcardRepository
 import com.github.onlynotesswent.model.flashcard.FlashcardViewModel
+import com.github.onlynotesswent.model.folder.FolderRepository
+import com.github.onlynotesswent.model.folder.FolderViewModel
 import com.github.onlynotesswent.model.user.User
 import com.github.onlynotesswent.model.user.UserRepository
 import com.github.onlynotesswent.model.user.UserViewModel
@@ -48,6 +50,7 @@ class DeckMenuTest {
   @Mock private lateinit var mockFlashcardRepository: FlashcardRepository
   @Mock private lateinit var mockUserRepository: UserRepository
   @Mock private lateinit var mockFileRepository: FileRepository
+  @Mock private lateinit var mockFolderRepository: FolderRepository
   @Mock private lateinit var navigationActions: NavigationActions
   @Mock private lateinit var pictureTaker: PictureTaker
 
@@ -55,6 +58,7 @@ class DeckMenuTest {
   private lateinit var flashcardViewModel: FlashcardViewModel
   private lateinit var userViewModel: UserViewModel
   private lateinit var fileViewModel: FileViewModel
+  private lateinit var folderViewModel: FolderViewModel
 
   private val testUser = User("First Name", "Last Name", "Username", "testUserId", "testEmail")
 
@@ -108,6 +112,7 @@ class DeckMenuTest {
     flashcardViewModel = FlashcardViewModel(mockFlashcardRepository)
     userViewModel = UserViewModel(mockUserRepository)
     fileViewModel = FileViewModel(mockFileRepository)
+    folderViewModel = FolderViewModel(mockFolderRepository)
 
     // Mock the current route to be the deck screen
     `when`(navigationActions.currentRoute())
@@ -169,6 +174,7 @@ class DeckMenuTest {
           flashcardViewModel = flashcardViewModel,
           userViewModel = userViewModel,
           fileViewModel = fileViewModel,
+          folderViewModel = folderViewModel,
           navigationActions = navigationActions,
           pictureTaker = pictureTaker,
       )
@@ -225,6 +231,7 @@ class DeckMenuTest {
           flashcardViewModel = flashcardViewModel,
           userViewModel = userViewModel,
           fileViewModel = fileViewModel,
+          folderViewModel = folderViewModel,
           navigationActions = navigationActions,
           pictureTaker = pictureTaker,
       )
@@ -260,6 +267,7 @@ class DeckMenuTest {
           flashcardViewModel = flashcardViewModel,
           userViewModel = userViewModel,
           fileViewModel = fileViewModel,
+          folderViewModel = folderViewModel,
           navigationActions = navigationActions,
           pictureTaker = pictureTaker,
       )
@@ -357,6 +365,7 @@ class DeckMenuTest {
           flashcardViewModel = flashcardViewModel,
           userViewModel = userViewModel,
           fileViewModel = fileViewModel,
+          folderViewModel = folderViewModel,
           navigationActions = navigationActions,
           pictureTaker = pictureTaker,
       )
@@ -394,6 +403,7 @@ class DeckMenuTest {
           flashcardViewModel = flashcardViewModel,
           userViewModel = userViewModel,
           fileViewModel = fileViewModel,
+          folderViewModel = folderViewModel,
           navigationActions = navigationActions,
           pictureTaker = pictureTaker,
       )
@@ -430,6 +440,7 @@ class DeckMenuTest {
           flashcardViewModel = flashcardViewModel,
           userViewModel = userViewModel,
           fileViewModel = fileViewModel,
+          folderViewModel = folderViewModel,
           navigationActions = navigationActions,
           pictureTaker = pictureTaker,
       )
@@ -459,6 +470,7 @@ class DeckMenuTest {
           flashcardViewModel = flashcardViewModel,
           userViewModel = userViewModel,
           fileViewModel = fileViewModel,
+          folderViewModel = folderViewModel,
           navigationActions = navigationActions,
           pictureTaker = pictureTaker,
       )
@@ -546,6 +558,7 @@ class DeckMenuTest {
           flashcardViewModel = flashcardViewModel,
           userViewModel = userViewModel,
           fileViewModel = fileViewModel,
+          folderViewModel = folderViewModel,
           navigationActions = navigationActions,
           pictureTaker = pictureTaker,
       )

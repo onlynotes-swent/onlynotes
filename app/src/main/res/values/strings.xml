@@ -160,4 +160,6 @@
     <string name="error_while_converting">Error while converting</string>
     <string name="close">Close</string>
     <string name="go_to_deck_folder">Go to deck folder</string>
+    <string name="your_notes">Your notes</string>
+    <string name="saved">Saved</string>
 </resources>
