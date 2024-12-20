@@ -221,7 +221,8 @@ fun FolderContentScreen(
                           parentFolderId = folder.value!!.id,
                           visibility = visibility,
                           lastModified = Timestamp.now(),
-                          isDeckFolder = isDeckView))
+                          isDeckFolder = isDeckView),
+                      isDeckView = isDeckView)
                   navigationActions.navigateTo(
                       Screen.FOLDER_CONTENTS.replace(
                           oldValue = "{folderId}", newValue = newFolderId))
