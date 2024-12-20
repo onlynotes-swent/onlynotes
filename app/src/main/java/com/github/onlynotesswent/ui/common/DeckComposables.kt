@@ -17,9 +17,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -248,7 +248,7 @@ fun DeckOptionsBottomSheet(
                 Spacer(modifier = Modifier.width(16.dp))
                 Text(
                     text = stringResource(R.string.move_deck),
-                    style = MaterialTheme.typography.bodyLarge)
+                    style = MaterialTheme.typography.titleMedium)
               }
 
           HorizontalDivider(Modifier.padding(vertical = 10.dp), 1.dp)
@@ -261,13 +261,13 @@ fun DeckOptionsBottomSheet(
                       .testTag("deleteDeckBottomSheet"),
               verticalAlignment = Alignment.CenterVertically) {
                 Icon(
-                    imageVector = Icons.Default.Delete,
+                    imageVector = Icons.Outlined.Delete,
                     contentDescription = stringResource(R.string.delete_deck),
                     tint = MaterialTheme.colorScheme.error)
                 Spacer(modifier = Modifier.width(16.dp))
                 Text(
                     text = stringResource(R.string.delete_deck),
-                    style = MaterialTheme.typography.bodyLarge,
+                    style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.error)
               }
         }

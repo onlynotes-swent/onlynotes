@@ -1,5 +1,6 @@
 package com.github.onlynotesswent.ui
 
+import android.content.Context
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
@@ -55,6 +56,8 @@ import com.github.onlynotesswent.ui.user.CreateUserScreen
 import com.github.onlynotesswent.ui.user.EditProfileScreen
 import com.github.onlynotesswent.ui.user.PublicProfileScreen
 import com.github.onlynotesswent.ui.user.UserProfileScreen
+import com.github.onlynotesswent.utils.NotesToFlashcard
+import com.github.onlynotesswent.utils.OpenAI
 import com.github.onlynotesswent.utils.PictureTaker
 import com.google.firebase.Timestamp
 import kotlinx.coroutines.test.runTest
@@ -63,6 +66,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.mockito.Mock
+import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
@@ -87,6 +91,9 @@ class EndToEndTest {
   private lateinit var deckViewModel: DeckViewModel
   private lateinit var fileViewModel: FileViewModel
   private lateinit var flashcardViewModel: FlashcardViewModel
+  @Mock private lateinit var mockOpenAI: OpenAI
+  @Mock private lateinit var mockContext: Context
+  private lateinit var notesToFlashcard: NotesToFlashcard
   private lateinit var notificationViewModel: NotificationViewModel
 
   @Mock private lateinit var authenticator: Authenticator
@@ -151,7 +158,15 @@ class EndToEndTest {
     fileViewModel = FileViewModel(fileRepository)
     notificationViewModel = NotificationViewModel(mockNotificationRepository)
     flashcardViewModel = FlashcardViewModel(flashcardRepository)
-
+    notesToFlashcard =
+        NotesToFlashcard(
+            flashcardViewModel = flashcardViewModel,
+            fileViewModel = mock(FileViewModel::class.java),
+            deckViewModel = DeckViewModel(mock(DeckRepository::class.java)),
+            noteViewModel = noteViewModel,
+            folderViewModel = folderViewModel,
+            openAIClient = mockOpenAI,
+            context = mockContext)
     // Initialize Intents for handling navigation intents in the test
     Intents.init()
 
@@ -181,7 +196,11 @@ class EndToEndTest {
                 ) {
                   composable(Screen.NOTE_OVERVIEW) {
                     NoteOverviewScreen(
-                        navigationActions, noteViewModel, userViewModel, folderViewModel)
+                        navigationActions,
+                        noteViewModel,
+                        userViewModel,
+                        folderViewModel,
+                        notesToFlashcard)
                   }
                   composable(Screen.EDIT_NOTE) {
                     EditNoteScreen(navigationActions, noteViewModel, userViewModel)
