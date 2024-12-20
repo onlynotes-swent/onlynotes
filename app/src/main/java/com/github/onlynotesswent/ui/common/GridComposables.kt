@@ -29,6 +29,7 @@ import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.model.user.UserViewModel
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
+import com.github.onlynotesswent.utils.NotesToFlashcard
 
 /**
  * Custom lazy grid that displays a list of notes and folders in a separate manner. If there are no
@@ -48,6 +49,7 @@ import com.github.onlynotesswent.ui.navigation.Screen
  * @param paddingValues The padding values for the grid.
  * @param columnContent The content to be displayed in the column when there are no notes or
  *   folders.
+ * @param notesToFlashcard The notes to flashcard object to be passed to the note item.
  */
 @Composable
 fun CustomSeparatedLazyGrid(
@@ -63,7 +65,8 @@ fun CustomSeparatedLazyGrid(
     userViewModel: UserViewModel,
     navigationActions: NavigationActions,
     paddingValues: PaddingValues,
-    columnContent: @Composable (ColumnScope.() -> Unit)
+    columnContent: @Composable (ColumnScope.() -> Unit),
+    notesToFlashcard: NotesToFlashcard? = null,
 ) {
   val sortedFolders = remember(folders.value) { folders.value.sortedBy { it.name } }
   val sortedNotes = remember(notes?.value) { notes?.value?.sortedBy { it.title } ?: emptyList() }
@@ -123,6 +126,7 @@ fun CustomSeparatedLazyGrid(
                     currentUser = userViewModel.currentUser.collectAsState(),
                     noteViewModel = noteViewModel!!,
                     folderViewModel = folderViewModel,
+                    notesToFlashcard = notesToFlashcard,
                     navigationActions = navigationActions) {
                       noteViewModel.selectedNote(note)
                       navigationActions.navigateTo(Screen.EDIT_NOTE)

@@ -29,6 +29,7 @@ import com.github.onlynotesswent.ui.navigation.BottomNavigationMenu
 import com.github.onlynotesswent.ui.navigation.LIST_TOP_LEVEL_DESTINATION
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
+import com.github.onlynotesswent.utils.NotesToFlashcard
 import com.google.firebase.Timestamp
 
 /**
@@ -47,7 +48,8 @@ fun NoteOverviewScreen(
     navigationActions: NavigationActions,
     noteViewModel: NoteViewModel,
     userViewModel: UserViewModel,
-    folderViewModel: FolderViewModel
+    folderViewModel: FolderViewModel,
+    notesToFlashcard: NotesToFlashcard
 ) {
   val userRootNotes = noteViewModel.userRootNotes.collectAsState()
   val userRootFolders = folderViewModel.userRootFolders.collectAsState()
@@ -91,7 +93,8 @@ fun NoteOverviewScreen(
             folderViewModel = folderViewModel,
             noteViewModel = noteViewModel,
             userViewModel = userViewModel,
-            navigationActions = navigationActions)
+            navigationActions = navigationActions,
+            notesToFlashcard = notesToFlashcard)
 
         if (showCreateNoteDialog) {
           NoteDialog(

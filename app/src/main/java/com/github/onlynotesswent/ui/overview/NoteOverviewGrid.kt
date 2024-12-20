@@ -20,6 +20,7 @@ import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.model.user.UserViewModel
 import com.github.onlynotesswent.ui.common.CustomSeparatedLazyGrid
 import com.github.onlynotesswent.ui.navigation.NavigationActions
+import com.github.onlynotesswent.utils.NotesToFlashcard
 
 /**
  * Displays the overview screen in a grid layout. If there are no notes or folders, it shows a text
@@ -42,7 +43,8 @@ fun NoteOverviewScreenGrid(
     folderViewModel: FolderViewModel,
     noteViewModel: NoteViewModel,
     userViewModel: UserViewModel,
-    navigationActions: NavigationActions
+    navigationActions: NavigationActions,
+    notesToFlashcard: NotesToFlashcard
 ) {
   CustomSeparatedLazyGrid(
       modifier = Modifier.fillMaxSize(),
@@ -58,6 +60,7 @@ fun NoteOverviewScreenGrid(
       userViewModel = userViewModel,
       navigationActions = navigationActions,
       paddingValues = paddingValues,
+      notesToFlashcard = notesToFlashcard,
       columnContent = {
         Text(
             modifier = Modifier.testTag("emptyNoteAndFolderPrompt"),
