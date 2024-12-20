@@ -202,7 +202,10 @@ fun NoteOptionsBottomSheet(
 
   if (showFileSystemPopup) {
     FileSystemPopup(
-        onDismiss = { showFileSystemPopup = false },
+        onDismiss = {
+          showFileSystemPopup = false
+          onDismiss()
+        },
         folderViewModel = folderViewModel,
         onMoveHere = { selectedFolder ->
           noteViewModel.updateNote(
@@ -233,9 +236,11 @@ fun NoteOptionsBottomSheet(
             noteViewModel.getRootNotesFromUid(note.userId)
           }
           showDeletePopup = false // Close the dialog after deleting
+          onDismiss() // Dismiss the bottom sheet after deleting the note
         },
         onDismiss = {
           showDeletePopup = false // Close the dialog without deleting
+          onDismiss() // Dismiss the bottom sheet after deleting the note
         })
   }
 
@@ -244,7 +249,10 @@ fun NoteOptionsBottomSheet(
         note = note,
         notesToFlashcard = notesToFlashcard,
         navigationActions = navigationActions,
-        onDismiss = { showFlashcardDialog = false })
+        onDismiss = {
+          showFlashcardDialog = false
+          onDismiss()
+        })
   }
 
   ModalBottomSheet(
@@ -329,6 +337,7 @@ fun NoteToFlashcardDialog(
   val context = LocalContext.current
   var isLoading by remember { mutableStateOf(true) }
   var flashcardErrorMessage by remember { mutableStateOf<String?>(null) }
+  var noFlashcardsCreated by remember { mutableStateOf(false) }
 
   AlertDialog(
       onDismissRequest = {
@@ -359,6 +368,10 @@ fun NoteToFlashcardDialog(
                       })
             }
           }
+          if (noFlashcardsCreated) {
+            Spacer(modifier = Modifier.height(16.dp))
+            Column { Text(text = stringResource(R.string.no_flashcards_created)) }
+          }
         }
       },
       confirmButton = {},
@@ -380,7 +393,7 @@ fun NoteToFlashcardDialog(
               navigationActions.navigateTo(
                   Screen.DECK_MENU.replace(oldValue = "{deckId}", newValue = it.id))
             } else {
-              flashcardErrorMessage = context.getString(R.string.no_flashcards_created)
+              noFlashcardsCreated = true
             }
           },
           onFileNotFoundException = {
