@@ -113,6 +113,7 @@ fun NoteOverviewScreen(
                 pageLabels.forEachIndexed { index, label ->
                   SegmentedButton(
                       selected = pagerState.currentPage == index,
+                      modifier = Modifier.testTag("segmentedButton--${label}"),
                       shape =
                           SegmentedButtonDefaults.itemShape(
                               index = index,
