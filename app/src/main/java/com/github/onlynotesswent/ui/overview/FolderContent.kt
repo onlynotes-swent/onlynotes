@@ -215,7 +215,7 @@ fun FolderContentScreen(
                             noteCourse = Course.EMPTY,
                             userId = userViewModel.currentUser.value!!.uid,
                             folderId = folder.value!!.id)
-                    noteViewModel.addNote(note)
+                    noteViewModel.addNote(note, useCache = true)
                     noteViewModel.selectedNote(note)
                     showCreateDialog = false
                     navigationActions.navigateTo(Screen.EDIT_NOTE)

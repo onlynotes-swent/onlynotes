@@ -77,7 +77,7 @@ fun CommentsScreen(
       kotlinx.coroutines.delay(1000L)
       // Delay for 1 second to not saturate firestore but also to not get too much lag
       if (note != null) {
-        noteViewModel.getNoteById(note!!.id, { noteUpdated = it })
+        noteViewModel.getNoteById(note!!.id, { noteUpdated = it }, useCache = (note!!.userId == userViewModel.currentUser.value?.uid))
       }
     }
   }

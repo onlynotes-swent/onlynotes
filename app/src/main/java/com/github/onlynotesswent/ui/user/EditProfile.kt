@@ -356,6 +356,7 @@ fun EditProfileScreen(
                                         }
                                         noteViewModel.deleteNotesFromUid(user.value!!.uid)
                                       },
+                                      useCache = true
                                   )
                                   deckViewModel.deleteAllDecksFromUserId(user.value!!.uid)
 

@@ -241,7 +241,7 @@ class NotesToFlashcard(
               onProgress = onProgress)
 
       // Reset note lists
-      noteViewModel.getNotesFromFolder(folderId = currentFolder.id, null)
+      noteViewModel.getNotesFromFolder(folderId = currentFolder.id, null, useCache = true)
 
       if (finalDeck != null) {
         onProgress(notesProcessedCounter.get(), foldersProcessedCounter.incrementAndGet(), null)
@@ -282,7 +282,8 @@ class NotesToFlashcard(
           folder.id,
           null,
           onSuccess = { continuation.resume(it) },
-          onFailure = { continuation.resumeWithException(it) })
+          onFailure = { continuation.resumeWithException(it) },
+          useCache = true)
     }
 
     val folderFlashcardIds = mutableListOf<String>()
