@@ -228,4 +228,19 @@ class FlashcardViewModel(private val repository: FlashcardRepository) : ViewMode
   ) {
     repository.deleteFlashcard(flashcard, onSuccess, onFailure)
   }
+
+  /**
+   * Deletes all flashcards from the given user.
+   *
+   * @param userId The identifier of the user.
+   * @param onSuccess The function to call when the deletion is successful.
+   * @param onFailure The function to call when the deletion fails.
+   */
+  fun deleteFlashcardsFromUser(
+      userId: String,
+      onSuccess: () -> Unit = {},
+      onFailure: (Exception) -> Unit = {}
+  ) {
+    repository.deleteFlashcardsFromUser(userId, onSuccess, onFailure)
+  }
 }

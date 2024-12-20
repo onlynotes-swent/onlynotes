@@ -76,7 +76,7 @@ interface FolderRepository {
    * @param useCache Whether to update data from cache. Should be true only if [userId] is the
    *   current user.
    */
-  suspend fun deleteFoldersFromUid(
+  suspend fun deleteAllFoldersFromUserId(
       userId: String,
       onSuccess: () -> Unit,
       onFailure: (Exception) -> Unit,

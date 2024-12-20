@@ -245,4 +245,19 @@ class DeckViewModel(private val repository: DeckRepository) : ViewModel() {
         },
         onFailure = onFailure)
   }
+
+  /**
+   * Deletes all decks from the given user.
+   *
+   * @param userId The identifier of the user.
+   * @param onSuccess The callback to be executed when the decks are deleted.
+   * @param onFailure The callback to be executed when an error occurs.
+   */
+  fun deleteAllDecksFromUserId(
+      userId: String,
+      onSuccess: () -> Unit = {},
+      onFailure: (Exception) -> Unit = {}
+  ) {
+    repository.deleteAllDecksFromUserId(userId, { onSuccess() }, { onFailure(it) })
+  }
 }
