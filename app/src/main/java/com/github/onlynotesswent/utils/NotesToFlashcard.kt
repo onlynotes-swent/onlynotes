@@ -384,7 +384,8 @@ class NotesToFlashcard(
               onFailure = {
                 continuation.resumeWithException(
                     Exception("Failed to create deck folder ${subfolder.name}"))
-              })
+              },
+              isDeckView = false)
         },
         onSuccess = { existingFolders ->
           if (parentDeckFolder == null) {
@@ -410,7 +411,8 @@ class NotesToFlashcard(
                   onFailure = {
                     continuation.resumeWithException(
                         Exception("Failed to create deck folder ${subfolder.name}"))
-                  })
+                  },
+                  isDeckView = false)
             }
           }
         },

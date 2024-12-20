@@ -175,7 +175,8 @@ fun FolderContentScreen(
                 onConfirm = { name, vis ->
                   folderViewModel.updateFolder(
                       folder.value!!.copy(
-                          name = name, visibility = vis, lastModified = Timestamp.now()))
+                          name = name, visibility = vis, lastModified = Timestamp.now()),
+                      isDeckView = isDeckView)
                   updatedName = name
                   showUpdateDialog = false
                 },
@@ -229,7 +230,8 @@ fun FolderContentScreen(
                           parentFolderId = folder.value!!.id,
                           visibility = visibility,
                           lastModified = Timestamp.now(),
-                          isDeckFolder = isDeckView))
+                          isDeckFolder = isDeckView),
+                      isDeckView = isDeckView)
                   navigationActions.navigateTo(
                       Screen.FOLDER_CONTENTS.replace(
                           oldValue = "{folderId}", newValue = newFolderId))
@@ -477,7 +479,7 @@ fun FolderContentTopBar(
               title = stringResource(R.string.delete_folder),
               text = stringResource(R.string.confirm_delete_folder),
               onConfirm = {
-                folderViewModel.deleteFolderById(folder.id, folder.userId)
+                folderViewModel.deleteFolderById(folder.id, folder.userId, isDeckView = isDeckView)
                 folderViewModel.clearSelectedFolder()
 
                 folderViewModel.getRootDeckFoldersFromUserId(currentUser.value!!.uid)
@@ -577,7 +579,8 @@ fun handleSubFoldersAndContent(
   // If folder is subfolder, set parent Id and folder Id of sub
   // elements to parent folder id
   userFolderSubFolders.forEach { subFolder ->
-    folderViewModel.updateFolder(subFolder.copy(parentFolderId = folder.parentFolderId))
+    folderViewModel.updateFolder(
+        subFolder.copy(parentFolderId = folder.parentFolderId), isDeckView = isDeckView)
   }
   if (isDeckView) {
     userFolderDecks!!.forEach { deck ->

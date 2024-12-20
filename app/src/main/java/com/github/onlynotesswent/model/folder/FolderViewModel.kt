@@ -115,7 +115,7 @@ open class FolderViewModel(private val repository: FolderRepository) : ViewModel
       folder: Folder,
       onSuccess: () -> Unit = {},
       onFailure: (Exception) -> Unit = {},
-      isDeckView: Boolean = false,
+      isDeckView: Boolean,
       useCache: Boolean = false
   ) {
     viewModelScope.launch {
@@ -147,7 +147,7 @@ open class FolderViewModel(private val repository: FolderRepository) : ViewModel
       onSuccess: () -> Unit = {},
       onFailure: (Exception) -> Unit = {},
       useCache: Boolean = false,
-      isDeckView: Boolean = false
+      isDeckView: Boolean
   ) {
     viewModelScope.launch {
       repository.deleteFolderById(
@@ -176,13 +176,13 @@ open class FolderViewModel(private val repository: FolderRepository) : ViewModel
       onSuccess: () -> Unit = {},
       onFailure: (Exception) -> Unit = {},
       useCache: Boolean = false,
-      isDeckView: Boolean = false
+      isDeckView: Boolean? = null
   ) {
     viewModelScope.launch {
       repository.deleteAllFoldersFromUserId(
           userId = userId,
           onSuccess = {
-            getRootFoldersFromUserId(userId, isDeckView)
+            isDeckView?.let { getRootFoldersFromUserId(userId, it) }
             onSuccess()
           },
           onFailure = onFailure,
@@ -229,7 +229,7 @@ open class FolderViewModel(private val repository: FolderRepository) : ViewModel
    */
   fun getRootFoldersFromUserId(
       userId: String,
-      isDeckView: Boolean = false,
+      isDeckView: Boolean,
       onSuccess: (List<Folder>) -> Unit = {},
       onFailure: (Exception) -> Unit = {},
       useCache: Boolean = false
@@ -390,7 +390,7 @@ open class FolderViewModel(private val repository: FolderRepository) : ViewModel
       onSuccess: () -> Unit = {},
       onFailure: (Exception) -> Unit = {},
       useCache: Boolean = false,
-      isDeckView: Boolean = false
+      isDeckView: Boolean
   ) {
     viewModelScope.launch {
       repository.updateFolder(
@@ -612,7 +612,8 @@ open class FolderViewModel(private val repository: FolderRepository) : ViewModel
       } else {
         updateFolder(
             selectedFolder.value!!.copy(
-                parentFolderId = chosenFolder?.id, lastModified = Timestamp.now()))
+                parentFolderId = chosenFolder?.id, lastModified = Timestamp.now()),
+            isDeckView = selectedFolder.value!!.isDeckFolder)
         clearSelectedFolder()
         onSuccess()
       }

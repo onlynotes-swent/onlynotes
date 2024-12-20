@@ -173,20 +173,21 @@ fun NoteOverviewScreen(
                       action = stringResource(R.string.create))
                 }
 
-                // Logic to show the dialog to create a folder
-                if (showCreateFolderDialog) {
-                  FolderDialog(
-                      onDismiss = { showCreateFolderDialog = false },
-                      onConfirm = { newName, visibility ->
-                        val folderId = folderViewModel.getNewFolderId()
-                        folderViewModel.addFolder(
-                            Folder(
-                                id = folderId,
-                                name = newName,
-                                userId = userViewModel.currentUser.value!!.uid,
-                                parentFolderId = parentFolderId.value,
-                                visibility = visibility,
-                                lastModified = Timestamp.now()))
+        // Logic to show the dialog to create a folder
+        if (showCreateFolderDialog) {
+          FolderDialog(
+              onDismiss = { showCreateFolderDialog = false },
+              onConfirm = { newName, visibility ->
+                val folderId = folderViewModel.getNewFolderId()
+                folderViewModel.addFolder(
+                    Folder(
+                        id = folderId,
+                        name = newName,
+                        userId = userViewModel.currentUser.value!!.uid,
+                        parentFolderId = parentFolderId.value,
+                        visibility = visibility,
+                        lastModified = Timestamp.now()),
+                    isDeckView = false)
 
                         showCreateFolderDialog = false
                         navigationActions.navigateTo(
