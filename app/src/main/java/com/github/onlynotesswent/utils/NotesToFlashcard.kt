@@ -333,7 +333,7 @@ class NotesToFlashcard(
     noteDeferreds.awaitAll()
     subfolderDeferreds.awaitAll()
 
-    return if (folderFlashcardIds.isNotEmpty() && notesProcessed.get() > 1) {
+    return if (folderFlashcardIds.isNotEmpty() && notes.size > 1) {
       val combinedDeck =
           Deck(
               id = deckViewModel.getNewUid(),
