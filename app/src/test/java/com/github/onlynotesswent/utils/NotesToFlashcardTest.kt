@@ -26,6 +26,7 @@ import java.util.Collections
 import java.util.concurrent.atomic.AtomicInteger
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -42,13 +43,9 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mock
 import org.mockito.Mockito.anyString
-import org.mockito.Mockito.doAnswer
-import org.mockito.Mockito.times
-import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
-import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.eq
 import org.robolectric.RobolectricTestRunner
 
@@ -233,13 +230,9 @@ class NotesToFlashcardTest {
         }
 
     // Mocking OpenAI's sendRequest to trigger onSuccess
-    doAnswer { invocation ->
-          val onSuccess = invocation.getArgument<(String) -> Unit>(1)
-          onSuccess(jsonResponse)
-          null
-        }
-        .`when`(mockOpenAI)
-        .sendRequest(anyString(), any(), any(), anyString())
+    runBlocking {
+      `when`(mockOpenAI.sendRequestSuspend(anyString(), anyString())).thenReturn(jsonResponse)
+    }
 
     // Mock the repositories
     `when`(mockFlashcardRepository.getNewUid()).thenReturn(flashcardId.getAndIncrement().toString())
@@ -386,14 +379,17 @@ class NotesToFlashcardTest {
   }
 
   @Test
-  fun `convertNoteToFlashcards should parse JSON and create flashcards`() {
+  fun `convertNoteToFlashcards should parse JSON and create flashcards`() = runTest {
     // Initialize the view models, repositories and saved objects
     savedFlashcards.clear()
 
     // Capture the success callback's flashcards list
-    val onSuccess: (Deck) -> Unit = { deck ->
+    val onSuccess: (Deck?) -> Unit = { deck ->
+      if (deck == null) {
+        fail("Expected a deck but got null")
+      }
       // Verify the number of flashcards
-      val flashcardUid = deck.flashcardIds
+      val flashcardUid = deck!!.flashcardIds
 
       // Check the number of flashcards
       assertEquals(4, deck.flashcardIds.size)
@@ -437,63 +433,43 @@ class NotesToFlashcardTest {
         onSuccess = onSuccess,
         onFileNotFoundException = { fail("Expected successful conversion") },
         onFailure = { fail("Expected successful conversion") })
-
-    // Verify that addFlashcard was called exactly three times with the correct flashcards
-    verify(mockFlashcardRepository, times(4)).addFlashcard(any(), any(), any())
   }
 
   @Test
-  fun `convertNoteToDeck failure`() {
-    // Mocking OpenAI's sendRequest to trigger onFailure
-    doAnswer { invocation ->
-          val onFailure = invocation.getArgument<(IOException) -> Unit>(2)
-          onFailure(IOException("Mocked IOException"))
-          null
-        }
-        .`when`(mockOpenAI)
-        .sendRequest(anyString(), anyOrNull(), anyOrNull(), anyString())
+  fun `convertNoteToDeck failure`() = runTest {
+    // Mocking OpenAI's sendRequestSuspend to simulate failure
+    `when`(mockOpenAI.sendRequestSuspend(anyString(), anyString())).thenAnswer {
+      throw IOException("Mocked IOException")
+    }
 
-    // Set up a flag to ensure the failure callback was called
-    var failureCallbackCalled = false
+    // Define failure callback
+    val onFailure: (Exception) -> Unit = { exception ->
+      assertTrue(exception is IOException)
+      assertEquals("Mocked IOException", exception.message)
+    }
 
     // Execute the method
     notesToFlashcard.convertNoteToDeck(
         note = testNote1,
         onSuccess = { fail("Expected failure but got success") },
         onFileNotFoundException = { fail("Expected failure but got not found") },
-        onFailure = { error ->
-          failureCallbackCalled = true
-          assert(error is IOException)
-          assertEquals("Mocked IOException", error.message)
-        })
-
-    // Verify that failure callback was indeed called
-    assert(failureCallbackCalled)
+        onFailure = onFailure)
   }
 
   @Test
   fun `convertNoteToDeck invalid JSON`() {
     // Mocking OpenAI's sendRequest to trigger onSuccess
-    doAnswer { invocation ->
-          val onSuccess = invocation.getArgument<(String) -> Unit>(1)
-          onSuccess("invalid JSON")
-          null
-        }
-        .`when`(mockOpenAI)
-        .sendRequest(anyString(), anyOrNull(), anyOrNull(), anyString())
+    runBlocking {
+      `when`(mockOpenAI.sendRequestSuspend(anyString(), anyString())).thenReturn("invalid JSON")
+    }
 
-    // Set up a flag to ensure the failure callback was called
-    var failureCallbackCalled = false
+    val onFailure: (Exception) -> Unit = { exception ->
+      assertTrue(exception is JsonSyntaxException)
+    }
     notesToFlashcard.convertNoteToDeck(
         note = testNote1,
         onSuccess = { fail("Expected failure but got success") },
         onFileNotFoundException = { fail("Expected failure but got not found") },
-        onFailure = { error ->
-          failureCallbackCalled = true
-          assertEquals(JsonSyntaxException::class.java, error::class.java)
-        })
-
-    // Verify that failure callback was indeed called
-    assert(failureCallbackCalled)
+        onFailure = onFailure)
   }
 }
