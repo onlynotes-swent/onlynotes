@@ -13,15 +13,17 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -38,16 +40,23 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.github.onlynotesswent.R
 import com.github.onlynotesswent.model.common.Visibility
+import com.github.onlynotesswent.model.deck.Deck
 import com.github.onlynotesswent.model.folder.Folder
 import com.github.onlynotesswent.model.folder.FolderViewModel
+import com.github.onlynotesswent.model.note.Note
+import com.github.onlynotesswent.utils.NotesToFlashcard
 
 /**
  * Composable function to display a popup dialog with a title, text, and confirm and dismiss
@@ -98,6 +107,99 @@ fun ConfirmationPopup(title: String, text: String, onConfirm: () -> Unit, onDism
       })
 }
 
+@Composable
+fun DecksCreationDialog(
+    notesToFlashcard: NotesToFlashcard,
+    closePopup: () -> Unit,
+    onConversionComplete: (Deck) -> Unit,
+) {
+  var progressMessage by remember { mutableStateOf("Initializing conversion...") }
+  var isLoading by remember { mutableStateOf(true) }
+  var listOfErrorMessages by remember { mutableStateOf(emptyList<String>()) }
+  var deck by remember { mutableStateOf<Deck?>(null) }
+
+  val context = LocalContext.current
+
+  AlertDialog(
+      onDismissRequest = {
+        if (!isLoading) {
+          closePopup()
+        }
+      },
+      title = { Text(stringResource(R.string.convert_folder_to_decks)) },
+      text = {
+        Column {
+          if (isLoading) {
+            LoadingIndicator(
+                text = progressMessage, modifier = Modifier.fillMaxWidth(), spacerHeight = 8.dp)
+          } else {
+            if (deck != null) {
+              Text(text = progressMessage, style = MaterialTheme.typography.titleMedium)
+            } else {
+              Text(text = stringResource(R.string.no_flashcards_created))
+            }
+          }
+
+          if (listOfErrorMessages.isNotEmpty()) {
+            Spacer(modifier = Modifier.height(16.dp))
+            Column {
+              listOfErrorMessages.forEach {
+                Text(
+                    text =
+                        buildAnnotatedString {
+                          withStyle(style = SpanStyle(color = MaterialTheme.colorScheme.error)) {
+                            append(stringResource(R.string.error_while_converting))
+                          }
+                          append(": $it")
+                        })
+              }
+            }
+          }
+        }
+      },
+      confirmButton = {
+        if (!isLoading && deck != null) {
+          TextButton(
+              onClick = {
+                onConversionComplete(deck!!)
+                closePopup()
+              },
+              modifier = Modifier.testTag("goToDeckFolderAction")) {
+                Text(stringResource(R.string.go_to_deck_folder))
+              }
+        }
+      },
+      dismissButton = {
+        if (!isLoading) {
+          TextButton(onClick = { closePopup() }, modifier = Modifier.testTag("closeAction")) {
+            Text(stringResource(R.string.close), color = MaterialTheme.colorScheme.error)
+          }
+        }
+      })
+
+  if (isLoading) {
+    LaunchedEffect(Unit) {
+      notesToFlashcard.convertFolderToDecks(
+          onProgress = { notes, folders, exception ->
+            if (exception != null) {
+              listOfErrorMessages += exception.localizedMessage
+            } else {
+              progressMessage =
+                  context.getString(R.string.flashcards_conversion_progress, notes, folders)
+            }
+          },
+          onSuccess = { finalDeck ->
+            isLoading = false
+            deck = finalDeck
+          },
+          onFailure = { exception ->
+            listOfErrorMessages += exception.localizedMessage
+            isLoading = false
+          })
+    }
+  }
+}
+
 /**
  * Generic dialog for creating or renaming an item, such as a folder or a note.
  *
@@ -105,7 +207,7 @@ fun ConfirmationPopup(title: String, text: String, onConfirm: () -> Unit, onDism
  * @param onConfirm callback to be invoked when the user confirms the new name and visibility
  * @param action the action to be performed (e.g., "Create" or "Update")
  * @param oldVisibility the previous visibility of the item (if renaming), defaults to
- *   [Visibility.PRIVATE]
+ *   [Visibility.DEFAULT]
  * @param oldName the previous name of the item (if renaming), defaults to an empty string
  * @param type the type of item (e.g., "Folder" or "Note") displayed in the dialog
  * @param currentUserId the Id of the current user
@@ -116,14 +218,14 @@ fun CreationDialog(
     onDismiss: () -> Unit,
     onConfirm: (String, Visibility) -> Unit,
     action: String,
-    oldVisibility: Visibility? = Visibility.PRIVATE,
+    oldVisibility: Visibility = Visibility.DEFAULT,
     oldName: String = "",
     type: String,
     currentUserId: String = "",
     noteUserId: String = ""
 ) {
   var name by remember { mutableStateOf(oldName) }
-  var visibility: Visibility? by remember { mutableStateOf(oldVisibility) }
+  var visibility by remember { mutableStateOf(oldVisibility) }
 
   AlertDialog(
       onDismissRequest = onDismiss,
@@ -135,19 +237,26 @@ fun CreationDialog(
             horizontalAlignment = Alignment.CenterHorizontally) {
               OutlinedTextField(
                   value = name,
-                  onValueChange = { name = Folder.formatName(it) },
-                  label = { Text("$type Name") },
+                  onValueChange = {
+                    name =
+                        if (type == "Folder") {
+                          Folder.formatName(it)
+                        } else {
+                          Note.formatTitle(it)
+                        }
+                  },
+                  label = { Text(stringResource(R.string.name)) },
                   modifier = Modifier.testTag("input${type}Name"))
 
               // Spacing
               Spacer(modifier = Modifier.height(8.dp))
-              SelectVisibility(visibility, currentUserId, noteUserId) { visibility = it }
+              SelectVisibility(visibility, currentUserId == noteUserId) { visibility = it }
             }
       },
       confirmButton = {
         Button(
-            enabled = name.isNotEmpty() && visibility != null,
-            onClick = { onConfirm(name, visibility ?: Visibility.DEFAULT) },
+            enabled = name.isNotEmpty(),
+            onClick = { onConfirm(name, visibility) },
             modifier = Modifier.testTag("confirm${type}Action")) {
               Text(action)
             }
@@ -180,6 +289,51 @@ fun FileSystemPopup(
   var folderSubFolders by remember { mutableStateOf<List<Folder>>(emptyList()) }
   val userRootFolders = folderViewModel.userRootFolders.collectAsState()
 
+  // local helper function for displaying the subfolders items
+  @Composable
+  fun subFolder(subFolder: Folder) = Column {
+    Box(
+        modifier =
+            Modifier.testTag("FileSystemPopupFolderChoiceBox" + subFolder.id)
+                .fillMaxWidth()
+                .background(
+                    color = MaterialTheme.colorScheme.background, shape = RoundedCornerShape(8.dp))
+                .clickable {
+                  folderViewModel.getSubFoldersOfNoStateUpdate(
+                      subFolder.id,
+                      null,
+                      onSuccess = { subFolders -> folderSubFolders = subFolders })
+                  selectedFolder = subFolder
+                }
+                .padding(4.dp) // Adjust padding for better spacing
+        ) {
+          Row(
+              verticalAlignment = Alignment.CenterVertically,
+              horizontalArrangement = Arrangement.Start) {
+                Icon(
+                    imageVector = Icons.Default.Folder, // Use a folder icon
+                    contentDescription = "Folder Icon",
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier =
+                        Modifier.size(50.dp) // Make the icon significantly larger
+                            .padding(end = 16.dp) // Move it slightly to the left
+                    )
+                Text(
+                    text = subFolder.name,
+                    style =
+                        MaterialTheme.typography.bodyLarge.copy(fontSize = 20.sp), // Larger text
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.weight(1f) // Let text take up remaining space
+                    )
+              }
+        }
+    HorizontalDivider(
+        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f), // Subtle divider color
+        thickness = 1.dp, // Thickness of the divider
+        modifier = Modifier.fillMaxWidth() // Ensure divider spans the full width
+        )
+  }
+
   // Modify the subfolder when selected Folder changes, best way I found how to do it as when done
   // sequentially it takes a bit of time for the selected Folder to change which causes a bug
   // where the subfolders don't update. Could fix this problem using a wait but that would depend
@@ -187,7 +341,7 @@ fun FileSystemPopup(
   LaunchedEffect(selectedFolder) {
     if (selectedFolder != null) {
       folderViewModel.getSubFoldersOfNoStateUpdate(
-          selectedFolder!!.id, onSuccess = { subFolders -> folderSubFolders = subFolders })
+          selectedFolder!!.id, null, onSuccess = { subFolders -> folderSubFolders = subFolders })
     }
   }
   Dialog(onDismissRequest = { onDismiss() }) {
@@ -231,7 +385,7 @@ fun FileSystemPopup(
                             text =
                                 if (selectedFolder == null)
                                     stringResource(R.string.file_system_folders_in_root)
-                                else "Folders in: ${selectedFolder!!.name}",
+                                else selectedFolder!!.name,
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onPrimary)
 
@@ -253,50 +407,9 @@ fun FileSystemPopup(
                         .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(4.dp)) {
                   if (selectedFolder == null) {
-                    userRootFolders.value.forEach { folder ->
-                      Box(
-                          modifier =
-                              Modifier.testTag("FileSystemPopupFolderChoiceBox" + folder.id)
-                                  .fillMaxWidth()
-                                  .background(
-                                      color = MaterialTheme.colorScheme.surface,
-                                      shape = RoundedCornerShape(8.dp))
-                                  .clickable {
-                                    folderViewModel.getSubFoldersOfNoStateUpdate(
-                                        folder.id,
-                                        onSuccess = { subFolders -> folderSubFolders = subFolders })
-                                    selectedFolder = folder
-                                  }
-                                  .padding(12.dp)) {
-                            Text(
-                                modifier = Modifier.testTag("FileSystemPopupFolderChoiceText"),
-                                text = folder.name,
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurface)
-                          }
-                    }
+                    userRootFolders.value.forEach { subFolder(it) }
                   } else {
-                    folderSubFolders.forEach { subFolder ->
-                      Box(
-                          modifier =
-                              Modifier.testTag("FileSystemPopupFolderChoiceBox" + subFolder.id)
-                                  .fillMaxWidth()
-                                  .background(
-                                      color = MaterialTheme.colorScheme.surface,
-                                      shape = RoundedCornerShape(8.dp))
-                                  .clickable {
-                                    folderViewModel.getSubFoldersOfNoStateUpdate(
-                                        subFolder.id,
-                                        onSuccess = { subFolders -> folderSubFolders = subFolders })
-                                    selectedFolder = subFolder
-                                  }
-                                  .padding(12.dp)) {
-                            Text(
-                                text = subFolder.name,
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurface)
-                          }
-                    }
+                    folderSubFolders.forEach { subFolder(it) }
                   }
                 }
             Box(
@@ -315,7 +428,6 @@ fun FileSystemPopup(
         }
   }
 }
-
 /**
  * Generic dialog for entering text.
  *

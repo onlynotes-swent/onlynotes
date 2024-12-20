@@ -1,5 +1,6 @@
 package com.github.onlynotesswent.ui
 
+import android.content.Context
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
@@ -25,10 +26,12 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navigation
 import androidx.test.espresso.intent.Intents
 import com.github.onlynotesswent.model.authentication.Authenticator
+import com.github.onlynotesswent.model.deck.DeckRepository
+import com.github.onlynotesswent.model.deck.DeckViewModel
 import com.github.onlynotesswent.model.file.FileRepository
 import com.github.onlynotesswent.model.file.FileViewModel
-import com.github.onlynotesswent.model.flashcard.deck.DeckRepository
-import com.github.onlynotesswent.model.flashcard.deck.DeckViewModel
+import com.github.onlynotesswent.model.flashcard.FlashcardRepository
+import com.github.onlynotesswent.model.flashcard.FlashcardViewModel
 import com.github.onlynotesswent.model.folder.FolderRepository
 import com.github.onlynotesswent.model.folder.FolderViewModel
 import com.github.onlynotesswent.model.note.Note
@@ -44,7 +47,7 @@ import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Route
 import com.github.onlynotesswent.ui.navigation.Screen
 import com.github.onlynotesswent.ui.overview.FolderContentScreen
-import com.github.onlynotesswent.ui.overview.OverviewScreen
+import com.github.onlynotesswent.ui.overview.NoteOverviewScreen
 import com.github.onlynotesswent.ui.overview.editnote.EditMarkdownScreen
 import com.github.onlynotesswent.ui.overview.editnote.EditNoteScreen
 import com.github.onlynotesswent.ui.search.SearchScreen
@@ -53,6 +56,8 @@ import com.github.onlynotesswent.ui.user.CreateUserScreen
 import com.github.onlynotesswent.ui.user.EditProfileScreen
 import com.github.onlynotesswent.ui.user.PublicProfileScreen
 import com.github.onlynotesswent.ui.user.UserProfileScreen
+import com.github.onlynotesswent.utils.NotesToFlashcard
+import com.github.onlynotesswent.utils.OpenAI
 import com.github.onlynotesswent.utils.PictureTaker
 import com.google.firebase.Timestamp
 import kotlinx.coroutines.test.runTest
@@ -61,6 +66,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.mockito.Mock
+import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
@@ -76,12 +82,18 @@ class EndToEndTest {
   @Mock private lateinit var deckRepository: DeckRepository
   @Mock private lateinit var fileRepository: FileRepository
   @Mock private lateinit var pictureTaker: PictureTaker
+  @Mock private lateinit var flashcardRepository: FlashcardRepository
+  @Mock private lateinit var mockNotificationRepository: NotificationRepository
+
   private lateinit var userViewModel: UserViewModel
   private lateinit var noteViewModel: NoteViewModel
   private lateinit var folderViewModel: FolderViewModel
   private lateinit var deckViewModel: DeckViewModel
   private lateinit var fileViewModel: FileViewModel
-  @Mock private lateinit var mockNotificationRepository: NotificationRepository
+  private lateinit var flashcardViewModel: FlashcardViewModel
+  @Mock private lateinit var mockOpenAI: OpenAI
+  @Mock private lateinit var mockContext: Context
+  private lateinit var notesToFlashcard: NotesToFlashcard
   private lateinit var notificationViewModel: NotificationViewModel
 
   @Mock private lateinit var authenticator: Authenticator
@@ -145,7 +157,16 @@ class EndToEndTest {
     deckViewModel = DeckViewModel(deckRepository)
     fileViewModel = FileViewModel(fileRepository)
     notificationViewModel = NotificationViewModel(mockNotificationRepository)
-
+    flashcardViewModel = FlashcardViewModel(flashcardRepository)
+    notesToFlashcard =
+        NotesToFlashcard(
+            flashcardViewModel = flashcardViewModel,
+            fileViewModel = mock(FileViewModel::class.java),
+            deckViewModel = DeckViewModel(mock(DeckRepository::class.java)),
+            noteViewModel = noteViewModel,
+            folderViewModel = folderViewModel,
+            openAIClient = mockOpenAI,
+            context = mockContext)
     // Initialize Intents for handling navigation intents in the test
     Intents.init()
 
@@ -170,11 +191,16 @@ class EndToEndTest {
                 }
 
                 navigation(
-                    startDestination = Screen.OVERVIEW,
-                    route = Route.OVERVIEW,
+                    startDestination = Screen.NOTE_OVERVIEW,
+                    route = Route.NOTE_OVERVIEW,
                 ) {
-                  composable(Screen.OVERVIEW) {
-                    OverviewScreen(navigationActions, noteViewModel, userViewModel, folderViewModel)
+                  composable(Screen.NOTE_OVERVIEW) {
+                    NoteOverviewScreen(
+                        navigationActions,
+                        noteViewModel,
+                        userViewModel,
+                        folderViewModel,
+                        notesToFlashcard)
                   }
                   composable(Screen.EDIT_NOTE) {
                     EditNoteScreen(navigationActions, noteViewModel, userViewModel)
@@ -229,7 +255,10 @@ class EndToEndTest {
                         pictureTaker,
                         fileViewModel,
                         noteViewModel,
-                        folderViewModel)
+                        folderViewModel,
+                        deckViewModel,
+                        flashcardViewModel,
+                        notificationViewModel)
                   }
                 }
               }
@@ -294,9 +323,9 @@ class EndToEndTest {
     composeTestRule.onNodeWithTag("saveButton").performClick()
 
     // Interact with the note creation flow
-    composeTestRule.onNodeWithTag("createNoteOrFolder").assertIsDisplayed()
-    composeTestRule.onNodeWithTag("createNoteOrFolder").performClick()
-    composeTestRule.onNodeWithTag("createNote").performClick()
+    composeTestRule.onNodeWithTag("createObjectOrFolder").assertIsDisplayed()
+    composeTestRule.onNodeWithTag("createObjectOrFolder").performClick()
+    composeTestRule.onNodeWithTag("createDeckOrNote").performClick()
     composeTestRule.onNodeWithTag("confirmNoteAction").assertIsDisplayed()
     composeTestRule.onNodeWithTag("inputNoteName").performTextInput(testNote.title)
     composeTestRule.onNodeWithTag("currentVisibilityOption").assertIsDisplayed()
@@ -399,7 +428,7 @@ class EndToEndTest {
     }
 
     // Start at overview screen
-    composeTestRule.runOnUiThread { navController.navigate(Route.OVERVIEW) }
+    composeTestRule.runOnUiThread { navController.navigate(Route.NOTE_OVERVIEW) }
 
     `when`(mockNotificationRepository.getNewUid()).thenReturn(testUid)
 

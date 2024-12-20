@@ -1,7 +1,8 @@
-package com.github.onlynotesswent.model.flashcard.deck
+package com.github.onlynotesswent.model.deck
 
 import android.util.Log
 import com.github.onlynotesswent.model.common.Visibility
+import com.google.android.gms.tasks.OnFailureListener
 import com.google.android.gms.tasks.OnSuccessListener
 import com.google.android.gms.tasks.Task
 import com.google.firebase.FirebaseApp
@@ -26,6 +27,7 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.verify
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.RuntimeEnvironment
 import org.robolectric.shadows.ShadowLog
 
 @RunWith(RobolectricTestRunner::class)
@@ -62,7 +64,9 @@ class DeckRepositoryFirestoreTest {
 
     // Check for the debug log that should be generated
     val errorLog =
-        logs.find { it.type == Log.ERROR && it.tag == DeckRepositoryFirestore.TAG && it.msg == msg }
+        logs.find {
+          it.type == Log.ERROR && it.tag == DeckRepositoryFirestore.Companion.TAG && it.msg == msg
+        }
     assert(errorLog != null) { "Expected error log was not found!" }
   }
 
@@ -70,7 +74,7 @@ class DeckRepositoryFirestoreTest {
     // Mock query task to fail
     `when`(mockQueryTask.addOnSuccessListener(any())).thenReturn(mockQueryTask)
     `when`(mockQueryTask.addOnFailureListener(any())).thenAnswer { invocation ->
-      val listener = invocation.arguments[0] as com.google.android.gms.tasks.OnFailureListener
+      val listener = invocation.arguments[0] as OnFailureListener
       // Simulate a failure being passed to the listener
       listener.onFailure(testException)
       mockQueryTask
@@ -78,7 +82,7 @@ class DeckRepositoryFirestoreTest {
     // Mock document task to fail
     `when`(mockDocumentTask.addOnSuccessListener(any())).thenReturn(mockDocumentTask)
     `when`(mockDocumentTask.addOnFailureListener(any())).thenAnswer { invocation ->
-      val listener = invocation.arguments[0] as com.google.android.gms.tasks.OnFailureListener
+      val listener = invocation.arguments[0] as OnFailureListener
       // Simulate a failure being passed to the listener
       listener.onFailure(testException)
       mockDocumentTask
@@ -86,7 +90,7 @@ class DeckRepositoryFirestoreTest {
     // Mock resolve task to fail
     `when`(mockResolveTask.addOnSuccessListener(any())).thenReturn(mockResolveTask)
     `when`(mockResolveTask.addOnFailureListener(any())).thenAnswer { invocation ->
-      val listener = invocation.arguments[0] as com.google.android.gms.tasks.OnFailureListener
+      val listener = invocation.arguments[0] as OnFailureListener
       // Simulate a failure being passed to the listener
       listener.onFailure(testException)
       mockResolveTask
@@ -98,7 +102,7 @@ class DeckRepositoryFirestoreTest {
     MockitoAnnotations.openMocks(this)
     deckRepository = DeckRepositoryFirestore(mockFirestore)
 
-    val context = org.robolectric.RuntimeEnvironment.getApplication()
+    val context = RuntimeEnvironment.getApplication()
     FirebaseApp.initializeApp(context)
 
     // Mock the behavior of the Firestore database
@@ -148,6 +152,7 @@ class DeckRepositoryFirestoreTest {
     `when`(mockQuerySnapshot.documents).thenReturn(listOf(mockDocumentSnapshot))
     // Mock the behavior of the DocumentSnapshot
     `when`(mockDocumentSnapshot.id).thenReturn(testDeck.id)
+    `when`(mockDocumentSnapshot.reference).thenReturn(mockDocumentReference)
     `when`(mockDocumentSnapshot.getString("name")).thenReturn(testDeck.name)
     `when`(mockDocumentSnapshot.getString("userId")).thenReturn(testDeck.userId)
     `when`(mockDocumentSnapshot.getString("folderId")).thenReturn(testDeck.folderId)
@@ -337,5 +342,67 @@ class DeckRepositoryFirestoreTest {
     verify(mockDocumentReference).delete()
     verifyErrorLog("Error deleting deck")
     assertNotNull(exception)
+  }
+
+  @Test
+  fun testGetPublicDecks() {
+    `when`(mockCollectionReference.whereEqualTo("visibility", Visibility.PUBLIC.toString()))
+        .thenReturn(mockQuery)
+    var decks = emptyList<Deck>()
+    deckRepository.getPublicDecks({ decks = it }, { fail("Should not fail") })
+    verify(mockCollectionReference).whereEqualTo("visibility", Visibility.PUBLIC.toString())
+    assertEquals(listOf(testDeck), decks)
+  }
+
+  @Test
+  fun testGetDecksFromFollowingList() {
+    `when`(mockCollectionReference.whereIn("userId", listOf("1", "2"))).thenReturn(mockQuery)
+    `when`(mockQuery.whereEqualTo("visibility", Visibility.FRIENDS.toString()))
+        .thenReturn(mockQuery)
+    var decks = emptyList<Deck>()
+    deckRepository.getDecksFromFollowingList(
+        listOf("1", "2"), { decks = it }, { fail("Should not fail") })
+    verify(mockCollectionReference).whereIn("userId", listOf("1", "2"))
+    assertEquals(listOf(testDeck), decks)
+  }
+
+  @Test
+  fun testGetDecksFromFollowingListEmpty() {
+    var isEmpty = false
+    deckRepository.getDecksFromFollowingList(
+        emptyList(), { isEmpty = it.isEmpty() }, { fail("Should not fail") })
+    assert(isEmpty)
+  }
+
+  @Test
+  fun testGetRootDecksFromUserId() {
+    `when`(mockQuery.whereEqualTo("userId", "2")).thenReturn(mockQuery)
+    `when`(mockQuery.whereEqualTo("folderId", null)).thenReturn(mockQuery)
+    var decks = emptyList<Deck>()
+    deckRepository.getRootDecksFromUserId("2", { decks = it }, { fail("Should not fail") })
+    verify(mockCollectionReference).whereEqualTo("userId", "2")
+    assertEquals(listOf(testDeck), decks)
+  }
+
+  @Test
+  fun testDeleteDecksFromFolder() {
+    var wasCalled = false
+    `when`(mockDocumentSnapshot.reference).thenReturn(mockDocumentReference)
+    deckRepository.deleteDecksFromFolder("3", { wasCalled = true }, { fail("Should not fail") })
+    verify(mockCollectionReference).whereEqualTo("folderId", "3")
+    verify(mockQuery).get()
+    verify(mockQuerySnapshot).documents
+    verify(mockDocumentReference).delete()
+    assert(wasCalled)
+  }
+
+  @Test
+  fun testDeleteDecksFromUser() {
+    var wasCalled = false
+    deckRepository.deleteAllDecksFromUserId("2", { wasCalled = true }, { fail("Should not fail") })
+    verify(mockCollectionReference).whereEqualTo("userId", "2")
+    verify(mockQuery).get()
+    verify(mockDocumentReference).delete()
+    assert(wasCalled)
   }
 }

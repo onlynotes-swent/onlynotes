@@ -5,6 +5,8 @@ import android.util.Log
 import com.github.onlynotesswent.model.cache.CacheDatabase
 import com.github.onlynotesswent.model.common.Course
 import com.github.onlynotesswent.model.common.Visibility
+import com.github.onlynotesswent.model.user.User
+import com.github.onlynotesswent.model.user.UserViewModel
 import com.github.onlynotesswent.utils.NetworkUtils
 import com.google.android.gms.tasks.Task
 import com.google.firebase.Firebase
@@ -12,6 +14,7 @@ import com.google.firebase.Timestamp
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
@@ -19,7 +22,8 @@ import kotlinx.coroutines.withContext
 class NoteRepositoryFirestore(
     private val db: FirebaseFirestore,
     private val cache: CacheDatabase,
-    private val context: Context
+    private val context: Context,
+    private val dispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : NoteRepository {
 
   private val collectionPath = "notes"
@@ -108,7 +112,7 @@ class NoteRepositoryFirestore(
   ) {
     try {
       val cachedNotes: List<Note> =
-          if (useCache) withContext(Dispatchers.IO) { noteDao.getNotesFromUid() } else emptyList()
+          if (useCache) withContext(dispatcher) { noteDao.getNotesFromUid(userId) } else emptyList()
 
       // If device is offline, fetch from from local database
       if (!NetworkUtils.isInternetAvailable(context)) {
@@ -118,7 +122,7 @@ class NoteRepositoryFirestore(
 
       // If device is online, fetch from Firestore
       val firestoreNotes =
-          withContext(Dispatchers.IO) {
+          withContext(dispatcher) {
             db.collection(collectionPath)
                 .get()
                 .await()
@@ -146,7 +150,7 @@ class NoteRepositoryFirestore(
   ) {
     try {
       val cachedNotes: List<Note> =
-          if (useCache) withContext(Dispatchers.IO) { noteDao.getRootNotesFromUid() }
+          if (useCache) withContext(dispatcher) { noteDao.getRootNotesFromUid(userId) }
           else emptyList()
 
       // If device is offline, fetch from local database
@@ -157,7 +161,7 @@ class NoteRepositoryFirestore(
 
       // If device is online, fetch from Firestore
       val firestoreNotes =
-          withContext(Dispatchers.IO) {
+          withContext(dispatcher) {
             db.collection(collectionPath)
                 .get()
                 .await()
@@ -185,7 +189,7 @@ class NoteRepositoryFirestore(
   ) {
     try {
       val cachedNote: Note? =
-          if (useCache) withContext(Dispatchers.IO) { noteDao.getNoteById(id) } else null
+          if (useCache) withContext(dispatcher) { noteDao.getNoteById(id) } else null
 
       // If device is offline, fetch from local database
       if (!NetworkUtils.isInternetAvailable(context)) {
@@ -198,7 +202,7 @@ class NoteRepositoryFirestore(
 
       // If device is online, fetch from Firestore
       val firestoreNote =
-          withContext(Dispatchers.IO) {
+          withContext(dispatcher) {
             db.collection(collectionPath).document(id).get().await().let {
               documentSnapshotToNote(it)
             }
@@ -223,7 +227,7 @@ class NoteRepositoryFirestore(
   ) {
     // Update the cache if needed
     if (useCache) {
-      withContext(Dispatchers.IO) { noteDao.addNote(note) }
+      withContext(dispatcher) { noteDao.addNote(note) }
     }
 
     performFirestoreOperation(
@@ -240,7 +244,7 @@ class NoteRepositoryFirestore(
   ) {
     // Update the cache if needed
     if (useCache) {
-      withContext(Dispatchers.IO) { noteDao.addNotes(notes) }
+      withContext(dispatcher) { noteDao.addNotes(notes) }
     }
 
     val batch = db.batch()
@@ -259,7 +263,7 @@ class NoteRepositoryFirestore(
   ) {
     // Update the cache if needed
     if (useCache) {
-      withContext(Dispatchers.IO) { noteDao.addNote(note) }
+      withContext(dispatcher) { noteDao.addNote(note) }
     }
 
     performFirestoreOperation(
@@ -276,14 +280,14 @@ class NoteRepositoryFirestore(
   ) {
     // Update the cache if needed
     if (useCache) {
-      withContext(Dispatchers.IO) { noteDao.deleteNoteById(id) }
+      withContext(dispatcher) { noteDao.deleteNoteById(id) }
     }
 
     performFirestoreOperation(
         db.collection(collectionPath).document(id).delete(), onSuccess, onFailure)
   }
 
-  override suspend fun deleteNotesFromUid(
+  override suspend fun deleteAllNotesFromUserId(
       userId: String,
       onSuccess: () -> Unit,
       onFailure: (Exception) -> Unit,
@@ -291,7 +295,7 @@ class NoteRepositoryFirestore(
   ) {
     // Update the cache if needed
     if (useCache) {
-      withContext(Dispatchers.IO) { noteDao.deleteNotesFromUid() }
+      withContext(dispatcher) { noteDao.deleteNotesFromUid(userId) }
     }
 
     db.collection(collectionPath).get().addOnCompleteListener { task ->
@@ -313,13 +317,14 @@ class NoteRepositoryFirestore(
 
   override suspend fun getNotesFromFolder(
       folderId: String,
+      userViewModel: UserViewModel?,
       onSuccess: (List<Note>) -> Unit,
       onFailure: (Exception) -> Unit,
       useCache: Boolean
   ) {
     try {
       val cachedNotes: List<Note> =
-          if (useCache) withContext(Dispatchers.IO) { noteDao.getNotesFromFolder(folderId) }
+          if (useCache) withContext(dispatcher) { noteDao.getNotesFromFolder(folderId) }
           else emptyList()
 
       // If device is offline, fetch from local database
@@ -330,7 +335,7 @@ class NoteRepositoryFirestore(
 
       // If device is online, fetch from Firestore
       val firestoreNotes =
-          withContext(Dispatchers.IO) {
+          withContext(dispatcher) {
             db.collection(collectionPath)
                 .get()
                 .await()
@@ -340,8 +345,13 @@ class NoteRepositoryFirestore(
           }
 
       // Sync Firestore with cache
-      val updatedNotes =
+      var updatedNotes =
           if (useCache) syncNotesFirestoreWithCache(firestoreNotes, cachedNotes) else firestoreNotes
+
+      // Only return notes that are visible to the user
+      if (userViewModel != null) {
+        updatedNotes = updatedNotes.filter { it.isVisibleTo(userViewModel.currentUser.value!!) }
+      }
 
       onSuccess(updatedNotes)
     } catch (e: Exception) {
@@ -358,7 +368,7 @@ class NoteRepositoryFirestore(
   ) {
     // Update the cache if needed
     if (useCache) {
-      withContext(Dispatchers.IO) { noteDao.deleteNotesFromFolder(folderId) }
+      withContext(dispatcher) { noteDao.deleteNotesFromFolder(folderId) }
     }
 
     db.collection(collectionPath).get().addOnCompleteListener { task ->
@@ -376,6 +386,66 @@ class NoteRepositoryFirestore(
           onFailure(e)
         }
       }
+    }
+  }
+
+  override suspend fun getSavedNotesByIds(
+      savedNotesIds: List<String>,
+      currentUser: User,
+      onSuccess: (List<Note>, List<String>) -> Unit,
+      onFailure: (Exception) -> Unit,
+      useCache: Boolean
+  ) {
+    try {
+      val cachedNotes: List<Note> =
+          if (useCache) withContext(Dispatchers.IO) { noteDao.getNotesByIds(savedNotesIds) }
+          else emptyList()
+
+      // If device is offline, fetch from local database
+      if (!NetworkUtils.isInternetAvailable(context)) {
+        onSuccess(cachedNotes, emptyList())
+        return
+      }
+
+      // If device is online, fetch from Firestore
+      val saveableIdList = mutableListOf<String>()
+      val firestoreNotes =
+          withContext(Dispatchers.IO) {
+            db.collection(collectionPath)
+                .get()
+                .await()
+                .documents
+                .mapNotNull { documentSnapshotToNote(it) }
+                .filter {
+                  // If the note is saved and is public or if the current user follows
+                  // the owner it can be saved, otherwise it can't
+                  if (it.id in savedNotesIds && it.isVisibleTo(currentUser)) {
+                    saveableIdList.add(it.id)
+                    true
+                  } else {
+                    false
+                  }
+                }
+          }
+
+      // If some notes are not found in Firestore, also return the list of missing notes
+      val missingNotes = savedNotesIds.filter { it !in saveableIdList }
+
+      if (useCache) {
+        // Update cache with newest saved data, to ensure that the cache is up to date and
+        // that non available saved notes are deleted
+        withContext(Dispatchers.IO) {
+          cache.noteDao().addNotes(firestoreNotes)
+          cache.noteDao().deleteNotesByIds(missingNotes)
+        }
+      }
+
+      // Return the list of notes and the list of missing notes. Cached notes will be at this
+      // point the same as firestoreNotes if useCache is true
+      onSuccess(firestoreNotes, missingNotes)
+    } catch (e: Exception) {
+      Log.e(TAG, "Error getting notes from list", e)
+      onFailure(e)
     }
   }
 

@@ -1,7 +1,8 @@
 package com.github.onlynotesswent.model.user
 
+import com.github.onlynotesswent.model.deck.Deck
 import com.github.onlynotesswent.model.flashcard.UserFlashcard
-import com.github.onlynotesswent.model.flashcard.deck.Deck
+import com.github.onlynotesswent.model.user.UserRepositoryFirestore.SavedDocumentType
 import com.google.firebase.auth.FirebaseAuth
 
 /** Interface representing a repository for managing user data. */
@@ -199,6 +200,55 @@ interface UserRepository {
       userID: String,
       deck: Deck,
       onSuccess: (Map<String, UserFlashcard>) -> Unit,
+      onFailure: (Exception) -> Unit
+  )
+
+  /**
+   * Sets the saved document ids list of the given type for the current user.
+   *
+   * @param currentUserID The ID of the current user.
+   * @param documentIds The new saved document ids list.
+   * @param documentType The type of the document to add to the saved document list.
+   * @param onSuccess Callback to be invoked when the addition is successful.
+   * @param onFailure Callback to be invoked if an error occurs.
+   */
+  fun setSavedDocumentIdsOfType(
+      currentUserID: String,
+      documentIds: List<String>,
+      documentType: SavedDocumentType,
+      onSuccess: () -> Unit,
+      onFailure: (Exception) -> Unit
+  )
+
+  /**
+   * Retrieves all saved document IDs of the given type from the current User.
+   *
+   * @param currentUserID The ID of the current user.
+   * @param documentType The type of the saved document to retrieve.
+   * @param onSuccess Callback to be invoked with the list of retrieved saved document ids.
+   * @param onFailure Callback to be invoked if an error occurs.
+   */
+  fun getSavedDocumentsIdOfType(
+      currentUserID: String,
+      documentType: SavedDocumentType,
+      onSuccess: (List<String>) -> Unit,
+      onFailure: (Exception) -> Unit
+  )
+
+  /**
+   * Deletes a saved document id of the given type from the user's saved document list.
+   *
+   * @param currentUserID The ID of the current user.
+   * @param documentIds The ID of the document to delete from the saved document list.
+   * @param documentType The type of the document to delete from the saved document list.
+   * @param onSuccess Callback to be invoked when the deletion is successful.
+   * @param onFailure Callback to be invoked if an error occurs.
+   */
+  fun deleteSavedDocumentIdsOfType(
+      currentUserID: String,
+      documentIds: List<String>,
+      documentType: SavedDocumentType,
+      onSuccess: () -> Unit,
       onFailure: (Exception) -> Unit
   )
 }

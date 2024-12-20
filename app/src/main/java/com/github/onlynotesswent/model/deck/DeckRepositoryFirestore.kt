@@ -1,4 +1,4 @@
-package com.github.onlynotesswent.model.flashcard.deck
+package com.github.onlynotesswent.model.deck
 
 import android.util.Log
 import com.github.onlynotesswent.model.common.Visibility
@@ -114,6 +114,25 @@ class DeckRepositoryFirestore(private val db: FirebaseFirestore) : DeckRepositor
         }
   }
 
+  override fun getRootDecksFromUserId(
+      userId: String,
+      onSuccess: (List<Deck>) -> Unit,
+      onFailure: (Exception) -> Unit,
+  ) {
+    db.collection(collectionPath)
+        .whereEqualTo("userId", userId)
+        .whereEqualTo("folderId", null)
+        .get()
+        .addOnSuccessListener { querySnapshot ->
+          val decks = querySnapshot.documents.mapNotNull { documentSnapshotToDeck(it) }
+          onSuccess(decks)
+        }
+        .addOnFailureListener { exception ->
+          onFailure(exception)
+          Log.e(TAG, "Error getting root decks from user", exception)
+        }
+  }
+
   override fun getDeckById(id: String, onSuccess: (Deck) -> Unit, onFailure: (Exception) -> Unit) {
     db.collection(collectionPath)
         .document(id)
@@ -218,6 +237,47 @@ class DeckRepositoryFirestore(private val db: FirebaseFirestore) : DeckRepositor
         .addOnFailureListener { exception ->
           onFailure(exception)
           Log.e(TAG, "Error deleting deck", exception)
+        }
+  }
+
+  override fun deleteAllDecksFromUserId(
+      userId: String,
+      onSuccess: () -> Unit,
+      onFailure: (Exception) -> Unit
+  ) {
+    db.collection(collectionPath)
+        .whereEqualTo("userId", userId)
+        .get()
+        .addOnSuccessListener { querySnapshot ->
+          querySnapshot.documents.forEach { document ->
+            document.reference.delete().addOnFailureListener { exception ->
+              onFailure(exception)
+              Log.e(TAG, "Error deleting notification", exception)
+            }
+          }
+          onSuccess()
+        }
+        .addOnFailureListener { exception ->
+          onFailure(exception)
+          Log.e(TAG, "Error deleting all decks from user", exception)
+        }
+  }
+
+  override fun deleteDecksFromFolder(
+      folderId: String,
+      onSuccess: () -> Unit,
+      onFailure: (Exception) -> Unit
+  ) {
+    db.collection(collectionPath)
+        .whereEqualTo("folderId", folderId)
+        .get()
+        .addOnSuccessListener { querySnapshot ->
+          querySnapshot.documents.forEach { document -> document.reference.delete() }
+          onSuccess()
+        }
+        .addOnFailureListener { exception ->
+          onFailure(exception)
+          Log.e(TAG, "Error deleting decks from folder", exception)
         }
   }
 }

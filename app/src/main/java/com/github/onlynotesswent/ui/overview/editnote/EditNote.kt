@@ -28,6 +28,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.outlined.Clear
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -56,8 +57,10 @@ import com.github.onlynotesswent.model.note.Note
 import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.model.user.User
 import com.github.onlynotesswent.model.user.UserViewModel
+import com.github.onlynotesswent.ui.common.BottomEditNoteNavigationBarWithDivider
 import com.github.onlynotesswent.ui.common.ConfirmationPopup
 import com.github.onlynotesswent.ui.common.NoteDataTextField
+import com.github.onlynotesswent.ui.common.SavedDocumentButton
 import com.github.onlynotesswent.ui.common.SelectVisibility
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
@@ -112,26 +115,35 @@ fun EditNoteScreen(
       },
       modifier = Modifier.testTag("editNoteScreen"),
       topBar = {
-        EditNoteGeneralTopBar(
-            noteViewModel = noteViewModel,
-            userViewModel = userViewModel,
-            navigationActions = navigationActions,
-            actions = {
-              if (note != null && currentUser != null && note!!.isOwner(currentUser!!.uid)) {
-                SaveButton(
-                    noteTitle = noteTitle,
-                    note = note!!,
-                    visibility = visibility,
-                    courseCode = courseCode,
-                    courseName = courseName,
-                    courseYear = courseYear,
-                    noteViewModel = noteViewModel)
-              }
-            },
-            isModified = isModified)
+        Column {
+          EditNoteGeneralTopBar(
+              noteViewModel = noteViewModel,
+              userViewModel = userViewModel,
+              navigationActions = navigationActions,
+              actions = {
+                if (note != null && currentUser != null && note!!.isOwner(currentUser!!.uid)) {
+                  SaveButton(
+                      noteTitle = noteTitle,
+                      note = note!!,
+                      visibility = visibility,
+                      courseCode = courseCode,
+                      courseName = courseName,
+                      courseYear = courseYear,
+                      noteViewModel = noteViewModel)
+                  // todo Additional check might be useless if checking is done before
+                } else if (note != null && note!!.isVisibleTo(currentUser!!)) {
+                  SavedNotesButton(
+                      note = note!!, userViewModel = userViewModel, noteViewModel = noteViewModel)
+                }
+              },
+              isModified = isModified)
+
+          HorizontalDivider(
+              color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f), thickness = 0.5.dp)
+        }
       },
       bottomBar = {
-        EditNoteNavigationMenu(
+        BottomEditNoteNavigationBarWithDivider(
             navigationActions = navigationActions,
             selectedItem = Screen.EDIT_NOTE,
             isModified = isModified)
@@ -243,7 +255,7 @@ fun EditNoteGeneralTopBar(
                     oldValue = "{folderId}",
                     newValue = noteViewModel.selectedNote.value?.folderId!!))
           } else {
-            navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
+            navigationActions.navigateTo(TopLevelDestinations.NOTE_OVERVIEW)
           }
           noteViewModel.selectedNote(null)
         },
@@ -309,7 +321,7 @@ fun NoteSection(
 
   Column(modifier = Modifier.fillMaxWidth()) {
     Text(text = "Visibility", style = MaterialTheme.typography.titleMedium)
-    SelectVisibility(visibility, currentUserId, note.userId) { onVisibilityChange(it) }
+    SelectVisibility(visibility, currentUserId == note.userId) { onVisibilityChange(it) }
   }
 
   Spacer(modifier = Modifier.height(8.dp))
@@ -457,6 +469,41 @@ fun SaveButton(
 }
 
 /**
+ * Displays a button that adds or removes the note to the user's saved notes.
+ *
+ * @param note The note to be saved or removed.
+ * @param userViewModel The ViewModel that provides the current user.
+ * @param noteViewModel The ViewModel that provides the current note to be edited and handles note
+ *   updates.
+ */
+@Composable
+fun SavedNotesButton(note: Note, userViewModel: UserViewModel, noteViewModel: NoteViewModel) {
+  val savedNotes by noteViewModel.userSavedNotes.collectAsState()
+
+  val context = LocalContext.current
+
+  SavedDocumentButton(
+      isSaved = note.id in savedNotes.map { it.id },
+      onSave = {
+        noteViewModel.addCurrentUserSavedNote(
+            note,
+            userViewModel,
+            onFailure = {
+              Toast.makeText(context, "Failed to save note", Toast.LENGTH_SHORT).show()
+            })
+      },
+      onDelete = {
+        noteViewModel.deleteCurrentUserSavedNote(
+            note.id,
+            userViewModel,
+            onFailure = {
+              Toast.makeText(context, "Failed to remove note from saved notes", Toast.LENGTH_SHORT)
+                  .show()
+            })
+      })
+}
+
+/**
  * Displays a button that deletes the note. When clicked, the button deletes the note from the
  * ViewModel and navigates back to the overview screen.
  *
@@ -494,8 +541,15 @@ fun DeleteButton(
           text = stringResource(R.string.delete_note_text),
           onConfirm = {
             noteViewModel.deleteNoteById(note.id, note.userId)
+            if (noteViewModel.selectedNote.value?.folderId != null) {
+              navigationActions.navigateTo(
+                  Screen.FOLDER_CONTENTS.replace(
+                      oldValue = "{folderId}",
+                      newValue = noteViewModel.selectedNote.value?.folderId!!))
+            } else {
+              navigationActions.navigateTo(TopLevelDestinations.NOTE_OVERVIEW)
+            }
             noteViewModel.selectedNote(null)
-            navigationActions.navigateTo(TopLevelDestinations.OVERVIEW)
           },
           onDismiss = {
             // Close the dialog without deleting

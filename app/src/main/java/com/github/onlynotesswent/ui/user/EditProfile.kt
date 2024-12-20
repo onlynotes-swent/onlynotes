@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
@@ -35,6 +36,8 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -65,15 +68,17 @@ import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 import coil.compose.rememberAsyncImagePainter
 import com.github.onlynotesswent.R
+import com.github.onlynotesswent.model.deck.DeckViewModel
 import com.github.onlynotesswent.model.file.FileType
 import com.github.onlynotesswent.model.file.FileViewModel
+import com.github.onlynotesswent.model.flashcard.FlashcardViewModel
 import com.github.onlynotesswent.model.folder.FolderViewModel
 import com.github.onlynotesswent.model.note.NoteViewModel
+import com.github.onlynotesswent.model.notification.NotificationViewModel
 import com.github.onlynotesswent.model.user.User
 import com.github.onlynotesswent.model.user.UserRepositoryFirestore
 import com.github.onlynotesswent.model.user.UserViewModel
-import com.github.onlynotesswent.ui.navigation.BottomNavigationMenu
-import com.github.onlynotesswent.ui.navigation.LIST_TOP_LEVEL_DESTINATION
+import com.github.onlynotesswent.ui.common.BottomNavigationBarWithDivider
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Route
 import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
@@ -98,6 +103,9 @@ fun EditProfileScreen(
     fileViewModel: FileViewModel,
     noteViewModel: NoteViewModel,
     folderViewModel: FolderViewModel,
+    deckViewModel: DeckViewModel,
+    flashcardViewModel: FlashcardViewModel,
+    notificationViewModel: NotificationViewModel,
 ) {
   val user = userViewModel.currentUser.collectAsState()
 
@@ -129,249 +137,283 @@ fun EditProfileScreen(
   } else
       Scaffold(
           modifier = Modifier.testTag("ProfileScreen"),
-          bottomBar = {
-            BottomNavigationMenu(
-                onTabSelect = { route -> navigationActions.navigateTo(route) },
-                tabList = LIST_TOP_LEVEL_DESTINATION,
-                selectedItem = navigationActions.currentRoute())
-          },
+          bottomBar = { BottomNavigationBarWithDivider(navigationActions) },
           topBar = {
-            TopAppBar(
-                title = { Text(stringResource(R.string.edit_profile)) },
-                navigationIcon = {
-                  IconButton(
-                      onClick = {
-                        if (newFirstName.value != user.value?.firstName ||
-                            newLastName.value != user.value?.lastName ||
-                            newUserName.value != user.value?.userName ||
-                            newBio.value != user.value?.bio ||
-                            newIsAccountPublic.value != user.value?.isAccountPublic ||
-                            hasProfilePictureBeenChanged.value) {
-                          showGoingBackWithoutSavingChanges.value = true
-                        } else {
-                          navigationActions.goBack()
+            Column {
+              TopAppBar(
+                  title = { Text(stringResource(R.string.edit_profile)) },
+                  navigationIcon = {
+                    IconButton(
+                        onClick = {
+                          if (newFirstName.value != user.value?.firstName ||
+                              newLastName.value != user.value?.lastName ||
+                              newUserName.value != user.value?.userName ||
+                              newBio.value != user.value?.bio ||
+                              newIsAccountPublic.value != user.value?.isAccountPublic ||
+                              hasProfilePictureBeenChanged.value) {
+                            showGoingBackWithoutSavingChanges.value = true
+                          } else {
+                            navigationActions.goBack()
+                          }
+                        },
+                        Modifier.testTag("goBackButton")) {
+                          Icon(
+                              imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
+                              contentDescription = "Back")
                         }
-                      },
-                      Modifier.testTag("goBackButton")) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                            contentDescription = "Back")
-                      }
-                },
-                actions = {
-                  IconButton(
-                      onClick = {
-                        val updatedUser =
-                            user.value!!.copy(
-                                firstName = newFirstName.value.trim(),
-                                lastName = newLastName.value.trim(),
-                                userName = newUserName.value.trim(),
-                                bio = newBio.value.trim(),
-                                hasProfilePicture = profilePictureUri.value.isNotBlank(),
-                                isAccountPublic = newIsAccountPublic.value,
-                            )
+                  },
+                  actions = {
+                    IconButton(
+                        onClick = {
+                          val updatedUser =
+                              user.value!!.copy(
+                                  firstName = newFirstName.value.trim(),
+                                  lastName = newLastName.value.trim(),
+                                  userName = newUserName.value.trim(),
+                                  bio = newBio.value.trim(),
+                                  hasProfilePicture = profilePictureUri.value.isNotBlank(),
+                                  isAccountPublic = newIsAccountPublic.value,
+                              )
 
-                        userViewModel.updateUser(
-                            user = updatedUser,
-                            onSuccess = {
-                              navigationActions.navigateTo(TopLevelDestinations.PROFILE)
-                              // Upload or delete the profile picture if it has been changed
-                              if (hasProfilePictureBeenChanged.value) {
-                                if (profilePictureUri.value.isNotBlank()) {
-                                  if (user.value!!.hasProfilePicture) {
-                                    fileViewModel.updateFile(
-                                        uid = userViewModel.currentUser.value!!.uid,
-                                        fileUri = profilePictureUri.value.toUri(),
-                                        fileType = FileType.PROFILE_PIC_JPEG,
-                                        onFailure = {
-                                          Toast.makeText(
-                                                  localContext,
-                                                  "Error updating profile picture",
-                                                  Toast.LENGTH_SHORT)
-                                              .show()
-                                        },
-                                    )
+                          userViewModel.updateUser(
+                              user = updatedUser,
+                              onSuccess = {
+                                navigationActions.navigateTo(TopLevelDestinations.PROFILE)
+                                // Upload or delete the profile picture if it has been changed
+                                if (hasProfilePictureBeenChanged.value) {
+                                  if (profilePictureUri.value.isNotBlank()) {
+                                    if (user.value!!.hasProfilePicture) {
+                                      fileViewModel.updateFile(
+                                          uid = userViewModel.currentUser.value!!.uid,
+                                          fileUri = profilePictureUri.value.toUri(),
+                                          fileType = FileType.PROFILE_PIC_JPEG,
+                                          onFailure = {
+                                            Toast.makeText(
+                                                    localContext,
+                                                    "Error updating profile picture",
+                                                    Toast.LENGTH_SHORT)
+                                                .show()
+                                          },
+                                      )
+                                    } else {
+                                      fileViewModel.uploadFile(
+                                          uid = userViewModel.currentUser.value!!.uid,
+                                          fileUri = profilePictureUri.value.toUri(),
+                                          fileType = FileType.PROFILE_PIC_JPEG,
+                                          onFailure = {
+                                            Toast.makeText(
+                                                    localContext,
+                                                    "Error uploading profile picture",
+                                                    Toast.LENGTH_SHORT)
+                                                .show()
+                                          })
+                                    }
                                   } else {
-                                    fileViewModel.uploadFile(
-                                        uid = userViewModel.currentUser.value!!.uid,
-                                        fileUri = profilePictureUri.value.toUri(),
-                                        fileType = FileType.PROFILE_PIC_JPEG,
-                                        onFailure = {
-                                          Toast.makeText(
-                                                  localContext,
-                                                  "Error uploading profile picture",
-                                                  Toast.LENGTH_SHORT)
-                                              .show()
-                                        })
+                                    fileViewModel.deleteFile(
+                                        userViewModel.currentUser.value!!.uid,
+                                        FileType.PROFILE_PIC_JPEG,
+                                    )
                                   }
-                                } else {
-                                  fileViewModel.deleteFile(
-                                      userViewModel.currentUser.value!!.uid,
-                                      FileType.PROFILE_PIC_JPEG,
-                                  )
                                 }
-                              }
-                            },
-                            onFailure = { exception ->
-                              val errorMessage =
-                                  when (exception) {
-                                    is UserRepositoryFirestore.UsernameTakenException ->
-                                        "Username is already taken. Please choose a different one."
-                                    else -> "Oops! Something went wrong. Please try again later."
-                                  }
-                              Toast.makeText(localContext, errorMessage, Toast.LENGTH_SHORT).show()
-                              userNameError.value =
-                                  exception is UserRepositoryFirestore.UsernameTakenException
-                            })
-                      },
-                      modifier = Modifier.testTag("saveButton"),
-                      enabled = saveEnabled.value) {
-                        Icon(
-                            imageVector = Icons.Default.Check,
-                            contentDescription = "Save Note",
-                            tint = MaterialTheme.colorScheme.onSurface)
-                      }
-                })
+                              },
+                              onFailure = { exception ->
+                                val errorMessage =
+                                    when (exception) {
+                                      is UserRepositoryFirestore.UsernameTakenException ->
+                                          "Username is already taken. Please choose a different one."
+                                      else -> "Oops! Something went wrong. Please try again later."
+                                    }
+                                Toast.makeText(localContext, errorMessage, Toast.LENGTH_SHORT)
+                                    .show()
+                                userNameError.value =
+                                    exception is UserRepositoryFirestore.UsernameTakenException
+                              })
+                        },
+                        modifier = Modifier.testTag("saveButton"),
+                        enabled = saveEnabled.value) {
+                          Icon(
+                              imageVector = Icons.Default.Check,
+                              contentDescription = "Save Note",
+                              tint = MaterialTheme.colorScheme.onSurface)
+                        }
+                  })
+
+              HorizontalDivider(
+                  color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
+                  thickness = 0.5.dp)
+            }
           },
           content = { paddingValues ->
-            Column(
-                modifier = Modifier.fillMaxSize().padding(paddingValues),
+            LazyColumn(
+                contentPadding = paddingValues,
+                modifier = Modifier.fillMaxSize().padding(vertical = 16.dp),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally) {
-                  EditableProfilePicture(
-                      pictureTaker,
-                      userViewModel,
-                      profilePictureUri,
-                      fileViewModel,
-                      isProfilePictureUpToDate,
-                      hasProfilePictureBeenChanged,
-                      localContext,
-                      showSheet,
-                      sheetState,
-                  )
+                  item {
+                    EditableProfilePicture(
+                        pictureTaker,
+                        userViewModel,
+                        profilePictureUri,
+                        fileViewModel,
+                        isProfilePictureUpToDate,
+                        hasProfilePictureBeenChanged,
+                        localContext,
+                        showSheet,
+                        sheetState,
+                    )
 
-                  // Text Fields for user information
-                  FirstNameTextField(newFirstName)
-                  LastNameTextField(newLastName)
-                  UserNameTextField(newUserName, userNameError)
-                  BioTextField(newBio)
+                    // Text Fields for user information
+                    FirstNameTextField(newFirstName)
+                    LastNameTextField(newLastName)
+                    UserNameTextField(newUserName, userNameError)
+                    BioTextField(newBio)
 
-                  // Save Button
-                  saveEnabled.value = newUserName.value.isNotBlank()
+                    // Save Button
+                    saveEnabled.value = newUserName.value.isNotBlank()
 
-                  Row(modifier = Modifier.padding(top = 16.dp)) {
-                    FilterChip(
-                        modifier =
-                            Modifier.width(130.dp).height(40.dp).testTag("publicAccountChip"),
-                        selected = newIsAccountPublic.value,
-                        onClick = { newIsAccountPublic.value = true },
-                        label = {
-                          Row(
-                              modifier = Modifier.fillMaxWidth(),
-                              horizontalArrangement = Arrangement.Center) {
-                                Text(
-                                    stringResource(R.string.public_account),
-                                    style = Typography.titleMedium)
-                              }
-                        },
-                        leadingIcon = {
-                          if (newIsAccountPublic.value)
-                              Icon(
-                                  imageVector = Icons.Default.Public,
-                                  contentDescription = "Public Account",
-                                  tint = MaterialTheme.colorScheme.onSurface)
-                        })
-                    Spacer(modifier = Modifier.width(16.dp))
-                    FilterChip(
-                        modifier =
-                            Modifier.width(130.dp).height(40.dp).testTag("privateAccountChip"),
-                        selected = !newIsAccountPublic.value,
-                        onClick = { newIsAccountPublic.value = false },
-                        label = {
-                          Row(
-                              modifier = Modifier.fillMaxWidth(),
-                              horizontalArrangement = Arrangement.Center) {
-                                Text(
-                                    stringResource(R.string.private_account),
-                                    style = Typography.titleMedium)
-                              }
-                        },
-                        leadingIcon = {
-                          if (!newIsAccountPublic.value)
-                              Icon(
-                                  imageVector = Icons.Default.Lock,
-                                  contentDescription = "Private Account",
-                                  tint = MaterialTheme.colorScheme.onSurface)
-                        })
-                  }
-
-                  Button(
-                      modifier = Modifier.padding(top = 16.dp).testTag("deleteAccountButton"),
-                      colors =
-                          ButtonDefaults.buttonColors(
-                              containerColor = MaterialTheme.colorScheme.background,
-                              contentColor = MaterialTheme.colorScheme.error),
-                      border = BorderStroke(1.dp, MaterialTheme.colorScheme.error),
-                      onClick = { showDeleteAccountAlert.value = true },
-                      content = { Text("Delete Account") })
-
-                  if (showDeleteAccountAlert.value) {
-                    AlertDialog(
-                        onDismissRequest = { showDeleteAccountAlert.value = false },
-                        title = { Text(stringResource(R.string.delete_account)) },
-                        text = { Text(stringResource(R.string.delete_account_prompt)) },
-                        modifier = Modifier.testTag("deleteAccountAlert"),
-                        confirmButton = {
-                          Button(
-                              modifier = Modifier.testTag("confirmDeleteButton"),
-                              onClick = {
-                                showDeleteAccountAlert.value = false
-
-                                noteViewModel.deleteNotesFromUid(user.value!!.uid)
-                                folderViewModel.deleteFoldersFromUid(user.value!!.uid)
-                                noteViewModel.getNoteById(user.value!!.uid)
-                                noteViewModel.userRootNotes.value.forEach {
-                                  fileViewModel.deleteFile(it.id, FileType.NOTE_PDF)
+                    Row(modifier = Modifier.padding(top = 16.dp)) {
+                      FilterChip(
+                          modifier =
+                              Modifier.width(130.dp).height(40.dp).testTag("publicAccountChip"),
+                          colors =
+                              FilterChipDefaults.filterChipColors(
+                                  selectedContainerColor =
+                                      MaterialTheme.colorScheme.primaryContainer),
+                          selected = newIsAccountPublic.value,
+                          onClick = { newIsAccountPublic.value = true },
+                          label = {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.Center) {
+                                  Text(
+                                      stringResource(R.string.public_account),
+                                      style = Typography.titleMedium)
                                 }
-                                fileViewModel.deleteFile(
-                                    user.value!!.uid, FileType.PROFILE_PIC_JPEG)
-                                userViewModel.deleteUserById(
-                                    user.value!!.uid,
-                                    onSuccess = { navigationActions.navigateTo(Route.AUTH) })
-                              },
-                              content = { Text(stringResource(R.string.yes)) })
-                        },
-                        dismissButton = {
-                          Button(
-                              modifier = Modifier.testTag("dismissDeleteButton"),
-                              onClick = { showDeleteAccountAlert.value = false },
-                              content = { Text(stringResource(R.string.no)) })
-                        })
-                  }
-                  if (showGoingBackWithoutSavingChanges.value) {
-                    AlertDialog(
-                        onDismissRequest = { showGoingBackWithoutSavingChanges.value = false },
-                        title = { Text(stringResource(R.string.discard_changes)) },
-                        text = { Text(stringResource(R.string.discard_changes_text)) },
-                        modifier = Modifier.testTag("goingBackAlert"),
-                        confirmButton = {
-                          Button(
-                              modifier = Modifier.testTag("confirmGoingBack"),
-                              onClick = {
-                                showGoingBackWithoutSavingChanges.value = false
-                                // When we go back, we will need to fetch again the old profile
-                                // picture (if it was changed), if the user didn't save the changes
-                                isProfilePictureUpToDate.value = !hasProfilePictureBeenChanged.value
-                                navigationActions.goBack()
-                              },
-                              content = { Text(stringResource(R.string.yes)) })
-                        },
-                        dismissButton = {
-                          Button(
-                              modifier = Modifier.testTag("dismissGoingBack"),
-                              onClick = { showGoingBackWithoutSavingChanges.value = false },
-                              content = { Text(stringResource(R.string.no)) })
-                        })
+                          },
+                          leadingIcon = {
+                            if (newIsAccountPublic.value)
+                                Icon(
+                                    imageVector = Icons.Default.Public,
+                                    contentDescription = "Public Account",
+                                    tint = MaterialTheme.colorScheme.onSurface)
+                          })
+                      Spacer(modifier = Modifier.width(16.dp))
+                      FilterChip(
+                          modifier =
+                              Modifier.width(130.dp).height(40.dp).testTag("privateAccountChip"),
+                          colors =
+                              FilterChipDefaults.filterChipColors(
+                                  selectedContainerColor =
+                                      MaterialTheme.colorScheme.primaryContainer),
+                          selected = !newIsAccountPublic.value,
+                          onClick = { newIsAccountPublic.value = false },
+                          label = {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.Center) {
+                                  Text(
+                                      stringResource(R.string.private_account),
+                                      style = Typography.titleMedium)
+                                }
+                          },
+                          leadingIcon = {
+                            if (!newIsAccountPublic.value)
+                                Icon(
+                                    imageVector = Icons.Default.Lock,
+                                    contentDescription = "Private Account",
+                                    tint = MaterialTheme.colorScheme.onSurface)
+                          })
+                    }
+
+                    Button(
+                        modifier = Modifier.padding(top = 16.dp).testTag("deleteAccountButton"),
+                        colors =
+                            ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.background,
+                                contentColor = MaterialTheme.colorScheme.error),
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.error),
+                        onClick = { showDeleteAccountAlert.value = true },
+                        content = { Text("Delete Account") })
+
+                    if (showDeleteAccountAlert.value) {
+                      AlertDialog(
+                          onDismissRequest = { showDeleteAccountAlert.value = false },
+                          title = { Text(stringResource(R.string.delete_account)) },
+                          text = { Text(stringResource(R.string.delete_account_prompt)) },
+                          modifier = Modifier.testTag("deleteAccountAlert"),
+                          confirmButton = {
+                            Button(
+                                modifier = Modifier.testTag("confirmDeleteButton"),
+                                onClick = {
+                                  showDeleteAccountAlert.value = false
+                                  folderViewModel.deleteAllFoldersFromUserId(user.value!!.uid)
+                                  noteViewModel.getNotesFromUid(
+                                      user.value!!.uid,
+                                      onSuccess = { notes ->
+                                        notes.forEach {
+                                          fileViewModel.deleteFile(it.id, FileType.NOTE_PDF)
+                                          fileViewModel.deleteFile(it.id, FileType.NOTE_TEXT)
+                                        }
+                                        noteViewModel.deleteNotesFromUid(user.value!!.uid)
+                                      },
+                                  )
+                                  deckViewModel.deleteAllDecksFromUserId(user.value!!.uid)
+
+                                  flashcardViewModel.getFlashcardsFromUser(
+                                      user.value!!.uid,
+                                      onSuccess = { flashcards ->
+                                        flashcards.forEach {
+                                          fileViewModel.deleteFile(it.id, FileType.FLASHCARD_IMAGE)
+                                        }
+                                        flashcardViewModel.deleteFlashcardsFromUser(
+                                            user.value!!.uid)
+                                      },
+                                  )
+                                  notificationViewModel.deleteNotificationsFromUserId(
+                                      user.value!!.uid)
+
+                                  fileViewModel.deleteFile(
+                                      user.value!!.uid, FileType.PROFILE_PIC_JPEG)
+                                  userViewModel.deleteUserById(
+                                      user.value!!.uid,
+                                      onSuccess = { navigationActions.navigateTo(Route.AUTH) })
+                                },
+                                content = { Text(stringResource(R.string.yes)) })
+                          },
+                          dismissButton = {
+                            Button(
+                                modifier = Modifier.testTag("dismissDeleteButton"),
+                                onClick = { showDeleteAccountAlert.value = false },
+                                content = { Text(stringResource(R.string.no)) })
+                          })
+                    }
+                    if (showGoingBackWithoutSavingChanges.value) {
+                      AlertDialog(
+                          onDismissRequest = { showGoingBackWithoutSavingChanges.value = false },
+                          title = { Text(stringResource(R.string.discard_changes)) },
+                          text = { Text(stringResource(R.string.discard_changes_text)) },
+                          modifier = Modifier.testTag("goingBackAlert"),
+                          confirmButton = {
+                            Button(
+                                modifier = Modifier.testTag("confirmGoingBack"),
+                                onClick = {
+                                  showGoingBackWithoutSavingChanges.value = false
+                                  // When we go back, we will need to fetch again the old profile
+                                  // picture (if it was changed), if the user didn't save the
+                                  // changes
+                                  isProfilePictureUpToDate.value =
+                                      !hasProfilePictureBeenChanged.value
+                                  navigationActions.goBack()
+                                },
+                                content = { Text(stringResource(R.string.yes)) })
+                          },
+                          dismissButton = {
+                            Button(
+                                modifier = Modifier.testTag("dismissGoingBack"),
+                                onClick = { showGoingBackWithoutSavingChanges.value = false },
+                                content = { Text(stringResource(R.string.no)) })
+                          })
+                    }
                   }
                 }
           })
@@ -465,13 +507,16 @@ fun EditableProfilePicture(
         })
 
     if (showSheet.value) {
-      ModalBottomSheet(onDismissRequest = { showSheet.value = false }, sheetState = sheetState) {
-        BottomSheetContent(
-            onClose = { showSheet.value = false },
-            pictureTaker,
-            profilePictureUri,
-            hasProfilePictureBeenChanged)
-      }
+      ModalBottomSheet(
+          onDismissRequest = { showSheet.value = false },
+          containerColor = MaterialTheme.colorScheme.onPrimary,
+          sheetState = sheetState) {
+            BottomSheetContent(
+                onClose = { showSheet.value = false },
+                pictureTaker,
+                profilePictureUri,
+                hasProfilePictureBeenChanged)
+          }
     }
   }
 }

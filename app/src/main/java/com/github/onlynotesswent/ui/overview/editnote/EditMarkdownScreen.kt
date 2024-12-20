@@ -25,6 +25,7 @@ import androidx.compose.material.icons.filled.FormatBold
 import androidx.compose.material.icons.filled.FormatItalic
 import androidx.compose.material.icons.filled.FormatStrikethrough
 import androidx.compose.material.icons.filled.FormatUnderlined
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.FloatingActionButton
@@ -58,11 +59,15 @@ import com.github.onlynotesswent.model.file.FileType
 import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.note.NoteViewModel
 import com.github.onlynotesswent.model.user.UserViewModel
+import com.github.onlynotesswent.ui.common.BottomEditNoteNavigationBarWithDivider
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
+import com.github.onlynotesswent.ui.theme.LightCards
+import com.github.onlynotesswent.ui.theme.textColor
 import com.mohamedrejeb.richeditor.model.RichTextState
 import com.mohamedrejeb.richeditor.model.rememberRichTextState
 import com.mohamedrejeb.richeditor.ui.material3.RichTextEditor
+import com.mohamedrejeb.richeditor.ui.material3.RichTextEditorDefaults
 import java.io.File
 import java.io.IOException
 import kotlinx.coroutines.delay
@@ -81,6 +86,7 @@ import kotlinx.coroutines.delay
  * @param fileViewModel ViewModel to handle file downloads and uploads for markdown files.
  * @param userViewModel ViewModel to manage the user's state and interactions.
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditMarkdownScreen(
     navigationActions: NavigationActions,
@@ -93,7 +99,7 @@ fun EditMarkdownScreen(
   val selectedNote by noteViewModel.selectedNote.collectAsState()
   val currentUser by userViewModel.currentUser.collectAsState()
   var markdownContent: File? by remember { mutableStateOf(null) }
-  var isEditing by rememberSaveable { mutableStateOf(false) } // Add this line
+  var isEditing by rememberSaveable { mutableStateOf(false) }
 
   // Function to download and set the Markdown file
   LaunchedEffect(Unit) {
@@ -111,15 +117,22 @@ fun EditMarkdownScreen(
               File(context.cacheDir, "${selectedNote!!.id}.md").apply {
                 if (!exists()) createNewFile()
               }
-
           markdownContent = file
         },
         onFailure = { exception ->
-          Toast.makeText(context, "Error downloading file: ${exception.message}", Toast.LENGTH_LONG)
+          Toast.makeText(context, "An error occurred while downloading the file", Toast.LENGTH_LONG)
               .show()
+          Log.e("EditMarkdownScreen", "Error downloading file: ${exception.message}")
         })
   }
 
+  /**
+   * Function to update (overwrite) the markdown file with the current state of the RichTextEditor.
+   *
+   * @param context The context used to display error messages.
+   * @param uid The unique identifier of the note. This is also the uid of the file.
+   * @param fileViewModel The ViewModel used to update the file in the repository.
+   */
   @Suppress("kotlin:S6300") // as there is no need to encrypt file
   fun updateMarkdownFile(context: Context, uid: String, fileViewModel: FileViewModel) {
     try {
@@ -129,7 +142,7 @@ fun EditMarkdownScreen(
         fileViewModel.updateFile(uid = uid, fileUri = fileUri, fileType = FileType.NOTE_TEXT)
       }
     } catch (e: IOException) {
-      Toast.makeText(context, "Error updating file: ${e.message}", Toast.LENGTH_LONG).show()
+      Toast.makeText(context, "An error occurred while updating the file", Toast.LENGTH_LONG).show()
       Log.e("FileUpdate", "Error updating file: ${e.message}")
     }
   }
@@ -143,7 +156,8 @@ fun EditMarkdownScreen(
             navigationActions = navigationActions)
       },
       bottomBar = {
-        EditNoteNavigationMenu(navigationActions, selectedItem = Screen.EDIT_NOTE_MARKDOWN)
+        BottomEditNoteNavigationBarWithDivider(
+            navigationActions, selectedItem = Screen.EDIT_NOTE_MARKDOWN)
       },
       floatingActionButton = {
         if (!isEditing && selectedNote != null && selectedNote!!.isOwner(currentUser!!.uid)) {
@@ -183,7 +197,10 @@ fun EditMarkdownScreen(
                           isEditing = false // Switch back to view mode after saving
                         })
                   }
-                })
+                },
+                colors =
+                    RichTextEditorDefaults.richTextEditorColors(
+                        containerColor = LightCards, textColor = textColor))
           }
         }
       }
@@ -213,7 +230,6 @@ fun EditorControls(modifier: Modifier, state: RichTextState, onSaveClick: () -> 
       } else {
         state.addSpanStyle(SpanStyle(fontWeight = FontWeight.Bold))
       }
-
       if (italicSelected) {
         state.addSpanStyle(SpanStyle(fontStyle = FontStyle.Italic))
       } else {
@@ -240,24 +256,32 @@ fun EditorControls(modifier: Modifier, state: RichTextState, onSaveClick: () -> 
         ControlWrapper(
             modifier = Modifier.testTag("BoldControl"),
             selected = boldSelected,
+            selectedColor = MaterialTheme.colorScheme.primaryContainer,
+            unselectedColor = MaterialTheme.colorScheme.onPrimary,
             onChangeClick = { boldSelected = it }) {
               Icon(imageVector = Icons.Filled.FormatBold, contentDescription = "Bold")
             }
         ControlWrapper(
             modifier = Modifier.testTag("ItalicControl"),
             selected = italicSelected,
+            selectedColor = MaterialTheme.colorScheme.primaryContainer,
+            unselectedColor = MaterialTheme.colorScheme.onPrimary,
             onChangeClick = { italicSelected = it }) {
               Icon(imageVector = Icons.Filled.FormatItalic, contentDescription = "Italic")
             }
         ControlWrapper(
             modifier = Modifier.testTag("UnderlinedControl"),
             selected = underlineSelected,
+            selectedColor = MaterialTheme.colorScheme.primaryContainer,
+            unselectedColor = MaterialTheme.colorScheme.onPrimary,
             onChangeClick = { underlineSelected = it }) {
               Icon(imageVector = Icons.Filled.FormatUnderlined, contentDescription = "Underlined")
             }
         ControlWrapper(
             modifier = Modifier.testTag("StrikethroughControl"),
             selected = strikethroughSelected,
+            selectedColor = MaterialTheme.colorScheme.primaryContainer,
+            unselectedColor = MaterialTheme.colorScheme.onPrimary,
             onChangeClick = { strikethroughSelected = it }) {
               Icon(
                   imageVector = Icons.Filled.FormatStrikethrough,
@@ -270,7 +294,7 @@ fun EditorControls(modifier: Modifier, state: RichTextState, onSaveClick: () -> 
                     .align(Alignment.CenterVertically)
                     .testTag("SaveButton")
                     .background(
-                        color = MaterialTheme.colorScheme.primary,
+                        color = MaterialTheme.colorScheme.primaryContainer,
                         shape = RoundedCornerShape(6.dp),
                     )
                     .padding(0.dp),
@@ -278,7 +302,7 @@ fun EditorControls(modifier: Modifier, state: RichTextState, onSaveClick: () -> 
               Icon(
                   imageVector = Icons.Default.Check,
                   contentDescription = "Save",
-                  tint = MaterialTheme.colorScheme.onPrimary)
+                  tint = Color.Black)
             }
       }
 }

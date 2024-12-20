@@ -4,12 +4,16 @@ import android.content.Context
 import android.util.Log
 import com.github.onlynotesswent.model.cache.CacheDatabase
 import com.github.onlynotesswent.model.common.Visibility
+import com.github.onlynotesswent.model.deck.DeckViewModel
 import com.github.onlynotesswent.model.note.NoteViewModel
+import com.github.onlynotesswent.model.user.User
+import com.github.onlynotesswent.model.user.UserViewModel
 import com.github.onlynotesswent.utils.NetworkUtils
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -19,7 +23,8 @@ import kotlinx.coroutines.withContext
 class FolderRepositoryFirestore(
     private val db: FirebaseFirestore,
     private val cache: CacheDatabase,
-    private val context: Context
+    private val context: Context,
+    private val dispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : FolderRepository {
 
   private val folderCollectionPath = "folders"
@@ -50,7 +55,7 @@ class FolderRepositoryFirestore(
   ) {
     // Update the cache if needed
     if (useCache) {
-      withContext(Dispatchers.IO) { folderDao.addFolder(folder) }
+      withContext(dispatcher) { folderDao.addFolder(folder) }
     }
 
     db.collection(folderCollectionPath).document(folder.id).set(folder).addOnCompleteListener {
@@ -74,7 +79,7 @@ class FolderRepositoryFirestore(
   ) {
     // Update the cache if needed
     if (useCache) {
-      withContext(Dispatchers.IO) { folderDao.addFolders(folders) }
+      withContext(dispatcher) { folderDao.addFolders(folders) }
     }
 
     val batch = db.batch()
@@ -102,7 +107,7 @@ class FolderRepositoryFirestore(
   ) {
     // Update the cache if needed
     if (useCache) {
-      withContext(Dispatchers.IO) { folderDao.deleteFolderById(folderId) }
+      withContext(dispatcher) { folderDao.deleteFolderById(folderId) }
     }
 
     db.collection(folderCollectionPath).document(folderId).delete().addOnCompleteListener { result
@@ -118,7 +123,7 @@ class FolderRepositoryFirestore(
     }
   }
 
-  override suspend fun deleteFoldersFromUid(
+  override suspend fun deleteAllFoldersFromUserId(
       userId: String,
       onSuccess: () -> Unit,
       onFailure: (Exception) -> Unit,
@@ -126,7 +131,7 @@ class FolderRepositoryFirestore(
   ) {
     // Update the cache if needed
     if (useCache) {
-      withContext(Dispatchers.IO) { folderDao.deleteFoldersFromUid() }
+      withContext(dispatcher) { folderDao.deleteFoldersFromUid(userId) }
     }
 
     db.collection(folderCollectionPath).get().addOnCompleteListener { task ->
@@ -156,7 +161,7 @@ class FolderRepositoryFirestore(
   ) {
     try {
       val cachedFolder: Folder? =
-          if (useCache) withContext(Dispatchers.IO) { folderDao.getFolderById(folderId) } else null
+          if (useCache) withContext(dispatcher) { folderDao.getFolderById(folderId) } else null
 
       // If device is offline, fetch from local database
       if (!NetworkUtils.isInternetAvailable(context)) {
@@ -169,7 +174,7 @@ class FolderRepositoryFirestore(
 
       // If device is online, fetch from Firestore
       val firestoreFolder =
-          withContext(Dispatchers.IO) {
+          withContext(dispatcher) {
             db.collection(folderCollectionPath).document(folderId).get().await().let {
               documentSnapshotToFolder(it)
             }
@@ -195,7 +200,7 @@ class FolderRepositoryFirestore(
   ) {
     try {
       val cachedFolders: List<Folder> =
-          if (useCache) withContext(Dispatchers.IO) { folderDao.getFoldersFromUserId() }
+          if (useCache) withContext(dispatcher) { folderDao.getFoldersFromUserId(userId) }
           else emptyList()
 
       // If device is offline, fetch from local database
@@ -206,7 +211,7 @@ class FolderRepositoryFirestore(
 
       // If device is online, fetch from Firestore
       val firestoreFolders =
-          withContext(Dispatchers.IO) {
+          withContext(dispatcher) {
             db.collection(folderCollectionPath)
                 .get()
                 .await()
@@ -235,7 +240,7 @@ class FolderRepositoryFirestore(
   ) {
     try {
       val cachedFolders: List<Folder> =
-          if (useCache) withContext(Dispatchers.IO) { folderDao.getRootNoteFoldersFromUserId() }
+          if (useCache) withContext(dispatcher) { folderDao.getRootNoteFoldersFromUserId(userId) }
           else emptyList()
 
       // If device is offline, fetch from local database
@@ -246,7 +251,7 @@ class FolderRepositoryFirestore(
 
       // If device is online, fetch from Firestore
       val firestoreFolders =
-          withContext(Dispatchers.IO) {
+          withContext(dispatcher) {
             db.collection(folderCollectionPath)
                 .get()
                 .await()
@@ -275,7 +280,7 @@ class FolderRepositoryFirestore(
   ) {
     try {
       val cachedFolders: List<Folder> =
-          if (useCache) withContext(Dispatchers.IO) { folderDao.getRootDeckFoldersFromUserId() }
+          if (useCache) withContext(dispatcher) { folderDao.getRootDeckFoldersFromUserId(userId) }
           else emptyList()
 
       // If device is offline, fetch from local database
@@ -286,7 +291,7 @@ class FolderRepositoryFirestore(
 
       // If device is online, fetch from Firestore
       val firestoreFolders =
-          withContext(Dispatchers.IO) {
+          withContext(dispatcher) {
             db.collection(folderCollectionPath)
                 .get()
                 .await()
@@ -317,12 +322,11 @@ class FolderRepositoryFirestore(
   ) {
     try {
       val cachedFolders: List<Folder> =
-          if (useCache) withContext(Dispatchers.IO) { folderDao.getRootDeckFoldersFromUserId() }
+          if (useCache) withContext(dispatcher) { folderDao.getRootDeckFoldersFromUserId(userId) }
           else emptyList()
 
       // If device is offline, fetch from local database
       if (!NetworkUtils.isInternetAvailable(context)) {
-        println("isInternetAvailable: ${NetworkUtils.isInternetAvailable(context)}")
         if (cachedFolders.isEmpty()) {
           onFolderNotFound()
           return
@@ -333,7 +337,7 @@ class FolderRepositoryFirestore(
 
       // If device is online, fetch from Firestore
       val firestoreFolders =
-          withContext(Dispatchers.IO) {
+          withContext(dispatcher) {
             db.collection(folderCollectionPath)
                 .get()
                 .await()
@@ -366,7 +370,7 @@ class FolderRepositoryFirestore(
   ) {
     // Update the cache if needed
     if (useCache) {
-      withContext(Dispatchers.IO) { folderDao.addFolder(folder) }
+      withContext(dispatcher) { folderDao.addFolder(folder) }
     }
 
     db.collection(folderCollectionPath).document(folder.id).set(folder).addOnCompleteListener {
@@ -384,13 +388,14 @@ class FolderRepositoryFirestore(
 
   override suspend fun getSubFoldersOf(
       parentFolderId: String,
+      userViewModel: UserViewModel?,
       onSuccess: (List<Folder>) -> Unit,
       onFailure: (Exception) -> Unit,
       useCache: Boolean
   ) {
     try {
       val cachedFolders: List<Folder> =
-          if (useCache) withContext(Dispatchers.IO) { folderDao.getSubfoldersOf(parentFolderId) }
+          if (useCache) withContext(dispatcher) { folderDao.getSubfoldersOf(parentFolderId) }
           else emptyList()
 
       // If device is offline, fetch from local database
@@ -401,7 +406,7 @@ class FolderRepositoryFirestore(
 
       // If device is online, fetch from Firestore
       val firestoreFolders =
-          withContext(Dispatchers.IO) {
+          withContext(dispatcher) {
             db.collection(folderCollectionPath)
                 .get()
                 .await()
@@ -411,9 +416,14 @@ class FolderRepositoryFirestore(
           }
 
       // Sync Firestore with cache
-      val updatedFolders =
+      var updatedFolders =
           if (useCache) syncFoldersFirestoreWithCache(firestoreFolders, cachedFolders)
           else firestoreFolders
+
+      // Only return folders visible to the current user.
+      if (userViewModel != null) {
+        updatedFolders = updatedFolders.filter { it.isVisibleTo(userViewModel.currentUser.value!!) }
+      }
 
       onSuccess(updatedFolders)
     } catch (e: Exception) {
@@ -475,9 +485,10 @@ class FolderRepositoryFirestore(
   ) {
     getSubFoldersOf(
         parentFolderId = folder.id,
+        userViewModel = null,
         onSuccess = { subFolders ->
           subFolders.forEach { subFolder ->
-            CoroutineScope(Dispatchers.IO).launch {
+            CoroutineScope(dispatcher).launch {
               deleteFolderContents(
                   folder = subFolder,
                   noteViewModel = noteViewModel,
@@ -512,6 +523,114 @@ class FolderRepositoryFirestore(
           onFailure(e)
         },
         useCache = useCache)
+  }
+
+  override suspend fun deleteFolderContents(
+      folder: Folder,
+      deckViewModel: DeckViewModel,
+      onSuccess: () -> Unit,
+      onFailure: (Exception) -> Unit,
+      useCache: Boolean
+  ) {
+    getSubFoldersOf(
+        parentFolderId = folder.id,
+        userViewModel = null,
+        onSuccess = { subFolders ->
+          subFolders.forEach { subFolder ->
+            CoroutineScope(Dispatchers.IO).launch {
+              deleteFolderContents(
+                  folder = subFolder,
+                  deckViewModel = deckViewModel,
+                  onSuccess = {},
+                  onFailure = {
+                    onFailure(it)
+                    Log.e(TAG, "Failed to delete folder contents: ${it.message}")
+                  },
+                  useCache = useCache)
+
+              // Update the cache if needed
+              if (useCache) {
+                // TODO: add deck cache
+                folderDao.deleteFolderById(subFolder.id)
+              }
+
+              deckViewModel.deleteDecksFromFolder(subFolder.id)
+              deleteFolderById(
+                  folderId = subFolder.id,
+                  onSuccess = {},
+                  onFailure = {
+                    onFailure(it)
+                    Log.e(TAG, "Failed to delete folderContents: ${it.message}")
+                  },
+                  useCache = useCache)
+            }
+          }
+          onSuccess()
+        },
+        onFailure = { e: Exception ->
+          Log.e(TAG, "Failed to delete folder contents: ${e.message}")
+          onFailure(e)
+        },
+        useCache = useCache)
+  }
+
+  override suspend fun getSavedFoldersByIds(
+      savedFoldersIds: List<String>,
+      currentUser: User,
+      onSuccess: (List<Folder>, List<String>) -> Unit,
+      onFailure: (Exception) -> Unit,
+      useCache: Boolean
+  ) {
+    try {
+      val cachedFolders: List<Folder> =
+          if (useCache) withContext(Dispatchers.IO) { folderDao.getFoldersByIds(savedFoldersIds) }
+          else emptyList()
+
+      // If device is offline, fetch from local database
+      if (!NetworkUtils.isInternetAvailable(context)) {
+        onSuccess(cachedFolders, emptyList())
+        return
+      }
+
+      // If device is online, fetch from Firestore
+      val saveableIdList = mutableListOf<String>()
+      val firestoreFolders =
+          withContext(Dispatchers.IO) {
+            db.collection(folderCollectionPath)
+                .get()
+                .await()
+                .documents
+                .mapNotNull { documentSnapshotToFolder(it) }
+                .filter {
+                  // Make sure the folder is saved and is visible to the current user
+                  if (it.id in savedFoldersIds && it.isVisibleTo(currentUser)) {
+                    saveableIdList.add(it.id)
+                    true
+                  } else {
+                    false
+                  }
+                }
+          }
+
+      // If some folders are not found in Firestore, also return the list of missing folders
+      val missingFolders = savedFoldersIds.filter { it !in saveableIdList }
+
+      if (useCache) {
+        // Update cache with newest saved data, to ensure that the cache is up to date and
+        // that non available saved folders are deleted
+        withContext(Dispatchers.IO) {
+          cache.folderDao().addFolders(firestoreFolders)
+          cache.folderDao().deleteFoldersByIds(missingFolders)
+        }
+      }
+
+      // Return the list of folders and the list of missing folders. Cached folders will be at this
+      // point the same as firestoreFolders if useCache is true
+      onSuccess(firestoreFolders, missingFolders)
+    } catch (e: Exception) {
+      Log.e(TAG, "Error getting folders from list", e)
+      onFailure(e)
+    }
   }
 
   /**

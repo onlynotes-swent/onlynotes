@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
-import com.github.onlynotesswent.model.flashcard.deck.Deck
+import com.github.onlynotesswent.model.deck.Deck
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.firestore
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -227,5 +227,20 @@ class FlashcardViewModel(private val repository: FlashcardRepository) : ViewMode
       onFailure: (Exception) -> Unit = {}
   ) {
     repository.deleteFlashcard(flashcard, onSuccess, onFailure)
+  }
+
+  /**
+   * Deletes all flashcards from the given user.
+   *
+   * @param userId The identifier of the user.
+   * @param onSuccess The function to call when the deletion is successful.
+   * @param onFailure The function to call when the deletion fails.
+   */
+  fun deleteFlashcardsFromUser(
+      userId: String,
+      onSuccess: () -> Unit = {},
+      onFailure: (Exception) -> Unit = {}
+  ) {
+    repository.deleteFlashcardsFromUser(userId, onSuccess, onFailure)
   }
 }

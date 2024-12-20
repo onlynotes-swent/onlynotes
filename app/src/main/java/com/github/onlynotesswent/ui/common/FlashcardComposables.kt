@@ -56,6 +56,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
@@ -70,12 +71,12 @@ import androidx.compose.ui.window.Dialog
 import androidx.core.net.toUri
 import coil.compose.rememberAsyncImagePainter
 import com.github.onlynotesswent.R
+import com.github.onlynotesswent.model.deck.Deck
+import com.github.onlynotesswent.model.deck.DeckViewModel
 import com.github.onlynotesswent.model.file.FileType
 import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.flashcard.Flashcard
 import com.github.onlynotesswent.model.flashcard.FlashcardViewModel
-import com.github.onlynotesswent.model.flashcard.deck.Deck
-import com.github.onlynotesswent.model.flashcard.deck.DeckViewModel
 import com.github.onlynotesswent.ui.theme.Typography
 import com.github.onlynotesswent.utils.PictureTaker
 
@@ -120,61 +121,70 @@ fun FlashcardViewItem(
       modifier =
           Modifier.testTag("flashcardItem--${flashcard.value.id}")
               .fillMaxWidth()
-              .heightIn(min = 160.dp)) {
-        Box(contentAlignment = Alignment.Center, modifier = Modifier.padding(10.dp)) {
-          if (flashcard.value.isMCQ()) {
-            Text(
-                stringResource(R.string.mcq),
-                style = Typography.bodyLarge,
-                fontStyle = FontStyle.Italic,
-                modifier =
-                    Modifier.align(Alignment.TopStart)
-                        .testTag("flashcardMCQ--${flashcard.value.id}"))
-          }
-          // Show front and options icon
-          Column(modifier = Modifier.align(Alignment.TopEnd)) {
-            Icon(
-                modifier =
-                    Modifier.testTag("flashcardOptions--${flashcard.value.id}").clickable(
-                        enabled = belongsToUser) {
-                          dropdownMenuExpanded.value = true
-                        },
-                imageVector = Icons.Filled.MoreVert,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onPrimaryContainer)
-            AnimatedVisibility(
-                dropdownMenuExpanded.value,
-                enter = expandVertically(tween(700)),
-                exit = shrinkVertically(tween(700))) {
-                  FlashcardItemDropdownMenu(
-                      flashcard,
-                      deckViewModel,
-                      flashcardViewModel,
-                      dropdownMenuExpanded,
-                      editDialogExpanded)
-                }
-          }
-          Column(
-              horizontalAlignment = Alignment.CenterHorizontally,
-              verticalArrangement = Arrangement.SpaceAround,
-              modifier =
-                  Modifier.testTag("flashcardItemColumn")
-                      .semantics(mergeDescendants = true, properties = {})) {
+              .heightIn(min = 160.dp),
+      colors =
+          CardDefaults.elevatedCardColors(
+              containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier.padding(10.dp).fillMaxWidth()) {
+              if (flashcard.value.isMCQ()) {
                 Text(
-                    flashcard.value.front,
-                    style = Typography.bodyMedium,
+                    stringResource(R.string.mcq),
+                    style = Typography.bodyLarge,
+                    fontStyle = FontStyle.Italic,
                     modifier =
-                        Modifier.testTag("flashcardFront--${flashcard.value.id}").padding(10.dp))
-                FlashcardImage(flashcard, fileViewModel)
-                HorizontalDivider(modifier = Modifier.height(5.dp).padding(5.dp))
-                // Show back
-                Text(
-                    flashcard.value.back,
-                    style = Typography.bodyMedium,
-                    modifier =
-                        Modifier.testTag("flashcardBack--${flashcard.value.id}").padding(20.dp))
+                        Modifier.align(Alignment.TopStart)
+                            .testTag("flashcardMCQ--${flashcard.value.id}"))
               }
-        }
+              // Show front and options icon
+              Column(modifier = Modifier.align(Alignment.TopEnd)) {
+                Icon(
+                    modifier =
+                        Modifier.testTag("flashcardOptions--${flashcard.value.id}").clickable(
+                            enabled = belongsToUser) {
+                              dropdownMenuExpanded.value = true
+                            },
+                    imageVector = Icons.Filled.MoreVert,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onPrimaryContainer)
+                AnimatedVisibility(
+                    dropdownMenuExpanded.value,
+                    enter = expandVertically(tween(700)),
+                    exit = shrinkVertically(tween(700))) {
+                      FlashcardItemDropdownMenu(
+                          flashcard,
+                          deckViewModel,
+                          flashcardViewModel,
+                          dropdownMenuExpanded,
+                          editDialogExpanded)
+                    }
+              }
+              Column(
+                  horizontalAlignment = Alignment.CenterHorizontally,
+                  verticalArrangement = Arrangement.SpaceAround,
+                  modifier =
+                      Modifier.testTag("flashcardItemColumn")
+                          .fillMaxWidth()
+                          .heightIn(min = 160.dp)
+                          .padding(top = 10.dp)
+                          .semantics(mergeDescendants = true, properties = {})) {
+                    Text(
+                        flashcard.value.front,
+                        style = Typography.bodyMedium,
+                        modifier =
+                            Modifier.testTag("flashcardFront--${flashcard.value.id}")
+                                .padding(10.dp))
+                    FlashcardImage(flashcard, fileViewModel)
+                    HorizontalDivider(modifier = Modifier.height(5.dp).padding(5.dp))
+                    // Show back
+                    Text(
+                        flashcard.value.back,
+                        style = Typography.bodyMedium,
+                        modifier =
+                            Modifier.testTag("flashcardBack--${flashcard.value.id}").padding(20.dp))
+                  }
+            }
       }
 }
 
@@ -203,11 +213,11 @@ fun FlashcardDialog(
   val front = remember { mutableStateOf(flashcard.value?.front ?: "") }
   val back = remember { mutableStateOf(flashcard.value?.back ?: "") }
   val fakeBacks = remember { mutableStateOf(flashcard.value?.fakeBacks ?: listOf()) }
-  var showFakeBacksDetails = remember { mutableStateOf(false) }
+  val showFakeBacksDetails = remember { mutableStateOf(false) }
 
   Dialog(onDismissRequest = onDismissRequest) {
     Card(modifier = Modifier.testTag("flashcardDialog--$mode").padding(5.dp)) {
-      if (flashcard.value == null && mode == stringResource(R.string.edit_maj)) {
+      if (flashcard.value == null && mode == stringResource(R.string.update)) {
         LoadingIndicator(stringResource(R.string.loading_flashcard))
       } else {
         Column(
@@ -251,7 +261,7 @@ fun FlashcardDialog(
                                           hasImageBeenChanged.value = true
                                         }
                                       }
-                                      pictureTaker.pickImage()
+                                      pictureTaker.pickImage(cropToSquare = false)
                                     }) {
                                       Icon(
                                           imageVector = Icons.Default.ImageSearch,
@@ -395,7 +405,7 @@ fun FlashcardDialog(
                                 verticalAlignment = Alignment.CenterVertically) {
                                   IconButton(
                                       modifier = Modifier.testTag("addFakeBackButton"),
-                                      onClick = { fakeBacks.value = fakeBacks.value + "" }) {
+                                      onClick = { fakeBacks.value += "" }) {
                                         Icon(
                                             imageVector = Icons.Default.Add,
                                             contentDescription = "Add fake back")
@@ -509,7 +519,7 @@ fun FlashcardItemDropdownMenu(
       expanded = dropdownMenuExpanded.value,
       onDismissRequest = { dropdownMenuExpanded.value = false }) {
         DropdownMenuItem(
-            text = @Composable { Text(stringResource(R.string.edit_maj)) },
+            text = @Composable { Text(stringResource(R.string.update)) },
             onClick = {
               flashcardViewModel.selectFlashcard(flashcard.value)
               editDialogExpanded.value = true
@@ -539,12 +549,15 @@ fun FlashcardItemDropdownMenu(
 /**
  * Composable function that displays a flashcard item for playing. The flashcard can be either a
  * normal flashcard or a multiple choice question (MCQ). If the flashcard is null, a loading
- * indicator is displayed.
+ * indicator is displayed. When reviewing flashcards, all flashcards are displayed as normal
+ * flashcards.
  *
  * @param flashcardState The state of the flashcard to be displayed.
  * @param fileViewModel The ViewModel for file-related data.
  * @param onCorrect The callback to be invoked when the correct choice is selected (for MCQ).
  * @param onIncorrect The callback to be invoked when an incorrect choice is selected (for MCQ).
+ * @param choice The state for the selected choice (for MCQ).
+ * @param isReview Indicates whether the flashcard is in review mode.
  */
 @Composable
 fun FlashcardPlayItem(
@@ -552,15 +565,20 @@ fun FlashcardPlayItem(
     fileViewModel: FileViewModel,
     onCorrect: () -> Unit = {},
     onIncorrect: () -> Unit = {},
+    choice: MutableState<Int?> = remember { mutableStateOf(null) },
+    isReview: Boolean = false
 ) {
-  if (flashcardState.value == null) {
-    LoadingIndicator(stringResource(R.string.loading_flashcard))
-  } else {
-    val flashcard = remember { derivedStateOf { flashcardState.value!! } }
-    if (flashcard.value.isMCQ()) {
-      McqPlayItem(flashcard, fileViewModel, onCorrect, onIncorrect)
+  AnimatedContent(flashcardState.value == null, label = "") { displayLoader ->
+    if (displayLoader) {
+      LoadingIndicator(
+          stringResource(R.string.loading_flashcard), Modifier.fillMaxWidth().height(200.dp))
     } else {
-      NormalFlashcardPlayItem(flashcard, fileViewModel)
+      val flashcard = remember { derivedStateOf { flashcardState.value!! } }
+      if (flashcard.value.isMCQ() && !isReview) {
+        McqPlayItem(flashcard, fileViewModel, onCorrect, onIncorrect, choice)
+      } else {
+        NormalFlashcardPlayItem(flashcard, fileViewModel)
+      }
     }
   }
 }
@@ -604,7 +622,7 @@ fun NormalFlashcardPlayItem(
 
   ElevatedCard(
       modifier =
-          Modifier.fillMaxWidth(0.9f)
+          Modifier.fillMaxWidth(0.95f)
               .testTag("flashcard")
               .padding(5.dp)
               .graphicsLayer {
@@ -664,7 +682,7 @@ fun McqPlayItem(
   val backs =
       listOf(flashcard.value.back) +
           flashcard.value.fakeBacks.filter { it != flashcard.value.back && it.isNotBlank() }
-  val shuffledIndexes = backs.indices.shuffled()
+  val shuffledIndexes = remember { backs.indices.shuffled() }
 
   ElevatedCard(modifier = Modifier.fillMaxWidth(0.9f).padding(5.dp).testTag("flashcard")) {
     Column(
@@ -771,6 +789,7 @@ fun FlashcardImage(
         contentDescription = "Flashcard image",
         modifier =
             Modifier.height(100.dp)
+                .clipToBounds()
                 .testTag("flashcardImage--${flashcard.value.id}")
                 .padding(padding))
   } else if (flashcard.value.hasImage) {
