@@ -86,10 +86,13 @@ class EndToEndTest {
   @Mock private lateinit var mockNotificationRepository: NotificationRepository
   @Mock private lateinit var mockPictureTaker: PictureTaker
   @Mock private lateinit var mockFileViewModel: FileViewModel
+
   private lateinit var userViewModel: UserViewModel
   private lateinit var noteViewModel: NoteViewModel
   private lateinit var folderViewModel: FolderViewModel
   private lateinit var deckViewModel: DeckViewModel
+  private lateinit var fileViewModel: FileViewModel
+
   private lateinit var notificationViewModel: NotificationViewModel
 
   @Mock private lateinit var mockAuthenticator: Authenticator
@@ -283,7 +286,10 @@ class EndToEndTest {
                         mockPictureTaker,
                         mockFileViewModel,
                         noteViewModel,
-                        folderViewModel)
+                        folderViewModel,
+                        deckViewModel,
+                        flashcardViewModel,
+                        notificationViewModel)
                   }
                 }
               }
