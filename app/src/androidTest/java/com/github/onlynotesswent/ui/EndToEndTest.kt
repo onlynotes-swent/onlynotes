@@ -37,6 +37,7 @@ import com.github.onlynotesswent.model.file.FileViewModel
 import com.github.onlynotesswent.model.flashcard.Flashcard
 import com.github.onlynotesswent.model.flashcard.FlashcardRepository
 import com.github.onlynotesswent.model.flashcard.FlashcardViewModel
+import com.github.onlynotesswent.model.flashcard.UserFlashcard
 import com.github.onlynotesswent.model.folder.FolderRepository
 import com.github.onlynotesswent.model.folder.FolderViewModel
 import com.github.onlynotesswent.model.note.Note
@@ -48,9 +49,12 @@ import com.github.onlynotesswent.model.user.Friends
 import com.github.onlynotesswent.model.user.User
 import com.github.onlynotesswent.model.user.UserRepository
 import com.github.onlynotesswent.model.user.UserViewModel
+import com.github.onlynotesswent.ui.deck.DeckPlayScreen
+import com.github.onlynotesswent.ui.deck.DeckScreen
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Route
 import com.github.onlynotesswent.ui.navigation.Screen
+import com.github.onlynotesswent.ui.overview.DeckOverviewScreen
 import com.github.onlynotesswent.ui.overview.FolderContentScreen
 import com.github.onlynotesswent.ui.overview.NoteOverviewScreen
 import com.github.onlynotesswent.ui.overview.editnote.EditMarkdownScreen
@@ -93,6 +97,7 @@ class EndToEndTest {
     @Mock private lateinit var mockNotificationRepository: NotificationRepository
     @Mock private lateinit var mockPictureTaker: PictureTaker
     @Mock private lateinit var mockFileRepository: FileRepository
+    @Mock private lateinit var pictureTaker: PictureTaker
 
     private lateinit var fileViewModel: FileViewModel
     private lateinit var userViewModel: UserViewModel
@@ -200,16 +205,6 @@ class EndToEndTest {
         flashcardViewModel = FlashcardViewModel(mockFlashcardRepository)
         notificationViewModel = NotificationViewModel(mockNotificationRepository)
 
-        notesToFlashcard =
-            NotesToFlashcard(
-                flashcardViewModel,
-                fileViewModel,
-                deckViewModel,
-                noteViewModel,
-                folderViewModel,
-                mockOpenAI,
-                mockContext)
-
         // Initialize Intents for handling navigation intents in the test
         Intents.init()
 
@@ -255,6 +250,27 @@ class EndToEndTest {
                             composable(Screen.EDIT_NOTE_MARKDOWN) {
                                 EditMarkdownScreen(
                                     navigationActions, noteViewModel, fileViewModel, userViewModel)
+                            }
+                        }
+                        navigation(
+                            startDestination = Screen.DECK_OVERVIEW,
+                            route = Route.DECK_OVERVIEW,
+                        ) {
+                            composable(Screen.DECK_OVERVIEW) {
+                                DeckOverviewScreen(navigationActions, deckViewModel, userViewModel, folderViewModel)
+                            }
+                            composable(Screen.DECK_MENU) {
+                                DeckScreen(
+                                    userViewModel,
+                                    deckViewModel,
+                                    flashcardViewModel,
+                                    fileViewModel,
+                                    pictureTaker,
+                                    navigationActions)
+                            }
+                            composable(Screen.DECK_PLAY) {
+                                DeckPlayScreen(
+                                    navigationActions, userViewModel, deckViewModel, flashcardViewModel, fileViewModel)
                             }
                         }
                         navigation(
@@ -645,6 +661,9 @@ class EndToEndTest {
             onSuccess()
         }
 
+        // Mock the file repository to not download images
+        `when`(mockFileRepository.downloadFile(any(), any(), any(), any(), any(), any())).thenAnswer {}
+
         `when`(mockDeckRepository.getDeckById(any(), any(), any())).thenAnswer {
             val onSuccess = it.getArgument<(Deck) -> Unit>(1)
             onSuccess(testDeck)
@@ -655,6 +674,21 @@ class EndToEndTest {
             onSuccess()
         }
 
+        `when`(mockFlashcardRepository.getFlashcardsById(any(), any(), any())).thenAnswer {
+            val onSuccess = it.getArgument<(List<Flashcard>) -> Unit>(1)
+            onSuccess(listOf(testFlashcard))
+        }
+        `when`(mockFlashcardRepository.getNewUid()).thenReturn(testFlashcard.id)
+
+        `when`(mockFlashcardRepository.updateFlashcard(any(), any(), any())).thenAnswer {
+            val onSuccess = it.getArgument<() -> Unit>(1)
+            onSuccess()
+        }
+
+        `when`(mockFlashcardRepository.getFlashcardById(any(), any(), any())).thenAnswer {
+            val onSuccess = it.getArgument<(Flashcard) -> Unit>(1)
+            onSuccess(testFlashcard)
+        }
 
         // Start at overview screen
         composeTestRule.runOnUiThread { navController.navigate(Route.DECK_OVERVIEW) }
@@ -664,6 +698,7 @@ class EndToEndTest {
     @Test
     fun testEndToEndFlow3() = runTest {
         testEndToEndFlow3_init()
+
         // Create a deck
         composeTestRule.onNodeWithTag("createObjectOrFolder").assertIsDisplayed()
         composeTestRule.onNodeWithTag("createObjectOrFolder").performClick()
@@ -677,31 +712,19 @@ class EndToEndTest {
         composeTestRule.onNodeWithTag("deckDescriptionTextField").performTextInput(testDeck.description)
         composeTestRule.onNodeWithTag("saveDeckButton").performClick()
 
-
-        // Create a root note
-        composeTestRule.onNodeWithTag("createNoteOrFolder").assertIsDisplayed()
-        composeTestRule.onNodeWithTag("createNoteOrFolder").performClick()
-        composeTestRule.onNodeWithTag("createNote").performClick()
-        composeTestRule.onNodeWithTag("confirmNoteAction").assertIsDisplayed()
-        composeTestRule.onNodeWithTag("inputNoteName").performTextInput(testNote.title)
-        composeTestRule.onNodeWithTag("currentVisibilityOption").assertIsDisplayed()
-        composeTestRule.onNodeWithTag("previousVisibility").assertIsDisplayed()
-        composeTestRule.onNodeWithTag("nextVisibility").performClick()
-        composeTestRule.onNodeWithTag("confirmNoteAction").assertIsDisplayed()
-        composeTestRule.onNodeWithTag("confirmNoteAction").performClick()
-        composeTestRule.onNodeWithTag("saveNoteButton").assertIsDisplayed()
-        composeTestRule.onNodeWithTag("saveNoteButton").performClick()
-        composeTestRule.onNodeWithTag("closeButton").assertIsDisplayed()
-        composeTestRule.onNodeWithTag("closeButton").performClick()
-
         // Add flashcard to deck
-        composeTestRule.onNodeWithTag("addFlashcardButton").assertIsDisplayed()
-        composeTestRule.onNodeWithTag("addFlashcardButton").performClick()
+        composeTestRule.onNodeWithTag("deckFab").assertIsDisplayed()
+        composeTestRule.onNodeWithTag("deckFab").performClick()
+        composeTestRule.onNodeWithTag("addCardMenuItem").assertIsDisplayed()
+        composeTestRule.onNodeWithTag("addCardMenuItem").performClick()
+        composeTestRule.onNodeWithTag("flashcardDialog--Create").assertIsDisplayed()
         composeTestRule.onNodeWithTag("frontTextField").performTextInput(testFlashcard.front)
         composeTestRule.onNodeWithTag("backTextField").performTextInput(testFlashcard.back)
         composeTestRule.onNodeWithTag("saveFlashcardButton").performClick()
 
-        // (Imagining it goes directly to deck play menu)
+        // Verify the flashcard is displaying
+        composeTestRule.onNodeWithTag("flashcardItem--${testFlashcard.id}").assertIsDisplayed()
+
         // Show deck play bottom sheet
         composeTestRule.onNodeWithTag("deckPlayButton").assertIsDisplayed()
         composeTestRule.onNodeWithTag("deckPlayButton").performClick()
