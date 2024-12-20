@@ -158,7 +158,7 @@ class NotificationRepositoryFirestoreTest {
   fun `deleteNotificationsFromUserId should delete all notifications`() {
     var wasCalled = false
     notificationRepositoryFirestore.deleteNotificationsFromUserId(
-        userID = "1", onSuccess = { wasCalled = true }, onFailure = { fail() })
+        userId = "1", onSuccess = { wasCalled = true }, onFailure = { fail() })
     assert(wasCalled)
   }
 }
