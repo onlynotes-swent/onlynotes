@@ -152,9 +152,7 @@ fun DeckScreen(
               onSaveClick = {
                 Toast.makeText(context, "Not Implemented", Toast.LENGTH_LONG).show()
               },
-              onSaveCopyClick = {
-                saveCopyDialogExpanded.value = true
-              })
+              onSaveCopyClick = { saveCopyDialogExpanded.value = true })
         }
       }) { innerPadding ->
         if (selectedDeck.value == null) {
@@ -204,9 +202,8 @@ fun DeckScreen(
                 } else if (editDialogExpanded.value) {
                   EditDeckDialog(deckViewModel, userViewModel, { editDialogExpanded.value = false })
                 } else if (saveCopyDialogExpanded.value) {
-                    FileSystemPopup({ saveCopyDialogExpanded.value = false }, folderViewModel, {} )
+                  FileSystemPopup({ saveCopyDialogExpanded.value = false }, folderViewModel, {})
                 }
-
 
                 // Play modes bottom sheet:
                 if (playModesShown.value)
