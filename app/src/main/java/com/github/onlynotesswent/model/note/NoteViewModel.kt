@@ -498,7 +498,7 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
    * @param onSuccess The function to call when the addition is successful.
    * @param onFailure The function to call when the addition fails.
    */
-  private fun setCurrentUserSavedNotes(
+  fun setCurrentUserSavedNotes(
       userViewModel: UserViewModel,
       notes: List<Note>,
       onSuccess: () -> Unit = {},

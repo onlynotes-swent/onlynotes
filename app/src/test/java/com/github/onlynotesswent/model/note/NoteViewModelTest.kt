@@ -2,17 +2,24 @@ package com.github.onlynotesswent.model.note
 
 import com.github.onlynotesswent.model.common.Course
 import com.github.onlynotesswent.model.common.Visibility
+import com.github.onlynotesswent.model.user.Friends
+import com.github.onlynotesswent.model.user.User
+import com.github.onlynotesswent.model.user.UserRepositoryFirestore.SavedDocumentType.NOTE
+import com.github.onlynotesswent.model.user.UserViewModel
 import com.google.firebase.Timestamp
 import junit.framework.TestCase.assertEquals
+import junit.framework.TestCase.fail
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.runTest
 import org.hamcrest.CoreMatchers.`is`
 import org.hamcrest.MatcherAssert.assertThat
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.Mockito.mock
+import org.mockito.Mock
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
+import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.eq
@@ -21,7 +28,8 @@ import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
 class NoteViewModelTest {
-  private lateinit var mockNoteRepository: NoteRepository
+  @Mock private lateinit var mockUserViewModel: UserViewModel
+  @Mock private lateinit var mockNoteRepository: NoteRepository
   private lateinit var noteViewModel: NoteViewModel
 
   private val testNote =
@@ -48,9 +56,21 @@ class NoteViewModelTest {
           noteCourse = Course("CS-100", "Sample Course", 2024, "path"),
       )
 
+  private val user =
+      User(
+          firstName = "User",
+          lastName = "Name",
+          userName = "username",
+          email = "example@gmail.com",
+          uid = "1",
+          dateOfJoining = Timestamp.now(),
+          rating = 0.0,
+          friends = Friends(following = listOf("3"), followers = listOf("3")))
+
   @Before
   fun setUp() {
-    mockNoteRepository = mock(NoteRepository::class.java)
+    MockitoAnnotations.openMocks(this)
+
     noteViewModel = NoteViewModel(mockNoteRepository)
   }
 
@@ -214,5 +234,146 @@ class NoteViewModelTest {
   fun draggedNoteUpdatesCorrectly() {
     noteViewModel.draggedNote(testNote)
     assertThat(noteViewModel.draggedNote.value, `is`(testNote))
+  }
+
+  @Test
+  fun addCurrentUserSavedNoteCallsRepositoryIfEmpty() = runTest {
+    val testList = listOf(testNote)
+
+    `when`(mockUserViewModel.setSavedDocumentIdsOfType(any(), any(), any(), any())).thenAnswer {
+        invocation ->
+      val onSuccess = invocation.getArgument<() -> Unit>(2)
+      onSuccess()
+    }
+
+    `when`(mockUserViewModel.getSavedDocumentIdsOfType(any(), any(), any())).thenAnswer { invocation
+      ->
+      noteViewModel.setCurrentUserSavedNotes(mockUserViewModel, testList)
+    }
+
+    noteViewModel.addCurrentUserSavedNote(friendNote, mockUserViewModel)
+
+    verify(mockUserViewModel).getSavedDocumentIdsOfType(any(), any(), any())
+  }
+
+  @Test
+  fun addCurrentUserSavedNoteCallsRepositoryIfNonEmpty() = runTest {
+    val testList = listOf(testNote)
+    `when`(mockUserViewModel.setSavedDocumentIdsOfType(any(), any(), any(), any())).thenAnswer {
+        invocation ->
+      val onSuccess = invocation.getArgument<() -> Unit>(2)
+      onSuccess()
+    }
+
+    var onSuccesCalled = false
+
+    noteViewModel.setCurrentUserSavedNotes(
+        mockUserViewModel,
+        testList,
+        {
+          noteViewModel.addCurrentUserSavedNote(
+              friendNote,
+              mockUserViewModel,
+              {
+                assert(noteViewModel.userSavedNotes.value == testList + friendNote)
+                onSuccesCalled = true
+              },
+              { fail() })
+        })
+
+    assert(onSuccesCalled)
+  }
+
+  @Test
+  fun deleteCurrentUserSavedNoteCallsRepositoryIfEmpty() = runTest {
+    val testList = listOf(testNote)
+
+    `when`(mockUserViewModel.setSavedDocumentIdsOfType(any(), any(), any(), any())).thenAnswer {
+        invocation ->
+      val onSuccess = invocation.getArgument<() -> Unit>(2)
+      onSuccess()
+    }
+
+    `when`(mockUserViewModel.getSavedDocumentIdsOfType(any(), any(), any())).thenAnswer { invocation
+      ->
+      noteViewModel.setCurrentUserSavedNotes(mockUserViewModel, testList)
+    }
+
+    noteViewModel.deleteCurrentUserSavedNote(testNote.id, mockUserViewModel)
+
+    verify(mockUserViewModel).getSavedDocumentIdsOfType(any(), any(), any())
+  }
+
+  @Test
+  fun deleteCurrentUserSavedNoteCallsRepositoryIfNonEmpty() = runTest {
+    val testList = listOf(testNote)
+    `when`(mockUserViewModel.setSavedDocumentIdsOfType(any(), any(), any(), any())).thenAnswer {
+        invocation ->
+      val onSuccess = invocation.getArgument<() -> Unit>(2)
+      onSuccess()
+    }
+
+    var onSuccesCalled = false
+
+    noteViewModel.setCurrentUserSavedNotes(
+        mockUserViewModel,
+        testList,
+        {
+          noteViewModel.deleteCurrentUserSavedNote(
+              testNote.id,
+              mockUserViewModel,
+              {
+                assert(noteViewModel.userSavedNotes.value == emptyList<Note>())
+                onSuccesCalled = true
+              },
+              { fail() })
+        })
+
+    assert(onSuccesCalled)
+  }
+
+  @Test
+  fun getCurrentUserSavedNotesCallsRepositoryOnSuccess() = runTest {
+    val documentIds = listOf("1", "2")
+    val savedNotes = listOf(testNote, friendNote)
+    val nonSaveableNotesIds = listOf<String>("test")
+
+    `when`(mockUserViewModel.getSavedDocumentIdsOfType(any(), any(), any())).thenAnswer {
+      val onSuccess: (List<String>) -> Unit = it.getArgument(1)
+      onSuccess(documentIds)
+    }
+
+    `when`(mockNoteRepository.getSavedNotesByIds(any(), any(), any(), any(), any())).thenAnswer {
+      val onSuccess: (List<Note>, List<String>) -> Unit = it.getArgument(2)
+      onSuccess(savedNotes, nonSaveableNotesIds)
+    }
+
+    `when`(mockUserViewModel.currentUser).thenReturn(MutableStateFlow(user))
+
+    `when`(mockUserViewModel.deleteSavedDocumentIdOfType(eq("test"), eq(NOTE), any(), any()))
+        .thenAnswer {
+          val onSuccess: () -> Unit = it.getArgument(2)
+          onSuccess()
+        }
+
+    var onSuccessCalled = false
+    noteViewModel.getCurrentUserSavedNotes(mockUserViewModel, { onSuccessCalled = true })
+    assert(onSuccessCalled)
+    assertEquals(noteViewModel.userSavedNotes.value, savedNotes)
+  }
+
+  @Test
+  fun getCurrentUserSavedNotesCallsRepositoryOnFailure() = runTest {
+    val exception = Exception("Failed to retrieve saved notes")
+
+    `when`(mockUserViewModel.getSavedDocumentIdsOfType(any(), any(), any())).thenAnswer {
+      val onFailure: (Exception) -> Unit = it.getArgument(2)
+      onFailure(exception)
+    }
+
+    var onFailureCalled = false
+    noteViewModel.getCurrentUserSavedNotes(
+        mockUserViewModel, onFailure = { onFailureCalled = true })
+    assert(onFailureCalled)
   }
 }

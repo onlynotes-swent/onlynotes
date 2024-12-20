@@ -17,12 +17,10 @@ import org.hamcrest.MatcherAssert.assertThat
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.InjectMocks
 import org.mockito.Mock
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
-import org.mockito.Spy
 import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.eq
@@ -37,7 +35,6 @@ class FolderViewModelTest {
   private lateinit var noteViewModel: NoteViewModel
   // @Mock private lateinit var mockUserRepositoryFirestore: UserRepository
   @Mock private lateinit var mockUserViewModel: UserViewModel
-  @Spy @InjectMocks private lateinit var spyFolderViewModel: FolderViewModel
 
   private val testFolder =
       Folder(
@@ -72,9 +69,6 @@ class FolderViewModelTest {
     MockitoAnnotations.openMocks(this)
     folderViewModel = FolderViewModel(mockFolderRepository)
     noteViewModel = NoteViewModel(mockNoteRepository)
-
-    spyFolderViewModel = FolderViewModel(mockFolderRepository)
-    // userViewModel = UserViewModel(mockUserRepositoryFirestore)
   }
 
   @Test
