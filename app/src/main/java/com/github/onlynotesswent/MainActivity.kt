@@ -307,6 +307,9 @@ fun OnlyNotesApp(scanner: Scanner, pictureTaker: PictureTaker, textExtractor: Te
             fileViewModel,
             noteViewModel,
             folderViewModel,
+            deckViewModel,
+            flashcardViewModel,
+            notificationViewModel,
         )
       }
       composable(Screen.NOTIFICATIONS) {

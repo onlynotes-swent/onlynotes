@@ -82,12 +82,15 @@ class EndToEndTest {
   @Mock private lateinit var deckRepository: DeckRepository
   @Mock private lateinit var fileRepository: FileRepository
   @Mock private lateinit var pictureTaker: PictureTaker
+  @Mock private lateinit var flashcardRepository: FlashcardRepository
+  @Mock private lateinit var mockNotificationRepository: NotificationRepository
+
   private lateinit var userViewModel: UserViewModel
   private lateinit var noteViewModel: NoteViewModel
   private lateinit var folderViewModel: FolderViewModel
   private lateinit var deckViewModel: DeckViewModel
   private lateinit var fileViewModel: FileViewModel
-  @Mock private lateinit var mockNotificationRepository: NotificationRepository
+  private lateinit var flashcardViewModel: FlashcardViewModel
   @Mock private lateinit var mockOpenAI: OpenAI
   @Mock private lateinit var mockContext: Context
   private lateinit var notesToFlashcard: NotesToFlashcard
@@ -154,9 +157,10 @@ class EndToEndTest {
     deckViewModel = DeckViewModel(deckRepository)
     fileViewModel = FileViewModel(fileRepository)
     notificationViewModel = NotificationViewModel(mockNotificationRepository)
+    flashcardViewModel = FlashcardViewModel(flashcardRepository)
     notesToFlashcard =
         NotesToFlashcard(
-            flashcardViewModel = FlashcardViewModel(mock(FlashcardRepository::class.java)),
+            flashcardViewModel = flashcardViewModel,
             fileViewModel = mock(FileViewModel::class.java),
             deckViewModel = DeckViewModel(mock(DeckRepository::class.java)),
             noteViewModel = noteViewModel,
@@ -251,7 +255,10 @@ class EndToEndTest {
                         pictureTaker,
                         fileViewModel,
                         noteViewModel,
-                        folderViewModel)
+                        folderViewModel,
+                        deckViewModel,
+                        flashcardViewModel,
+                        notificationViewModel)
                   }
                 }
               }

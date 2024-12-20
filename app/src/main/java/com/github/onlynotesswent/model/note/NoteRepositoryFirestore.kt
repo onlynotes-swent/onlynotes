@@ -285,7 +285,7 @@ class NoteRepositoryFirestore(
         db.collection(collectionPath).document(id).delete(), onSuccess, onFailure)
   }
 
-  override suspend fun deleteNotesFromUid(
+  override suspend fun deleteAllNotesFromUserId(
       userId: String,
       onSuccess: () -> Unit,
       onFailure: (Exception) -> Unit,

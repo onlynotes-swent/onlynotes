@@ -158,7 +158,7 @@ interface NoteRepository {
    * @param useCache Whether to update data from cache. Should be true only if [userId] is the
    *   current user.
    */
-  suspend fun deleteNotesFromUid(
+  suspend fun deleteAllNotesFromUserId(
       userId: String,
       onSuccess: () -> Unit,
       onFailure: (Exception) -> Unit,

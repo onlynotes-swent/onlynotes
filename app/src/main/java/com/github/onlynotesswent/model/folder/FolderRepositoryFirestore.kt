@@ -121,7 +121,7 @@ class FolderRepositoryFirestore(
     }
   }
 
-  override suspend fun deleteFoldersFromUid(
+  override suspend fun deleteAllFoldersFromUserId(
       userId: String,
       onSuccess: () -> Unit,
       onFailure: (Exception) -> Unit,
