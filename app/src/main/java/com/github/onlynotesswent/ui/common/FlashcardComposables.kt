@@ -617,7 +617,7 @@ fun NormalFlashcardPlayItem(
             verticalArrangement = Arrangement.SpaceEvenly,
             modifier =
                 Modifier.fillMaxWidth()
-                    .padding(vertical = 30.dp)
+                    .padding(vertical = 30.dp, horizontal = 15.dp)
                     .heightIn(min = 200.dp, max = 400.dp)) {
               if (rotation <= 90f || rotation >= 270f) {
                 Text(

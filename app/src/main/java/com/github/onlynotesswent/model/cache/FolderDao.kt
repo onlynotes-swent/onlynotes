@@ -39,8 +39,5 @@ interface FolderDao {
   @Query("DELETE FROM folder WHERE id IN(:folderIds)")
   fun deleteFoldersByIds(folderIds: List<String>)
 
-  @Query("DELETE FROM folder WHERE id IN(:folderIds)")
-  fun deleteFoldersByIds(folderIds: List<String>)
-
   @Query("DELETE FROM folder WHERE userId = :userId") fun deleteFoldersFromUid(userId: String)
 }

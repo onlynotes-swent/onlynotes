@@ -30,8 +30,6 @@ interface NoteDao {
 
   @Query("DELETE FROM note WHERE id IN(:noteIds)") fun deleteNotesByIds(noteIds: List<String>)
 
-  @Query("DELETE FROM note WHERE id IN(:noteIds)") fun deleteNotesByIds(noteIds: List<String>)
-
   @Query("DELETE FROM note WHERE userid = :userId") fun deleteNotesFromUid(userId: String)
 
   @Query("DELETE FROM note WHERE folderid = :folderId") fun deleteNotesFromFolder(folderId: String)

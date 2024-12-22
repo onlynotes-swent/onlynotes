@@ -24,7 +24,7 @@ open class TextExtractor(
         TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
 ) {
 
-  fun processPdfFile(pdfFile: File, onSuccess: (String) -> Unit, onFailure: (Exception) -> Unit, onFailure: (String) -> Unit) {
+  fun processPdfFile(pdfFile: File, onSuccess: (String) -> Unit, onFailure: (Exception) -> Unit) {
     try {
       val bitmaps = convertPdfToBitmap(pdfFile)
       extractTextFromBitmaps(bitmaps, onSuccess, onFailure)
@@ -66,12 +66,8 @@ open class TextExtractor(
   }
 
   internal fun extractTextFromBitmaps(
-    
       bitmaps: List<Bitmap>,
-   
       onSuccess: (String) -> Unit,
-    onFailure: (String) -> Unit
-  ,
       onFailure: (Exception) -> Unit
   ) {
     val textResults = StringBuilder()

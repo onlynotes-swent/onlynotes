@@ -210,7 +210,8 @@ fun NoteOverviewScreen(
                     folderViewModel = folderViewModel,
                     noteViewModel = noteViewModel,
                     userViewModel = userViewModel,
-                    navigationActions = navigationActions)
+                    navigationActions = navigationActions,
+                    notesToFlashcard = notesToFlashcard)
               }
             }
           }

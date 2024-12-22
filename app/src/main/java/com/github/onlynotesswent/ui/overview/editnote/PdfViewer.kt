@@ -176,12 +176,11 @@ fun PdfViewerScreen(
                             )
                         }
                     },
-                    onFailure = { error ->
+                    onFailure = {
                         isLoading = false // Hide progress indicator
-                        Log.e("PdfViewerScreen", "Error extracting text from PDF: $error")
+                        Log.e("PdfViewerScreen", "Error extracting text from PDF: $it")
                         Toast.makeText(context, "Error: text could not be extracted", Toast.LENGTH_LONG).show()
-                    }
-                )
+                    })
             } catch (e: Exception) {
                 isLoading = false // Hide progress indicator
                 Log.e("PdfViewerScreen", "Error extracting text from PDF: $e")

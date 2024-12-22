@@ -332,48 +332,6 @@ fun FileSystemPopup(
         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f) // Subtle divider color
         )
   }
-  // local helper function for displaying the subfolders items
-  @Composable
-  fun subFolder(subFolder: Folder) = Column {
-    Box(
-        modifier =
-            Modifier.testTag("FileSystemPopupFolderChoiceBox" + subFolder.id)
-                .fillMaxWidth()
-                .background(
-                    color = MaterialTheme.colorScheme.background, shape = RoundedCornerShape(8.dp))
-                .clickable {
-                  folderViewModel.getSubFoldersOfNoStateUpdate(
-                      subFolder.id, onSuccess = { subFolders -> folderSubFolders = subFolders })
-                  selectedFolder = subFolder
-                }
-                .padding(4.dp) // Adjust padding for better spacing
-        ) {
-          Row(
-              verticalAlignment = Alignment.CenterVertically,
-              horizontalArrangement = Arrangement.Start) {
-                Icon(
-                    imageVector = Icons.Default.Folder, // Use a folder icon
-                    contentDescription = "Folder Icon",
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier =
-                        Modifier.size(50.dp) // Make the icon significantly larger
-                            .padding(end = 16.dp) // Move it slightly to the left
-                    )
-                Text(
-                    text = subFolder.name,
-                    style =
-                        MaterialTheme.typography.bodyLarge.copy(fontSize = 20.sp), // Larger text
-                    color = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.weight(1f) // Let text take up remaining space
-                    )
-              }
-        }
-    HorizontalDivider(
-        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f), // Subtle divider color
-        thickness = 1.dp, // Thickness of the divider
-        modifier = Modifier.fillMaxWidth() // Ensure divider spans the full width
-        )
-  }
 
   // Modify the subfolder when selected Folder changes, best way I found how to do it as when done
   // sequentially it takes a bit of time for the selected Folder to change which causes a bug

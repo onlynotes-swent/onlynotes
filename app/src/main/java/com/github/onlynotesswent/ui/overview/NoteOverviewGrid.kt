@@ -67,6 +67,5 @@ fun NoteOverviewScreenGrid(
             modifier = Modifier.testTag("emptyNoteAndFolderPrompt"),
             text = stringResource(R.string.you_have_no_notes_or_folders_yet),
             color = MaterialTheme.colorScheme.onBackground)
-      },
-      notesToFlashcard = notesToFlashcard)
+      })
 }

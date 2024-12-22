@@ -42,6 +42,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.github.onlynotesswent.R
 import com.github.onlynotesswent.model.common.Course
+import com.github.onlynotesswent.model.common.Visibility
 import com.github.onlynotesswent.model.deck.Deck
 import com.github.onlynotesswent.model.deck.DeckViewModel
 import com.github.onlynotesswent.model.folder.Folder
@@ -82,7 +83,6 @@ fun FolderContentScreen(
     folderViewModel: FolderViewModel,
     noteViewModel: NoteViewModel? = null,
     userViewModel: UserViewModel,
-    notesToFlashcard: NotesToFlashcard? = null,
     isDeckView: Boolean = false,
     deckViewModel: DeckViewModel? = null,
     notesToFlashcard: NotesToFlashcard? = null
@@ -175,7 +175,7 @@ fun FolderContentScreen(
                 noteViewModel = noteViewModel,
                 userViewModel = userViewModel,
                 navigationActions = navigationActions,
-                notesToFlashcard = notesToFlashcard)
+                notesToFlashcard = notesToFlashcard!!)
           }
           // Logic to show the dialog to update a folder
 

@@ -237,7 +237,7 @@ fun NoteOptionsBottomSheet(
         onConfirm = {
           noteViewModel.deleteNoteById(note.id, note.userId)
           if (folderViewModel.selectedFolder.value != null) {
-            noteViewModel.getNotesFromFolder(folderViewModel.selectedFolder.value!!.id)
+            noteViewModel.getNotesFromFolder(folderViewModel.selectedFolder.value!!.id, userViewModel = null)
           } else {
             noteViewModel.getRootNotesFromUid(note.userId)
           }
@@ -396,6 +396,7 @@ fun NoteToFlashcardDialog(
           onSuccess = {
             isLoading = false
             if (it != null) {
+              onDismiss()
               navigationActions.navigateTo(
                   Screen.DECK_MENU.replace(oldValue = "{deckId}", newValue = it.id))
             } else {
