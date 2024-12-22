@@ -152,6 +152,7 @@ class DeckRepositoryFirestoreTest {
     `when`(mockQuerySnapshot.documents).thenReturn(listOf(mockDocumentSnapshot))
     // Mock the behavior of the DocumentSnapshot
     `when`(mockDocumentSnapshot.id).thenReturn(testDeck.id)
+    `when`(mockDocumentSnapshot.reference).thenReturn(mockDocumentReference)
     `when`(mockDocumentSnapshot.getString("name")).thenReturn(testDeck.name)
     `when`(mockDocumentSnapshot.getString("userId")).thenReturn(testDeck.userId)
     `when`(mockDocumentSnapshot.getString("folderId")).thenReturn(testDeck.folderId)
@@ -341,5 +342,67 @@ class DeckRepositoryFirestoreTest {
     verify(mockDocumentReference).delete()
     verifyErrorLog("Error deleting deck")
     assertNotNull(exception)
+  }
+
+  @Test
+  fun testGetPublicDecks() {
+    `when`(mockCollectionReference.whereEqualTo("visibility", Visibility.PUBLIC.toString()))
+        .thenReturn(mockQuery)
+    var decks = emptyList<Deck>()
+    deckRepository.getPublicDecks({ decks = it }, { fail("Should not fail") })
+    verify(mockCollectionReference).whereEqualTo("visibility", Visibility.PUBLIC.toString())
+    assertEquals(listOf(testDeck), decks)
+  }
+
+  @Test
+  fun testGetDecksFromFollowingList() {
+    `when`(mockCollectionReference.whereIn("userId", listOf("1", "2"))).thenReturn(mockQuery)
+    `when`(mockQuery.whereEqualTo("visibility", Visibility.FRIENDS.toString()))
+        .thenReturn(mockQuery)
+    var decks = emptyList<Deck>()
+    deckRepository.getDecksFromFollowingList(
+        listOf("1", "2"), { decks = it }, { fail("Should not fail") })
+    verify(mockCollectionReference).whereIn("userId", listOf("1", "2"))
+    assertEquals(listOf(testDeck), decks)
+  }
+
+  @Test
+  fun testGetDecksFromFollowingListEmpty() {
+    var isEmpty = false
+    deckRepository.getDecksFromFollowingList(
+        emptyList(), { isEmpty = it.isEmpty() }, { fail("Should not fail") })
+    assert(isEmpty)
+  }
+
+  @Test
+  fun testGetRootDecksFromUserId() {
+    `when`(mockQuery.whereEqualTo("userId", "2")).thenReturn(mockQuery)
+    `when`(mockQuery.whereEqualTo("folderId", null)).thenReturn(mockQuery)
+    var decks = emptyList<Deck>()
+    deckRepository.getRootDecksFromUserId("2", { decks = it }, { fail("Should not fail") })
+    verify(mockCollectionReference).whereEqualTo("userId", "2")
+    assertEquals(listOf(testDeck), decks)
+  }
+
+  @Test
+  fun testDeleteDecksFromFolder() {
+    var wasCalled = false
+    `when`(mockDocumentSnapshot.reference).thenReturn(mockDocumentReference)
+    deckRepository.deleteDecksFromFolder("3", { wasCalled = true }, { fail("Should not fail") })
+    verify(mockCollectionReference).whereEqualTo("folderId", "3")
+    verify(mockQuery).get()
+    verify(mockQuerySnapshot).documents
+    verify(mockDocumentReference).delete()
+    assert(wasCalled)
+  }
+
+  @Test
+  fun testDeleteDecksFromUser() {
+    var wasCalled = false
+    deckRepository.deleteAllDecksFromUserId("2", { wasCalled = true }, { fail("Should not fail") })
+    verify(mockCollectionReference).whereEqualTo("userId", "2")
+    verify(mockQuery).get()
+    verify(mockDocumentReference).delete()
+    assert(wasCalled)
   }
 }

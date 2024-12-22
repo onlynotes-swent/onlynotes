@@ -15,8 +15,12 @@ import androidx.compose.ui.test.performTextClearance
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTextReplacement
 import androidx.core.net.toUri
+import com.github.onlynotesswent.model.deck.DeckRepository
+import com.github.onlynotesswent.model.deck.DeckViewModel
 import com.github.onlynotesswent.model.file.FileRepository
 import com.github.onlynotesswent.model.file.FileViewModel
+import com.github.onlynotesswent.model.flashcard.FlashcardRepository
+import com.github.onlynotesswent.model.flashcard.FlashcardViewModel
 import com.github.onlynotesswent.model.folder.FolderRepository
 import com.github.onlynotesswent.model.folder.FolderViewModel
 import com.github.onlynotesswent.model.note.NoteRepository
@@ -53,11 +57,16 @@ class EditProfileScreenTest {
   @Mock private lateinit var mockFileRepository: FileRepository
   @Mock private lateinit var mockFolderRepository: FolderRepository
   @Mock private lateinit var mockNotificationRepository: NotificationRepository
+  @Mock private lateinit var mockDeckRepository: DeckRepository
+  @Mock private lateinit var mockFlashcardRepository: FlashcardRepository
+
   private lateinit var noteViewModel: NoteViewModel
   private lateinit var userViewModel: UserViewModel
   private lateinit var fileViewModel: FileViewModel
   private lateinit var folderViewModel: FolderViewModel
   private lateinit var notificationViewModel: NotificationViewModel
+  private lateinit var deckViewModel: DeckViewModel
+  private lateinit var flashcardViewModel: FlashcardViewModel
   private val testUid = "testUid123"
   private val testUser =
       User(
@@ -82,6 +91,8 @@ class EditProfileScreenTest {
     fileViewModel = FileViewModel(mockFileRepository)
     folderViewModel = FolderViewModel(mockFolderRepository)
     notificationViewModel = NotificationViewModel(mockNotificationRepository)
+    deckViewModel = DeckViewModel(mockDeckRepository)
+    flashcardViewModel = FlashcardViewModel(mockFlashcardRepository)
 
     // Mock the current route to be the user create screen
     `when`(mockNavigationActions.currentRoute()).thenReturn(Screen.EDIT_PROFILE)
@@ -123,7 +134,10 @@ class EditProfileScreenTest {
           pictureTaker,
           fileViewModel,
           noteViewModel,
-          folderViewModel)
+          folderViewModel,
+          deckViewModel,
+          flashcardViewModel,
+          notificationViewModel)
     }
 
     composeTestRule.onNodeWithTag("ProfileScreen").assertExists()
@@ -153,7 +167,10 @@ class EditProfileScreenTest {
           pictureTaker,
           fileViewModel,
           noteViewModel,
-          folderViewModel)
+          folderViewModel,
+          deckViewModel,
+          flashcardViewModel,
+          notificationViewModel)
     }
 
     composeTestRule.onNodeWithTag("saveButton").performClick()
@@ -169,7 +186,10 @@ class EditProfileScreenTest {
           pictureTaker,
           fileViewModel,
           noteViewModel,
-          folderViewModel)
+          folderViewModel,
+          deckViewModel,
+          flashcardViewModel,
+          notificationViewModel)
     }
 
     composeTestRule.onNodeWithTag("inputUserName").performTextClearance()
@@ -205,7 +225,10 @@ class EditProfileScreenTest {
           pictureTaker,
           fileViewModel,
           noteViewModel,
-          folderViewModel)
+          folderViewModel,
+          deckViewModel,
+          flashcardViewModel,
+          notificationViewModel)
     }
 
     composeTestRule.onNodeWithTag("inputFirstName").performTextClearance()
@@ -230,7 +253,10 @@ class EditProfileScreenTest {
           pictureTaker,
           fileViewModel,
           noteViewModel,
-          folderViewModel)
+          folderViewModel,
+          deckViewModel,
+          flashcardViewModel,
+          notificationViewModel)
     }
 
     composeTestRule.onNodeWithTag("saveButton").assertIsEnabled()
@@ -249,7 +275,10 @@ class EditProfileScreenTest {
           pictureTaker,
           fileViewModel,
           noteViewModel,
-          folderViewModel)
+          folderViewModel,
+          deckViewModel,
+          flashcardViewModel,
+          notificationViewModel)
     }
 
     composeTestRule.onNodeWithTag("goBackButton").performClick()
@@ -266,7 +295,10 @@ class EditProfileScreenTest {
           pictureTaker,
           fileViewModel,
           noteViewModel,
-          folderViewModel)
+          folderViewModel,
+          deckViewModel,
+          flashcardViewModel,
+          notificationViewModel)
     }
     composeTestRule.onNodeWithTag("displayBottomSheet").assertIsEnabled()
     composeTestRule.onNodeWithTag("displayBottomSheet").performClick()
@@ -298,7 +330,10 @@ class EditProfileScreenTest {
           pictureTaker,
           fileViewModel,
           noteViewModel,
-          folderViewModel)
+          folderViewModel,
+          deckViewModel,
+          flashcardViewModel,
+          notificationViewModel)
     }
     composeTestRule.onNodeWithTag("profilePicture").assertIsDisplayed()
     verify(mockFileRepository).downloadFile(any(), any(), any(), any(), any(), any())
@@ -319,7 +354,10 @@ class EditProfileScreenTest {
           pictureTaker,
           fileViewModel,
           noteViewModel,
-          folderViewModel)
+          folderViewModel,
+          deckViewModel,
+          flashcardViewModel,
+          notificationViewModel)
     }
 
     composeTestRule.onNodeWithTag("displayBottomSheet").assertIsEnabled()
@@ -343,7 +381,10 @@ class EditProfileScreenTest {
           pictureTaker,
           fileViewModel,
           noteViewModel,
-          folderViewModel)
+          folderViewModel,
+          deckViewModel,
+          flashcardViewModel,
+          notificationViewModel)
     }
 
     composeTestRule.onNodeWithTag("displayBottomSheet").assertIsEnabled()
@@ -381,7 +422,10 @@ class EditProfileScreenTest {
           pictureTaker,
           fileViewModel,
           noteViewModel,
-          folderViewModel)
+          folderViewModel,
+          deckViewModel,
+          flashcardViewModel,
+          notificationViewModel)
     }
 
     composeTestRule.onNodeWithTag("deleteAccountButton").assertIsEnabled()
@@ -404,7 +448,10 @@ class EditProfileScreenTest {
           pictureTaker,
           fileViewModel,
           noteViewModel,
-          folderViewModel)
+          folderViewModel,
+          deckViewModel,
+          flashcardViewModel,
+          notificationViewModel)
     }
 
     composeTestRule.onNodeWithTag("inputUserName").performTextInput("testForGoBack")
@@ -425,7 +472,10 @@ class EditProfileScreenTest {
           pictureTaker,
           fileViewModel,
           noteViewModel,
-          folderViewModel)
+          folderViewModel,
+          deckViewModel,
+          flashcardViewModel,
+          notificationViewModel)
     }
 
     composeTestRule.onNodeWithTag("deleteAccountButton").assertIsEnabled()
@@ -434,9 +484,12 @@ class EditProfileScreenTest {
     composeTestRule.onNodeWithTag("confirmDeleteButton").performClick()
 
     verify(mockUserRepository).deleteUserById(eq(testUid), any(), any(), any())
-    verify(mockNoteRepository).deleteNotesFromUid(eq(testUid), any(), any(), any())
-    verify(mockFolderRepository).deleteFoldersFromUid(eq(testUid), any(), any(), any())
+    verify(mockNoteRepository).getNotesFromUid(eq(testUid), any(), any(), any())
+    verify(mockFolderRepository).deleteAllFoldersFromUserId(eq(testUid), any(), any(), any())
     verify(mockFileRepository).deleteFile(eq(testUid), any(), any(), any(), any())
+    verify(mockNotificationRepository).deleteNotificationsFromUserId(eq(testUid), any(), any())
+    verify(mockDeckRepository).deleteAllDecksFromUserId(eq(testUid), any(), any())
+    verify(mockFlashcardRepository).getFlashcardsFrom(eq(testUid), any(), any())
     verify(mockNavigationActions).navigateTo(Route.AUTH)
   }
 }

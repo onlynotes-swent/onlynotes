@@ -138,6 +138,7 @@ fun OnlyNotesApp(scanner: Scanner, pictureTaker: PictureTaker, textExtractor: Te
       }
       composable(Screen.EDIT_NOTE_COMMENT) {
         CommentsScreen(navigationActions, noteViewModel, userViewModel, fileViewModel)
+        CommentsScreen(navigationActions, noteViewModel, userViewModel, fileViewModel)
       }
       composable(Screen.EDIT_NOTE_PDF) {
         PdfViewerScreen(
@@ -323,6 +324,9 @@ fun OnlyNotesApp(scanner: Scanner, pictureTaker: PictureTaker, textExtractor: Te
             fileViewModel,
             noteViewModel,
             folderViewModel,
+            deckViewModel,
+            flashcardViewModel,
+            notificationViewModel,
         )
       }
       composable(Screen.NOTIFICATIONS) {

@@ -35,6 +35,7 @@ import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
+import org.mockito.kotlin.mock
 import org.mockito.kotlin.timeout
 import org.mockito.kotlin.verify
 import org.robolectric.RobolectricTestRunner
@@ -288,6 +289,21 @@ class FolderRepositoryFirestoreTest {
   }
 
   @Test
+  fun getDeckFoldersByName_checkCacheReturnsEmptyList() = runTest {
+    mockHasInternetConnection(false)
+    var onFolderNotFoundCalled = false
+    folderRepositoryFirestore.getDeckFoldersByName(
+        testFolder.name,
+        testFolder.userId,
+        onFolderNotFound = { onFolderNotFoundCalled = true },
+        onSuccess = { assert(false) },
+        onFailure = { assert(false) },
+        useCache = true)
+
+    assert(onFolderNotFoundCalled)
+  }
+
+  @Test
   fun getFolderById_callsDocument() = runTest {
     `when`(mockDocumentReference.get()).thenReturn(Tasks.forResult(mockDocumentSnapshot))
 
@@ -321,17 +337,17 @@ class FolderRepositoryFirestoreTest {
   }
 
   @Test
-  fun deleteFoldersFromUid_callsDocuments() = runTest {
+  fun deleteAllFoldersFromUserId_callsDocuments() = runTest {
     `when`(mockQuerySnapshot.documents)
         .thenReturn(listOf(mockDocumentSnapshot, mockDocumentSnapshot2))
 
-    folderRepositoryFirestore.deleteFoldersFromUid("1", onSuccess = {}, onFailure = {}, false)
+    folderRepositoryFirestore.deleteAllFoldersFromUserId("1", onSuccess = {}, onFailure = {}, false)
 
     verify(timeout(100)) { (mockQuerySnapshot).documents }
   }
 
   @Test
-  fun deleteFoldersFromUid_fail() = runTest {
+  fun deleteAllFoldersFromUserId_fail() = runTest {
     val errorMessage = "TestError"
     `when`(mockQuerySnapshotTask.isSuccessful).thenReturn(false)
     `when`(mockQuerySnapshotTask.exception).thenReturn(Exception(errorMessage))
@@ -344,7 +360,7 @@ class FolderRepositoryFirestoreTest {
     `when`(mockQuerySnapshot.documents)
         .thenReturn(listOf(mockDocumentSnapshot, mockDocumentSnapshot2))
     var exceptionThrown: Exception? = null
-    folderRepositoryFirestore.deleteFoldersFromUid(
+    folderRepositoryFirestore.deleteAllFoldersFromUserId(
         "1", onSuccess = {}, onFailure = { e -> exceptionThrown = e }, false)
     assertNotNull(exceptionThrown)
     assertEquals(errorMessage, exceptionThrown?.message)
@@ -414,6 +430,54 @@ class FolderRepositoryFirestoreTest {
         listOf("1", "2"), onSuccess = {}, onFailure = { e -> exceptionThrown = e })
     assertNotNull(exceptionThrown)
     assertEquals(errorMessage, exceptionThrown?.message)
+  }
+
+  @Test
+  fun addFolders_callsSuccess() = runTest {
+    val mockBatch = mock<com.google.firebase.firestore.WriteBatch>()
+    `when`(mockFirestore.batch()).thenReturn(mockBatch)
+
+    val mockTask = mock<Task<Void>>()
+    `when`(mockBatch.commit()).thenReturn(mockTask)
+    `when`(mockTask.addOnCompleteListener(any())).thenAnswer { invocation ->
+      val listener = invocation.arguments[0] as OnCompleteListener<Void>
+      listener.onComplete(Tasks.forResult(null)) // Simulate successful task completion
+      mockTask
+    }
+
+    `when`(mockDocumentReference.set(any())).thenReturn(Tasks.forResult(null))
+
+    val folders = listOf(testFolder, testSubFolder)
+    var calledSuccess = false
+    folderRepositoryFirestore.addFolders(
+        folders, onSuccess = { calledSuccess = true }, onFailure = {}, false)
+
+    shadowOf(Looper.getMainLooper()).idle() // Process pending tasks
+
+    assert(calledSuccess)
+  }
+
+  @Test
+  fun addFolders_callsFailure() = runTest {
+    val mockBatch = mock<com.google.firebase.firestore.WriteBatch>()
+    `when`(mockFirestore.batch()).thenReturn(mockBatch)
+
+    val mockTask = mock<Task<Void>>()
+    `when`(mockBatch.commit()).thenReturn(mockTask)
+    `when`(mockTask.addOnCompleteListener(any())).thenAnswer { invocation ->
+      val listener = invocation.arguments[0] as OnCompleteListener<Void>
+      listener.onComplete(Tasks.forException(Exception("Test error"))) // Simulate failed task
+      mockTask
+    }
+
+    val folders = listOf(testFolder, testSubFolder)
+    var calledFailure = false
+    folderRepositoryFirestore.addFolders(
+        folders, onSuccess = {}, onFailure = { calledFailure = true }, false)
+
+    shadowOf(Looper.getMainLooper()).idle() // Process pending tasks
+
+    assert(calledFailure)
   }
 
   //  @Test

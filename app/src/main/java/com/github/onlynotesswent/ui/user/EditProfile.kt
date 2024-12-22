@@ -68,10 +68,13 @@ import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 import coil.compose.rememberAsyncImagePainter
 import com.github.onlynotesswent.R
+import com.github.onlynotesswent.model.deck.DeckViewModel
 import com.github.onlynotesswent.model.file.FileType
 import com.github.onlynotesswent.model.file.FileViewModel
+import com.github.onlynotesswent.model.flashcard.FlashcardViewModel
 import com.github.onlynotesswent.model.folder.FolderViewModel
 import com.github.onlynotesswent.model.note.NoteViewModel
+import com.github.onlynotesswent.model.notification.NotificationViewModel
 import com.github.onlynotesswent.model.user.User
 import com.github.onlynotesswent.model.user.UserRepositoryFirestore
 import com.github.onlynotesswent.model.user.UserViewModel
@@ -101,6 +104,9 @@ fun EditProfileScreen(
     fileViewModel: FileViewModel,
     noteViewModel: NoteViewModel,
     folderViewModel: FolderViewModel,
+    deckViewModel: DeckViewModel,
+    flashcardViewModel: FlashcardViewModel,
+    notificationViewModel: NotificationViewModel,
 ) {
   val user = userViewModel.currentUser.collectAsState()
 
@@ -351,13 +357,32 @@ fun EditProfileScreen(
                                 modifier = Modifier.testTag("confirmDeleteButton"),
                                 onClick = {
                                   showDeleteAccountAlert.value = false
+                                  folderViewModel.deleteAllFoldersFromUserId(user.value!!.uid)
+                                  noteViewModel.getNotesFromUid(
+                                      user.value!!.uid,
+                                      onSuccess = { notes ->
+                                        notes.forEach {
+                                          fileViewModel.deleteFile(it.id, FileType.NOTE_PDF)
+                                          fileViewModel.deleteFile(it.id, FileType.NOTE_TEXT)
+                                        }
+                                        noteViewModel.deleteNotesFromUid(user.value!!.uid)
+                                      },
+                                  )
+                                  deckViewModel.deleteAllDecksFromUserId(user.value!!.uid)
 
-                                  noteViewModel.deleteNotesFromUid(user.value!!.uid)
-                                  folderViewModel.deleteFoldersFromUid(user.value!!.uid)
-                                  noteViewModel.getNoteById(user.value!!.uid)
-                                  noteViewModel.userRootNotes.value.forEach {
-                                    fileViewModel.deleteFile(it.id, FileType.NOTE_PDF)
-                                  }
+                                  flashcardViewModel.getFlashcardsFromUser(
+                                      user.value!!.uid,
+                                      onSuccess = { flashcards ->
+                                        flashcards.forEach {
+                                          fileViewModel.deleteFile(it.id, FileType.FLASHCARD_IMAGE)
+                                        }
+                                        flashcardViewModel.deleteFlashcardsFromUser(
+                                            user.value!!.uid)
+                                      },
+                                  )
+                                  notificationViewModel.deleteNotificationsFromUserId(
+                                      user.value!!.uid)
+
                                   fileViewModel.deleteFile(
                                       user.value!!.uid, FileType.PROFILE_PIC_JPEG)
                                   userViewModel.deleteUserById(

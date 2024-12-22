@@ -28,6 +28,7 @@ import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -50,6 +51,14 @@ import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Screen
 import com.github.onlynotesswent.ui.theme.Typography
 
+/**
+ * Screen for viewing and editing comments on a note.
+ *
+ * @param navigationActions Actions used for navigating between screens.
+ *     @param noteViewModel The ViewModel for notes.
+ *     @param userViewModel The ViewModel for users.
+ *     @param fileViewModel The ViewModel for files.
+ */
 @Composable
 fun CommentsScreen(
     navigationActions: NavigationActions,
@@ -58,18 +67,20 @@ fun CommentsScreen(
     fileViewModel: FileViewModel
 ) {
   val note by noteViewModel.selectedNote.collectAsState()
+  var noteUpdated by remember { mutableStateOf(note) }
   val currentUser by userViewModel.currentUser.collectAsState()
-  var updatedComments by remember { mutableStateOf(note!!.comments) }
+  val updatedComments by remember { derivedStateOf { (noteUpdated!!.comments) } }
+
   LaunchedEffect(Unit) {
     while (true) {
-      kotlinx.coroutines.delay(1000L) // Delay for 1 second to not saturate firestore
+      kotlinx.coroutines.delay(1000L)
+      // Delay for 1 second to not saturate firestore but also to not get too much lag
       if (note != null) {
-
-        noteViewModel.updateNote(
-            note = note!!.copy(comments = Note.CommentCollection(updatedComments.commentsList)))
+        noteViewModel.getNoteById(note!!.id, { noteUpdated = it })
       }
     }
   }
+
   Scaffold(
       floatingActionButton = {},
       modifier = Modifier.testTag("commentsScreen"),
@@ -87,17 +98,17 @@ fun CommentsScreen(
 
           SendCommentBar(
               currentUser = currentUser,
-              note = note,
+              note = noteUpdated,
               updatedComments = updatedComments,
               {
-                  updatedComments = it
-                  val newNote = note!!.copy(comments = Note.CommentCollection(updatedComments.commentsList))
-                  noteViewModel.selectedNote(newNote)
-                  noteViewModel.updateNote(
-                      note = note!!
-                  )
+                val newNote = noteUpdated!!.copy(comments = Note.CommentCollection(it.commentsList))
+                noteViewModel.selectedNote(newNote)
+                noteViewModel.updateNote(note = newNote)
               },
-              modifier = Modifier.fillMaxWidth().padding(horizontal = 2.dp, vertical = 2.dp))
+              modifier =
+                  Modifier.testTag("SendCommentBar")
+                      .fillMaxWidth()
+                      .padding(horizontal = 2.dp, vertical = 2.dp))
 
           HorizontalDivider(
               color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f), thickness = 0.5.dp)
@@ -114,34 +125,28 @@ fun CommentsScreen(
           ErrorScreen("No note is selected to edit")
         } else {
           Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
-            // Scrollable comments section
             Column(
                 modifier =
                     Modifier.fillMaxWidth()
                         .verticalScroll(rememberScrollState())
                         .padding(16.dp)
-                        .align(Alignment.TopStart) // Aligns the Column to the top of the Box
+                        .align(Alignment.TopStart)
                         .testTag("commentsColumn"),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 horizontalAlignment = Alignment.CenterHorizontally) {
                   CommentsSection(
                       updatedComments,
                       {
-                          updatedComments = it
-                          val newNote = note!!.copy(comments = Note.CommentCollection(updatedComments.commentsList))
-                          noteViewModel.selectedNote(newNote)
-                          noteViewModel.updateNote(
-                              note = note!!
-                          )
+                        val newNote =
+                            note!!.copy(comments = Note.CommentCollection(it.commentsList))
+                        noteViewModel.selectedNote(newNote)
+                        noteViewModel.updateNote(note = newNote)
                       },
                       currentUser!!,
-                      note!!,
+                      noteUpdated!!,
                       userViewModel,
                       fileViewModel)
                 }
-
-            // SendCommentBar fixed at the bottom
-
           }
         }
       }
@@ -175,12 +180,13 @@ fun SendCommentBar(
           OutlinedTextField(
               value = commentText,
               onValueChange = { commentText = it },
-              modifier = Modifier.weight(1f).padding(bottom = 8.dp),
+              modifier = Modifier.weight(1f).padding(bottom = 8.dp).testTag("SendCommentTextField"),
               label = { Text(stringResource(R.string.enter_comment_here)) },
               placeholder = { Text(stringResource(R.string.enter_comment_here)) })
 
           // Send Button
           FloatingActionButton(
+              modifier = Modifier.testTag("SendCommentButton"),
               onClick = {
                 if (commentText.isNotEmpty()) {
                   val newComments =
@@ -211,6 +217,8 @@ fun SendCommentBar(
  * @param onCommentsChange The callback function to update the comments collection.
  * @param currentUser The current user.
  * @param note The note being edited.
+ * @param userViewModel The ViewModel for users.
+ * @param fileViewModel The ViewModel for files.
  */
 @Composable
 fun CommentsSection(
@@ -236,7 +244,7 @@ fun CommentsSection(
     }
   }
 }
-
+/** Displays a message when there are no comments to display. */
 @Composable
 fun NoCommentsText() {
   Text(
@@ -244,7 +252,19 @@ fun NoCommentsText() {
       color = Color.Gray,
       modifier = Modifier.padding(8.dp).testTag("noCommentsText"))
 }
-
+/**
+ * Represents a comment in the comments section of the edit note screen. The comment includes the
+ * user's profile picture, user handle, comment content, and options menu for editing and deleting
+ * the comment.
+ *
+ * @param comment The comment to be displayed.
+ * @param updatedComments The updated collection of comments for the note.
+ * @param onCommentsChange The callback function to update the comments collection.
+ * @param currentUser The current user.
+ * @param note The note being edited.
+ * @param userViewModel The ViewModel for users.
+ * @param fileViewModel The ViewModel for files.
+ */
 @Composable
 fun CommentRow(
     comment: Note.Comment,
@@ -285,6 +305,7 @@ fun CommentRow(
           placeholder = { Text(stringResource(R.string.enter_comment_here)) },
           modifier = Modifier.weight(1f).testTag("EditCommentTextField"))
       IconButton(
+          modifier = Modifier.testTag("SaveCommentButton"),
           onClick = {
             val updatedCollection =
                 updatedComments.editCommentByCommentId(comment.commentId, currentContent)
@@ -296,14 +317,11 @@ fun CommentRow(
     }
   } else {
     Column(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
-      // Top Row: Thumbnail, User Handle, and Options Menu
       Row(
           modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp),
           verticalAlignment = Alignment.CenterVertically) {
-            // Thumbnail on the left
             ThumbnailDynamicPic(commentUser, fileViewModel, size = 30)
 
-            // User handle in the center
             Text(
                 text = commentUser.value!!.userHandle(),
                 style = Typography.bodyMedium,
@@ -311,9 +329,12 @@ fun CommentRow(
             // Options menu on the right
             if (comment.isOwner(currentUser.uid) || note.isOwner(currentUser.uid)) {
               Box { // Anchor box for the dropdown
-                IconButton(onClick = { expanded = true }) {
-                  Icon(imageVector = Icons.Default.MoreVert, contentDescription = "More Options")
-                }
+                IconButton(
+                    onClick = { expanded = true },
+                    modifier = Modifier.testTag("CommentOptionsButton")) {
+                      Icon(
+                          imageVector = Icons.Default.MoreVert, contentDescription = "More Options")
+                    }
                 CommentOptionsMenu(
                     comment = comment,
                     updatedComments = updatedComments,
@@ -327,17 +348,26 @@ fun CommentRow(
             }
           }
 
-      // Second Row: Full-width comment content
       Text(
           text = comment.content,
-          modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
+          modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp).testTag("CommentContent"),
           style = Typography.bodyLarge)
     }
   }
-  // add horizontal divider between comments
   HorizontalDivider(color = Color.Gray, thickness = 0.5.dp)
 }
-
+/**
+ * Displays a dropdown menu with options for editing and deleting a comment.
+ *
+ * @param comment The comment to be edited or deleted.
+ * @param updatedComments The updated collection of comments for the note.
+ * @param onCommentsChange The callback function to update the comments collection.
+ * @param currentUser The current user.
+ * @param note The note being edited.
+ * @param expanded The expanded state of the dropdown menu.
+ * @param onDismissRequest The callback function to dismiss the dropdown menu.
+ * @param onEditRequest The callback function to edit the comment.
+ */
 @Composable
 fun CommentOptionsMenu(
     comment: Note.Comment,
@@ -345,17 +375,21 @@ fun CommentOptionsMenu(
     onCommentsChange: (Note.CommentCollection) -> Unit,
     currentUser: User,
     note: Note,
-    expanded: Boolean, // Receive expanded state
-    onDismissRequest: () -> Unit, // Callback to dismiss menu
+    expanded: Boolean,
+    onDismissRequest: () -> Unit,
     onEditRequest: () -> Unit
 ) {
   DropdownMenu(
-      modifier = Modifier.background(MaterialTheme.colorScheme.onPrimary),
-      expanded = expanded, onDismissRequest = onDismissRequest // Use callback to handle dismissal
+      modifier =
+          Modifier.background(MaterialTheme.colorScheme.onPrimary).testTag("CommentOptionsMenu"),
+      expanded = expanded,
+      onDismissRequest = onDismissRequest // Use callback to handle dismissal
       ) {
         if (comment.isOwner(currentUser.uid)) {
           DropdownMenuItem(
-              modifier = Modifier.background(MaterialTheme.colorScheme.onPrimary),
+              modifier =
+                  Modifier.background(MaterialTheme.colorScheme.onPrimary)
+                      .testTag("EditCommentMenuItem"),
               text = { Text("Edit comment") },
               onClick = {
                 onDismissRequest()
@@ -364,7 +398,9 @@ fun CommentOptionsMenu(
         }
         if (comment.isOwner(currentUser.uid) || note.isOwner(currentUser.uid)) {
           DropdownMenuItem(
-                modifier = Modifier.background(MaterialTheme.colorScheme.onPrimary),
+              modifier =
+                  Modifier.background(MaterialTheme.colorScheme.onPrimary)
+                      .testTag("DeleteCommentMenuItem"),
               text = { Text("Delete comment") },
               onClick = {
                 onDismissRequest()

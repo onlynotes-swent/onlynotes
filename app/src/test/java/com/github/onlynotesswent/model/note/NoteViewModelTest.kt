@@ -165,7 +165,7 @@ class NoteViewModelTest {
 
   @Test
   fun deleteNotesFromUser() = runTest {
-    `when`(mockNoteRepository.deleteNotesFromUid(any(), any(), any(), any())).thenAnswer {
+    `when`(mockNoteRepository.deleteAllNotesFromUserId(any(), any(), any(), any())).thenAnswer {
       val onSuccess: () -> Unit = it.getArgument(1)
       onSuccess()
     }
@@ -176,7 +176,7 @@ class NoteViewModelTest {
 
     // To test default parameters
     noteViewModel.deleteNotesFromUid("1")
-    verify(mockNoteRepository, times(2)).deleteNotesFromUid(eq("1"), any(), any(), any())
+    verify(mockNoteRepository, times(2)).deleteAllNotesFromUserId(eq("1"), any(), any(), any())
   }
 
   @Test

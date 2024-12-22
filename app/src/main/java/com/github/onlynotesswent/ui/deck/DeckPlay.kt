@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -28,6 +29,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Replay
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -52,8 +54,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
+import com.github.onlynotesswent.R
 import com.github.onlynotesswent.model.deck.Deck
 import com.github.onlynotesswent.model.deck.DeckViewModel
 import com.github.onlynotesswent.model.deck.PlayDeckHistory
@@ -69,6 +73,15 @@ import com.github.onlynotesswent.ui.navigation.NavigationActions
 import kotlin.math.absoluteValue
 import kotlinx.coroutines.launch
 
+/**
+ * This composable is used to display the deck play screen.
+ *
+ * @param navigationActions The navigation actions.
+ * @param userViewModel The view model for the user.
+ * @param deckViewModel The view model for the deck.
+ * @param flashcardViewModel The view model for the flashcards.
+ * @param fileViewModel The view model for the files.
+ */
 @Composable
 fun DeckPlayScreen(
     navigationActions: NavigationActions,
@@ -116,7 +129,7 @@ fun DeckPlayScreen(
       modifier = Modifier.testTag("DeckPlayScreen"),
       topBar = {
         ScreenTopBar(
-            playMode.value?.toReadableString() ?: "No mode selected",
+            playMode.value?.toReadableString() ?: stringResource(R.string.no_mode_selected),
             "DeckPlayScreenTopBar",
             { navigationActions.goBack() },
             {
@@ -132,7 +145,7 @@ fun DeckPlayScreen(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally) {
               if (deck.value == null || userFlashcardList.value.isEmpty()) {
-                LoadingIndicator("Loading deck...")
+                LoadingIndicator(stringResource(R.string.loading_deck))
               } else {
                 val score = remember { mutableIntStateOf(0) }
                 val answers: Map<String, MutableState<Int?>> =
@@ -398,11 +411,13 @@ private fun TestMode(
         verticalArrangement = Arrangement.Bottom,
         horizontalAlignment = Alignment.CenterHorizontally) {
           AnimatedVisibility(pagerState.currentPage == flashcardList.value.size - 1) {
-            Button(
-                modifier = Modifier.padding(10.dp).testTag("submitButton"),
+            ElevatedButton(
+                modifier = Modifier.padding(20.dp).testTag("submitButton"),
                 onClick = { isFinished.value = true },
                 enabled = pagerState.currentPage == flashcardList.value.size - 1) {
-                  Text("Finish Test", style = MaterialTheme.typography.bodyLarge)
+                  Text(
+                      stringResource(R.string.finish_test),
+                      style = MaterialTheme.typography.headlineSmall)
                 }
           }
           AnimatedVisibility(!flashcardList.value[pagerState.currentPage].isMCQ()) {
@@ -452,7 +467,7 @@ private fun SelectWrongRight(
   Row(modifier = modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
     Button(
         onClick = { onIncorrect() },
-        modifier = Modifier.padding(5.dp).testTag("incorrectButton"),
+        modifier = Modifier.padding(3.dp).testTag("incorrectButton"),
         enabled = answers[selectedFlashcardId]!!.value == null) {
           Row(
               verticalAlignment = Alignment.CenterVertically,
@@ -461,13 +476,16 @@ private fun SelectWrongRight(
                     imageVector = Icons.Default.Close,
                     contentDescription = "Close Icon",
                     tint = MaterialTheme.colorScheme.onSurface)
-
-                Text("I got it wrong", style = MaterialTheme.typography.bodyLarge, maxLines = 1)
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    stringResource(R.string.i_got_it_wrong),
+                    style = MaterialTheme.typography.bodyLarge,
+                    maxLines = 1)
               }
         }
     Button(
         onClick = { onCorrect() },
-        modifier = Modifier.padding(5.dp).testTag("correctButton"),
+        modifier = Modifier.padding(3.dp).testTag("correctButton"),
         enabled = answers[selectedFlashcardId]!!.value == null) {
           Row(
               verticalAlignment = Alignment.CenterVertically,
@@ -476,8 +494,11 @@ private fun SelectWrongRight(
                     imageVector = Icons.Default.Check,
                     contentDescription = "Close Icon",
                     tint = MaterialTheme.colorScheme.onSurface)
-                Spacer(modifier = Modifier.width(5.dp))
-                Text("I got it right", style = MaterialTheme.typography.bodyLarge, maxLines = 1)
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    stringResource(R.string.i_got_it_right),
+                    style = MaterialTheme.typography.bodyLarge,
+                    maxLines = 1)
               }
         }
   }
@@ -526,10 +547,17 @@ private fun FinishedScreen(
                 }
           }
         }
-        CircularProgressIndicator(
-            progress = { animatedScore / 100f }, modifier = Modifier.size(180.dp).padding(30.dp))
+        Box(contentAlignment = Alignment.Center) {
+          Text(
+              "${animatedScore.toInt()}%",
+              style = MaterialTheme.typography.headlineLarge,
+              modifier = Modifier.absoluteOffset(x = 6.dp, y = 1.dp))
+          CircularProgressIndicator(
+              progress = { animatedScore / 100f }, modifier = Modifier.size(180.dp).padding(30.dp))
+        }
+
         Text(
-            "You have finished the deck with a score of ${animatedScore.toInt()}% !",
+            stringResource(R.string.deck_finish_test_text, animatedScore.toInt()),
             style = MaterialTheme.typography.bodyLarge)
         Spacer(modifier = Modifier.height(20.dp))
         Button(
@@ -551,13 +579,17 @@ private fun FinishedScreen(
               }
             },
             modifier = Modifier.padding(16.dp).testTag("retryButton")) {
-              Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    imageVector = Icons.Default.Replay,
-                    contentDescription = "Close Icon",
-                    tint = MaterialTheme.colorScheme.onSurface)
-                Text("Retry", style = MaterialTheme.typography.headlineSmall)
-              }
+              Row(
+                  verticalAlignment = Alignment.CenterVertically,
+                  horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Icon(
+                        imageVector = Icons.Default.Replay,
+                        contentDescription = "Close Icon",
+                        tint = MaterialTheme.colorScheme.onSurface)
+                    Text(
+                        stringResource(R.string.retry),
+                        style = MaterialTheme.typography.headlineSmall)
+                  }
             }
       }
 }

@@ -31,6 +31,11 @@ data class Deck(
     TEST,
     REVIEW;
 
+    /**
+     * Converts the play mode to a readable string.
+     *
+     * @return The readable string representation of the play mode.
+     */
     fun toReadableString(): String {
       return when (this) {
         TEST -> "Test"

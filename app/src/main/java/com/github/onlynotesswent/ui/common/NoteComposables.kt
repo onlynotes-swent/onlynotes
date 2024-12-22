@@ -1,8 +1,6 @@
 package com.github.onlynotesswent.ui.common
 
 import android.content.ClipData
-import android.util.Log
-import android.widget.Toast
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.draganddrop.dragAndDropSource
@@ -31,8 +29,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -46,7 +46,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import com.github.onlynotesswent.R
 import com.github.onlynotesswent.model.common.Course
@@ -58,7 +61,6 @@ import com.github.onlynotesswent.model.user.User
 import com.github.onlynotesswent.ui.navigation.NavigationActions
 import com.github.onlynotesswent.ui.navigation.Route.NOTE_OVERVIEW
 import com.github.onlynotesswent.ui.navigation.Screen
-import com.github.onlynotesswent.ui.navigation.TopLevelDestinations
 import com.github.onlynotesswent.utils.NotesToFlashcard
 import com.google.firebase.Timestamp
 import java.text.SimpleDateFormat
@@ -202,12 +204,14 @@ fun NoteOptionsBottomSheet(
 ) {
   var showFileSystemPopup by remember { mutableStateOf(false) }
   var showDeletePopup by remember { mutableStateOf(false) }
-  var showFlashcardCreationPopup by remember { mutableStateOf(false) }
-  val context = LocalContext.current
+  var showFlashcardDialog by remember { mutableStateOf(false) }
 
   if (showFileSystemPopup) {
     FileSystemPopup(
-        onDismiss = { showFileSystemPopup = false },
+        onDismiss = {
+          showFileSystemPopup = false
+          onDismiss()
+        },
         folderViewModel = folderViewModel,
         onMoveHere = { selectedFolder ->
           noteViewModel.updateNote(
@@ -233,28 +237,28 @@ fun NoteOptionsBottomSheet(
         onConfirm = {
           noteViewModel.deleteNoteById(note.id, note.userId)
           if (folderViewModel.selectedFolder.value != null) {
-            noteViewModel.getNotesFromFolder(folderViewModel.selectedFolder.value!!.id, null)
+            noteViewModel.getNotesFromFolder(folderViewModel.selectedFolder.value!!.id)
           } else {
             noteViewModel.getRootNotesFromUid(note.userId)
           }
           showDeletePopup = false // Close the dialog after deleting
+          onDismiss() // Dismiss the bottom sheet after deleting the note
         },
         onDismiss = {
           showDeletePopup = false // Close the dialog without deleting
+          onDismiss() // Dismiss the bottom sheet after deleting the note
         })
   }
 
-  if (showFlashcardCreationPopup) {
-    AlertDialog(
-        modifier = Modifier.testTag("popup"),
-        onDismissRequest = {},
-        title = {},
-        text = {
-          LoadingIndicator(
-              text = stringResource(R.string.converting_note_to_flashcards),
-              modifier = Modifier.padding(16.dp))
-        },
-        confirmButton = {})
+  if (showFlashcardDialog && notesToFlashcard != null) {
+    NoteToFlashcardDialog(
+        note = note,
+        notesToFlashcard = notesToFlashcard,
+        navigationActions = navigationActions,
+        onDismiss = {
+          showFlashcardDialog = false
+          onDismiss()
+        })
   }
 
   ModalBottomSheet(
@@ -279,51 +283,14 @@ fun NoteOptionsBottomSheet(
                     style = MaterialTheme.typography.titleMedium)
               }
 
+          // Convert Note to Flashcards
           if (notesToFlashcard != null) {
             Row(
                 modifier =
                     Modifier.fillMaxWidth()
-                        .clickable {
-                          showFlashcardCreationPopup = true
-                          notesToFlashcard.convertNoteToDeck(
-                              note,
-                              onSuccess = {
-                                Log.d("NoteOptionsBottomSheet", "Successfully created flashcards")
-                                Log.d("NoteOptionsBottomSheet", "Deck ID: ${it?.id}")
-                                showFlashcardCreationPopup = false
-                                onDismiss()
-                                if (it != null) {
-                                  navigationActions.navigateTo(TopLevelDestinations.DECK_OVERVIEW)
-                                  navigationActions.navigateTo(
-                                      Screen.DECK_MENU.replace(
-                                          oldValue = "{deckId}", newValue = it.id))
-                                } else {
-                                  Toast.makeText(
-                                          context,
-                                          R.string.no_flashcards_created,
-                                          Toast.LENGTH_SHORT)
-                                      .show()
-                                }
-                              },
-                              onFileNotFoundException = {
-                                showFlashcardCreationPopup = false
-                                onDismiss()
-                                Toast.makeText(
-                                        context, R.string.no_note_text_found, Toast.LENGTH_SHORT)
-                                    .show()
-                              },
-                              onFailure = {
-                                showFlashcardCreationPopup = false
-                                onDismiss()
-                                Toast.makeText(
-                                        context,
-                                        R.string.error_creating_flashcards,
-                                        Toast.LENGTH_SHORT)
-                                    .show()
-                              })
-                        }
+                        .clickable { showFlashcardDialog = true }
                         .padding(vertical = 8.dp)
-                        .testTag("moveNoteBottomSheet"),
+                        .testTag("convertNoteBottomSheet"),
                 verticalAlignment = Alignment.CenterVertically) {
                   Icon(
                       imageVector = Icons.AutoMirrored.Outlined.LibraryBooks,
@@ -332,7 +299,6 @@ fun NoteOptionsBottomSheet(
                   Text(
                       text = stringResource(R.string.convert_note_to_flashcards),
                       style = MaterialTheme.typography.titleMedium)
-                  Spacer(modifier = Modifier.width(16.dp))
                 }
           }
 
@@ -357,6 +323,95 @@ fun NoteOptionsBottomSheet(
               }
         }
       })
+}
+
+/**
+ * Dialog that displays a loading indicator while converting a note to flashcards.
+ *
+ * @param note The note to be converted to flashcards.
+ * @param notesToFlashcard The notes to flashcard object to be passed to the note item.
+ * @param navigationActions The navigation instance used to transition between different screens.
+ * @param onDismiss The callback to be invoked when the dialog is dismissed.
+ */
+@Composable
+fun NoteToFlashcardDialog(
+    note: Note,
+    notesToFlashcard: NotesToFlashcard,
+    navigationActions: NavigationActions,
+    onDismiss: () -> Unit
+) {
+  val context = LocalContext.current
+  var isLoading by remember { mutableStateOf(true) }
+  var flashcardErrorMessage by remember { mutableStateOf<String?>(null) }
+  var noFlashcardsCreated by remember { mutableStateOf(false) }
+
+  AlertDialog(
+      onDismissRequest = {
+        if (!isLoading) {
+          onDismiss()
+        }
+      },
+      title = { Text(stringResource(R.string.convert_folder_to_decks)) },
+      text = {
+        Column {
+          if (isLoading) {
+            LoadingIndicator(
+                text = stringResource(R.string.converting_note_to_flashcards),
+                modifier = Modifier.fillMaxWidth(),
+                spacerHeight = 8.dp)
+          }
+
+          if (flashcardErrorMessage != null) {
+            Spacer(modifier = Modifier.height(16.dp))
+            Column {
+              Text(
+                  text =
+                      buildAnnotatedString {
+                        withStyle(style = SpanStyle(color = MaterialTheme.colorScheme.error)) {
+                          append(stringResource(R.string.error_while_converting))
+                        }
+                        append(": $flashcardErrorMessage")
+                      })
+            }
+          }
+          if (noFlashcardsCreated) {
+            Spacer(modifier = Modifier.height(16.dp))
+            Column { Text(text = stringResource(R.string.no_flashcards_created)) }
+          }
+        }
+      },
+      confirmButton = {},
+      dismissButton = {
+        if (!isLoading) {
+          TextButton(onClick = { onDismiss() }, modifier = Modifier.testTag("closeAction")) {
+            Text(stringResource(R.string.close), color = MaterialTheme.colorScheme.error)
+          }
+        }
+      })
+
+  if (isLoading) {
+    LaunchedEffect(Unit) {
+      notesToFlashcard.convertNoteToDeck(
+          note,
+          onSuccess = {
+            isLoading = false
+            if (it != null) {
+              navigationActions.navigateTo(
+                  Screen.DECK_MENU.replace(oldValue = "{deckId}", newValue = it.id))
+            } else {
+              noFlashcardsCreated = true
+            }
+          },
+          onFileNotFoundException = {
+            isLoading = false
+            flashcardErrorMessage = context.getString(R.string.no_note_text_found)
+          },
+          onFailure = {
+            isLoading = false
+            flashcardErrorMessage = context.getString(R.string.error_creating_flashcards)
+          })
+    }
+  }
 }
 
 /**

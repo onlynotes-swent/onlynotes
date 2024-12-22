@@ -33,7 +33,7 @@ fun CreateItemFab(
     isDeckView: Boolean = false,
 ) {
   CustomDropDownMenu(
-      modifier = Modifier.testTag("createNoteOrFolder"),
+      modifier = Modifier.testTag("createObjectOrFolder"),
       menuItems =
           listOf(
               CustomDropDownMenuItem(
@@ -58,7 +58,7 @@ fun CreateItemFab(
                     onExpandedFabChange(false)
                     showCreateItemDialog(true)
                   },
-                  modifier = Modifier.testTag("createNote")),
+                  modifier = Modifier.testTag("createDeckOrNote")),
               CustomDropDownMenuItem(
                   text = { Text(stringResource(R.string.create_folder)) },
                   icon = {

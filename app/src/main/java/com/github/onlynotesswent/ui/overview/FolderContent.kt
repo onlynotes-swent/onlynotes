@@ -42,7 +42,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.github.onlynotesswent.R
 import com.github.onlynotesswent.model.common.Course
-import com.github.onlynotesswent.model.common.Visibility
 import com.github.onlynotesswent.model.deck.Deck
 import com.github.onlynotesswent.model.deck.DeckViewModel
 import com.github.onlynotesswent.model.folder.Folder
@@ -73,9 +72,9 @@ import com.google.firebase.Timestamp
  * @param folderViewModel view model for the folder
  * @param noteViewModel view model for the note
  * @param userViewModel view model for the user
+ * @param notesToFlashcard the notes to flashcard object
  * @param isDeckView whether the view is for a deck
  * @param deckViewModel view model for the deck
- * @param notesToFlashcard the notes to flashcard object
  */
 @Composable
 fun FolderContentScreen(
@@ -83,6 +82,7 @@ fun FolderContentScreen(
     folderViewModel: FolderViewModel,
     noteViewModel: NoteViewModel? = null,
     userViewModel: UserViewModel,
+    notesToFlashcard: NotesToFlashcard? = null,
     isDeckView: Boolean = false,
     deckViewModel: DeckViewModel? = null,
     notesToFlashcard: NotesToFlashcard? = null
@@ -452,7 +452,6 @@ fun FolderContentTopBar(
                     },
                     modifier = Modifier.testTag("createFlashcardsButton"))
           }
-
           CustomDropDownMenu(
               modifier = Modifier.testTag("folderSettingsButton"),
               menuItems = menuItems,

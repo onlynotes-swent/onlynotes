@@ -45,7 +45,7 @@ fun NoteOverviewScreenGrid(
     noteViewModel: NoteViewModel,
     userViewModel: UserViewModel,
     navigationActions: NavigationActions,
-    notesToFlashcard: NotesToFlashcard? = null
+    notesToFlashcard: NotesToFlashcard,
 ) {
   CustomSeparatedLazyGrid(
       modifier = Modifier.fillMaxSize(),
@@ -61,6 +61,7 @@ fun NoteOverviewScreenGrid(
       userViewModel = userViewModel,
       navigationActions = navigationActions,
       paddingValues = paddingValues,
+      notesToFlashcard = notesToFlashcard,
       columnContent = {
         Text(
             modifier = Modifier.testTag("emptyNoteAndFolderPrompt"),

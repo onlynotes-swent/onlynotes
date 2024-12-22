@@ -70,6 +70,7 @@ class TextExtractorTest {
   @Test
   fun extractTextFromBitmapsSuccessTest() {
     val onSuccess: (String) -> Unit = mock()
+    val onFailure: (Exception) -> Unit = mock()
     val text = mock(Text::class.java)
     `when`(text.text).thenReturn("Hello world")
 
@@ -79,9 +80,11 @@ class TextExtractorTest {
       listener.onSuccess(text)
       successfulTask
     }
+    `when`(successfulTask.addOnFailureListener(any()))
+        .thenReturn(successfulTask) // no failure listener
     `when`(mockTextRecognizer.process(any(InputImage::class.java))).thenReturn(successfulTask)
 
-    textExtractor.extractTextFromBitmaps(listOf(mockBitmap), onSuccess)
+    textExtractor.extractTextFromBitmaps(listOf(mockBitmap), onSuccess, onFailure)
 
     verify(onSuccess).invoke("Hello world\n")
   }
@@ -89,6 +92,7 @@ class TextExtractorTest {
   @Test
   fun extractTextFromBitmapsSuccessNoTextTest() {
     val onSuccess: (String) -> Unit = mock()
+    val onFailure: (Exception) -> Unit = mock()
     val text = mock(Text::class.java)
     `when`(text.text).thenReturn("")
 
@@ -98,9 +102,11 @@ class TextExtractorTest {
       listener.onSuccess(text)
       successfulTask
     }
+    `when`(successfulTask.addOnFailureListener(any()))
+        .thenReturn(successfulTask) // no failure listener
     `when`(mockTextRecognizer.process(any(InputImage::class.java))).thenReturn(successfulTask)
 
-    textExtractor.extractTextFromBitmaps(listOf(mockBitmap), onSuccess)
+    textExtractor.extractTextFromBitmaps(listOf(mockBitmap), onSuccess, onFailure)
 
     verify(onSuccess).invoke("")
   }
@@ -108,6 +114,7 @@ class TextExtractorTest {
   @Test
   fun extractTextFromBitmapsFails() {
     val onSuccess: (String) -> Unit = mock()
+    val onFailure: (Exception) -> Unit = mock()
 
     val failedTask = mock(Task::class.java) as Task<Text>
     `when`(failedTask.addOnSuccessListener(any())).thenReturn(failedTask) // No success listener
@@ -124,7 +131,7 @@ class TextExtractorTest {
           .`when`<Toast> { Toast.makeText(any<Context>(), any<String>(), any()) }
           .thenReturn(mockToast)
 
-      textExtractor.extractTextFromBitmaps(listOf(mockBitmap), onSuccess)
+      textExtractor.extractTextFromBitmaps(listOf(mockBitmap), onSuccess, onFailure)
 
       // log shows
       val logs = ShadowLog.getLogs()
@@ -136,13 +143,6 @@ class TextExtractorTest {
                 it.throwable.message == "Recognition failed"
           }
       assert(errorLog != null) { "Expected error log was not found!" }
-
-      // toast shows
-      toastMock.verify {
-        Toast.makeText(
-            eq(mockActivity), eq("Error: text recognition failed"), eq(Toast.LENGTH_SHORT))
-      }
-      verify(mockToast).show()
     }
   }
 }

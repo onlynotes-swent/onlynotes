@@ -19,7 +19,7 @@ import okhttp3.RequestBody.Companion.toRequestBody
  * @param client the OkHttpClient instance to use for sending requests (default: OkHttpClient()),
  *   used for testing
  */
-class OpenAI(
+open class OpenAI(
     private val client: OkHttpClient =
         OkHttpClient.Builder()
             .connectTimeout(20, TimeUnit.SECONDS) // Time to establish a connection

@@ -317,7 +317,7 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
       useCache: Boolean = false
   ) {
     viewModelScope.launch {
-      repository.deleteNotesFromUid(
+      repository.deleteAllNotesFromUserId(
           userId = userId,
           onSuccess = {
             getRootNotesFromUid(userId)
