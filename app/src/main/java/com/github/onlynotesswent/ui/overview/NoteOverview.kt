@@ -158,7 +158,7 @@ fun NoteOverviewScreen(
                                 visibility = visibility,
                                 userId = userViewModel.currentUser.value!!.uid,
                                 folderId = parentFolderId.value)
-                        noteViewModel.addNote(note)
+                        noteViewModel.addNote(note, useCache = true)
                         noteViewModel.selectedNote(note)
                         showCreateNoteDialog = false
                         navigationActions.navigateTo(Screen.EDIT_NOTE)

@@ -457,7 +457,7 @@ fun SaveButton(
                 userId = note.userId,
                 folderId = note.folderId,
                 comments = note.comments))
-        noteViewModel.getNoteById(note.id)
+        noteViewModel.getNoteById(note.id, useCache = true)
         Toast.makeText(context, "Note saved", Toast.LENGTH_SHORT).show()
       },
       modifier = Modifier.testTag("saveNoteButton")) {
