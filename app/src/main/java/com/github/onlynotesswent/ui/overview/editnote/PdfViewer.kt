@@ -157,35 +157,30 @@ fun PdfViewerScreen(
         buttonText = stringResource(R.string.convert_to_text),
         testTag = "convertPdfToTextMenuItem",
         onClick = {
-            try {
-                isLoading = true // Show progress indicator
-                textExtractor.processPdfFile(
-                    pdfFile = pdfFile!!,
-                    onSuccess = { text ->
-                        isLoading = false // Hide progress indicator
+          try {
+            isLoading = true // Show progress indicator
+            textExtractor.processPdfFile(
+                pdfFile = pdfFile!!,
+                onSuccess = { text ->
+                  isLoading = false // Hide progress indicator
 
-                        if (text.isEmpty()) {
-                            Toast.makeText(context, "No text found", Toast.LENGTH_LONG).show()
-                        } else {
-                            updateMdFile(
-                                text,
-                                noteViewModel,
-                                fileViewModel,
-                                navigationActions,
-                                context
-                            )
-                        }
-                    },
-                    onFailure = {
-                        isLoading = false // Hide progress indicator
-                        Log.e("PdfViewerScreen", "Error extracting text from PDF: $it")
-                        Toast.makeText(context, "Error: text could not be extracted", Toast.LENGTH_LONG).show()
-                    })
-            } catch (e: Exception) {
-                isLoading = false // Hide progress indicator
-                Log.e("PdfViewerScreen", "Error extracting text from PDF: $e")
-                Toast.makeText(context, "Error: text could not be extracted", Toast.LENGTH_LONG).show()
-            }
+                  if (text.isEmpty()) {
+                    Toast.makeText(context, "No text found", Toast.LENGTH_LONG).show()
+                  } else {
+                    updateMdFile(text, noteViewModel, fileViewModel, navigationActions, context)
+                  }
+                },
+                onFailure = {
+                  isLoading = false // Hide progress indicator
+                  Log.e("PdfViewerScreen", "Error extracting text from PDF: $it")
+                  Toast.makeText(context, "Error: text could not be extracted", Toast.LENGTH_LONG)
+                      .show()
+                })
+          } catch (e: Exception) {
+            isLoading = false // Hide progress indicator
+            Log.e("PdfViewerScreen", "Error extracting text from PDF: $e")
+            Toast.makeText(context, "Error: text could not be extracted", Toast.LENGTH_LONG).show()
+          }
           expandedMenu = false
         },
         icon = {

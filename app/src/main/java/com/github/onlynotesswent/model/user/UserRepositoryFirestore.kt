@@ -369,21 +369,45 @@ class UserRepositoryFirestore(private val db: FirebaseFirestore) : UserRepositor
       onSuccess: (Map<String, UserFlashcard>) -> Unit,
       onFailure: (Exception) -> Unit
   ) {
-    db.collection(collectionPath)
-        .document(userID)
-        .collection(flashcardLevelSubcollection)
-        .whereIn("id", deck.flashcardIds)
-        .get()
-        .addOnSuccessListener { result ->
-          val userFlashcards =
-              result.documents.mapNotNull { document -> documentSnapshotToUserFlashcard(document) }
-          val userFlashcardsMap = userFlashcards.associateBy { it.id }
-          onSuccess(userFlashcardsMap)
-        }
-        .addOnFailureListener { exception ->
-          onFailure(exception)
-          Log.e(TAG, "Error getting user flashcards by deck", exception)
-        }
+    val ids = deck.flashcardIds
+    if (ids.isEmpty()) {
+      onSuccess(emptyMap())
+      return
+    }
+
+    val chunkSize = 10
+    val chunks = ids.chunked(chunkSize)
+    val allUserFlashcards = mutableListOf<UserFlashcard>()
+    var completedChunks = 0
+    var hasFailed = false
+
+    for (chunk in chunks) {
+      db.collection(collectionPath)
+          .document(userID)
+          .collection(flashcardLevelSubcollection)
+          .whereIn("id", chunk)
+          .get()
+          .addOnSuccessListener { result ->
+            if (hasFailed) return@addOnSuccessListener
+
+            val userFlashcards = result.documents.mapNotNull { documentSnapshotToUserFlashcard(it) }
+            synchronized(allUserFlashcards) {
+              allUserFlashcards += userFlashcards
+              completedChunks++
+              if (completedChunks == chunks.size) {
+                val userFlashcardsMap = allUserFlashcards.associateBy { it.id }
+                onSuccess(userFlashcardsMap)
+              }
+            }
+          }
+          .addOnFailureListener { exception ->
+            if (!hasFailed) {
+              hasFailed = true
+              onFailure(exception)
+              Log.e(TAG, "Error getting user flashcards by deck", exception)
+            }
+          }
+    }
   }
 
   override fun setSavedDocumentIdsOfType(

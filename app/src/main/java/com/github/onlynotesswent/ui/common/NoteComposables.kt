@@ -237,7 +237,8 @@ fun NoteOptionsBottomSheet(
         onConfirm = {
           noteViewModel.deleteNoteById(note.id, note.userId)
           if (folderViewModel.selectedFolder.value != null) {
-            noteViewModel.getNotesFromFolder(folderViewModel.selectedFolder.value!!.id, userViewModel = null)
+            noteViewModel.getNotesFromFolder(
+                folderViewModel.selectedFolder.value!!.id, userViewModel = null)
           } else {
             noteViewModel.getRootNotesFromUid(note.userId)
           }

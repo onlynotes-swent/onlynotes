@@ -99,17 +99,37 @@ class FlashcardRepositoryFirestore(private val db: FirebaseFirestore) : Flashcar
       onSuccess(emptyList())
       return
     }
-    db.collection(collectionPath)
-        .whereIn("id", ids)
-        .get()
-        .addOnSuccessListener { querySnapshot ->
-          val flashcards = querySnapshot.documents.mapNotNull { documentSnapshotToFlashcard(it) }
-          onSuccess(flashcards)
-        }
-        .addOnFailureListener { exception ->
-          onFailure(exception)
-          Log.e(TAG, "Error getting flashcards by ids", exception)
-        }
+
+    val chunkSize = 10
+    val chunks = ids.chunked(chunkSize)
+    val allFlashcards = mutableListOf<Flashcard>()
+    var completedChunks = 0
+    var hasFailed = false
+
+    for (chunk in chunks) {
+      db.collection(collectionPath)
+          .whereIn("id", chunk)
+          .get()
+          .addOnSuccessListener { querySnapshot ->
+            if (hasFailed) return@addOnSuccessListener
+
+            val flashcards = querySnapshot.documents.mapNotNull { documentSnapshotToFlashcard(it) }
+            synchronized(allFlashcards) {
+              allFlashcards += flashcards
+              completedChunks++
+              if (completedChunks == chunks.size) {
+                onSuccess(allFlashcards)
+              }
+            }
+          }
+          .addOnFailureListener { exception ->
+            if (!hasFailed) {
+              hasFailed = true
+              onFailure(exception)
+              Log.e(TAG, "Error getting flashcards by ids", exception)
+            }
+          }
+    }
   }
 
   override fun getFlashcardsByFolder(
